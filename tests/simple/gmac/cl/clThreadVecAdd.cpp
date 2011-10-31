@@ -37,14 +37,14 @@ static const unsigned vecSizeDefault = 16 * 1024 * 1024;
 static unsigned vecSize = vecSizeDefault;
 
 static const char *kernel_source = "\
-							__kernel void vecAdd(__global float *c, __global const float *a, __global const float *b, unsigned size)\
-							{\
-							unsigned i = get_global_id(0);\
-							if(i >= size) return;\
-							\
-							c[i] = a[i] + b[i];\
-							}\
-							";
+                          __kernel void vecAdd(__global float *c, __global const float *a, __global const float *b, unsigned size)\
+                          {                                  \
+                              unsigned i = get_global_id(0); \
+                              if(i >= size) return;          \
+                                                             \
+                              c[i] = a[i] + b[i];            \
+                          }                                  \
+                          ";
 
 typedef struct __OpenCLEnv
 {
@@ -57,9 +57,11 @@ typedef struct __OpenCLEnv
 static OpenCLEnv openCLEnv = {NULL,NULL,NULL,NULL};
 
 //#define SHARED_CONTEXT
-//#define SHARED_CAMMAND_QUEUE
+//#define SHARED_COMMAND_QUEUE
 
-
+#ifdef SHARED_CONTEXT
+cl_program program;
+#endif
 
 void* Thread(void *_name)
 {
@@ -69,8 +71,7 @@ void* Thread(void *_name)
 	cl_int error_code;
 	cl_context context;
 	cl_command_queue command_queue;
-	cl_program program;
-	cl_kernel kernel;
+    cl_kernel kernel;
 	float *a, *b, *c;
 	gmactime_t s, t;
     char buffer[256];
@@ -89,30 +90,33 @@ void* Thread(void *_name)
 	context = openCLEnv.context;
 #endif
 
-#ifndef SHARED_CAMMAND_QUEUE
+#ifndef SHARED_COMMAND_QUEUE
 	command_queue = clCreateCommandQueue(context, device, 0, &error_code);
 	assert(error_code == CL_SUCCESS);
 #else
 	command_queue = openCLEnv.command_queue;
 #endif
 
-	setParam<unsigned>(&vecSize, vecSizeStr, vecSizeDefault);              ///////
 	fprintf(stdout, "%s: Vector: %f\n", name, 1.0 * vecSize / 1024 / 1024);
 
+#ifndef SHARED_CONTEXT
+    cl_program program;
 	program = clCreateProgramWithSource(context, 1, &kernel_source, NULL, &error_code);
 	assert(error_code == CL_SUCCESS);
 	error_code = clBuildProgram(program, 1, &device, NULL, NULL, NULL);
 	assert(error_code == CL_SUCCESS);
+#endif
+
 	kernel = clCreateKernel(program, "vecAdd", &error_code);
 	assert(error_code == CL_SUCCESS);
 
 	getTime(&s);
 
-	error_code = clMalloc(command_queue, (void **)&a, vecSize * sizeof(float));
+	error_code = clMalloc(command_queue, (void **) &a, vecSize * sizeof(float));
 	assert(error_code == CL_SUCCESS);
-	error_code = clMalloc(command_queue, (void **)&b, vecSize * sizeof(float));
+	error_code = clMalloc(command_queue, (void **) &b, vecSize * sizeof(float));
 	assert(error_code == CL_SUCCESS);
-	error_code = clMalloc(command_queue, (void **)&c, vecSize * sizeof(float));
+	error_code = clMalloc(command_queue, (void **) &c, vecSize * sizeof(float));
 	assert(error_code == CL_SUCCESS);
 	getTime(&t);
 
@@ -188,6 +192,11 @@ int main(int argc, char *argv[])
     cl_int error_code;
 
     /*****************************************************************************************/
+    /*		Handle user parameters                                                           */
+    /*****************************************************************************************/
+	setParam<unsigned>(&vecSize, vecSizeStr, vecSizeDefault);              ///////
+
+    /*****************************************************************************************/
     /*		Initialize the environment								 	  			     	 */
     /*****************************************************************************************/
     error_code = clGetPlatformIDs(1, &(openCLEnv.platform), NULL);
@@ -199,16 +208,27 @@ int main(int argc, char *argv[])
     openCLEnv.command_queue = clCreateCommandQueue(openCLEnv.context, openCLEnv.device, 0, &error_code);
     assert(error_code == CL_SUCCESS);
 
+#ifdef SHARED_CONTEXT
+	program = clCreateProgramWithSource(openCLEnv.context, 1, &kernel_source, NULL, &error_code);
+	assert(error_code == CL_SUCCESS);
+	error_code = clBuildProgram(program, 1, &openCLEnv.device, NULL, NULL, NULL);
+	assert(error_code == CL_SUCCESS);
+#endif
+
     /************************************************************************/
     /* Invoke the threads                                                   */
     /************************************************************************/
     char name1[] = "Thread A";
     char name2[] = "Thread B";
     char name3[] = "Thread C";
+    char name4[] = "Thread D";
+    char name5[] = "Thread E";
 
     thread_t thread1 = thread_create(thread_routine(Thread), name1);
     thread_t thread2 = thread_create(thread_routine(Thread), name2);
     thread_t thread3 = thread_create(thread_routine(Thread), name3);
+    thread_t thread4 = thread_create(thread_routine(Thread), name4);
+    thread_t thread5 = thread_create(thread_routine(Thread), name5);
 
     /************************************************************************/
     /* Waiting for ending of the thread                                     */
@@ -216,6 +236,8 @@ int main(int argc, char *argv[])
     thread_wait(thread1);
     thread_wait(thread2);
     thread_wait(thread3);	
+    thread_wait(thread4);	
+    thread_wait(thread5);	
 #ifdef _MSC_VER
     system("pause");
 #endif
