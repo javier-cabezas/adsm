@@ -10,7 +10,7 @@ add_subdirectory(trace)
 add_subdirectory(core)
 add_subdirectory(memory)
 
-add_subdirectory(api)
+# add_subdirectory(api)
 
 add_subdirectory(libs)
 
