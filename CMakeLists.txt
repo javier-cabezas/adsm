@@ -6,7 +6,7 @@ include(CheckIncludeFile)
 include(CheckFunctionExists)
 include(FindThreads)
 
-set(GMAC_VERSION "11.9")
+set(GMAC_VERSION "11.10")
 
 # Set the configuration being built
 if(NOT CMAKE_BUILD_TYPE)
@@ -262,13 +262,11 @@ install(TARGETS ${GMAC_TARGET_NAME}
 install(TARGETS ${GMAC_TARGET_NAME}
         RUNTIME DESTINATION bin
         COMPONENT runtime)
+
 else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 install(TARGETS ${GMAC_TARGET_NAME}
         LIBRARY DESTINATION lib
-        RUNTIME DESTINATION lib
-        ARCHIVE DESTINATION lib
-        RESOURCE DESTINATION share 
         COMPONENT libraries)
 
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")

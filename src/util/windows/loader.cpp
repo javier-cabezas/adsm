@@ -9,8 +9,9 @@
 namespace __impl { namespace loader {
 
 static const char *ImportSection_ = ".idata";
-static const char *GmacDll_ = "gmac.dll";
-static const char *GmacHPEDll_ = "OpenCL.dll";
+static const char *GmacHPEDll_ = "gmac-hpe.dll";
+static const char *GmacCUDADll_ = "gmac-cuda.dll";
+static const char *OpenCLDll_ = "OpenCL.dll";
 static const char *GmacLiteDll_ = "gmac-cl.dll";
 
 static std::set<HMODULE> Modules_;
@@ -86,6 +87,7 @@ PVOID PatchModule(HMODULE module, PVOID symbol, const char *name)
 
 	PVOID ret = NULL;
 	ret = PatchModuleSymbol(module, symbol, name);
+	if(ret == NULL) return NULL;
 
 	// Now check the DLLs within this module
 
@@ -106,7 +108,8 @@ PVOID PatchModule(HMODULE module, PVOID symbol, const char *name)
 	if(dlls == NULL) return ret;
 	for(int i = 0; dlls[i].Name != NULL; i++) {
 		const char *dllName = (const char *)PtrFromRva(dosHeader, dlls[i].Name);
-		if(_strnicmp(dllName, GmacDll_, strlen(GmacDll_)) == 0) continue;
+		if(_strnicmp(dllName, OpenCLDll_, strlen(OpenCLDll_)) == 0) continue;
+		if(_strnicmp(dllName, GmacCUDADll_, strlen(GmacCUDADll_)) == 0) continue;
 		if(_strnicmp(dllName, GmacHPEDll_, strlen(GmacHPEDll_)) == 0) continue;
 		if(_strnicmp(dllName, GmacLiteDll_, strlen(GmacLiteDll_)) == 0) continue;
 		HMODULE module = GetModuleHandle(dllName);

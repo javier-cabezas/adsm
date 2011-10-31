@@ -32,6 +32,14 @@ source_group(${current_GROUP} FILES
     clMatrixMulKernel.cl
 	clVecAdd_Helper.cpp
 	clThreadVecAdd.cpp
+	clBinarySearch.cpp	
+	clBinarySearchKernel.cl
+	clBinomialOption.cpp
+	clBinomialOptionKernel.cl
+	clBitonicSort.cpp
+	clBitonicSortKernel.cl
+	clBlackScholes.cpp
+	clBlackScholesKernel.cl
 )
 
 add_executable(clVecAdd ${common_SRC} clVecAdd.cpp)
@@ -51,6 +59,18 @@ target_link_libraries(clStencil ${GMAC_CL})
 
 add_executable(clMatrixMul ${common_SRC} clMatrixMul.cpp clMatrixMulKernel.cl)
 target_link_libraries(clMatrixMul ${GMAC_CL})
+
+#add_executable(clBinarySearch ${common_SRC} clBinarySearch.cpp clBinarySearchKernel.cl)
+#target_link_libraries(clBinarySearch ${GMAC_CL})
+
+#add_executable(clBinomialOption ${common_SRC} clBinomialOption.cpp clBinomialOptionKernel.cl)
+#target_link_libraries(clBinomialOption ${GMAC_CL})
+
+#add_executable(clBitonicSort ${common_SRC} clBitonicSort.cpp clBitonicSortKernel.cl)
+#target_link_libraries(clBitonicSort ${GMAC_CL})
+
+#add_executable(clBlackScholes ${common_SRC} clBlackScholes.cpp clBlackScholesKernel.cl)
+#target_link_libraries(clBlackScholes ${GMAC_CL})
 
 file(COPY vars-cl.spec tests-cl.spec DESTINATION ${PROJECT_BINARY_DIR})
 

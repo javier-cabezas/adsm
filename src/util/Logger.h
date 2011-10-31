@@ -72,7 +72,7 @@ inline static const char *__extract_file_name(const char *file) {
 
 #define GLOBAL "GMAC"
 
-#if defined(__GNUC__)
+#if defined(__GNUC__) && !defined(__APPLE__)
 #include <cxxabi.h>
 
 extern __thread char nameBuffer[1024];

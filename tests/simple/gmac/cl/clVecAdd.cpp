@@ -11,7 +11,7 @@
 
 
 const char *vecSizeStr = "GMAC_VECSIZE";
-const unsigned vecSizeDefault = 16 * 1024 * 1024;
+const unsigned vecSizeDefault = 1 * 1024 * 1024;
 unsigned vecSize = vecSizeDefault;
 
 const char *msg = "Done!";
@@ -59,10 +59,13 @@ int main(int argc, char *argv[])
 
     getTime(&s);
     // Alloc & init input data
-    assert(clMalloc(command_queue, (void **)&a, vecSize * sizeof(float)) == CL_SUCCESS);
-    assert(clMalloc(command_queue, (void **)&b, vecSize * sizeof(float)) == CL_SUCCESS);
+    error_code = clMalloc(command_queue, (void **)&a, vecSize * sizeof(float));
+	assert(error_code == CL_SUCCESS);
+    error_code = clMalloc(command_queue, (void **)&b, vecSize * sizeof(float));
+	assert(error_code == CL_SUCCESS);
     // Alloc output data
-    assert(clMalloc(command_queue, (void **)&c, vecSize * sizeof(float)) == CL_SUCCESS);
+    error_code = clMalloc(command_queue, (void **)&c, vecSize * sizeof(float));
+	assert(error_code == CL_SUCCESS);
     getTime(&t);
     printTime(&s, &t, "Alloc: ", "\n");
 
@@ -85,15 +88,21 @@ int main(int argc, char *argv[])
     size_t global_size = vecSize;
 
     cl_mem c_device = clGetBuffer(context, c);
-    assert(clSetKernelArg(kernel, 0, sizeof(cl_mem), &c_device) == CL_SUCCESS);
+    error_code = clSetKernelArg(kernel, 0, sizeof(cl_mem), &c_device);
+	assert(error_code == CL_SUCCESS);
     cl_mem a_device = clGetBuffer(context, a);
-    assert(clSetKernelArg(kernel, 1, sizeof(cl_mem), &a_device) == CL_SUCCESS);
+    error_code = clSetKernelArg(kernel, 1, sizeof(cl_mem), &a_device);
+	assert(error_code == CL_SUCCESS);
     cl_mem b_device = clGetBuffer(context, b);
-    assert(clSetKernelArg(kernel, 2, sizeof(cl_mem), &b_device) == CL_SUCCESS);
-    assert(clSetKernelArg(kernel, 3, sizeof(vecSize), &vecSize) == CL_SUCCESS);
+    error_code = clSetKernelArg(kernel, 2, sizeof(cl_mem), &b_device);
+	assert(error_code == CL_SUCCESS);
+    error_code = clSetKernelArg(kernel, 3, sizeof(vecSize), &vecSize);
+	assert(error_code == CL_SUCCESS);
 
-    assert(clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_size, NULL, 0, NULL, NULL) == CL_SUCCESS);
-    assert(clFinish(command_queue) == CL_SUCCESS);
+    error_code = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, &global_size, NULL, 0, NULL, NULL);
+	assert(error_code == CL_SUCCESS);
+    error_code = clFinish(command_queue);
+	assert(error_code == CL_SUCCESS);
 
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");

@@ -153,6 +153,10 @@ typedef struct {
     size_t globalMemSize; 
     size_t localMemSize; 
     size_t cacheMemSize; 
+
+    unsigned driverMajor;
+    unsigned driverMinor;
+    unsigned driverRev;
 } GmacAcceleratorInfo;
 
 #ifdef __cplusplus

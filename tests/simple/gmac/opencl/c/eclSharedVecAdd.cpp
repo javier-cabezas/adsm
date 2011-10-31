@@ -174,8 +174,10 @@ int main(int argc, char *argv[])
 
     error = do_test(GMAC_GLOBAL_MALLOC_REPLICATED, "Replicated");
     if (error != 0.f) abort();
+#if 0
     error = do_test(GMAC_GLOBAL_MALLOC_CENTRALIZED, "Centralized");
     if (error != 0.f) abort();
+#endif
     
     return 0;
 }

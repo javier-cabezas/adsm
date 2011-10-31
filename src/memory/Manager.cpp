@@ -243,6 +243,7 @@ Manager::getAllocSize(core::address_space &aspace, const hostptr_t addr, size_t 
         }
     } else {
         size = obj->size();
+        obj->decRef();
     }
     trace::ExitCurrentFunction();
     return ret;

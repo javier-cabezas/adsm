@@ -35,6 +35,10 @@ do
     --disable-lite)
         CMAKE_ARGS="${CMAKE_ARGS} -DUSE_LITE=OFF"
         ;;
+    --with-cuda=*)
+        cuda_path=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
+        CMAKE_ARGS="${CMAKE_ARGS} -DCUDA_PATH=${cuda_path}"
+        ;;
     --with-opencl-include=*)
         opencl_include=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
         CMAKE_ARGS="${CMAKE_ARGS} -DOPENCL_INCLUDE=${opencl_include}"
@@ -42,6 +46,9 @@ do
     --with-opencl-library=*)
         opencl_library=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
         CMAKE_ARGS="${CMAKE_ARGS} -DOPENCL_LIBRARY=${opencl_library}"
+        ;;
+    --enable-installer)
+        CMAKE_ARGS="${CMAKE_ARGS} -DMAKE_INSTALLER=ON"
         ;;
     --with-installer=*)
         installer=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`

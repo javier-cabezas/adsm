@@ -78,6 +78,7 @@ int main(int argc, char *argv[])
         fprintf(stdout, "- local mem size: "FMT_SIZE"\n", info.localMemSize);
         fprintf(stdout, "- cache mem size: "FMT_SIZE" ("FMT_SIZE" per compute unit)\n", info.cacheMemSize, info.cacheMemSize / info.computeUnits);
 
+        fprintf(stdout, "- dirver: %u.%u.%u\n", info.driverMajor, info.driverMinor, info.driverRev);
         fprintf(stdout, "\n");
     }
 

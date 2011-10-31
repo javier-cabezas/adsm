@@ -28,7 +28,7 @@ set(GMAC_HEADERS ${GMAC_HEADERS}
                  ${CMAKE_SOURCE_DIR}/src/include/gmac/cl.h
                  ${CMAKE_SOURCE_DIR}/src/include/gmac/cl_types.h)
 
-set(GMAC_TARGET_NAME ${GMAC_TARGET_NAME} ${GMAC_CL})
+set(GMAC_TARGET_NAME ${GMAC_TARGET_NAME} ${GMAC_CL} ${GMAC_CL_HELPERS})
 
 
 set(gmac-core-lite_LIB gmac-core-lite)
