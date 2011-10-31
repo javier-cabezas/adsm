@@ -1,6 +1,6 @@
 #ifdef USE_DBC
 
-#include "core/IOBuffer.h"
+#include "core/io_buffer.h"
 #include "memory/Block.h"
 
 namespace __dbc { namespace memory {
@@ -19,7 +19,7 @@ Block::~Block()
 }
 
 gmacError_t
-Block::memoryOp(__impl::memory::Protocol::MemoryOp op, __impl::core::IOBuffer &buffer, size_t size, size_t bufferOffset, size_t blockOffset)
+Block::memoryOp(__impl::memory::Protocol::MemoryOp op, __impl::core::io_buffer &buffer, size_t size, size_t bufferOffset, size_t blockOffset)
 {
     // PRECONDITIONS
     REQUIRES(size > 0);

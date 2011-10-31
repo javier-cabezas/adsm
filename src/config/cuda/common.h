@@ -37,53 +37,89 @@ WITH THE SOFTWARE.  */
 #include <cstdio>
 #include <cuda.h>
 
+#include "config/ptr.h"
+
 typedef CUstream stream_t;
 typedef CUevent event;
 
-struct _cuda_ptr_t {
+class _cuda_ptr_t {
+private:
     CUdeviceptr ptr_;
-    unsigned pasId_;
 
-    inline _cuda_ptr_t(CUdeviceptr ptr) :
-        ptr_(ptr),
-        pasId_(0)
-    {}
+public:
+    typedef CUdeviceptr base_type;
 
-    inline operator CUdeviceptr() const { return ptr_; }
-
-    inline bool operator==(const _cuda_ptr_t &ptr) const {
-        return this->ptr_ == ptr.ptr_ && this->pasId_ == ptr.pasId_;
+    inline explicit _cuda_ptr_t(CUdeviceptr ptr) :
+        ptr_(ptr)
+    {
     }
-    inline bool operator==(int i) const {
+
+#if 0
+    inline operator CUdeviceptr() const
+    {
+        return ptr_;
+    }
+#endif
+
+    inline ~_cuda_ptr_t()
+    {
+    }
+
+    inline _cuda_ptr_t &operator=(const _cuda_ptr_t &ptr)
+    {
+        if (this != &ptr) {
+            ptr_ = ptr.ptr_;
+        }
+        return *this;
+    }
+
+    inline bool operator==(const _cuda_ptr_t &ptr) const
+    {
+        return this->ptr_ == ptr.ptr_;
+    }
+
+    inline bool operator==(long i) const
+    {
         return this->ptr_ == CUdeviceptr(i);
     }
 
-    inline bool operator!=(const _cuda_ptr_t &ptr) const {
-        return this->ptr_ != ptr.ptr_ || this->pasId_ != ptr.pasId_;
+    inline bool operator!=(const _cuda_ptr_t &ptr) const
+    {
+        return this->ptr_ != ptr.ptr_;
     }
 
-    inline bool operator!=(int i) const {
+    inline bool operator!=(long i) const
+    {
         return this->ptr_ != CUdeviceptr(i);
     }
 
-    inline bool operator<(const _cuda_ptr_t &ptr) const {
-        return pasId_ < ptr.pasId_ || (pasId_ == ptr.pasId_ && ptr_ < ptr.ptr_);
+    inline bool operator<(const _cuda_ptr_t &ptr) const
+    {
+        return ptr_ < ptr.ptr_;
     }
 
     template <typename T>
-    inline const _cuda_ptr_t operator+(const T &b) const {
-        _cuda_ptr_t ret(ptr_ + CUdeviceptr(b));
-        ret.pasId_ = pasId_;
-        return ret;
+    inline const _cuda_ptr_t operator+=(const T &off)
+    {
+        ptr_ = CUdeviceptr(((char *) ptr_) + off);
+        return *this;
     }
 
     //inline operator void *() const { return (void *)(ptr_); }
 
-    inline void *get() const { return (void *)(ptr_); }
+    inline CUdeviceptr get() const
+    {
+        return ptr_;
+    }
+
+    inline size_t offset() const
+    {
+        return 0;
+    }
 
 };
 
-typedef _cuda_ptr_t accptr_t;
+typedef _common_ptr_t<_cuda_ptr_t> accptr_t;
 typedef const char * gmac_kernel_id_t;
 
 #endif

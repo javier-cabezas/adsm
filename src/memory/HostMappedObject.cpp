@@ -1,4 +1,5 @@
-#include "core/Mode.h"
+#include "core/address_space.h"
+#include "memory/Memory.h"
 #include "memory/HostMappedObject.h"
 #include "util/Logger.h"
 
@@ -43,10 +44,10 @@ bool HostMappedSet::remove(hostptr_t addr)
 
 HostMappedSet HostMappedObject::set_;
 
-HostMappedObject::HostMappedObject(core::Mode &mode, size_t size) :
+HostMappedObject::HostMappedObject(core::address_space &aspace, size_t size) :
     util::Reference("HostMappedObject"),
     size_(size),
-    owner_(mode)
+    owner_(aspace)
 {
     // Allocate memory (if necessary)
     addr_ = alloc(owner_);
@@ -62,41 +63,42 @@ HostMappedObject::~HostMappedObject()
     TRACE(LOCAL, "Destroying Host Mapped Object @ %p", addr_);
 }
 
-
-accptr_t HostMappedObject::acceleratorAddr(core::Mode &current, const hostptr_t addr) const
+accptr_t
+HostMappedObject::get_device_addr(core::address_space &current, const hostptr_t addr) const
 {
     //ASSERTION(current == owner_);
     accptr_t ret = accptr_t(0);
     if(addr_ != NULL) {
         unsigned offset = unsigned(addr - addr_);
-        printf("Offset3: %u\n", offset);
         accptr_t acceleratorAddr = getAccPtr(current);
-        printf("Offset4: %u\n", offset);
         ret = acceleratorAddr + offset;
     }
     return ret;
 }
 
 hostptr_t
-HostMappedObject::alloc(core::Mode &mode)
+HostMappedObject::alloc(core::address_space &aspace)
 {
     hostptr_t ret = NULL;
-    ret = Memory::map(NULL, size_, GMAC_PROT_READWRITE);
-    if (mode.hostAlloc(ret, size_) != gmacSuccess) return NULL;
+    //ret = Memory::map(NULL, size_, GMAC_PROT_READWRITE);
+    gmacError_t err;
+    ret = aspace.alloc_host_pinned(size_, err);
+    if (err != gmacSuccess) return NULL;
     return ret;
 }
 
 void
-HostMappedObject::free(core::Mode &mode)
+HostMappedObject::free(core::address_space &aspace)
 {
-    Memory::unmap(addr_, size_);
-    mode.hostFree(addr_);
+    //Memory::unmap(addr_, size_);
+    aspace.free_host_pinned(addr_);
 }
 
 accptr_t
-HostMappedObject::getAccPtr(core::Mode &mode) const
+HostMappedObject::getAccPtr(core::address_space &aspace) const
 {
-    return mode.hostMapAddr(addr_);
+    gmacError_t err;
+    return aspace.get_host_pinned_mapping(addr_, err);
 }
 
 }}

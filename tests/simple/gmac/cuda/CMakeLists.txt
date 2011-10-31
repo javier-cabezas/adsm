@@ -151,9 +151,9 @@ add_executable(gmacFile ${gfile}  gmacFile.cu)
 target_link_libraries(gmacFile test-common gmac-cuda)
 
 # gmacMigration
-cuda_compile(migration gmacMigration.cu)
-add_executable(gmacMigration ${migration}  gmacMigration.cu)
-target_link_libraries(gmacMigration test-common gmac-cuda)
+# cuda_compile(migration gmacMigration.cu)
+# add_executable(gmacMigration ${migration}  gmacMigration.cu)
+# target_link_libraries(gmacMigration test-common gmac-cuda)
 
 # gmacMeminfo
 cuda_compile(meminfo gmacMeminfo.cu)
@@ -175,9 +175,9 @@ target_link_libraries(gmacConstant test-common gmac-cuda)
 
 if(NOT CMAKE_SYSTEM_NAME MATCHES "Windows")
 # gmacPingPong
-cuda_compile(pingpong gmacPingPong.cu)
-add_executable(gmacPingPong ${pingpong}  gmacPingPong.cu)
-target_link_libraries(gmacPingPong test-common gmac-cuda)
+# cuda_compile(pingpong gmacPingPong.cu)
+# add_executable(gmacPingPong ${pingpong}  gmacPingPong.cu)
+# target_link_libraries(gmacPingPong test-common gmac-cuda)
 
 # gmacCompress
 cuda_compile(compress gmacCompressCommon.cu gmacCompress.cu)
@@ -185,9 +185,9 @@ add_executable(gmacCompress ${compress}  gmacCompressCommon.cu gmacCompress.cu)
 target_link_libraries(gmacCompress test-common gmac-cuda)
 
 # gmacCompress
-cuda_compile(compressSend gmacCompressCommon.cu gmacCompressSend.cu)
-add_executable(gmacCompressSend ${compressSend}  gmacCompressCommon.cu gmacCompressSend.cu)
-target_link_libraries(gmacCompressSend test-common gmac-cuda)
+# cuda_compile(compressSend gmacCompressCommon.cu gmacCompressSend.cu)
+# add_executable(gmacCompressSend ${compressSend}  gmacCompressCommon.cu gmacCompressSend.cu)
+# target_link_libraries(gmacCompressSend test-common gmac-cuda)
 endif(NOT CMAKE_SYSTEM_NAME MATCHES "Windows")
 
 option(USE_OPENGL "Enable building OpenGL tests" OFF)

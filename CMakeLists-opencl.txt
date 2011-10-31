@@ -15,7 +15,9 @@ if(USE_OPENCL)
 
     set(OPENCL_API_PREFIX "ecl" CACHE PATH "Prefix for API functions in the OpenCL GMAC version")
 
-    set(MAKE_CL ON)
+    if(USE_LITE)
+        set(MAKE_CL ON)
+    endif(USE_LITE)
 
     set(GMAC_BLOCK_SIZE "512 * 1024")
 

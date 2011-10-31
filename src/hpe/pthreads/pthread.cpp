@@ -9,7 +9,7 @@
 #include "config/common.h"
 #include "config/order.h"
 
-#include "core/hpe/Process.h"
+#include "core/hpe/process.h"
 
 #include "hpe/init.h"
 
@@ -36,6 +36,7 @@ struct gmac_thread_t {
     void *(*start_routine)(void *);
     void *arg;
     bool externCall;
+    pthread_t tid;
 };
 
 static void *gmac_pthread(void *arg)
@@ -54,8 +55,8 @@ static void *gmac_pthread(void *arg)
 
     enterGmac();
 
-    Process &proc = getProcess();
-    proc.initThread();
+    process &proc = getProcess();
+    proc.initThread(externCall == true, gthread->tid);
     gmac::trace::SetThreadState(gmac::trace::Running);
     if(externCall) exitGmac();
     void *ret = gthread->start_routine(gthread->arg);
@@ -82,6 +83,7 @@ int pthread_create(pthread_t *__restrict newthread,
     gthread->start_routine = start_routine;
     gthread->arg = arg;
     gthread->externCall = externCall;
+    gthread->tid = pthread_self();
     ret = pthread_create__(newthread, attr, gmac_pthread, (void *)gthread);
     if(externCall) exitGmac();
     return ret;

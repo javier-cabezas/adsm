@@ -135,6 +135,20 @@ GMAC_API gmacError_t APICALL gmacGetFreeMemory(unsigned acc, size_t *freeMem);
  */
 GMAC_API gmacError_t APICALL gmacMigrate(unsigned acc);
 
+#define ADDRESS_SPACE_ACCELERATOR_ANY -1
+
+GMAC_API gmacError_t APICALL
+gmacCreateAddressSpace(GmacAddressSpaceId *aSpaceId, int accId);
+
+GMAC_API gmacError_t APICALL
+gmacDeleteAddressSpace(GmacAddressSpaceId aSpaceId);
+
+GMAC_API gmacError_t APICALL
+gmacCreateVirtualDevice(GmacVirtualDeviceId *vDeviceId, GmacAddressSpaceId aSpaceId);
+
+GMAC_API gmacError_t APICALL
+gmacDeleteVirtualDevice(GmacVirtualDeviceId vDeviceId);
+
 /**
  * Maps a range of CPU memory on the GPU. The memory pointed by cpuPtr must NOT have been allocated
  * using gmacMalloc or gmacGlobalMalloc, and must not have been mapped before. Both, GPU and CPU,
@@ -260,6 +274,7 @@ GMAC_API void APICALL gmacSendReceive(THREAD_T tid);
  */
 GMAC_API void APICALL gmacCopy(THREAD_T tid);
 
+#if 0
 /**
  * Launches a kernel on the accelerator. This function is NOT meant to be directly
  * used by the application
@@ -269,6 +284,7 @@ GMAC_API void APICALL gmacCopy(THREAD_T tid);
  */
 GMAC_API gmacError_t APICALL gmacLaunch(const char *kernel);
 
+#endif
 
 
 #ifdef __cplusplus
@@ -281,7 +297,7 @@ GMAC_API gmacError_t APICALL gmacLaunch(const char *kernel);
 #include <stdlib.h>
 #endif
 
-static const char *error[] = {
+static const char *error_msg[] = {
     "No error",
     "Memory allocation",
     "Launch failure",
@@ -304,7 +320,7 @@ static const char *error[] = {
  */
 static inline const char *gmacGetErrorString(gmacError_t err) {
     if (err <= gmacErrorUnknown) {
-        return error[err];
+        return error_msg[err];
     } else {
         abort();
     }

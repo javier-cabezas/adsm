@@ -3,14 +3,12 @@
 #include "libs/common.h"
 
 #include "util/Atomics.h"
-#include "util/Logger.h"
 #include "util/Private.h"
 
 static __impl::util::Private<bool> inGmac_;
 __impl::util::Private<bool> isRunTimeThread_;
 
 static Atomic gmacInit__ = 0;
-static Atomic gmacCtor_ = 0;
 
 static volatile bool gmacIsInitialized = false;
 
@@ -20,7 +18,6 @@ const bool privateFalse = false;
 CONSTRUCTOR(init);
 static void init(void)
 {
-    if(AtomicTestAndSet(gmacCtor_, 0, 1) == 1) return;
     /* Create GMAC enter lock and set GMAC as initialized */
     __impl::util::Private<bool>::init(inGmac_);
     __impl::util::Private<bool>::init(isRunTimeThread_);
@@ -60,7 +57,6 @@ void exitGmac()
 
 bool inGmac()
 {
-    bool *ret = inGmac_.get();
-    ASSERTION(ret != NULL);
-    return *ret;
+    if (inGmac_.get() == NULL) return false;
+    else return *inGmac_.get();
 }

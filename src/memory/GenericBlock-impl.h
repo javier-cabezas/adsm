@@ -3,17 +3,22 @@
 
 #include <algorithm>
 
-#include "core/Mode.h"
-#include "core/IOBuffer.h"
+#include "core/io_buffer.h"
+#include "core/address_space.h"
 
 namespace __impl { namespace memory {
 
 template<typename State>
 inline
-GenericBlock<State>::GenericBlock(Protocol &protocol, hostptr_t hostAddr,
-                                  hostptr_t shadowAddr, size_t size, typename State::ProtocolState init) :
-    StateBlock<State>(protocol, hostAddr, shadowAddr, size, init),
-    ownerShortcut_(NULL)
+GenericBlock<State>::GenericBlock(Protocol &protocol,
+                                  BlockGroup<State> &parent,
+                                  hostptr_t hostAddr,
+                                  hostptr_t shadowAddr,
+                                  size_t size,
+                                  typename State::ProtocolState init) :
+    gmac::memory::Block(protocol, hostAddr, shadowAddr, size),
+    State(init),
+    parent_(parent)
 {
 }
 
@@ -23,51 +28,52 @@ GenericBlock<State>::~GenericBlock()
 {
 }
 
+#if 0
 template<typename State>
 void
-GenericBlock<State>::addOwner(core::Mode &mode, accptr_t addr)
+GenericBlock<State>::addOwner(core::address_space &aspace, accptr_t addr)
 {
-    StateBlock<State>::lock();
+    lock();
 
     AcceleratorAddrMap::iterator it = acceleratorAddr_.find(addr);
 
-    TRACE(LOCAL, "Adding owner for address for %u:%p @ Context %p", addr.pasId_, addr.get(), &mode);
+    TRACE(LOCAL, "Adding owner for address for %u:%p @ Context %p", addr.getPAddressSpace(), addr.get(), &aspace);
     if (it == acceleratorAddr_.end()) {
-        TRACE(LOCAL, "Adding new address for %u:%p @ Context %p", addr.pasId_, addr.get(), &mode);
-        acceleratorAddr_.insert(AcceleratorAddrMap::value_type(addr, std::list<core::Mode *>()));
+        TRACE(LOCAL, "Adding new address for %u:%p @ Context %p", addr.getPAddressSpace(), addr.get(), &aspace);
+        acceleratorAddr_.insert(AcceleratorAddrMap::value_type(addr, std::list<core::address_space *>()));
         AcceleratorAddrMap::iterator it = acceleratorAddr_.find(addr);
-        it->second.push_back(&mode);
+        it->second.push_back(&aspace);
 
-        if(StateBlock<State>::protocol_.needUpdate(*this) == true &&
+        if(protocol_.needUpdate(*this) == true &&
            acceleratorAddr_.size() > 1) {
-            gmacError_t ret = mode.copyToAccelerator(addr, StateBlock<State>::shadow_, StateBlock<State>::size_);
+            gmacError_t ret = aspace.copyToAccelerator(addr, shadow_, size_);
             ASSERTION(ret == gmacSuccess);
         }
     } else {
-        it->second.push_back(&mode);
+        it->second.push_back(&aspace);
     }
 
-    ASSERTION(owners_.find(&mode) == owners_.end());
-    owners_.insert(ModeMap::value_type(&mode, addr));
-    mode.incRef();
+    ASSERTION(owners_.find(&aspace) == owners_.end());
+    owners_.insert(AddressSpaceMap::value_type(&aspace, addr));
 
     if (owners_.size() == 1) {
-        ownerShortcut_ = &mode;
+        ownerShortcut_ = &aspace;
     }
 
-    StateBlock<State>::unlock();
+    unlock();
 }
+
 // TODO: return error!
 template<typename State>
 void
-GenericBlock<State>::removeOwner(core::Mode &mode)
+GenericBlock<State>::removeOwner(core::address_space &aspace)
 {
-    StateBlock<State>::lock();
+    lock();
 
     AcceleratorAddrMap::iterator a;
     for (a = acceleratorAddr_.begin(); a != acceleratorAddr_.end(); a++) {
-        std::list<core::Mode *> &list = a->second;
-        std::list<core::Mode *>::iterator j = std::find(list.begin(), list.end(), &mode);
+        std::list<core::address_space *> &list = a->second;
+        std::list<core::address_space *>::iterator j = std::find(list.begin(), list.end(), &aspace);
         if (j != list.end()) {
             list.erase(j);
             if (list.size() == 0) acceleratorAddr_.erase(a);
@@ -77,26 +83,28 @@ GenericBlock<State>::removeOwner(core::Mode &mode)
     FATAL("Mode NOT found!");
 done_addr:
 
-    ModeMap::iterator m;
-    m = owners_.find(&mode);
+    AddressSpaceMap::iterator m;
+    m = owners_.find(&aspace);
     ASSERTION(m != owners_.end());
     owners_.erase(m);
-    m->first->decRef();
 
-    StateBlock<State>::unlock();
+    unlock();
 }
+#endif
 
 template<typename State>
-inline core::Mode &
-GenericBlock<State>::owner(core::Mode &current) const
+inline core::address_space &
+GenericBlock<State>::owner() const
 {
-    core::Mode *ret;
+    return parent_.owner();
+#if 0
+    core::address_space *ret;
     ASSERTION(owners_.size() > 0);
 
     if (owners_.size() == 1) {
         ret = ownerShortcut_;
     } else {
-        ModeMap::const_iterator m;
+        AddressSpaceMap::const_iterator m;
         m = owners_.find(&current);
         if (m == owners_.end()) {
             ret = owners_.begin()->first;
@@ -105,17 +113,20 @@ GenericBlock<State>::owner(core::Mode &current) const
         }
     }
     return *ret;
+#endif
 }
 
 template<typename State>
 inline accptr_t
-GenericBlock<State>::acceleratorAddr(core::Mode &current, const hostptr_t addr) const
+GenericBlock<State>::get_device_addr(const hostptr_t addr) const
 {
+    return parent_.get_device_addr(addr);
+#if 0
     accptr_t ret = accptr_t(0);
 
-    //StateBlock<State>::lock();
+    //lock();
 
-    ModeMap::const_iterator m;
+    AddressSpaceMap::const_iterator m;
     if (owners_.size() == 1) {
         m = owners_.begin();
         ret = m->second + (addr - this->addr_);
@@ -126,15 +137,16 @@ GenericBlock<State>::acceleratorAddr(core::Mode &current, const hostptr_t addr) 
         }
     }
 
-    //StateBlock<State>::unlock();
+    //unlock();
     return ret;
+#endif
 }
 
 template<typename State>
 inline accptr_t
-GenericBlock<State>::acceleratorAddr(core::Mode &current) const
+GenericBlock<State>::get_device_addr() const
 {
-    return acceleratorAddr(current, this->addr_);
+    return get_device_addr(this->addr_);
 }
 
 template<typename State>
@@ -143,14 +155,20 @@ GenericBlock<State>::toHost(unsigned blockOff, size_t count)
 {
     gmacError_t ret = gmacSuccess;
 
+    ret = parent_.owner().copy(this->shadow_ + blockOff,
+                               get_device_addr() + blockOff,
+                               count);
+#if 0
     // Fast path
     if (owners_.size() == 1) {
-        ModeMap::const_iterator m;
-        m = owners_.begin();
-        ret = ownerShortcut_->copyToHost(this->shadow_ + blockOff, m->second + blockOff, count);
+        AddressSpaceMap::const_iterator m;
+        ret = parent_.owner().copyToHost(this->shadow_ + blockOff,
+                                         get_device_addr() + blockOff,
+                                         count);
     } else { // TODO Implement this path
         ret = gmacSuccess;
     }
+#endif
 
     return ret;
 }
@@ -161,52 +179,62 @@ GenericBlock<State>::toAccelerator(unsigned blockOff, size_t count)
 {
     gmacError_t ret = gmacSuccess;
 
+    ret = parent_.owner().copy(get_device_addr() + blockOff,
+                               shadow_ + blockOff,
+                               count);
+#if 0
     // Fast path
     if (owners_.size() == 1) {
-        ModeMap::const_iterator m;
-        m = owners_.begin();
-        ret = ownerShortcut_->copyToAccelerator(m->second + blockOff, StateBlock<State>::shadow_ + blockOff, count);
+        AddressSpaceMap::const_iterator m;
+        ret = ownerShortcut_->copyToAccelerator(m->second + blockOff, shadow_ + blockOff, count);
     } else {
         AcceleratorAddrMap::const_iterator a;
         for(a = acceleratorAddr_.begin(); a != acceleratorAddr_.end(); a++) {
-            const std::list<core::Mode *> &list = a->second;
+            const std::list<core::address_space *> &list = a->second;
             ASSERTION(list.size() > 0);
-            core::Mode *mode = list.front();
-            ret = mode->copyToAccelerator(a->first + blockOff, StateBlock<State>::shadow_ + blockOff, count);
+            core::address_space *aspace = list.front();
+            ret = this->resourceManager_.copyToAccelerator(*aspace, a->first + blockOff, shadow_ + blockOff, count);
             if(ret != gmacSuccess) break;
         }
     }
+#endif
+
     return ret;
 }
 
 template<typename State>
 inline gmacError_t
-GenericBlock<State>::copyFromBuffer(size_t blockOff, core::IOBuffer &buffer,
-                                    size_t bufferOff, size_t size, typename StateBlock<State>::Destination dst) const
+GenericBlock<State>::copyFromBuffer(size_t blockOff, core::io_buffer &buffer,
+                                    size_t bufferOff, size_t size, Destination dst) const
 {
     gmacError_t ret = gmacSuccess;
 
     switch (dst) {
-    case StateBlock<State>::HOST:
-        ::memcpy(StateBlock<State>::shadow_ + blockOff, buffer.addr() + bufferOff, size);
+    case HOST:
+        ::memcpy(shadow_ + blockOff, buffer.addr() + bufferOff, size);
         break;
 
-    case StateBlock<State>::ACCELERATOR:
+    case ACCELERATOR:
+        ret = parent_.owner().copy(get_device_addr() + ptroff_t(blockOff),
+                                   buffer, bufferOff, size);
+        break;
+#if 0
         if (owners_.size() == 1) { // Fast path
-            ModeMap::const_iterator m;
+            AddressSpaceMap::const_iterator m;
             m = owners_.begin();
             ret = ownerShortcut_->bufferToAccelerator(m->second + ptroff_t(blockOff), buffer, size, bufferOff);
         } else {
             AcceleratorAddrMap::const_iterator i;
             for(i = acceleratorAddr_.begin(); i != acceleratorAddr_.end(); i++) {
-                const std::list<core::Mode *> &list = i->second;
+                const std::list<core::address_space *> &list = i->second;
                 ASSERTION(list.size() > 0);
-                core::Mode *mode = list.front();
-                ret = mode->bufferToAccelerator(i->first + ptroff_t(blockOff), buffer, size, bufferOff);
+                core::address_space *aspace = list.front();
+                ret = aspace->bufferToAccelerator(i->first + ptroff_t(blockOff), buffer, size, bufferOff);
                 if (ret != gmacSuccess) break;
             }
         }
         break;
+#endif
     }
 
     return ret;
@@ -214,23 +242,30 @@ GenericBlock<State>::copyFromBuffer(size_t blockOff, core::IOBuffer &buffer,
 
 template<typename State>
 inline gmacError_t
-GenericBlock<State>::copyToBuffer(core::IOBuffer &buffer, size_t bufferOff,
-                                  size_t blockOff, size_t size, typename StateBlock<State>::Source src) const
+GenericBlock<State>::copyToBuffer(core::io_buffer &buffer, size_t bufferOff,
+                                  size_t blockOff, size_t size, Source src) const
 {
     gmacError_t ret = gmacSuccess;
     switch (src) {
-    case StateBlock<State>::HOST:
-        ::memcpy(buffer.addr() + bufferOff, StateBlock<State>::shadow_ + blockOff, size);
+    case HOST:
+        ::memcpy(buffer.addr() + bufferOff, shadow_ + blockOff, size);
         break;
-    case StateBlock<State>::ACCELERATOR:
+    case ACCELERATOR:
+        ret = parent_.owner().copy(buffer,
+                                   bufferOff,
+                                   get_device_addr() + ptroff_t(blockOff),
+                                   size);
+        break;
+#if 0
         if (owners_.size() == 1) { // Fast path
-            ModeMap::const_iterator m;
+            AddressSpaceMap::const_iterator m;
             m = owners_.begin();
             ret = ownerShortcut_->acceleratorToBuffer(buffer, m->second + ptroff_t(blockOff), size, bufferOff);
         } else {
             ret = gmacErrorFeatureNotSupported;
         }
         break;
+#endif
     }
 
     return ret;
@@ -238,77 +273,98 @@ GenericBlock<State>::copyToBuffer(core::IOBuffer &buffer, size_t bufferOff,
 
 template<typename State>
 gmacError_t
-GenericBlock<State>::copyFromBlock(size_t dstOff, StateBlock<State> &srcBlock,
+GenericBlock<State>::copyFromBlock(size_t dstOff, GenericBlock &srcBlock,
                                    size_t srcOff, size_t size,
-                                   typename StateBlock<State>::Destination dst,
-                                   typename StateBlock<State>::Source src) const
+                                   Destination dst,
+                                   Source src) const
 {
     gmacError_t ret = gmacSuccess;
-    if (dst == StateBlock<State>::HOST &&
-        src == StateBlock<State>::HOST) {
-        ::memcpy(this->shadow_ + dstOff, srcBlock.getShadow() + srcOff, size);
-    } else if (src == StateBlock<State>::ACCELERATOR &&
-               dst == StateBlock<State>::ACCELERATOR) {
+    if (dst == HOST &&
+        src == HOST) {
+        ::memcpy(this->shadow_ + dstOff, srcBlock.get_shadow() + srcOff, size);
+    } else if (src == ACCELERATOR &&
+               dst == ACCELERATOR) {
+        if (owner().has_direct_copy(srcBlock.owner())) {
+            ret = parent_.owner().copy(get_device_addr() + dstOff,
+                                       srcBlock.get_device_addr() + srcOff, size);
+        } else {
+            ret = parent_.owner().copy(get_device_addr() + dstOff,
+                                       srcBlock.get_shadow() + srcOff, size);
+        }
+#if 0
         AcceleratorAddrMap::const_iterator i;
         for(i = acceleratorAddr_.begin(); i != acceleratorAddr_.end(); i++) {
-            const std::list<core::Mode *> &list = i->second;
+            const std::list<core::address_space *> &list = i->second;
             ASSERTION(list.size() > 0);
-            core::Mode &mode = *list.front();
-            accptr_t srcPtr = srcBlock.acceleratorAddr(mode) + srcOff;
-            if (i->first.pasId_ != srcPtr.pasId_) {
-                ret = mode.copyToAccelerator(i->first + dstOff, srcBlock.getShadow() + srcOff, size);
+            core::address_space &aspace = *list.front();
+            accptr_t srcPtr = srcBlock.get_device_addr(aspace) + srcOff;
+            if (i->first.getPAddressSpace() != srcPtr.getPAddressSpace()) {
+                ret = this->resourceManager_.copyToAccelerator(aspace, i->first + dstOff, srcBlock.get_shadow() + srcOff, size);
             } else {
-                ret = mode.copyAccelerator(i->first + dstOff, srcPtr, size);
+                ret = this->resourceManager_.copyAccelerator(aspace, i->first + dstOff, srcPtr, size);
             }
             if(ret != gmacSuccess) return ret;
         }
-    } else if (src == StateBlock<State>::HOST &&
-               dst == StateBlock<State>::ACCELERATOR) {
+#endif
+    } else if (src == HOST &&
+               dst == ACCELERATOR) {
+        ret = parent_.owner().copy(get_device_addr() + dstOff,
+                                   srcBlock.get_shadow() + srcOff, size);
+#if 0
         AcceleratorAddrMap::const_iterator i;
         for(i = acceleratorAddr_.begin(); i != acceleratorAddr_.end(); i++) {
-            const std::list<core::Mode *> &list = i->second;
+            const std::list<core::address_space *> &list = i->second;
             ASSERTION(list.size() > 0);
-            core::Mode *mode = list.front();
-            ret = mode->copyToAccelerator(i->first + dstOff, srcBlock.getShadow() + srcOff, size);
+            core::address_space *aspace = list.front();
+            ret = this->resourceManager_.copyToAccelerator(*aspace, i->first + dstOff, srcBlock.get_shadow() + srcOff, size);
             if(ret != gmacSuccess) return ret;
         }
-    } else if (src == StateBlock<State>::ACCELERATOR &&
-               dst == StateBlock<State>::HOST) {
+#endif
+    } else if (src == ACCELERATOR &&
+               dst == HOST) {
+        ret = srcBlock.owner().copy(this->shadow_ + dstOff,
+                                    srcBlock.get_device_addr() + srcOff, size);
+#if 0
         if (owners_.size() == 1) { // Fast path
-            ModeMap::const_iterator m;
+            AddressSpaceMap::const_iterator m;
             m = owners_.begin();
-            ret = srcBlock.owner(*ownerShortcut_).copyToHost(this->shadow_ + dstOff, srcBlock.acceleratorAddr(*ownerShortcut_) + srcOff, size);
+            ret = srcBlock.owner(*ownerShortcut_).copyToHost(this->shadow_ + dstOff, srcBlock.get_device_addr(*ownerShortcut_) + srcOff, size);
         } else {
             ret = gmacErrorFeatureNotSupported;
         }
+#endif
     }
 
     return ret;
 
 }
 
-template<typename State>
+template <typename State>
 gmacError_t
-GenericBlock<State>::memset(int v, size_t size, size_t blockOffset, typename StateBlock<State>::Destination dst) const
+GenericBlock<State>::memset(int v, size_t size, size_t blockOffset, Destination dst) const
 {
     gmacError_t ret = gmacSuccess;
-    if (dst == StateBlock<State>::HOST) {
-        ::memset(StateBlock<State>::shadow_ + blockOffset, v, size);
+    if (dst == HOST) {
+        ::memset(shadow_ + blockOffset, v, size);
     } else  {
+        ret = parent_.owner().memset(get_device_addr() + ptroff_t(blockOffset),
+                                     v, size);
+#if 0
         if (owners_.size() == 1) { // Fast path
-            ModeMap::const_iterator m;
+            AddressSpaceMap::const_iterator m;
             m = owners_.begin();
             ret = ownerShortcut_->memset(m->second + ptroff_t(blockOffset), v, size);
         } else {
             AcceleratorAddrMap::const_iterator i;
             for(i = acceleratorAddr_.begin(); i != acceleratorAddr_.end(); i++) {
-                const std::list<core::Mode *> &list = i->second;
+                const std::list<core::address_space *> &list = i->second;
                 ASSERTION(list.size() > 0);
-                core::Mode *mode = list.front();
-                ret = mode->memset(i->first + ptroff_t(blockOffset), v, size);
+                core::address_space *aspace = list.front();
+                ret = this->resourceManager_.memset(*aspace, i->first + ptroff_t(blockOffset), v, size);
                 if(ret != gmacSuccess) break;
             }
         }
+#endif
     }
     return ret;
 }

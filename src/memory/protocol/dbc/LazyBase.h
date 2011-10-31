@@ -49,10 +49,10 @@ protected:
 
     typedef __impl::memory::protocol::LazyBase Parent;
     typedef __impl::memory::Block BlockImpl;
-    typedef __impl::memory::Object ObjectImpl;
+    typedef __impl::memory::object ObjectImpl;
     typedef __impl::memory::protocol::lazy::State StateImpl;
     typedef __impl::memory::protocol::lazy::Block LazyBlockImpl;
-    typedef __impl::core::IOBuffer IOBufferImpl;
+    typedef __impl::core::io_buffer io_buffer_impl;
 
 public:
     gmacError_t signalRead(BlockImpl &block, hostptr_t addr);
@@ -65,10 +65,10 @@ public:
 
     gmacError_t toHost(BlockImpl &block);
 
-    gmacError_t copyToBuffer(BlockImpl &block, IOBufferImpl &buffer, size_t size,
+    gmacError_t copyToBuffer(BlockImpl &block, io_buffer_impl &buffer, size_t size,
                              size_t bufferOffset, size_t blockOffset);
 
-    gmacError_t copyFromBuffer(BlockImpl &block, IOBufferImpl &buffer, size_t size,
+    gmacError_t copyFromBuffer(BlockImpl &block, io_buffer_impl &buffer, size_t size,
                                size_t bufferOffset, size_t blockOffset);
 
     gmacError_t memset(const BlockImpl &block, int v, size_t size, size_t blockOffset);

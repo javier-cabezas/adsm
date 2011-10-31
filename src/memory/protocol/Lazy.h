@@ -54,8 +54,7 @@ public:
     virtual ~Lazy();
 
     // Protocol Interface
-    memory::Object *createObject(core::Mode &current, size_t size, hostptr_t cpuPtr,
-                                 GmacProtection prot, unsigned flags);
+    memory::object *createObject(size_t size, hostptr_t cpuPtr, GmacProtection prot, unsigned flags);
 };
 
 }}}

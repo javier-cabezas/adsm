@@ -66,14 +66,14 @@ TEST_F(SlabTest, SmallObject)
     const unsigned numObjects = 128 * 1024;
     std::set<hostptr_t> allocations;
     for(unsigned n = 0; n < numObjects; n++) {
-        hostptr_t ptr = slab->alloc(Thread::getCurrentMode(), objectSize, hostptr_t(0x1000));
+        hostptr_t ptr = slab->alloc(Thread::getCurrentVirtualDevice(), objectSize, hostptr_t(0x1000));
         if(ptr == NULL) break;
         ASSERT_EQ(true, allocations.insert(ptr).second);
     }
 
     std::set<hostptr_t>::const_iterator i;
     for(i = allocations.begin(); i != allocations.end(); i++) {
-        ASSERT_EQ(true, slab->free(Thread::getCurrentMode(), *i));
+        ASSERT_EQ(true, slab->free(Thread::getCurrentVirtualDevice(), *i));
     }
 
     allocations.clear();
@@ -92,7 +92,7 @@ TEST_F(SlabTest, MultiSizeObject)
     std::set<hostptr_t> allocations;
     for(unsigned n = 0; n < numObjects; n++) {
         for(size_t size = minObjectSize; size < maxObjectSize; size *= 2) {
-            hostptr_t ptr = slab->alloc(Thread::getCurrentMode(), size, hostptr_t(0x1000));
+            hostptr_t ptr = slab->alloc(Thread::getCurrentVirtualDevice(), size, hostptr_t(0x1000));
             if(ptr == NULL) break;
             ASSERT_EQ(true, allocations.insert(ptr).second);
         }
@@ -100,7 +100,7 @@ TEST_F(SlabTest, MultiSizeObject)
     
     std::set<hostptr_t>::const_iterator i;
     for(i = allocations.begin(); i != allocations.end(); i++) {
-        ASSERT_EQ(true, slab->free(Thread::getCurrentMode(), *i));
+        ASSERT_EQ(true, slab->free(Thread::getCurrentVirtualDevice(), *i));
     }
 
     allocations.clear();
@@ -118,7 +118,7 @@ TEST_F(SlabTest, MultiKeyObject)
     const unsigned numObjects = 4 * 1020;
     std::set<hostptr_t> allocations;
     for(unsigned n = 0; n < numObjects; n++) {
-        hostptr_t ptr = slab->alloc(Thread::getCurrentMode(), objectSize, hostptr_t((n + 1) * 0x1000L));
+        hostptr_t ptr = slab->alloc(Thread::getCurrentVirtualDevice(), objectSize, hostptr_t((n + 1) * 0x1000L));
         if(ptr == NULL) break;
         ASSERT_EQ(true, allocations.insert(ptr).second);
     }
@@ -126,7 +126,7 @@ TEST_F(SlabTest, MultiKeyObject)
 
     std::set<hostptr_t>::const_iterator i;
     for(i = allocations.begin(); i != allocations.end(); i++) {
-        ASSERT_EQ(true, slab->free(Thread::getCurrentMode(), *i));
+        ASSERT_EQ(true, slab->free(Thread::getCurrentVirtualDevice(), *i));
     }
 
     allocations.clear();
@@ -147,7 +147,7 @@ TEST_F(SlabTest, MultiSizeKeyObject)
     for(unsigned n = 0; n < numObjects; n++) {
         for(size_t size = minObjectSize; size < maxObjectSize; size *= 2) {
             hostptr_t key = hostptr_t(((n & (keys - 1)) + 1) * 0x1000L);
-            hostptr_t ptr = slab->alloc(Thread::getCurrentMode(), size, key);
+            hostptr_t ptr = slab->alloc(Thread::getCurrentVirtualDevice(), size, key);
             if(ptr == NULL) break;
             ASSERT_EQ(true, allocations.insert(ptr).second);
         }
@@ -155,7 +155,7 @@ TEST_F(SlabTest, MultiSizeKeyObject)
     
     std::set<hostptr_t>::const_iterator i;
     for(i = allocations.begin(); i != allocations.end(); i++) {
-        ASSERT_EQ(true, slab->free(Thread::getCurrentMode(), *i));
+        ASSERT_EQ(true, slab->free(Thread::getCurrentVirtualDevice(), *i));
     }
 
     allocations.clear();

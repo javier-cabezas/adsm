@@ -15,26 +15,19 @@ inline Lazy<T>::~Lazy()
 {}
 
 template<typename T>
-memory::Object *
-Lazy<T>::createObject(core::Mode &current, size_t size, hostptr_t cpuPtr,
+memory::object *
+Lazy<T>::createObject(size_t size, hostptr_t cpuPtr,
                       GmacProtection prot, unsigned flags)
 {
     gmacError_t err;
-    Object *ret = new T(*this, current, cpuPtr,
-                        size, LazyBase::state(prot), err);
+    object *ret = new T(*this, cpuPtr, size, LazyBase::state(prot), err);
     if(ret == NULL) return ret;
     if(err != gmacSuccess) {
         ret->decRef();
         return NULL;
     }
     Memory::protect(ret->addr(), ret->size(), prot);
-    if (limit_ != size_t(-1)) {
-#if 0
-        lock();
-        LazyBase::limit_ += 2;
-        unlock();
-#endif
-    }
+
     return ret;
 }
 

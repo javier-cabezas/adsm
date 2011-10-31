@@ -45,8 +45,10 @@ class GMAC_LOCAL Accelerator :
 public: 
     Accelerator(int n);
     virtual ~Accelerator();
+#if 0
     void registerMode(__impl::core::hpe::Mode&  mode);
     void unregisterMode(__impl::core::hpe::Mode& mode);
+#endif
 };
 
 }}}
