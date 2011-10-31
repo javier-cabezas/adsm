@@ -124,10 +124,9 @@ protected:
     //! Default constructor
     /*!
         \param proc Process where the mode is attached
-        \param acc Virtual CUDA accelerator where the mode is executed
         \param aSpace Address space in which the mode will run
     */
-    Mode(core::hpe::Process &proc, Accelerator &acc, core::hpe::AddressSpace &aSpace);
+    Mode(core::hpe::Process &proc, core::hpe::AddressSpace &aSpace);
 
     //! Default destructor
     virtual ~Mode();
@@ -177,7 +176,7 @@ public:
     Accelerator &getAccelerator() const;
 
     gmacError_t waitForEvent(CUevent event, bool fromCUDA);
-    gmacError_t eventTime(uint64_t &t, CUevent start, CUevent end);
+    gmacError_t eventTime(hal::time_t &t, hal::event_t &event);
 };
 
 }}}

@@ -3,8 +3,8 @@
 
 namespace __dbc { namespace opencl { namespace hpe {
 
-Mode::Mode(__impl::core::hpe::Process &proc, __impl::opencl::hpe::Accelerator &acc, __impl::core::hpe::AddressSpace &aSpace) :
-    __impl::opencl::hpe::Mode(proc, acc, aSpace)
+Mode::Mode(__impl::core::hpe::Process &proc, __impl::core::hpe::AddressSpace &aSpace) :
+    __impl::opencl::hpe::Mode(proc, aSpace)
 {
 }
 
@@ -16,7 +16,7 @@ gmacError_t
 Mode::bufferToAccelerator(accptr_t dst, __impl::core::IOBuffer &buffer, size_t size, size_t off)
 {
     REQUIRES(buffer.size() - off >= size);
-    REQUIRES(dst != 0);
+    REQUIRES(dst != accptr_t(0));
     REQUIRES(buffer.state() == __impl::core::IOBuffer::Idle);
 
     gmacError_t ret = __impl::opencl::hpe::Mode::bufferToAccelerator(dst, buffer, size, off);
@@ -28,7 +28,7 @@ gmacError_t
 Mode::acceleratorToBuffer(__impl::core::IOBuffer &buffer, const accptr_t src, size_t size, size_t off)
 {
     REQUIRES(buffer.size() - off >= size);
-    REQUIRES(src != 0);
+    REQUIRES(src != accptr_t(0));
     REQUIRES(buffer.state() == __impl::core::IOBuffer::Idle);
 
     gmacError_t ret = __impl::opencl::hpe::Mode::acceleratorToBuffer(buffer, src, size, off);

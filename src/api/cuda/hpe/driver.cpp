@@ -30,7 +30,7 @@ using __impl::cuda::hpe::VariableDescriptor;
 
 static inline Mode &getCurrentCUDAMode()
 {
-    return dynamic_cast<Mode &>(__impl::core::hpe::Thread::getCurrentMode());
+    return dynamic_cast<Mode &>(__impl::core::hpe::Thread::getCurrentVirtualDevice());
 }
 
 

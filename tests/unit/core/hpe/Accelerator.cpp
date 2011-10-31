@@ -50,8 +50,8 @@ TEST_F(AcceleratorTest, Memory) {
         Accelerator &acc = Process_->getAccelerator(n);
         ASSERT_TRUE(acc.map(device, hostptr_t(buffer), Size_ * sizeof(int)) == gmacSuccess);
         ASSERT_TRUE(device != 0);
-        ASSERT_TRUE(acc.copyToAccelerator(device, hostptr_t(buffer), Size_ * sizeof(int), Thread::getCurrentMode()) == gmacSuccess);
-        ASSERT_TRUE(acc.copyToHost(hostptr_t(canary), device, Size_ * sizeof(int), Thread::getCurrentMode()) == gmacSuccess);
+        ASSERT_TRUE(acc.copyToAccelerator(device, hostptr_t(buffer), Size_ * sizeof(int), Thread::getCurrentVirtualDevice()) == gmacSuccess);
+        ASSERT_TRUE(acc.copyToHost(hostptr_t(canary), device, Size_ * sizeof(int), Thread::getCurrentVirtualDevice()) == gmacSuccess);
         ASSERT_TRUE(memcmp(buffer, canary, Size_ * sizeof(int)) == 0);  //compare mem size
         ASSERT_TRUE(acc.unmap(hostptr_t(buffer), Size_ * sizeof(int)) == gmacSuccess);
     }
@@ -81,15 +81,11 @@ TEST_F(AcceleratorTest, CreateMode) {
     std::vector<AddressSpace *> aSpaces;
     for(unsigned i = 0; i < n; i++) {
         Accelerator &acc = Process_->getAccelerator(i);
-        unsigned load = acc.load();
-        AddressSpace *aSpace = new AddressSpace("TestASpace", *Process_);
+        AddressSpace *aSpace = new AddressSpace("TestASpace", *Process_, acc);
         aSpaces.push_back(aSpace);
         Mode *mode = acc.createMode(*Process_, *aSpace);
         ASSERT_TRUE(mode != NULL);
-        ASSERT_TRUE(acc.load() == load + 1);
-
         mode->decRef();
-        ASSERT_TRUE(acc.load() == load);
     }
 
     for(unsigned i = 0; i < n; i++) {

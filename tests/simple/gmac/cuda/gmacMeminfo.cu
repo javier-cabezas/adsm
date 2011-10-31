@@ -27,6 +27,7 @@ int main(int argc, char *argv[])
         fprintf(stdout, "Free memory: %zd\n", freeMem);
     }
 
+#if 0
     gmacMigrate(1);
 
     ret = gmacGetFreeMemory(gmacGetCurrentAcceleratorId(), &freeMem);
@@ -46,6 +47,7 @@ int main(int argc, char *argv[])
         assert(ret == gmacSuccess);
         fprintf(stdout, "Free memory: %zd\n", freeMem);
     }
+#endif
 
     return 0;
 }

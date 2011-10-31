@@ -40,7 +40,7 @@ WITH THE SOFTWARE.  */
 
 namespace __impl {
 
-namespace core { class Process; }
+namespace core { class process; }
 
 namespace memory {
 
@@ -99,7 +99,7 @@ public:
         if(Exit_ != NULL) Exit_();
     }
 
-    static void setProcess(core::Process &proc);
+    static void setProcess(core::process &proc);
 
     static void setManager(Manager &manager);
 };

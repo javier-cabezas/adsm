@@ -7,8 +7,8 @@
 
 namespace __impl { namespace cuda { namespace hpe {
 
-Mode::Mode(core::hpe::Process &proc, Accelerator &acc, core::hpe::AddressSpace &aSpace) :
-    gmac::core::hpe::Mode(proc, acc, aSpace)
+Mode::Mode(core::hpe::Process &proc, core::hpe::AddressSpace &aSpace) :
+    gmac::core::hpe::Mode(proc, aSpace)
 #ifdef USE_VM
     //, bitmap_(*this)
 #endif
@@ -39,9 +39,9 @@ Mode::Mode(core::hpe::Process &proc, Accelerator &acc, core::hpe::AddressSpace &
     if(ret == gmacSuccess)
         ioMemoryWrite_ = new gmac::util::allocator::Buddy(addr, util::params::ParamIOMemory/2);
 
-    streamLaunch_        = getAccelerator().createCUstream();
-    streamToAccelerator_ = getAccelerator().createCUstream();
-    streamToHost_        = getAccelerator().createCUstream();
+    streamLaunch_        = getAccelerator().create_stream();
+    streamToAccelerator_ = getAccelerator().create_stream();
+    streamToHost_        = getAccelerator().create_stream();
 
     switchOut();
 }

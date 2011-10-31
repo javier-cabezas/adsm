@@ -1,7 +1,7 @@
 #ifndef GMAC_MEMORY_BLOCK_IMPL_H_
 #define GMAC_MEMORY_BLOCK_IMPL_H_
 
-#include "memory/Memory.h"
+#include "Memory.h"
 #ifdef USE_VM
 #include "vm/Bitmap.h"
 #include "core/Mode.h"
@@ -9,9 +9,8 @@
 
 namespace __impl { namespace memory {
 
-
-
-inline Block::Block(Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t size) :
+inline
+Block::Block(Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t size) :
     gmac::util::Lock("Block"),
     util::Reference("Block"),
     protocol_(protocol),
@@ -79,7 +78,7 @@ inline gmacError_t Block::copyOp(Protocol::CopyOp op, Block &dst, size_t dstOff,
 }
 
 inline gmacError_t Block::memoryOp(Protocol::MemoryOp op,
-                                   core::IOBuffer &buffer, size_t size, size_t bufferOffset, size_t blockOffset)
+                                   core::io_buffer &buffer, size_t size, size_t bufferOffset, size_t blockOffset)
 {
     lock();
     gmacError_t ret =(protocol_.*op)(*this, buffer, size, bufferOffset, blockOffset);
@@ -101,12 +100,20 @@ Protocol &Block::getProtocol()
     return protocol_;
 }
 
-inline gmacError_t Block::dump(std::ostream &param, protocol::common::Statistic stat)
+inline gmacError_t
+Block::dump(std::ostream &param, protocol::common::Statistic stat)
 {
     lock();
     gmacError_t ret = protocol_.dump(*this, param, stat);
     unlock();
     return ret;
+}
+
+inline
+hostptr_t
+Block::get_shadow() const
+{
+    return shadow_;
 }
 
 }}

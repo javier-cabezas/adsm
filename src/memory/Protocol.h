@@ -45,14 +45,13 @@ WITH THE SOFTWARE.  */
 namespace __impl {
 
 namespace core {
-class IOBuffer;
-class Mode;
+class io_buffer;
 }
 
 namespace memory {
 
 class Block;
-class Object;
+class object;
 
 /**
  * Base class that defines the operations to be implemented by any protocol
@@ -64,7 +63,6 @@ public:
 
     /** Creates a new object that will be manged by this protocol
      *
-     * \param current Execution mode requesting the operation
      * \param size Size (in bytes) of the new object
      * \param cpuPtr Host address where the object will be create. NULL to let
      * the protocol choose
@@ -73,7 +71,7 @@ public:
      * \param flags Protocool specific flags
      * \return Pointer to the created object
      */
-    virtual Object *createObject(core::Mode &current, size_t size, hostptr_t cpuPtr,
+    virtual object *createObject(size_t size, hostptr_t cpuPtr,
                                  GmacProtection prot, unsigned flags) = 0;
 
     /**
@@ -81,7 +79,7 @@ public:
      *
      * \param obj Object to be deleted
      */
-    virtual void deleteObject(Object &obj) = 0;
+    virtual void deleteObject(object &obj) = 0;
 
     /**
      * Checks if a memory block has an updated copy of the data in the
@@ -137,7 +135,7 @@ public:
     virtual gmacError_t releaseAll() = 0;
     virtual gmacError_t releasedAll() = 0;
 
-    //virtual gmacError_t releaseObjects(const std::list<Object *> &objects) = 0;
+    //virtual gmacError_t releaseObjects(const std::list<object *> &objects) = 0;
 
     /**
      * Releases the CPU ownership of a memory block belonging to this protocol
@@ -224,7 +222,7 @@ public:
      * \warning This method assumes that the block is not modified during its
      * execution
      */
-    virtual gmacError_t copyToBuffer(Block &block, core::IOBuffer &buffer, size_t size,
+    virtual gmacError_t copyToBuffer(Block &block, core::io_buffer &buffer, size_t size,
                                      size_t bufferOffset, size_t blockOffset) = 0;
 
     /**
@@ -241,7 +239,7 @@ public:
      * \warning This method assumes that the block is not modified during its
      * execution
      */
-    virtual gmacError_t copyFromBuffer(Block &block, core::IOBuffer &buffer, size_t size,
+    virtual gmacError_t copyFromBuffer(Block &block, core::io_buffer &buffer, size_t size,
                                        size_t bufferOffset, size_t blockOffset) = 0;
 
     /**
@@ -278,10 +276,10 @@ public:
 
     typedef gmacError_t (Protocol::*CoherenceOp)(Block &);
     typedef gmacError_t (Protocol::*CopyOp)(Block &, size_t, Block &, size_t, size_t);
-    typedef gmacError_t (Protocol::*MemoryOp)(Block &, core::IOBuffer &, size_t, size_t, size_t);
+    typedef gmacError_t (Protocol::*MemoryOp)(Block &, core::io_buffer &, size_t, size_t, size_t);
 };
 
-typedef std::list<Object *> ListObject;
+typedef std::list<object *> ListObject;
 extern ListObject AllObjects;
 
 }}

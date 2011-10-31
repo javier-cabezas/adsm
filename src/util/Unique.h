@@ -38,31 +38,31 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace util {
 
-template <typename T>
-class Unique {
+template <typename T, typename R = unsigned>
+class unique {
     static Atomic Count_;
 
 private:
-    unsigned id_;
+    R id_;
 
 public:
-    Unique();
+    unique();
 
-    unsigned getId() const;
+    R get_id() const;
 };
 
-template <typename T>
+template <typename T, typename R = unsigned>
 class UniqueDebug {
 #ifdef DEBUG
     static Atomic Count_;
 
 private:
-    unsigned id_;
+    R id_;
 
 public:
     UniqueDebug();
 
-    unsigned getDebugId() const;
+    R getDebugId() const;
 #endif
 };
 

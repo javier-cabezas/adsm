@@ -82,7 +82,7 @@ public:
 
     void started(size_t size);
 
-    gmacError_t wait(bool internal = false);
+    gmacError_t wait();
 };
 
 }}

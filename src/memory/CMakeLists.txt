@@ -20,16 +20,14 @@ set(memory_SRC
     Manager-impl.h
     Manager.cpp
     Memory.h
-    Object.h
-    Object-impl.h
-    Object.cpp
-    ObjectMap.h
-    ObjectMap-impl.h
-    ObjectMap.cpp
+    object.h
+    object-impl.h
+    object.cpp
+    map_object.h
+    map_object-impl.h
+    map_object.cpp
     Protocol.h
     Protocol.cpp
-    StateBlock.h
-    StateBlock-impl.h
     memory.cpp
     allocator/Cache.h
     allocator/Cache-impl.h
@@ -61,12 +59,13 @@ set(memory_DBC
     dbc/Block.cpp
     dbc/Manager.h
     dbc/Manager.cpp
-    dbc/Object.h
-    dbc/Object.cpp
     protocol/dbc/Lazy.h
     protocol/dbc/Lazy-impl.h
     protocol/dbc/LazyBase.h
     protocol/dbc/Lazy.cpp
 )
+
+# dbc/object.h
+# dbc/object.cpp
 
 add_gmac_sources(gmac-memory ${memory_SRC} ${memory_DBC})

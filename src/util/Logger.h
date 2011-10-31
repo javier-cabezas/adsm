@@ -79,26 +79,26 @@ extern __thread char nameBuffer[1024];
 std::string
 get_class_name(const char *mangled);
 
-#define get_name(n) get_class_name(n).c_str()
+#define get_name_logger(n) get_class_name(n).c_str()
 #else
-#define get_name(n) n
+#define get_name_logger(n) n
 #endif
 
-#define LOCAL get_name(typeid(*this).name())
+#define LOCAL get_name_logger(typeid(*this).name())
 
 #if defined(DEBUG)
 #   if defined(__GNUC__)
 #	    define TRACE(name, fmt, ...) __impl::util::Logger::__Trace(name, \
                                                                    __PRETTY_FUNCTION__, \
                                                                    __extract_file_name(__FILE__), __LINE__, \
-                                                                   __impl::util::params::ParamDebugUseRealTID? __impl::util::GetThreadId(): __impl::core::Thread::getDebugTID(), \
+                                                                   __impl::util::params::ParamDebugUseRealTID? __impl::util::GetThreadId(): __impl::core::thread::get_debug_tid(), \
                                                                    fmt, \
                                                                    ##__VA_ARGS__)
 #   elif defined(_MSC_VER)
 #	    define TRACE(name, fmt, ...) __impl::util::Logger::__Trace(name, \
                                                                    __FUNCTION__, \
                                                                    __extract_file_name(__FILE__), __LINE__, \
-                                                                   __impl::util::params::ParamDebugUseRealTID? __impl::util::GetThreadId(): __impl::core::Thread::getDebugTID(), \
+                                                                   __impl::util::params::ParamDebugUseRealTID? __impl::util::GetThreadId(): __impl::core::thread::get_debug_tid(), \
                                                                    fmt, \
                                                                    ##__VA_ARGS__)
 #   endif
@@ -204,7 +204,7 @@ public:
 }}
 
 // Needs to be here
-#include "core/Thread.h"
+#include "core/thread.h"
 
 #include "Logger-impl.h"
 

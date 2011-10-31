@@ -12,7 +12,7 @@
 
 static inline __impl::opencl::hpe::Mode &getCurrentCLMode()
 {
-    return dynamic_cast<__impl::opencl::hpe::Mode &>(__impl::core::hpe::Thread::getCurrentMode());
+    return dynamic_cast<__impl::opencl::hpe::Mode &>(__impl::core::hpe::Thread::getCurrentVirtualDevice());
 }
 
 

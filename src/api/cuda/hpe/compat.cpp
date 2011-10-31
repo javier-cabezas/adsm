@@ -23,7 +23,7 @@ using __impl::cuda::hpe::Variable;
 static inline
 __impl::cuda::hpe::Mode &getCurrentCUDAMode()
 {
-    return dynamic_cast<__impl::cuda::hpe::Mode &>(__impl::core::hpe::Thread::getCurrentMode());
+    return dynamic_cast<__impl::cuda::hpe::Mode &>(__impl::core::hpe::Thread::getCurrentVirtualDevice());
 }
 
 static inline
@@ -491,7 +491,7 @@ GMAC_API cudaError_t APICALL cudaMemcpy2DToArray(struct cudaArray *dst, size_t w
 #endif
     }
     else {
-        long_t dummy = proc.translate(hostptr_t(src));
+        long_t dummy = proc.translate(hostptr_t(src)).get();
 #if CUDA_VERSION >= 3020
         __cudaInternalMemcpy2D((CUarray)dst, wOffset, hOffset, (CUdeviceptr)(dummy), spitch, width, height);
 #else

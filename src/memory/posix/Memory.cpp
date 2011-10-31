@@ -1,6 +1,6 @@
 #include "memory/Memory.h"
 #include "memory/posix/FileMap.h"
-#include "core/Mode.h"
+#include "core/address_space.h"
 
 #include <stdio.h>
 #include <fcntl.h>

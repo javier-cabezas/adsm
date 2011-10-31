@@ -113,6 +113,31 @@ typedef enum {
     GMAC_ACCELERATOR_TYPE_ACCELERATOR = 0x4
 } GmacAcceleratorType;
 
+// TODO: only for testing purposes
+#if 0
+typedef unsigned GmacAddressSpaceId;
+typedef unsigned GmacVirtualDeviceId;
+#else
+typedef struct _GmacAddressSpaceId {
+    unsigned val;
+#ifdef __cplusplus
+    _GmacAddressSpaceId() : val(unsigned(-1)) {}
+    _GmacAddressSpaceId(unsigned v) : val(v) {}
+#endif
+} GmacAddressSpaceId;
+
+#define FMT_ASPACE "%u"
+
+typedef struct _GmacVirtualDeviceId {
+    unsigned val;
+#ifdef __cplusplus
+    _GmacVirtualDeviceId() : val(unsigned(-1)) {}
+    _GmacVirtualDeviceId(unsigned v) : val(v) {}
+#endif
+} GmacVirtualDeviceId;
+
+#endif
+
 typedef struct {
     const char *acceleratorName;
     const char *vendorName;
@@ -134,4 +159,44 @@ typedef struct {
 };
 #endif
 
-#endif /* GMAC_ERROR_H */
+#ifdef __cplusplus
+static inline
+bool operator==(const GmacAddressSpaceId &id1, const GmacAddressSpaceId &id2)
+{
+    return id1.val == id2.val;
+}
+
+static inline
+bool operator!=(const GmacAddressSpaceId &id1, const GmacAddressSpaceId &id2)
+{
+    return id1.val != id2.val;
+}
+
+static inline
+bool operator<(const GmacAddressSpaceId &id1, const GmacAddressSpaceId &id2)
+{
+    return id1.val < id2.val;
+}
+
+static inline
+bool operator==(const GmacVirtualDeviceId &id1, const GmacVirtualDeviceId &id2)
+{
+    return id1.val == id2.val;
+}
+
+static inline
+bool operator<(const GmacVirtualDeviceId &id1, const GmacVirtualDeviceId &id2)
+{
+    return id1.val < id2.val;
+}
+
+struct aspace_less {
+    bool operator()(const GmacAddressSpaceId &id1, const GmacAddressSpaceId &id2) const
+    {  
+        return id1.val < id2.val;
+    }
+};
+
+#endif
+
+#endif /* GMAC_INCLUDE_TYPES_H_ */

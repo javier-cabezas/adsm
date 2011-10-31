@@ -20,99 +20,25 @@ Accelerator::device() const
 inline
 int Accelerator::major() const
 {
-    return major_;
+    return dev_->get_major();
 }
 
 inline
 int Accelerator::minor() const
 {
-    return minor_;
+    return dev_->get_minor();
 }
 
-
+#if 0
 inline
-CUresult Accelerator::queryCUstream(CUstream stream)
-{
-    pushContext();
-    CUresult ret = cuStreamQuery(stream);
-    popContext();
-    return ret;
-}
-
-inline
-gmacError_t Accelerator::syncStream(CUstream stream)
-{
-    trace::EnterCurrentFunction();
-    pushContext();
-    CUresult ret = cuStreamSynchronize(stream);
-    popContext();
-    trace::ExitCurrentFunction();
-    return error(ret);
-}
-
-inline
-CUresult Accelerator::queryCUevent(CUevent event)
-{
-    pushContext();
-    CUresult ret = cuEventQuery(event);
-    popContext();
-    return ret;
-}
-
-inline
-gmacError_t Accelerator::syncCUevent(CUevent event)
-{
-    trace::EnterCurrentFunction();
-    pushContext();
-    CUresult ret = cuEventSynchronize(event);
-    popContext();
-    trace::ExitCurrentFunction();
-    return error(ret);
-}
-
-inline
-gmacError_t Accelerator::timeCUevents(uint64_t &t, CUevent start, CUevent end)
-{
-    float delta = 0.0;
-    pushContext();
-    CUresult ret = cuEventElapsedTime(&delta, start, end);
-    popContext();
-    t = uint64_t(1000.0 * delta);
-    return error(ret);
-}
-
-inline
-void Accelerator::pushContext() const
+void Accelerator::setContext(aspace_t &aspace) const
 {
     CUresult ret;
-#ifdef USE_MULTI_CONTEXT
-#if 0
-    std::list<CUcontext> *contexts = reinterpret_cast<std::list<CUcontext> *>(Ctx_.get());
-    ASSERTION(contexts->size() > 0);
-#endif
-    CUcontext *ctx = reinterpret_cast<CUcontext *>(Ctx_.get());
-    ASSERTION(ctx != NULL);
-    mutex_.lock();
-    ret = cuCtxPushCurrent(*ctx);
-#else
-    ret = cuCtxSetCurrent(ctx_);
-#endif
+    ret = cuCtxSetCurrent(aspace());
     CFATAL(ret == CUDA_SUCCESS, "Error pushing CUcontext: %d", ret);
 }
-
-inline
-void Accelerator::popContext() const
-{
-#if 0
-    CUresult ret;
-    CUcontext tmp;
-    ret = cuCtxCurrent(&tmp);
-    mutex_.unlock();
-    CFATAL(ret == CUDA_SUCCESS, "Error poping CUcontext: %d", ret);
 #endif
-}
 
-#ifndef USE_MULTI_CONTEXT
 #ifdef USE_VM
 inline
 cuda::hpe::Mode *
@@ -127,25 +53,6 @@ Accelerator::setLastMode(cuda::hpe::Mode &mode)
 {
     lastMode_ = &mode;
 }
-#endif
-#endif
-
-
-
-#ifdef USE_MULTI_CONTEXT
-inline void
-Accelerator::setCUcontext(CUcontext *ctx)
-{
-    Ctx_.set(ctx);
-}
-
-#else
-inline const CUcontext
-Accelerator::getCUcontext() const
-{
-    return ctx_;
-}
-
 #endif
 
 }}}

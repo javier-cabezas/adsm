@@ -5,33 +5,28 @@
 
 namespace __impl { namespace cuda { namespace hpe {
 
-#ifdef USE_MULTI_CONTEXT
-util::Private<CUcontext> Accelerator::Ctx_;
-#endif
-
 void
 Switch::in(Mode &mode)
 {
-    mode.getAccelerator().pushContext();
+    //mode.getAccelerator().pushContext();
 }
 
 void
 Switch::out(Mode &mode)
 {
-    mode.getAccelerator().popContext();
+    //mode.getAccelerator().popContext();
 }
 
-Accelerator::Accelerator(int n, CUdevice device) :
-    gmac::core::hpe::Accelerator(n), device_(device),
+Accelerator::Accelerator(int n, CUdevice device, hal::coherence_domain &coherenceDomain) :
+    gmac::core::hpe::Accelerator(n),
+    device_(device),
     isInfoInitialized_(false)
-#ifndef USE_MULTI_CONTEXT
 #ifdef USE_VM
     , lastMode_(NULL)
 #endif
-    , ctx_(NULL)
-#endif
-
 {
+    dev_ = new hal::device(device, coherenceDomain);
+    //ctx_ = dev_->create_address_space(),
 #if CUDA_VERSION > 3010
     size_t size = 0;
 #else
@@ -39,8 +34,6 @@ Accelerator::Accelerator(int n, CUdevice device) :
 #endif
     TRACE(GLOBAL, "Creating CUDA accelerator %d", device_);
     CUresult ret = cuDeviceTotalMem(&size, device_);
-    CFATAL(ret == CUDA_SUCCESS, "Unable to initialize CUDA device %d", ret);
-    ret = cuDeviceComputeCapability(&major_, &minor_, device_);
     CFATAL(ret == CUDA_SUCCESS, "Unable to initialize CUDA device %d", ret);
 
     int val;
@@ -53,31 +46,19 @@ Accelerator::Accelerator(int n, CUdevice device) :
     CFATAL(ret == CUDA_SUCCESS, "Unable to get attribute %d", ret);
     busAccId_ = val;
 #endif
-    ret = cuDeviceGetAttribute(&val, CU_DEVICE_ATTRIBUTE_INTEGRATED, n);
-    CFATAL(ret == CUDA_SUCCESS, "Unable to get attribute %d", ret);
-    integrated_ = (val != 0);
 
-#ifndef USE_MULTI_CONTEXT
     unsigned int flags = 0;
 #if CUDA_VERSION >= 2020
-    if(major_ >= 2 || (major_ == 1 && minor_ >= 1)) flags |= CU_CTX_MAP_HOST;
+    if(dev_->get_major() >= 2 || (dev_->get_major() == 1 && dev_->get_minor() >= 1)) flags |= CU_CTX_MAP_HOST;
 #else
     TRACE(LOCAL,"Host mapped memory not supported by the HW");
 #endif
-
-    ret = cuCtxCreate(&ctx_, flags, device_);
-    CFATAL(ret == CUDA_SUCCESS, "Unable to create CUDA context %d", ret);
 
 #if defined(USE_TRACE)
     ret = cuEventCreate(&start_, CU_EVENT_DEFAULT);
     CFATAL(ret == CUDA_SUCCESS);
     ret = cuEventCreate(&end_, CU_EVENT_DEFAULT);
     CFATAL(ret == CUDA_SUCCESS);
-#endif
-
-    ret = cuCtxSetCurrent(NULL);
-    CFATAL(ret == CUDA_SUCCESS, "Error setting up a new context %d", ret);
-#else
 #endif
 
 }
@@ -90,8 +71,10 @@ Accelerator::~Accelerator()
 #endif // CALL_CUDA_ON_DESTRUCTION
 #ifdef CALL_CUDA_ON_DESTRUCTION
     popContext();
-    CUresult ret = cuCtxDestroy(ctx_);
+    gmacError_t ret = dev_->destroy_address_space(ctx_);
     ASSERTION(ret == CUDA_SUCCESS);
+
+    delete dev_;
 
 #endif // CALL_CUDA_ON_DESTRUCTION 
 #endif // USE_MULTI_CONTEXT
@@ -117,10 +100,12 @@ core::hpe::Mode *
 Accelerator::createMode(core::hpe::Process &proc, __impl::core::hpe::AddressSpace &aSpace)
 {
     trace::EnterCurrentFunction();
-    core::hpe::Mode *mode = ModeFactory::create(proc, *this, aSpace);
+    core::hpe::Mode *mode = ModeFactory::create(proc, aSpace);
+#if 0
     if (mode != NULL) {
         registerMode(*mode);
     }
+#endif
     trace::ExitCurrentFunction();
 
     TRACE(LOCAL,"Creating Execution Mode %p to Accelerator", mode);
@@ -158,45 +143,19 @@ Accelerator::destroyCUcontext(CUcontext ctx)
 
 #endif
 
-#ifdef USE_MULTI_CONTEXT
-ModuleVector
-Accelerator::createModules()
-{
-    trace::EnterCurrentFunction();
-    pushContext();
-    ModuleVector modules = ModuleDescriptor::createModules();
-    popContext();
-    trace::ExitCurrentFunction();
-    return modules;
-}
-
-void
-Accelerator::destroyModules(ModuleVector &modules)
-{
-    trace::EnterCurrentFunction();
-    pushContext();
-    modules.clear();
-    popContext();
-    trace::ExitCurrentFunction();
-}
-
-#else
 ModuleVector &
 Accelerator::createModules()
 {
     trace::EnterCurrentFunction();
     if(modules_.empty()) {
-        pushContext();
         modules_ = ModuleDescriptor::createModules();
-        popContext();
     }
     trace::ExitCurrentFunction();
     return modules_;
 }
-#endif
 
 gmacError_t
-Accelerator::map(accptr_t &dst, hostptr_t src, size_t count, unsigned align)
+Accelerator::map(accptr_t &dst, hostptr_t src, size_t count, unsigned align, hal::aspace_t &aspace)
 {
     trace::EnterCurrentFunction();
     dst = accptr_t(0);
@@ -208,24 +167,18 @@ Accelerator::map(accptr_t &dst, hostptr_t src, size_t count, unsigned align)
     if(align > 1) {
         gpuSize += align;
     }
-    CUdeviceptr ptr = 0;
-    pushContext();
-    CUresult ret = cuMemAlloc(&ptr, gpuSize);
-    popContext();
-    if(ret != CUDA_SUCCESS) {
+    accptr_t tmp(0);
+    gmacError_t ret = dev_->alloc(tmp, gpuSize, aspace);
+    if(ret != gmacSuccess) {
         trace::ExitCurrentFunction();
-        return error(ret);
+        return ret;
     }
 
-    CUdeviceptr gpuPtr = ptr;
-    if(gpuPtr % align) {
-        gpuPtr += align - (gpuPtr % align);
+    if(tmp.get() % align != 0) {
+        tmp += align - (tmp.get() % align);
     }
-    dst = gpuPtr;
 
-#ifndef USE_MULTI_CONTEXT
-    dst.pasId_ = id_;
-#endif
+    dst = accptr_t(tmp, id_);
 
     allocations_.insert(src, dst, count);
 
@@ -239,7 +192,7 @@ Accelerator::map(accptr_t &dst, hostptr_t src, size_t count, unsigned align)
 }
 
 gmacError_t
-Accelerator::unmap(hostptr_t host, size_t count)
+Accelerator::unmap(hostptr_t host, size_t count, hal::aspace_t &aspace)
 {
     trace::EnterCurrentFunction();
     ASSERTION(host != NULL);
@@ -256,7 +209,7 @@ Accelerator::unmap(hostptr_t host, size_t count)
 
     AlignmentMap::iterator i;
     alignMap_.lockWrite();
-    i = alignMap_.find(addr);
+    i = alignMap_.find(addr.get());
     if (i == alignMap_.end()) {
         alignMap_.unlock();
         trace::ExitCurrentFunction();
@@ -267,7 +220,7 @@ Accelerator::unmap(hostptr_t host, size_t count)
     alignMap_.unlock();
     pushContext();
     trace::SetThreadState(trace::Wait);
-    CUresult ret = cuMemFree(device);
+    gmacError_t ret = dev_->unmap(accptr_t ptr, count, aspace);
     trace::SetThreadState(trace::Running);
     popContext();
     trace::ExitCurrentFunction();
@@ -283,23 +236,23 @@ Accelerator::memset(accptr_t addr, int c, size_t count, stream_t /*stream*/)
     if(count % 4 == 0) {
         int seed = c | (c << 8) | (c << 16) | (c << 24);
 #if CUDA_VERSION >= 3020
-        ret = cuMemsetD32(addr, seed, count / 4);
+        ret = cuMemsetD32(addr.get(), seed, count / 4);
 #else
-        ret = cuMemsetD32(addr, seed, unsigned(count / 4));
+        ret = cuMemsetD32(addr.get(), seed, unsigned(count / 4));
 #endif
     } else if(count % 2) {
         short s = (short) c & 0xffff;
         short seed = s | (s << 8);
 #if CUDA_VERSION >= 3020
-        ret = cuMemsetD16(addr, seed, count / 2);
+        ret = cuMemsetD16(addr.get(), seed, count / 2);
 #else
-        ret = cuMemsetD16(addr, seed, unsigned(count / 2));
+        ret = cuMemsetD16(addr.get(), seed, unsigned(count / 2));
 #endif
     } else {
 #if CUDA_VERSION >= 3020
-        ret = cuMemsetD8(addr, (uint8_t)(c & 0xff), count);
+        ret = cuMemsetD8(addr.get(), (uint8_t)(c & 0xff), count);
 #else
-        ret = cuMemsetD8(addr, (uint8_t)(c & 0xff), unsigned(count));
+        ret = cuMemsetD8(addr.get(), (uint8_t)(c & 0xff), unsigned(count));
 #endif
     }
     popContext();
@@ -434,7 +387,7 @@ gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, s
     trace::SetThreadState(trace::Wait);
 #endif
 #if CUDA_VERSION >= 3020
-    ret = cuMemcpyHtoD(acc, host, size);
+    ret = cuMemcpyHtoD(acc.get(), host, size);
 #else
     ret = cuMemcpyHtoD(CUdeviceptr(acc), host, unsigned(size));
 #endif
@@ -460,7 +413,7 @@ gmacError_t Accelerator::copyToAcceleratorAsync(accptr_t acc, core::IOBuffer &_b
 
     buffer.toAccelerator(dynamic_cast<cuda::Mode &>(mode), stream);
 #if CUDA_VERSION >= 3020
-    CUresult ret = cuMemcpyHtoDAsync(acc, host, count, stream);
+    CUresult ret = cuMemcpyHtoDAsync(acc.get(), host, count, stream);
 #else
     CUresult ret = cuMemcpyHtoDAsync(CUdeviceptr(acc), host, unsigned(count), stream);
 #endif
@@ -484,7 +437,7 @@ gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t s
 #endif
 
 #if CUDA_VERSION >= 3020
-    ret = cuMemcpyDtoH(host, acc, size);
+    ret = cuMemcpyDtoH(host, acc.get(), size);
 #else
     ret = cuMemcpyDtoH(host, acc, unsigned(size));
 #endif
@@ -510,9 +463,9 @@ gmacError_t Accelerator::copyToHostAsync(core::IOBuffer &_buffer, size_t bufferO
     pushContext();
     buffer.toHost(dynamic_cast<cuda::Mode &>(mode), stream);
 #if CUDA_VERSION >= 3020
-    CUresult ret = cuMemcpyDtoHAsync(host, acc, count, stream);
+    CUresult ret = cuMemcpyDtoHAsync(host, acc.get(), count, stream);
 #else
-    CUresult ret = cuMemcpyDtoHAsync(host, acc, unsigned(count), stream);
+    CUresult ret = cuMemcpyDtoHAsync(host, acc.get(), unsigned(count), stream);
 #endif
     buffer.started(count);
     popContext();
@@ -526,9 +479,9 @@ gmacError_t Accelerator::copyAccelerator(accptr_t dst, const accptr_t src, size_
     TRACE(LOCAL,"Copy accelerator-accelerator: %p -> %p ("FMT_SIZE")", src.get(), dst.get(), size);
     pushContext();
 #if CUDA_VERSION >= 3020
-    CUresult ret = cuMemcpyDtoDAsync(dst, src, size, stream);
+    CUresult ret = cuMemcpyDtoDAsync(dst.get(), src.get(), size, stream);
 #else
-    CUresult ret = cuMemcpyDtoDAsync(dst, src, unsigned(size), stream);
+    CUresult ret = cuMemcpyDtoDAsync(dst.get(), src.get(), unsigned(size), stream);
 #endif
     popContext();
     trace::ExitCurrentFunction();

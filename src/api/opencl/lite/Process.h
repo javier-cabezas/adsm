@@ -36,6 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include "core/Process.h"
 #include "api/opencl/lite/ModeMap.h"
+#include "api/opencl/lite/ResourceManager.h"
 
 namespace __impl {
 
@@ -46,8 +47,9 @@ class Mode;
 /** Represents the resources used by a running process */
 class GMAC_LOCAL Process : public core::Process {
 protected:
-
     ModeMap map_;
+
+    ResourceManager resourceManager_;
 
 public:
     /**
@@ -109,9 +111,10 @@ public:
      */
     core::Mode *owner(const hostptr_t addr, size_t size = 0);
 
-
     Mode *createMode(cl_context ctx, cl_uint numDevices, const cl_device_id *devices);
     Mode *getMode(cl_context ctx);
+
+    core::ResourceManager &getResourceManager();
 };
 
 }}}

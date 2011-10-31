@@ -20,7 +20,7 @@ gmacError_t Accelerator::unmap(hostptr_t host, size_t size)
 {
     REQUIRES(host != NULL);
     REQUIRES(size > 0);
-    accptr_t addr;
+    accptr_t addr(0);
     size_t s;
     bool hasMapping = allocations_.find(host, addr, s);
     ENSURES(hasMapping == true);
@@ -31,7 +31,7 @@ gmacError_t Accelerator::unmap(hostptr_t host, size_t size)
 gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, __impl::core::hpe::Mode &mode)
 {
     // PRECONDITIONS
-    REQUIRES(acc  != 0);
+    REQUIRES(acc  != accptr_t(0));
     REQUIRES(host != NULL);
     REQUIRES(size > 0);
     // CALL IMPLEMENTATION
@@ -46,7 +46,7 @@ gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t s
 {
     // PRECONDITIONS
     REQUIRES(host != NULL);
-    REQUIRES(acc  != 0);
+    REQUIRES(acc  != accptr_t(0));
     REQUIRES(size > 0);
     // CALL IMPLEMENTATION
     gmacError_t ret = __impl::opencl::hpe::Accelerator::copyToHost(host, acc, size, mode);
@@ -59,8 +59,8 @@ gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t s
 gmacError_t Accelerator::copyAccelerator(accptr_t dst, const accptr_t src, size_t size, stream_t stream)
 {
     // PRECONDITIONS
-    REQUIRES(src != 0);
-    REQUIRES(dst != 0);
+    REQUIRES(src != accptr_t(0));
+    REQUIRES(dst != accptr_t(0));
     REQUIRES(size > 0);
     // CALL IMPLEMENTATION
     gmacError_t ret = __impl::opencl::hpe::Accelerator::copyAccelerator(dst, src, size, stream);

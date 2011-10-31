@@ -85,7 +85,7 @@ LazyBase::toHost(BlockImpl &_block)
 }
 
 gmacError_t
-LazyBase::copyToBuffer(BlockImpl &block, IOBufferImpl &buffer, size_t size,
+LazyBase::copyToBuffer(BlockImpl &block, io_buffer_impl &buffer, size_t size,
     size_t bufferOffset, size_t blockOffset)
 {
     REQUIRES(blockOffset  + size <= block.size());
@@ -97,7 +97,7 @@ LazyBase::copyToBuffer(BlockImpl &block, IOBufferImpl &buffer, size_t size,
 }
 
 gmacError_t
-LazyBase::copyFromBuffer(BlockImpl &block, IOBufferImpl &buffer, size_t size,
+LazyBase::copyFromBuffer(BlockImpl &block, io_buffer_impl &buffer, size_t size,
     size_t bufferOffset, size_t blockOffset)
 {
     REQUIRES(blockOffset  + size <= block.size());

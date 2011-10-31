@@ -2,7 +2,7 @@
 #include <cerrno>
 
 #include "config/common.h"
-#include "core/Process.h"
+#include "core/process.h"
 #include "memory/Handler.h"
 #include "memory/Manager.h"
 #include "trace/Tracer.h"
@@ -11,7 +11,7 @@ namespace __impl { namespace memory {
 
 unsigned Handler::Count_ = 0;
 
-static core::Process *Process_ = NULL;
+static core::process *Process_ = NULL;
 static Manager *Manager_ = NULL;
 
 static LONG CALLBACK segvHandler(EXCEPTION_POINTERS *ex)
@@ -70,7 +70,7 @@ void Handler::restoreHandler()
         TRACE(GLOBAL, "Old signal handler restored");
 }
 
-void Handler::setProcess(core::Process &proc)
+void Handler::setProcess(core::process &proc)
 {
     Process_ = &proc;
 }

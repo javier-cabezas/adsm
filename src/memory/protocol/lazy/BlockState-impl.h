@@ -34,15 +34,15 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_MEMORY_PROTOCOL_LAZY_BLOCKSTATE_IMPL_H_
 #define GMAC_MEMORY_PROTOCOL_LAZY_BLOCKSTATE_IMPL_H_
 
-#include "memory/StateBlock.h"
-
 #include <sstream>
+
+#include "memory/GenericBlock.h"
 
 #if defined(USE_SUBBLOCK_TRACKING) || defined(USE_VM)
 
 #ifdef USE_VM
 #include "core/hpe/Mode.h"
-#include "core/hpe/Process.h"
+#include "core/hpe/process.h"
 #endif
 
 #include "memory/Memory.h"
@@ -677,10 +677,22 @@ namespace protocol {
 namespace lazy {
 
 inline
-Block &BlockState::block()
+Block &
+BlockState::block()
 {
-	return static_cast<Block &>(*this);
+	//return reinterpret_cast<Block &>(*this);
+	return *(Block *)this;
 }
+
+inline
+const Block &
+BlockState::block() const
+{
+	//return reinterpret_cast<const Block &>(*this);
+	return *(const Block *)this;
+}
+
+
 
 inline
 BlockState::BlockState(ProtocolState init) :

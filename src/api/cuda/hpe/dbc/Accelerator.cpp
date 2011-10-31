@@ -3,8 +3,8 @@
 
 namespace __dbc { namespace cuda { namespace hpe {
 
-Accelerator::Accelerator(int n, CUdevice device) :
-    __impl::cuda::hpe::Accelerator(n, device)
+Accelerator::Accelerator(int n, CUdevice device, __impl::hal::coherence_domain &coherenceDomain) :
+    __impl::cuda::hpe::Accelerator(n, device, coherenceDomain)
 {
     REQUIRES(n >= 0);
 }
@@ -13,6 +13,7 @@ Accelerator::~Accelerator()
 {
 }
 
+#if 0
 gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, __impl::core::hpe::Mode &mode)
 {
     // PRECONDITIONS
@@ -88,6 +89,7 @@ count, __impl::core::hpe::Mode &mode, CUstream stream)
 
     return ret;
 }
+#endif
 
 }}}
 #endif

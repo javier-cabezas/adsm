@@ -44,6 +44,9 @@ WITH THE SOFTWARE.  */
 #include "config/config.h"
 
 #include "core/hpe/Context.h"
+
+#include "hal/types.h"
+
 #include "util/Lock.h"
 
 #include "Kernel.h"
@@ -61,7 +64,10 @@ protected:
     /** Delay for spin-locking */
 	static const unsigned USleepLaunch_ = 100;
  
+#if 0
     KernelConfig call_;
+#endif
+    hal::kernel_t::config call_;
 
     /**
      * Default CUDA context constructor
@@ -102,7 +108,7 @@ public:
      * Get the default OpenCL command queue to request events
      * \return Default OpenCL command queue
      */
-    const stream_t eventStream() const;
+    const hal::stream_t &eventStream() const;
 
     gmacError_t call(dim3 Dg, dim3 Db, size_t shared, cudaStream_t tokens);
 	gmacError_t argument(const void *arg, size_t size, off_t offset);

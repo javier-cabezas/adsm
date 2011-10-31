@@ -43,9 +43,10 @@ class GMAC_LOCAL Accelerator :
     DBC_TESTED(__impl::cuda::hpe::Accelerator)
 
 public:
-        Accelerator(int n, CUdevice device);
+    Accelerator(int n, CUdevice device, __impl::hal::coherence_domain &coherenceDomain);
     ~Accelerator();
 
+#if 0
     /* Synchronous interface */
     gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size, __impl::core::hpe::Mode &mode);
     gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size, __impl::core::hpe::Mode &mode);
@@ -56,6 +57,7 @@ public:
 __impl::core::hpe::Mode &mode, CUstream stream);
     gmacError_t copyToHostAsync(__impl::core::IOBuffer &buffer, size_t bufferOff, const accptr_t acc, size_t count,
 __impl::core::hpe::Mode &mode, CUstream stream);
+#endif
 };
 
 

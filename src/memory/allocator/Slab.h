@@ -40,7 +40,7 @@ WITH THE SOFTWARE.  */
 #include "Cache.h"
 
 namespace __impl {
-namespace core { class Mode; }
+namespace core { class address_space; }
 
 namespace memory { namespace allocator {
 
@@ -58,18 +58,18 @@ protected:
 
     typedef std::map<long_t, Cache *> CacheMap;
 
-    class GMAC_LOCAL ModeMap : public std::map<core::Mode *, CacheMap>, gmac::util::RWLock {
+    class GMAC_LOCAL aspace_map : public std::map<core::address_space *, CacheMap>, gmac::util::RWLock {
         friend class Slab;
     public:
-        ModeMap() : gmac::util::RWLock("memory::Slab") {};
+        aspace_map() : gmac::util::RWLock("memory::Slab") {};
     };
 
-    AddressMap addresses;
-    ModeMap modes; // Per-context cache map
+    AddressMap addresses_;
+    aspace_map aspaces_; // Per-context cache map
 
-    Cache &createCache(core::Mode &mode, CacheMap &map, long_t key, size_t size);
-    Cache &get(core::Mode &current, long_t key, size_t size);
-    void cleanup(core::Mode &current);
+    Cache &createCache(core::address_space &aspace, CacheMap &map, long_t key, size_t size);
+    Cache &get(core::address_space &current, long_t key, size_t size);
+    void cleanup(core::address_space &current);
 
     Manager &manager_;
 
@@ -77,8 +77,8 @@ protected:
 public:
     Slab(Manager &manager);
 
-    virtual hostptr_t alloc(core::Mode &current, const size_t size, const hostptr_t addr);
-    virtual bool free(core::Mode &current, const hostptr_t addr);
+    virtual hostptr_t alloc(core::address_space &current, const size_t size, const hostptr_t addr);
+    virtual bool free(core::address_space &current, const hostptr_t addr);
 };
 
 }}}
