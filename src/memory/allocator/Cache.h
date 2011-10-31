@@ -58,10 +58,10 @@ protected:
     ObjectList objects_;
 
     Manager &manager_;
-    core::Mode &mode_;
+    core::address_space &aspace_;
 
 public:
-    Arena(Manager &manager, core::Mode &mode, size_t objSize);
+    Arena(Manager &manager, core::address_space &aspace, size_t objSize);
     ~Arena();
 
     inline hostptr_t address() const { return ptr_; }
@@ -91,9 +91,9 @@ protected:
     ArenaMap arenas;
 
     Manager &manager_;
-    core::Mode &mode_;
+    core::address_space &aspace_;
 public:
-    Cache(Manager &manager, core::Mode &mode, size_t size);
+    Cache(Manager &manager, core::address_space &aspace, size_t size);
     virtual ~Cache();
 
     static Cache &get(long key, size_t size);

@@ -6,7 +6,7 @@
 namespace __impl { namespace util {
 
 template <typename T, typename R>
-Atomic Unique<T, R>::Count_ = 0;
+Atomic unique<T, R>::Count_ = 0;
 
 #ifdef DEBUG
 template <typename T, typename R>
@@ -15,7 +15,7 @@ Atomic UniqueDebug<T, R>::Count_ = 0;
 
 template <typename T, typename R>
 inline
-Unique<T, R>::Unique() :
+unique<T, R>::unique() :
     id_(R(AtomicInc(Count_) - 1))
 {
 }
@@ -23,7 +23,7 @@ Unique<T, R>::Unique() :
 template <typename T, typename R>
 inline
 R
-Unique<T, R>::getId() const
+unique<T, R>::get_id() const
 {
     return id_;
 }

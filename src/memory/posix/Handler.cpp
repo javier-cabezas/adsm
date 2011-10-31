@@ -5,7 +5,7 @@
 #include "memory/Manager.h"
 #include "trace/Tracer.h"
 
-#include "core/Process.h"
+#include "core/process.h"
 
 namespace __impl { namespace memory {
 
@@ -18,7 +18,7 @@ int Handler::Signum_ = SIGSEGV;
 int Handler::Signum_ = SIGBUS;
 #endif
 
-static core::Process *Process_ = NULL;
+static core::process *Process_ = NULL;
 static Manager *Manager_ = NULL;
 
 static void segvHandler(int s, siginfo_t *info, void *ctx)
@@ -40,10 +40,10 @@ static void segvHandler(int s, siginfo_t *info, void *ctx)
 	else TRACE(GLOBAL, "Write SIGSEGV for %p", addr);
 
 	bool resolved = false;
-    core::Mode *mode = Process_->owner(addr);
-    if(mode != NULL) {
-	    if(!writeAccess) resolved = Manager_->signalRead(*mode, addr);
-    	else             resolved = Manager_->signalWrite(*mode, addr);
+    core::address_space *aspace = Manager_->owner(addr);
+    if(aspace != NULL) {
+	    if(!writeAccess) resolved = Manager_->signalRead(*aspace, addr);
+    	else             resolved = Manager_->signalWrite(*aspace, addr);
     }
 
 	if(resolved == false) {
@@ -84,7 +84,7 @@ void Handler::restoreHandler()
 	TRACE(GLOBAL, "Old signal handler restored");
 }
 
-void Handler::setProcess(core::Process &proc)
+void Handler::setProcess(core::process &proc)
 {
     Process_ = &proc;
 }

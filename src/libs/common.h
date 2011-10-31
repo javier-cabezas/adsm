@@ -40,8 +40,8 @@ namespace __impl {
     namespace core {
         class Mode;
         Mode &getMode(Mode &mode) GMAC_LOCAL;
-        class Process;
-        Process &getProcess() GMAC_LOCAL;
+        class process;
+        process &getProcess() GMAC_LOCAL;
     }
     namespace memory {
         class Allocator;

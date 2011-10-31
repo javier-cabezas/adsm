@@ -6,7 +6,7 @@
 namespace __impl { namespace cuda {
 
 gmacError_t
-IOBuffer::wait(bool internal)
+IOBuffer::wait()
 {
     EventMap::iterator it;
     it = map_.find(mode_);

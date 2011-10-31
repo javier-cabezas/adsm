@@ -11,10 +11,12 @@ namespace __impl { namespace hal { namespace opencl {
 
 class coherence_domain;
 
+typedef hal::detail::device<coherence_domain, aspace_t, stream_t, event_t, async_event_t> hal_device;
+
 class device :
-    public hal::detail::device<coherence_domain, aspace_t, stream_t, event_t, async_event_t>,
+    public hal_device,
     public __impl::util::Unique<device> {
-    typedef hal::detail::device<coherence_domain, aspace_t, stream_t, event_t, async_event_t> Parent;
+    typedef hal_device Parent;
 protected:
     cl_device_id openclDeviceId_;
     cl_platform_id openclPlatformId_;

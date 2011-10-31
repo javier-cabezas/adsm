@@ -1,11 +1,10 @@
 #include "Lazy.h"
 
-#include "core/IOBuffer.h"
+#include "core/io_buffer.h"
 
 #include "config/config.h"
 
 #include "memory/Memory.h"
-#include "memory/StateBlock.h"
 
 #include "trace/Tracer.h"
 
@@ -49,7 +48,7 @@ lazy::State LazyBase::state(GmacProtection prot) const
 }
 
 
-void LazyBase::deleteObject(Object &obj)
+void LazyBase::deleteObject(object &obj)
 {
     obj.decRef();
 }
@@ -367,7 +366,7 @@ gmacError_t LazyBase::toAccelerator(Block &b)
 }
 #endif
 
-gmacError_t LazyBase::copyToBuffer(Block &b, core::IOBuffer &buffer, size_t size,
+gmacError_t LazyBase::copyToBuffer(Block &b, core::io_buffer &buffer, size_t size,
                                    size_t bufferOff, size_t blockOff)
 {
     gmacError_t ret = gmacSuccess;
@@ -385,7 +384,7 @@ gmacError_t LazyBase::copyToBuffer(Block &b, core::IOBuffer &buffer, size_t size
     return ret;
 }
 
-gmacError_t LazyBase::copyFromBuffer(Block &b, core::IOBuffer &buffer, size_t size,
+gmacError_t LazyBase::copyFromBuffer(Block &b, core::io_buffer &buffer, size_t size,
                                      size_t bufferOff, size_t blockOff)
 {
     gmacError_t ret = gmacSuccess;
@@ -396,7 +395,7 @@ gmacError_t LazyBase::copyFromBuffer(Block &b, core::IOBuffer &buffer, size_t si
         break;
     case lazy::ReadOnly:
 #ifdef USE_OPENCL
-        // WARNING: copying to host first because the IOBuffer address can change in copyToAccelerator
+        // WARNING: copying to host first because the io_buffer address can change in copyToAccelerator
         // if we do not wait
         ret = block.copyFromBuffer(blockOff, buffer, bufferOff, size, lazy::Block::HOST);
         if(ret != gmacSuccess) break;

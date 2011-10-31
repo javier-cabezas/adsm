@@ -1,6 +1,6 @@
 #include "Cache.h"
 
-#include "core/Mode.h"
+#include "core/address_space.h"
 #include "memory/Manager.h"
 
 #include "util/Parameter.h"
@@ -8,14 +8,14 @@
 
 namespace __impl { namespace memory { namespace allocator {
 
-Arena::Arena(Manager &manager, core::Mode &mode, size_t objSize) :
+Arena::Arena(Manager &manager, core::address_space &aspace, size_t objSize) :
     ptr_(NULL),
     size_(0),
     manager_(manager),
-    mode_(mode)
+    aspace_(aspace)
 {
-    mode_.incRef();
-    gmacError_t ret = manager_.alloc(mode_, &ptr_, memory::BlockSize_);
+    aspace_.incRef();
+    gmacError_t ret = manager_.alloc(aspace_, &ptr_, memory::BlockSize_);
     if(ret != gmacSuccess) { ptr_ = NULL; return; }
     for(size_t s = 0; s < memory::BlockSize_; s += objSize, size_++) {
         TRACE(LOCAL,"Arena %p pushes %p ("FMT_SIZE" bytes)", this, (void *)(ptr_ + s), objSize);
@@ -28,10 +28,10 @@ Arena::~Arena()
     CFATAL(objects_.size() == size_, "Destroying non-full Arena");
     objects_.clear();
     if(ptr_ != NULL) {
-        gmacError_t ret = manager_.free(mode_, ptr_);
+        gmacError_t ret = manager_.free(aspace_, ptr_);
         ASSERTION(ret == gmacSuccess);
     }
-    mode_.decRef();
+    aspace_.decRef();
 }
 
 Cache::~Cache()
@@ -53,7 +53,7 @@ hostptr_t Cache::get()
         return i->second->get();
     }
     // There are no free objects in any arena
-    Arena *arena = new Arena(manager_, mode_, objectSize);
+    Arena *arena = new Arena(manager_, aspace_, objectSize);
     if(arena->valid() == false) {
         delete arena; unlock();
         return NULL;

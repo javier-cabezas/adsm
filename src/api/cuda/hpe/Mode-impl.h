@@ -43,7 +43,7 @@ Mode::execute(core::hpe::KernelLaunch & launch)
     switchIn();
     gmacError_t ret = prepareForCall();
     if(ret == gmacSuccess) {
-        trace::SetThreadState(THREAD_T(getId()), trace::Running);
+        trace::SetThreadState(THREAD_T(get_id()), trace::Running);
         ret = getAccelerator().execute(dynamic_cast<KernelLaunch &>(launch));
     }
     switchOut();
@@ -77,10 +77,11 @@ Mode::getAccelerator() const
 }
 
 inline gmacError_t
-Mode::eventTime(uint64_t &t, CUevent start, CUevent end)
+Mode::eventTime(hal::time_t &t, hal::event_t &event)
 {
     /* There is no switch-in because we must already be inside the mode */
-    gmacError_t ret = getAccelerator().timeCUevents(t, start, end);
+    gmacError_t ret = event.get_error();
+    t = event.get_time_end() - event.get_time_queued();
     return ret;
 }
 

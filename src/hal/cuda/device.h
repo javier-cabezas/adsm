@@ -10,36 +10,38 @@ namespace __impl { namespace hal { namespace cuda {
 
 class coherence_domain;
 
+typedef hal::detail::device<implementation_traits> hal_device;
+
 class device :
-    public hal::detail::device<coherence_domain, aspace_t, stream_t, event_t, async_event_t>,
-    public util::Unique<device> {
-    typedef hal::detail::device<coherence_domain, aspace_t, stream_t, event_t, async_event_t> Parent;
+    public hal_device,
+    public util::unique<device> {
+    friend class context_t;
+    friend class async_event_t;
+
+    typedef hal_device Parent;
 protected:
     CUdevice cudaDevice_;
 
     int major_;
     int minor_;
 
-    size_t memorySize_;
-
-    bool integrated_;
-
+    void set_context(context_t &context);
 public:
-    device(int cuda_device_id, coherence_domain &coherenceDomain);
+    device(CUdevice cudaDevice, coherence_domain &coherenceDomain);
 
-    aspace_t create_address_space();
-    stream_t create_stream(aspace_t &aspace);
+    context_t *create_context(const SetSiblings &siblings = None);
+    gmacError_t destroy_context(context_t &context);
 
-    event_t copy(accptr_t dst, hostptr_t src, size_t count, stream_t &stream);
-    event_t copy(hostptr_t dst, accptr_t src, size_t count, stream_t &stream);
-    event_t copy(accptr_t dst, accptr_t src, size_t count, stream_t &stream);
+    stream_t *create_stream(context_t &context);
+    gmacError_t destroy_stream(stream_t &stream);
 
-    async_event_t copy_async(accptr_t dst, hostptr_t src, size_t count, stream_t &stream);
-    async_event_t copy_async(hostptr_t dst, accptr_t src, size_t count, stream_t &stream);
-    async_event_t copy_async(accptr_t dst, accptr_t src, size_t count, stream_t &stream);
+    int get_major() const;
+    int get_minor() const;
 
-    gmacError_t sync(async_event_t &event);
-    gmacError_t sync(stream_t &stream);
+    size_t get_total_memory() const;
+    size_t get_free_memory() const;
+
+    bool has_direct_copy(const Parent &dev) const;
 };
 
 }}}

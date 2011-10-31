@@ -44,7 +44,7 @@ WITH THE SOFTWARE.  */
 namespace __impl { 
 
 namespace core {
-	class Mode;
+	class address_space;
 }
 
 namespace memory {
@@ -90,7 +90,8 @@ public:
 };
 
 //! A memory object that only resides in host memory, but that is accessible from the accelerator
-class GMAC_LOCAL HostMappedObject : public util::Reference {
+class GMAC_LOCAL HostMappedObject :
+    public util::Reference {
 protected:
     //! Starting host memory address of the object
     hostptr_t addr_;
@@ -101,26 +102,27 @@ protected:
     //! Set of all host mapped memory objects
     static HostMappedSet set_;
 
-    hostptr_t alloc(core::Mode &mode);
-    void free(core::Mode &mode);
-    accptr_t getAccPtr(core::Mode &mode) const;
+    hostptr_t alloc(core::address_space &aspace);
+    void free(core::address_space &aspace);
 
-    core::Mode &owner_;
+    accptr_t getAccPtr(core::address_space &aspace) const;
+
+    core::address_space &owner_;
 public:
     /**
      * Default constructor
      * 
-     * \param mode Execution mode creating the object
+     * \param aspace Execution aspace creating the object
      * \param size Size (in bytes) of the object being created
      */
-    HostMappedObject(core::Mode &mode, size_t size);
+    HostMappedObject(core::address_space &aspace, size_t size);
 
     /// Default destructor
     virtual ~HostMappedObject();
 
 #ifdef USE_OPENCL
-    gmacError_t acquire(core::Mode &current);
-    gmacError_t release(core::Mode &current);
+    gmacError_t acquire(core::address_space &current);
+    gmacError_t release(core::address_space &current);
 #endif
     
     /**
@@ -140,11 +142,11 @@ public:
     /**
      * Get an accelerator address where a host address within the object can be accessed
      *
-     * \param current Reference to the mode to which generate the address
+     * \param current Reference to the aspace to which generate the address
      * \param addr Host memory address within the object
      * \return Accelerator memory address where the requested host memory address is mapped
      */
-    accptr_t acceleratorAddr(core::Mode &current, const hostptr_t addr) const;
+    accptr_t get_device_addr(core::address_space &current, const hostptr_t addr) const;
 
     /**
      * Remove a host mapped object from the list of all present host mapped object

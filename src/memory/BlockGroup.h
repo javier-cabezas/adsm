@@ -34,14 +34,14 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_MEMORY_BLOCKGROUP_H_
 #define GMAC_MEMORY_BLOCKGROUP_H_
 
-#include "memory/Object.h"
+#include "memory/object.h"
 
 #include "util/GMACBase.h"
 
 namespace __impl { 
 
 namespace core {
-	class Mode;
+	class address_space;
 	class ResourceManager;
 }
 
@@ -50,29 +50,35 @@ namespace memory {
 template<typename State>
 class GMAC_LOCAL BlockGroup :
     util::GMACBase<BlockGroup<State> >,
-    public gmac::memory::Object {
+    public memory::object {
 protected:
     hostptr_t shadow_;
     bool hasUserMemory_;
-    typedef std::map<accptr_t, std::list<core::Mode *> > AcceleratorMap;
+#if 0
+    typedef std::map<accptr_t, std::list<core::address_space *> > AcceleratorMap;
+    typedef std::map<core::address_space *, accptr_t> aspace_map;
+
     AcceleratorMap acceleratorAddr_;
+    aspace_map owners_;
+#endif
+    accptr_t deviceAddr_;
+    core::address_space *ownerShortcut_;
 
-    core::ResourceManager &resourceManager_;
-    unsigned owners_;
-    core::Mode *ownerShortcut_;
-
-    gmacError_t repopulateBlocks(accptr_t accPtr, core::Mode &mode);
+    gmacError_t repopulateBlocks(core::address_space &aspace);
 
     void modifiedObject();
 public:
-    BlockGroup(core::ResourceManager &resourceManager, Protocol &protocol, hostptr_t cpuAddr, size_t size, typename State::ProtocolState init, gmacError_t &err);
+    BlockGroup(Protocol &protocol, hostptr_t cpuAddr, size_t size, typename State::ProtocolState init, gmacError_t &err);
     virtual ~BlockGroup();
 
-    accptr_t acceleratorAddr(core::Mode &current, const hostptr_t addr) const;
-    core::Mode &owner(core::Mode &current, const hostptr_t addr) const;
+    accptr_t get_device_addr(const hostptr_t addr) const;
+    accptr_t get_device_addr() const;
 
-    gmacError_t addOwner(core::Mode &owner);
-    gmacError_t removeOwner(core::Mode &owner);
+    core::address_space &owner();
+    const core::address_space &owner() const;
+
+    gmacError_t addOwner(core::address_space &owner);
+    gmacError_t removeOwner(core::address_space &owner);
 
     gmacError_t mapToAccelerator();
     gmacError_t unmapFromAccelerator();
