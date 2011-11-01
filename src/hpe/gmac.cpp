@@ -59,6 +59,7 @@ static long getpagesize (void) {
 
 using namespace __impl::core::hpe;
 using namespace __impl::memory;
+using namespace __impl::util;
 
 using __impl::util::params::ParamBlockSize;
 using __impl::util::params::ParamAutoSync;
@@ -159,7 +160,7 @@ gmacCreateAddressSpace(GmacAddressSpaceId *aspaceId, int accId)
     gmac::trace::EnterCurrentFunction();
     if ((accId == ADDRESS_SPACE_ACCELERATOR_ANY) ||
         (accId >= 0 && accId < int(get_resource_manager().get_number_of_devices()))) {
-        address_space *aspace = get_resource_manager().create_address_space(accId, ret);
+        address_space *aspace = get_resource_manager().create_address_space(accId, ret).get();
         if (ret == gmacSuccess) {
             ASSERTION(aspace != NULL);
             *aspaceId = aspace->get_id();
@@ -181,7 +182,7 @@ gmacDeleteAddressSpace(GmacAddressSpaceId aspaceId)
     enterGmac();
     gmac::trace::EnterCurrentFunction();
 
-    address_space *aspace = get_resource_manager().get_address_space(aspaceId);
+    __impl::util::smart_ptr<address_space>::shared aspace = get_resource_manager().get_address_space(aspaceId);
     if (aspace != NULL) {
         ret = get_resource_manager().destroy_address_space(*aspace);
     } else {
@@ -200,14 +201,9 @@ gmacCreateVirtualDevice(GmacVirtualDeviceId *vDeviceId, GmacAddressSpaceId aspac
     gmacError_t ret = gmacSuccess;
     enterGmac();
     gmac::trace::EnterCurrentFunction();
-    address_space *aspace = get_resource_manager().get_address_space(aspaceId);
-    if (aspace != NULL) {
-        vdevice *dev = get_resource_manager().create_virtual_device(*aspace, ret);
-        if (ret == gmacSuccess) {
-            *vDeviceId = dev->get_id();
-        }
-    } else {
-        ret = gmacErrorInvalidValue;
+    vdevice *dev = get_resource_manager().create_virtual_device(aspaceId, ret);
+    if (ret == gmacSuccess) {
+        *vDeviceId = dev->get_id();
     }
     gmac::trace::ExitCurrentFunction();
     exitGmac();
@@ -357,7 +353,7 @@ gmacFree(void *cpuPtr)
         return ret;
     }
     gmac::trace::EnterCurrentFunction();
-    address_space &aspace = thread::get_current_virtual_device().get_address_space();
+    smart_ptr<address_space>::shared aspace = thread::get_current_virtual_device().get_address_space();
     if(hasAllocator() == false || getAllocator().free(aspace, hostptr_t(cpuPtr)) == false) {
         ret = getManager().free(aspace, hostptr_t(cpuPtr));
     }
@@ -384,7 +380,7 @@ gmacLaunch(__impl::core::hpe::kernel::launch &launch)
 {
     gmacError_t ret = gmacSuccess;
     vdevice &dev = launch.get_virtual_device();
-    address_space &aspace = dev.get_address_space();
+    smart_ptr<address_space>::shared aspace = dev.get_address_space();
     Manager &manager = getManager();
     TRACE(GLOBAL, "Flush the memory used in the kernel");
     const std::list<__impl::memory::ObjectInfo> &objects = launch.get_objects();
@@ -394,7 +390,8 @@ gmacLaunch(__impl::core::hpe::kernel::launch &launch)
     CFATAL(ret == gmacSuccess, "Error releasing objects");
 
     TRACE(GLOBAL, "Kernel Launch");
-    ret = dev.execute(launch);
+    /* __impl::hal::async_event_t *event = */
+        dev.execute(launch, ret);
 
     if (ParamAutoSync == true) {
         TRACE(GLOBAL, "Waiting for Kernel to complete");
@@ -457,7 +454,7 @@ gmacThreadSynchronize()
     gmacError_t ret = gmacSuccess;
     if (ParamAutoSync == false) {
         vdevice &dev = thread::get_current_virtual_device();
-        address_space &aspace = dev.get_address_space();
+        smart_ptr<address_space>::shared aspace = dev.get_address_space();
         dev.wait();
         TRACE(GLOBAL, "Memory Sync");
         ret = getManager().acquireObjects(aspace);
@@ -500,8 +497,8 @@ gmacMemcpy(void *dst, const void *src, size_t size)
     void *ret = dst;
 
     // Locate memory regions (if any)
-    __impl::core::address_space *aspaceDst = getManager().owner(hostptr_t(dst), size);
-    __impl::core::address_space *aspaceSrc = getManager().owner(hostptr_t(src), size);
+    smart_ptr<__impl::core::address_space>::shared aspaceDst = getManager().owner(hostptr_t(dst), size);
+    smart_ptr<__impl::core::address_space>::shared aspaceSrc = getManager().owner(hostptr_t(src), size);
     if (aspaceDst == NULL && aspaceSrc == NULL) {
         exitGmac();
         return ::memcpy(dst, src, size);

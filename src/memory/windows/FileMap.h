@@ -35,7 +35,7 @@ WITH THE SOFTWARE.  */
 #define GMAC_MEMORY_WINDOWS_FILEMAP_H_
 
 #include "config/common.h"
-#include "util/Lock.h"
+#include "util/lock.h"
 
 #include <map>
 
@@ -56,7 +56,7 @@ public:
 	inline size_t size() const { return size_; }
 };
 
-class GMAC_LOCAL FileMap : protected std::map<hostptr_t, FileMapEntry>, public gmac::util::RWLock
+class GMAC_LOCAL FileMap : protected std::map<hostptr_t, FileMapEntry>, public gmac::util::lock_rw
 {
 protected:
 	typedef std::map<hostptr_t, FileMapEntry> Parent;

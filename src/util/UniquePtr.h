@@ -34,15 +34,15 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_UTIL_UNIQUE_PTR_H_
 #define GMAC_UTIL_UNIQUE_PTR_H_
 
-#include <memory>
+#include <tr1/memory>
 
 namespace __impl { namespace util {
     template <typename T>
     struct smart_ptr {
         /*
         typedef std::mierda<T> unique;
-        typedef std::shared_ptr<T> shared;
         */
+        typedef std::tr1::shared_ptr<T> shared;
     };
 #if  0
     template <typename T>

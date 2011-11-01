@@ -8,13 +8,12 @@
 
 namespace __impl { namespace memory { namespace allocator {
 
-Arena::Arena(Manager &manager, core::address_space &aspace, size_t objSize) :
+Arena::Arena(Manager &manager, util::smart_ptr<core::address_space>::shared aspace, size_t objSize) :
     ptr_(NULL),
     size_(0),
     manager_(manager),
     aspace_(aspace)
 {
-    aspace_.incRef();
     gmacError_t ret = manager_.alloc(aspace_, &ptr_, memory::BlockSize_);
     if(ret != gmacSuccess) { ptr_ = NULL; return; }
     for(size_t s = 0; s < memory::BlockSize_; s += objSize, size_++) {
@@ -31,7 +30,6 @@ Arena::~Arena()
         gmacError_t ret = manager_.free(aspace_, ptr_);
         ASSERTION(ret == gmacSuccess);
     }
-    aspace_.decRef();
 }
 
 Cache::~Cache()

@@ -5,7 +5,7 @@
 
 namespace __impl { namespace memory { namespace allocator {
 
-Cache &Slab::createCache(core::address_space &aspace, CacheMap &map, long_t key, size_t size)
+Cache &Slab::createCache(util::smart_ptr<core::address_space>::shared aspace, CacheMap &map, long_t key, size_t size)
 {
     Cache *cache = new __impl::memory::allocator::Cache(manager_, aspace, size);
     std::pair<CacheMap::iterator, bool> ret = map.insert(CacheMap::value_type(key, cache));
@@ -13,17 +13,17 @@ Cache &Slab::createCache(core::address_space &aspace, CacheMap &map, long_t key,
     return *cache;
 }
 
-Cache &Slab::get(core::address_space &current, long_t key, size_t size)
+Cache &Slab::get(util::smart_ptr<core::address_space>::shared current, long_t key, size_t size)
 {
     CacheMap *map = NULL;
     aspace_map::iterator i;
     aspaces_.lockRead();
-    i = aspaces_.find(&current);
+    i = aspaces_.find(current);
     if(i != aspaces_.end()) map = &(i->second);
     aspaces_.unlock();
     if(map == NULL) {
         aspaces_.lockWrite();
-        Cache &ret = createCache(current, aspaces_[&current], key, size);
+        Cache &ret = createCache(current, aspaces_[current], key, size);
         aspaces_.unlock();
         return ret;
     }
@@ -37,11 +37,11 @@ Cache &Slab::get(core::address_space &current, long_t key, size_t size)
     }
 }
 
-void Slab::cleanup(core::address_space &current)
+void Slab::cleanup(util::smart_ptr<core::address_space>::shared current)
 {
     aspace_map::iterator i;
     aspaces_.lockRead();
-    i = aspaces_.find(&current);
+    i = aspaces_.find(current);
     aspaces_.unlock();
     if(i == aspaces_.end()) return;
     CacheMap::iterator j;
@@ -54,7 +54,7 @@ void Slab::cleanup(core::address_space &current)
     aspaces_.unlock();
 }
 
-hostptr_t Slab::alloc(core::address_space &current, size_t size, hostptr_t addr)
+hostptr_t Slab::alloc(util::smart_ptr<core::address_space>::shared current, size_t size, hostptr_t addr)
 {
     Cache &cache = get(current, long_t(addr), size);
     TRACE(LOCAL,"Using cache %p", &cache);
@@ -67,7 +67,7 @@ hostptr_t Slab::alloc(core::address_space &current, size_t size, hostptr_t addr)
     return ret;
 }
 
-bool Slab::free(core::address_space &current, hostptr_t addr)
+bool Slab::free(util::smart_ptr<core::address_space>::shared current, hostptr_t addr)
 {
     addresses_.lockWrite();
     AddressMap::iterator i = addresses_.find(addr);

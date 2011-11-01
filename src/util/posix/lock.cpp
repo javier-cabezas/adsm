@@ -1,40 +1,40 @@
 #include <string>
 
-#include "Lock.h"
+#include "lock.h"
 
 namespace __impl { namespace util {
 
 #if !defined(__APPLE__)
-SpinLock::SpinLock(const char *name) :
-    __impl::util::__Lock(name)
+spinlock::spinlock(const char *name) :
+    __impl::util::lock__(name)
 {
     pthread_spin_init(&spinlock_, PTHREAD_PROCESS_PRIVATE);
 }
 
-SpinLock::~SpinLock()
+spinlock::~spinlock()
 {
     pthread_spin_destroy(&spinlock_);
 }
 #endif
 
-Lock::Lock(const char *name) :
-    __impl::util::__Lock(name)
+mutex::mutex(const char *name) :
+    __impl::util::lock__(name)
 {
     pthread_mutex_init(&mutex_, NULL);
 }
 
-Lock::~Lock()
+mutex::~mutex()
 {
     pthread_mutex_destroy(&mutex_);
 }
 
-RWLock::RWLock(const char *name) :
-    __impl::util::__Lock(name)
+lock_rw::lock_rw(const char *name) :
+    __impl::util::lock__(name)
 {
     pthread_rwlock_init(&lock_, NULL);
 }
 
-RWLock::~RWLock()
+lock_rw::~lock_rw()
 {
     pthread_rwlock_destroy(&lock_);
 }

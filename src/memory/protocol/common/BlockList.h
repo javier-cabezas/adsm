@@ -40,7 +40,7 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 #include "include/gmac/types.h"
-#include "util/Lock.h"
+#include "util/lock.h"
 
 namespace __impl {
 
@@ -56,7 +56,7 @@ namespace protocol {
 //! FIFO list of blocks
 class GMAC_LOCAL BlockList :
     protected std::list<Block *>,
-    public gmac::util::SpinLock {
+    public gmac::util::spinlock {
 // We need a locked list becase execution modes might be shared among different threads
 protected:
     typedef std::list<Block *> Parent;

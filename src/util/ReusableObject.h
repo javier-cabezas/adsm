@@ -39,13 +39,13 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 
-#include "Lock.h"
+#include "lock.h"
 
 namespace __impl { namespace util {
 
 template <typename T>
 class GMAC_LOCAL Pool :
-    protected gmac::util::Lock {
+    protected gmac::util::mutex {
 public:
     union Object {
         char dummy[sizeof(T)];
@@ -53,7 +53,7 @@ public:
     };
 
     Pool() :
-        gmac::util::Lock("ReusableObjectPool"),
+        gmac::util::mutex("ReusableObjectPool"),
         freeList_(NULL)
     {}
 

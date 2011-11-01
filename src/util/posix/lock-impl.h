@@ -8,7 +8,7 @@ namespace __impl { namespace util {
 
 #if !defined(__APPLE__)
 inline void
-SpinLock::lock() const
+spinlock::lock() const
 {
     enter();
     pthread_spin_lock(&spinlock_);
@@ -16,7 +16,7 @@ SpinLock::lock() const
 }
 
 inline void
-SpinLock::unlock() const
+spinlock::unlock() const
 {
     exit();
     pthread_spin_unlock(&spinlock_);
@@ -24,7 +24,7 @@ SpinLock::unlock() const
 #endif
 
 inline void
-Lock::lock() const
+mutex::lock() const
 {
     enter();
     pthread_mutex_lock(&mutex_);
@@ -32,14 +32,14 @@ Lock::lock() const
 }
 
 inline void
-Lock::unlock() const
+mutex::unlock() const
 {
     exit();
     pthread_mutex_unlock(&mutex_);
 }
 
 inline void
-RWLock::lockRead() const
+lock_rw::lockRead() const
 {
     enter();
     pthread_rwlock_rdlock(&lock_);
@@ -47,7 +47,7 @@ RWLock::lockRead() const
 }
 
 inline void
-RWLock::lockWrite() const
+lock_rw::lockWrite() const
 {
     enter();
     pthread_rwlock_wrlock(&lock_);
@@ -55,7 +55,7 @@ RWLock::lockWrite() const
 }
 
 inline void
-RWLock::unlock() const
+lock_rw::unlock() const
 {
     exit();
     pthread_rwlock_unlock(&lock_);

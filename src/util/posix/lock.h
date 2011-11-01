@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2011 University of Illinois
+/* Copyright (c) 2009 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,43 +31,76 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_UTIL_UNIQUE_H_
-#define GMAC_UTIL_UNIQUE_H_
+#ifndef GMAC_UTIL_POSIX_LOCK_H_
+#define GMAC_UTIL_POSIX_LOCK_H_
 
-#include "Atomics.h"
+#include <pthread.h>
+
+#include <string>
+#include <iostream>
+#include <map>
+
+#include "config/config.h"
+#include "config/dbc/types.h"
+#include "util/lock.h"
+
 
 namespace __impl { namespace util {
 
-template <typename T, typename R = unsigned>
-class unique {
-    static Atomic Count_;
-
-private:
-    R id_;
-
+#if defined(__APPLE__)
+class lock;
+typedef lock spinlock;
+#else
+class GMAC_API spinlock : public __impl::util::lock__ {
+    DBC_FORCE_TEST(spinlock)
+protected:
+	mutable pthread_spinlock_t spinlock_;
 public:
-    unique();
+	spinlock(const char *name);
+	VIRTUAL ~spinlock();
 
-    R get_id() const;
+protected:
+	TESTABLE void lock() const;
+	TESTABLE void unlock() const;
+};
+#endif
+
+class GMAC_API mutex : public __impl::util::lock__ {
+    DBC_FORCE_TEST(mutex)
+
+protected:
+	mutable pthread_mutex_t mutex_;
+public:
+	mutex(const char *name);
+	VIRTUAL ~mutex();
+
+protected:
+	TESTABLE void lock() const;
+	TESTABLE void unlock() const;
 };
 
-template <typename T, typename R = unsigned>
-class UniqueDebug {
-#ifdef DEBUG
-    static Atomic Count_;
+class GMAC_API lock_rw : public __impl::util::lock__ {
+    DBC_FORCE_TEST(lock_rw)
 
-private:
-    R id_;
-
+protected:
+	mutable pthread_rwlock_t lock_;
+    bool write_;
 public:
-    UniqueDebug();
+	lock_rw(const char *name);
+	VIRTUAL ~lock_rw();
 
-    R getDebugId() const;
-#endif
+protected:
+	TESTABLE void lockRead() const;
+	TESTABLE void lockWrite() const;
+	TESTABLE void unlock() const;
 };
 
 }}
 
-#include "Unique-impl.h"
+#include "lock-impl.h"
+
+#ifdef USE_DBC
+#include "dbc/lock.h"
+#endif
 
 #endif

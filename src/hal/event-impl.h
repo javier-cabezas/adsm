@@ -7,8 +7,8 @@ template <typename D, typename B, typename I>
 inline
 event_t<D, B, I>::event_t(type t, context_parent_t &context) :
     context_(context),
-    err_(gmacSuccess),
-    type_(t)
+    type_(t),
+    err_(gmacSuccess)
 {
 }
 
@@ -30,18 +30,10 @@ event_t<D, B, I>::sync()
 
 template <typename D, typename B, typename I>
 inline
-void
-event_t<D, B, I>::set_error(gmacError_t err)
+bool
+event_t<D, B, I>::is_synced() const
 {
-    err_ = err;
-}
-
-template <typename D, typename B, typename I>
-inline
-gmacError_t
-event_t<D, B, I>::get_error() const
-{
-    return err_;
+    return true;
 }
 
 template <typename D, typename B, typename I>
@@ -95,9 +87,8 @@ event_t<D, B, I>::get_time_end() const
 
 template <typename D, typename B, typename I>
 inline
-async_event_t<D, B, I>::async_event_t(typename Parent::type t, context_parent_t &context) :
-    event_t<D, B, I>(t, context),
-    state_(Parent::Queued)
+async_event_t<D, B, I>::async_event_t() :
+    synced_(false)
 {
 }
 

@@ -31,71 +31,104 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_UTIL_WINDOWS_DBC_LOCK_H_
-#define GMAC_UTIL_WINDOWS_DBC_LOCK_H_
+#ifndef GMAC_UTIL_WINDOWS_LOCK_H_
+#define GMAC_UTIL_WINDOWS_LOCK_H_
 
 #include "config/config.h"
 #include "config/dbc/types.h"
-#include "config/dbc/Contract.h"
-#include "util/windows/Lock.h"
+#include "util/mutex.h"
 
 #include <windows.h>
 
-#include <set>
-
-namespace __dbc { namespace util {
-
-class GMAC_LOCAL SpinLock :
-    public __impl::util::SpinLock,
-    public virtual Contract {
-    DBC_TESTED(__impl::util::SpinLock)
-
+namespace __impl { namespace util {
+//! A spinlock
+class GMAC_LOCAL spinlock : public __Lock {
+    DBC_FORCE_TEST(spinlock)
 protected:
-    mutable CRITICAL_SECTION internal_;
-    mutable bool locked_;
-    mutable DWORD owner_;
-
+    //! Spin lock value
+	mutable long spinlock_;
 public:
-    SpinLock(const char *name);
-    VIRTUAL ~SpinLock();
+    //! Default constructor
+    /*!
+        \param name Name using during tracing
+    */
+	spinlock(const char *name);
+
+    //! Default destructor
+	VIRTUAL ~spinlock();
+
 protected:
-    TESTABLE void lock() const;
-    TESTABLE void unlock() const;
+    //! Get the lock
+	TESTABLE void lock() const;
+
+    //! Release the lock
+	TESTABLE void unlock() const;
 };
 
-class GMAC_LOCAL Lock : public __impl::util::Lock, public Contract {
-    DBC_TESTED(__impl::util::Lock)
+//! A Mutex lock
+class GMAC_LOCAL mutex : public __Lock {
+    DBC_FORCE_TEST(mutex)
 
 protected:
-    mutable CRITICAL_SECTION internal_;
-    mutable bool locked_;
-    mutable DWORD owner_;
-
+    //! Mutex holding the lock
+	mutable CRITICAL_SECTION mutex_;
 public:
-    Lock(const char *name);
-    VIRTUAL ~Lock();
+    //! Default constructor
+    /**
+     * \param name Name using during tracing
+     */
+	mutex(const char *name);
+
+    //! Default destructor
+	VIRTUAL ~mutex();
+
 protected:
-    TESTABLE void lock() const;
-    TESTABLE void unlock() const;
+    //! Get the lock
+	TESTABLE void lock() const;
+
+    //! Release the lock
+	TESTABLE void unlock() const;
 };
 
-class GMAC_LOCAL RWLock : public __impl::util::RWLock, public Contract {
-    DBC_TESTED(__impl::util::RWLock)
+//! A Read/Write lock
+class GMAC_LOCAL lock_rw : public __Lock {
+    DBC_FORCE_TEST(lock_rw)
 
 protected:
-    mutable enum { Idle, Read, Write } state_;
-    mutable CRITICAL_SECTION internal_;
-    mutable std::set<DWORD> readers_;
-    mutable DWORD writer_;
+    //! Read/Write lock
+	mutable SRWLOCK lock_;
+
+    //! Thread owning the lock
+	mutable DWORD owner_;
 public:
-    RWLock(const char *name);
-    VIRTUAL ~RWLock();
+    //! Default constructor
+    /**
+     * \param name Name using during tracing
+     */
+	lock_rw(const char *name);
+    
+    //! Default destructor
+	VIRTUAL ~lock_rw();
+
 protected:
-    TESTABLE void lockRead() const;
-    TESTABLE void lockWrite() const;
-    TESTABLE void unlock() const;
+    //! Get shared access to the lock
+	TESTABLE void lockRead() const;
+
+    //! Get exclusive access to the lock
+	TESTABLE void lockWrite() const;
+
+    //! Release the lock
+	TESTABLE void unlock() const;
 };
 
 }}
+
+#include "mutex-impl.h"
+
+#ifdef USE_DBC
+#include "dbc/mutex.h"
+#endif
+
+
 
 #endif

@@ -42,7 +42,8 @@
 
 #include "hal/types.h"
 
-#include "util/Lock.h"
+#include "util/lock.h"
+#include "util/stl/locked_map.h"
 
 namespace __impl {
     
@@ -59,7 +60,8 @@ class process;
 class vdevice;
 
 class GMAC_LOCAL address_space :
-    public core::address_space {
+    public core::address_space,
+    private gmac::util::mutex {
     friend class resource_manager;
     friend class vdevice;
 
@@ -72,11 +74,11 @@ class GMAC_LOCAL address_space :
 
     process &proc_;
 
-    typedef std::map<hostptr_t, accptr_t> DeviceAddresses;
-    typedef std::map<hostptr_t, hal::buffer_t *> PinnedBuffers;
+    typedef util::stl::locked_map<hostptr_t, accptr_t> map_addresses;
+    typedef util::stl::locked_map<hostptr_t, hal::buffer_t *> map_buffers;
 
-    DeviceAddresses deviceAddresses_;
-    PinnedBuffers pinnedBuffers_;
+    map_addresses mapDeviceAddresses_;
+    map_buffers mapPinnedBuffers_;
 
     typedef std::map<gmac_kernel_id_t, kernel *> map_kernel;
     map_kernel kernels_;
@@ -104,16 +106,18 @@ public:
     accptr_t get_host_pinned_mapping(hostptr_t ptr, gmacError_t &err);
 
     gmacError_t copy(accptr_t acc, const hostptr_t host, size_t count);
-
     gmacError_t copy(hostptr_t host, const accptr_t acc, size_t count);
-
     gmacError_t copy(accptr_t dst, const accptr_t src, size_t count);
 
-    gmacError_t copy(accptr_t dst, core::io_buffer &buffer, size_t off, size_t count);
+    hal::async_event_t *copy_async(accptr_t acc, const hostptr_t host, size_t count, gmacError_t &err);
+    hal::async_event_t *copy_async(hostptr_t host, const accptr_t acc, size_t count, gmacError_t &err);
+    hal::async_event_t *copy_async(accptr_t dst, const accptr_t src, size_t count, gmacError_t &err);
 
+    gmacError_t copy(accptr_t dst, core::io_buffer &buffer, size_t off, size_t count);
     gmacError_t copy(core::io_buffer &buffer, size_t off, const accptr_t src, size_t count);
 
     gmacError_t memset(accptr_t addr, int c, size_t count);
+    hal::async_event_t *memset_async(accptr_t addr, int c, size_t count, gmacError_t &err);
 
     hal::context_t &get_hal_context();
     const hal::context_t &get_hal_context() const;

@@ -38,7 +38,7 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 
-#include "util/Lock.h"
+#include "util/lock.h"
 #include "util/Reference.h"
 
 namespace __impl { 
@@ -55,7 +55,7 @@ class HostMappedObject;
     using host memory addresses
 */
 class GMAC_LOCAL HostMappedSet : protected std::map<void *, HostMappedObject *>, 
-    public gmac::util::RWLock {
+    public gmac::util::lock_rw {
 protected:
     friend class HostMappedObject;
 
@@ -102,12 +102,12 @@ protected:
     //! Set of all host mapped memory objects
     static HostMappedSet set_;
 
-    hostptr_t alloc(core::address_space &aspace);
-    void free(core::address_space &aspace);
+    hostptr_t alloc(util::smart_ptr<core::address_space>::shared aspace);
+    void free(util::smart_ptr<core::address_space>::shared aspace);
 
-    accptr_t getAccPtr(core::address_space &aspace) const;
+    accptr_t getAccPtr(util::smart_ptr<core::address_space>::shared aspace) const;
 
-    core::address_space &owner_;
+    util::smart_ptr<core::address_space>::shared owner_;
 public:
     /**
      * Default constructor
@@ -115,14 +115,14 @@ public:
      * \param aspace Execution aspace creating the object
      * \param size Size (in bytes) of the object being created
      */
-    HostMappedObject(core::address_space &aspace, size_t size);
+    HostMappedObject(util::smart_ptr<core::address_space>::shared aspace, size_t size);
 
     /// Default destructor
     virtual ~HostMappedObject();
 
 #ifdef USE_OPENCL
-    gmacError_t acquire(core::address_space &current);
-    gmacError_t release(core::address_space &current);
+    gmacError_t acquire(util::smart_ptr<core::address_space>::shared current);
+    gmacError_t release(util::smart_ptr<core::address_space>::shared current);
 #endif
     
     /**
@@ -146,7 +146,7 @@ public:
      * \param addr Host memory address within the object
      * \return Accelerator memory address where the requested host memory address is mapped
      */
-    accptr_t get_device_addr(core::address_space &current, const hostptr_t addr) const;
+    accptr_t get_device_addr(util::smart_ptr<core::address_space>::shared current, const hostptr_t addr) const;
 
     /**
      * Remove a host mapped object from the list of all present host mapped object

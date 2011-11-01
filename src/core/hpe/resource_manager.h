@@ -42,7 +42,7 @@ WITH THE SOFTWARE.  */
 
 #include "hal/types.h"
 
-#include "util/loader.h"
+#include "util/stl/locked_map.h"
 
 namespace __impl { namespace core { namespace hpe {
 
@@ -52,7 +52,7 @@ class process;
 class thread;
 class vdevice;
 
-struct address_space_resources {
+struct GMAC_LOCAL address_space_resources {
     hal::context_t *context_;
 
     hal::stream_t *streamLaunch_;
@@ -68,8 +68,8 @@ class GMAC_LOCAL resource_manager {
 protected:
     process &proc_;
 
-    typedef std::map<GmacAddressSpaceId, address_space *> map_aspace;
-    typedef std::map<address_space *, address_space_resources> map_aspace_resources;
+    typedef util::stl::locked_map<GmacAddressSpaceId, util::smart_ptr<address_space>::shared> map_aspace;
+    typedef util::stl::locked_map<address_space *, address_space_resources> map_aspace_resources;
 
     map_aspace aspaceMap_;
     map_aspace_resources aspaceResourcesMap_;
@@ -86,23 +86,18 @@ protected:
     virtual ~resource_manager();
 
     gmacError_t init_thread(thread &t, const thread *parent);
-#if 0
-    address_space *getAddressSpace(GmacAddressSpaceId aspaceId);
-    Mode *getVirtualDevice(GmacVirtualDeviceId vDeviceId);
-#endif
 
 public:
     gmacError_t register_device(hal::device &dev);
 
-    address_space *create_address_space(unsigned deviceId, gmacError_t &err);
+    util::smart_ptr<address_space>::shared create_address_space(unsigned deviceId, gmacError_t &err);
     gmacError_t destroy_address_space(address_space &aspace);
 
-    address_space *get_address_space(GmacAddressSpaceId aspaceId);
+    util::smart_ptr<address_space>::shared get_address_space(GmacAddressSpaceId aspaceId);
 
-    vdevice *create_virtual_device(address_space &aspace, gmacError_t &err);
+    vdevice *create_virtual_device(GmacAddressSpaceId id, gmacError_t &err);
     gmacError_t destroy_virtual_device(vdevice &dev);
 
-    address_space *owner(const hostptr_t addr, size_t size = 0);
     context *create_context(THREAD_T id, address_space &aspace);
 
     unsigned get_number_of_devices() const;

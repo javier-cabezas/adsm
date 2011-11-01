@@ -73,14 +73,14 @@ vdevice::eventStream()
 }
 
 inline
-address_space &
+util::smart_ptr<address_space>::shared
 vdevice::get_address_space()
 {
     return aspace_;
 }
 
 inline
-const address_space &
+util::smart_ptr<const address_space>::shared
 vdevice::get_address_space() const
 {
     return aspace_;

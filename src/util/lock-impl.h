@@ -6,7 +6,7 @@
 namespace __impl { namespace util {
 
 inline
-void __Lock::enter() const
+void lock__::enter() const
 {
 #if defined(USE_TRACE_LOCKS)
     trace::RequestLock(name_.c_str());
@@ -14,7 +14,7 @@ void __Lock::enter() const
 }
 
 inline
-void __Lock::locked() const
+void lock__::locked() const
 {
 #if defined(USE_TRACE_LOCKS)
     trace::AcquireLockExclusive(name_.c_str());
@@ -23,7 +23,7 @@ void __Lock::locked() const
 }
 
 inline
-void __Lock::done() const
+void lock__::done() const
 {
 #if defined(USE_TRACE_LOCKS)
     trace::AcquireLockShared(name_.c_str());
@@ -32,7 +32,7 @@ void __Lock::done() const
 
 
 inline
-void __Lock::exit() const
+void lock__::exit() const
 {
 #if defined(USE_TRACE_LOCKS)
     trace::ExitLock(name_.c_str());

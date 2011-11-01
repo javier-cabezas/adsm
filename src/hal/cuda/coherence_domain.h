@@ -2,7 +2,7 @@
 #define GMAC_HAL_CUDA_COHERENCE_DOMAIN_H_
 
 #include "hal/coherence_domain.h"
-#include "util/Unique.h"
+#include "util/unique.h"
 
 #include "types.h"
 

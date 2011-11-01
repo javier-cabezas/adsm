@@ -6,7 +6,7 @@
 namespace __impl { namespace util {
 
 inline void
-SpinLock::lock() const
+spinlock::lock() const
 {
     enter();
     while (InterlockedExchange(&spinlock_, 1) == 1);
@@ -14,14 +14,14 @@ SpinLock::lock() const
 }
 
 inline void
-SpinLock::unlock() const
+spinlock::unlock() const
 {
     exit();
     InterlockedExchange(&spinlock_, 0); 
 }
 
 inline void
-Lock::lock() const
+mutex::lock() const
 {
     enter();
     EnterCriticalSection(&mutex_);
@@ -29,37 +29,37 @@ Lock::lock() const
 }
 
 inline void
-Lock::unlock() const
+mutex::unlock() const
 {
     exit();
     LeaveCriticalSection(&mutex_);
 }
 
 inline void
-RWLock::lockRead() const
+lock_rw::lockRead() const
 {
     enter();
-    AcquireSRWLockShared(&lock_);
+    AcquireSlock_rwShared(&lock_);
     done();
 }
 
 inline void
-RWLock::lockWrite() const
+lock_rw::lockWrite() const
 {
     enter();
-    AcquireSRWLockExclusive(&lock_);
+    AcquireSlock_rwExclusive(&lock_);
 	owner_ = GetCurrentThreadId();
     locked();
 }
 
 inline void
-RWLock::unlock() const
+lock_rw::unlock() const
 {
     exit();
-    if(owner_ == 0) ReleaseSRWLockShared(&lock_);
+    if(owner_ == 0) ReleaseSlock_rwShared(&lock_);
 	else {
 		owner_ = 0;
-		ReleaseSRWLockExclusive(&lock_);
+		ReleaseSlock_rwExclusive(&lock_);
 	}
 }
 

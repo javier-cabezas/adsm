@@ -10,54 +10,6 @@
 
 namespace __impl { namespace core { namespace hpe {
 
-#if 0
-inline
-ContextMap::ContextMap(address_space &owner) :
-    gmac::util::RWLock("ContextMap"), owner_(owner)
-{
-}
-
-inline void
-ContextMap::add(THREAD_T id, context &ctx)
-{
-    lockWrite();
-    Parent::insert(Parent::value_type(id, &ctx));
-    unlock();
-}
-
-inline context *
-ContextMap::find(THREAD_T id)
-{
-    lockRead();
-    Parent::iterator i = Parent::find(id);
-    context *ret = NULL;
-    if(i != end()) ret = i->second;
-    unlock();
-    return ret;
-}
-
-inline void
-ContextMap::remove(THREAD_T id)
-{
-    lockWrite();
-    Parent::erase(id);
-    unlock();
-}
-
-inline void
-ContextMap::clean()
-{
-    Parent::iterator i;
-    lockWrite();
-    for(i = begin(); i != end(); i++) {
-        delete i->second;
-    }
-    Parent::clear();
-    unlock();
-}
-
-#endif
-
 context *
 resource_manager::create_context(THREAD_T id, address_space &aspace)
 {
@@ -68,35 +20,18 @@ resource_manager::create_context(THREAD_T id, address_space &aspace)
     if (it != aspaceResourcesMap_.end()) {
         address_space_resources &resources = it->second;
         ctx = new context(*resources.context_, *resources.streamLaunch_,
-                                                   *resources.streamToAccelerator_,
-                                                   *resources.streamToHost_,
-                                                   *resources.streamAccelerator_);
+                                               *resources.streamToAccelerator_,
+                                               *resources.streamToHost_,
+                                               *resources.streamAccelerator_);
     }
-
-#if 0
-    address_space *aspace = new address_space(*resources.context_,
-                                              *resources.streamLaunch_,
-                                              *resources.streamToAccelerator_,
-                                              *resources.streamToHost_,
-                                              *resources.streamAccelerator_,
-                                              proc_);
-
-    context *context = get_context();
-    if (context == NULL) {
-        context = new gmac::core::hpe::context(ctx_, *streamLaunch,
-                                                     *streamToAccelerator,
-                                                     *streamToHost_,
-                                                     *streamAccelerator);
-        contextMap_.add(util::GetThreadId(), *context);
-    }
-    return *context;
-#endif
 
     return ctx;
 }
 
 resource_manager::resource_manager(process &proc) :
-    proc_(proc)
+    proc_(proc),
+    aspaceMap_("aspace_map"),
+    aspaceResourcesMap_("aspace_resources_map")
 {
 }
 
@@ -117,12 +52,12 @@ resource_manager::init_thread(thread &t, const thread *parent)
     vdevice *dev = NULL;
 
     if (parent == NULL) {
-        address_space *aspace = create_address_space(0, ret);
+        util::smart_ptr<address_space>::shared aspace = create_address_space(0, ret);
         if (ret == gmacSuccess) {
-            dev = create_virtual_device(*aspace, ret);
+            dev = create_virtual_device(aspace->get_id(), ret);
         }
     } else {
-        dev = create_virtual_device(parent->get_current_virtual_device().get_address_space(), ret);
+        dev = create_virtual_device(parent->get_current_virtual_device().get_address_space()->get_id(), ret);
     }
 
     if (ret == gmacSuccess) {
@@ -144,7 +79,7 @@ resource_manager::register_device(hal::device &dev)
     return gmacSuccess;
 }
 
-address_space *
+util::smart_ptr<address_space>::shared
 resource_manager::create_address_space(unsigned accId, gmacError_t &err)
 {
     err = gmacSuccess;
@@ -158,11 +93,6 @@ resource_manager::create_address_space(unsigned accId, gmacError_t &err)
     resources.streamToAccelerator_ = device.create_stream(*resources.context_);
     resources.streamToHost_        = device.create_stream(*resources.context_);
     resources.streamAccelerator_   = device.create_stream(*resources.context_);
-#if 0
-    resources.streamToAccelerator_ = device.create_stream(*resources.context_);
-    resources.streamToHost_        = device.create_stream(*resources.context_);
-    resources.streamAccelerator_   = device.create_stream(*resources.context_);
-#endif
 
     address_space *aspace = new address_space(*resources.context_,
                                               *resources.streamLaunch_,
@@ -171,12 +101,13 @@ resource_manager::create_address_space(unsigned accId, gmacError_t &err)
                                               *resources.streamAccelerator_,
                                               proc_);
     ASSERTION(aspace != NULL);
-    aspaceMap_.insert(map_aspace::value_type(aspace->get_id(), aspace));
+    util::smart_ptr<address_space>::shared ptrAspace(aspace);
+    aspaceMap_.insert(map_aspace::value_type(aspace->get_id(), ptrAspace));
     aspaceResourcesMap_.insert(map_aspace_resources::value_type(aspace, resources));
 
     resources.context_->get_code_repository().register_kernels(*aspace);
 
-    return aspace;
+    return ptrAspace;
 }
 
 gmacError_t
@@ -188,6 +119,8 @@ resource_manager::destroy_address_space(address_space &aspace)
     it = aspaceMap_.find(aspace.get_id());
 
     if (it != aspaceMap_.end()) {
+        map_aspace_resources::size_type size = aspaceResourcesMap_.erase(it->second.get());
+        ASSERTION(size == 1, "Resources not found for address space");
         aspaceMap_.erase(it);
     } else {
         ret = gmacErrorInvalidValue;
@@ -197,21 +130,21 @@ resource_manager::destroy_address_space(address_space &aspace)
 }
 
 vdevice *
-resource_manager::create_virtual_device(address_space &aspace, gmacError_t &err)
+resource_manager::create_virtual_device(GmacAddressSpaceId id, gmacError_t &err)
 {
     vdevice *ret = NULL;
     err = gmacSuccess;
 
     map_aspace::iterator it;
-    it = aspaceMap_.find(aspace.get_id());
+    it = aspaceMap_.find(id);
 
     if (it != aspaceMap_.end()) {
-        address_space &aspace = *it->second;
+        util::smart_ptr<address_space>::shared aspace = it->second;
 
-        TRACE(LOCAL,"Creatintg Execution vdevice on aspace#"FMT_ASPACE, aspace.get_id().val);
+        TRACE(LOCAL,"Creatintg Execution vdevice on aspace#"FMT_ASPACE, aspace->get_id().val);
 
         // Initialize the global shared memory for the context
-        ret = new vdevice(proc_, aspace, aspace.streamLaunch_);
+        ret = new vdevice(proc_, aspace, aspace->streamLaunch_);
     } else {
         err = gmacErrorInvalidValue;
     }
@@ -229,23 +162,10 @@ resource_manager::destroy_virtual_device(vdevice &dev)
     return ret;
 }
 
-#if 0
-vdevice *
-resource_manager::getVirtualDevice(GmacVirtualDeviceId vDeviceId)
-{
-    vdevice *ret = NULL;
-
-    vdevice_table &vDeviceTable = thread::getCurrentVirtualDeviceTable();
-    ret = vDeviceTable.getVirtualDevice(vDeviceId);
-
-    return ret;
-}
-#endif
-
-address_space *
+util::smart_ptr<address_space>::shared
 resource_manager::get_address_space(GmacAddressSpaceId aSpaceId)
 {
-    address_space *ret = NULL;
+    util::smart_ptr<address_space>::shared ret;
 
     map_aspace::iterator it;
     it = aspaceMap_.find(aSpaceId);
@@ -275,4 +195,5 @@ resource_manager::are_all_devices_integrated() const
 }
 
 }}}
+
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

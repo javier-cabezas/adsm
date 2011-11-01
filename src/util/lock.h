@@ -31,76 +31,70 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_UTIL_POSIX_LOCK_H_
-#define GMAC_UTIL_POSIX_LOCK_H_
+#ifndef GMAC_UTIL_LOCK_H_
+#define GMAC_UTIL_LOCK_H_
 
-#include <pthread.h>
+#include "config/common.h"
 
+#if defined(USE_TRACE_LOCKS)
 #include <string>
-#include <iostream>
-#include <map>
-
-#include "config/config.h"
-#include "config/dbc/types.h"
-#include "util/Lock.h"
-
+#endif
 
 namespace __impl { namespace util {
 
-#if defined(__APPLE__)
-class Lock;
-typedef Lock SpinLock;
-#else
-class GMAC_API SpinLock : public __impl::util::__Lock {
-    DBC_FORCE_TEST(SpinLock)
+class GMAC_LOCAL lock__ {
 protected:
-	mutable pthread_spinlock_t spinlock_;
-public:
-	SpinLock(const char *name);
-	VIRTUAL ~SpinLock();
-
-protected:
-	TESTABLE void lock() const;
-	TESTABLE void unlock() const;
-};
+#if defined(USE_TRACE_LOCKS)
+    //! Signal that the lock is exclusive, e.g., due to a lock-write
+    mutable bool exclusive_;
+    std::string name_;
 #endif
-
-class GMAC_API Lock : public __impl::util::__Lock {
-    DBC_FORCE_TEST(Lock)
-
-protected:
-	mutable pthread_mutex_t mutex_;
 public:
-	Lock(const char *name);
-	VIRTUAL ~Lock();
+    //! Default constructor
+    /*!
+        \param name lock name for tracing purposes
+    */
+    lock__(const char *name);
 
-protected:
-	TESTABLE void lock() const;
-	TESTABLE void unlock() const;
-};
+    //! The thread requests the lock
+    void enter() const;
+    
+    //! The thread gets an exclusive lock
+    void locked() const;
 
-class GMAC_API RWLock : public __impl::util::__Lock {
-    DBC_FORCE_TEST(RWLock)
+    //! The thread gets a shared lock
+    void done() const;
 
-protected:
-	mutable pthread_rwlock_t lock_;
-    bool write_;
-public:
-	RWLock(const char *name);
-	VIRTUAL ~RWLock();
-
-protected:
-	TESTABLE void lockRead() const;
-	TESTABLE void lockWrite() const;
-	TESTABLE void unlock() const;
+    //! The thread releases a lock
+    void exit() const;
 };
 
 }}
 
-#include "Lock-impl.h"
-
-#ifdef USE_DBC
-#include "dbc/Lock.h"
+#if defined(POSIX)
+#include "util/posix/lock.h"
+#elif defined(WINDOWS)
+#include "util/windows/lock.h"
 #endif
+
+namespace __impl { namespace util {
+template <typename T>
+class scoped_lock {
+    T &obj_;
+    bool owned_;
+public:
+    explicit scoped_lock(T &obj);
+    explicit scoped_lock(scoped_lock<T> &obj);
+    ~scoped_lock();
+
+    T &operator()();
+    const T &operator()() const;
+
+    scoped_lock<T> &operator=(scoped_lock<T> &lock);
+};
+
+}}
+
+#include "lock-impl.h"
 
 #endif

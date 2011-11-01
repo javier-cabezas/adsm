@@ -19,20 +19,19 @@ public:
 
 private:
     context_parent_t &context_;
-    gmacError_t err_;
     bool isAsynchronous_;
     bool synced_;
     type type_;
 
 protected:
+    gmacError_t err_;
+
     hal::time_t timeQueued_;
     hal::time_t timeSubmit_;
     hal::time_t timeStart_;
     hal::time_t timeEnd_;
 
     event_t(type t, context_parent_t &context);
-
-    void set_error(gmacError_t err);
 
 public:
     enum state {
@@ -43,10 +42,10 @@ public:
     };
 
     virtual gmacError_t sync();
+    virtual bool is_synced() const;
 
     context_parent_t &get_context();
 
-    gmacError_t get_error() const;
     type get_type() const;
     virtual state get_state();
 
@@ -57,8 +56,7 @@ public:
 };
 
 template <typename D, typename B, typename I>
-class GMAC_LOCAL async_event_t :
-    public event_t<D, B, I> {
+class GMAC_LOCAL async_event_t {
     typedef typename I::context context_parent_t;
 
     typedef event_t<D, B, I> Parent;
@@ -69,14 +67,12 @@ private:
 protected:
     typename Parent::state state_;
 
-    async_event_t(typename Parent::type t, context_parent_t &context);
+    async_event_t();
 
     void set_synced(bool synced);
 
 public:
     bool is_synced() const;
-
-    virtual typename Parent::state get_state() = 0;
 };
 
 }

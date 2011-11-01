@@ -7,7 +7,7 @@
 
 #include "hal/types-detail.h"
 
-#include "util/Unique.h"
+#include "util/unique.h"
 
 namespace __impl { namespace hal {
     
@@ -26,8 +26,22 @@ class event_t;
 class async_event_t;
 class buffer_t;
 
-typedef hal::detail::backend_traits<CUcontext, CUstream, CUevent, CUfunction, dim3> backend_traits;
-typedef hal::detail::implementation_traits<coherence_domain, context_t, stream_t, kernel_t, texture_t, variable_t, code_repository, event_t, async_event_t, buffer_t> implementation_traits;
+typedef hal::detail::backend_traits<CUcontext,
+                                    CUstream,
+                                    CUevent,
+                                    CUfunction,
+                                    dim3> backend_traits;
+
+typedef hal::detail::implementation_traits<coherence_domain,
+                                           context_t,
+                                           stream_t,
+                                           kernel_t,
+                                           texture_t,
+                                           variable_t,
+                                           code_repository,
+                                           event_t,
+                                           async_event_t,
+                                           buffer_t> implementation_traits;
 
 gmacError_t error(CUresult err);
 
@@ -48,11 +62,20 @@ public:
 
 class code_repository;
 
+typedef hal::detail::list_event<device, backend_traits, implementation_traits> list_event_detail;
+
+class GMAC_LOCAL list_event :
+    public list_event_detail {
+    typedef list_event_detail Parent;
+
+public:
+    gmacError_t sync();
+};
+
 class GMAC_LOCAL context_t :
     public hal::detail::context_t<device, backend_traits, implementation_traits>,
     util::unique<context_t, GmacAddressSpaceId> {
     typedef hal::detail::context_t<device, backend_traits, implementation_traits> Parent;
-    typedef hal::detail::list_event<device, backend_traits, implementation_traits> list_event;
 
     friend class stream_t;
     friend class _event_common_t;
@@ -69,24 +92,37 @@ public:
     //gmacError_t free_host_pinned(hostptr_t ptr);
     gmacError_t free_buffer(buffer_t &buffer);
 
-    event_t &copy(accptr_t dst, hostptr_t src, size_t count, stream_t &stream, list_event &dependencies = list_event::empty);
-    event_t &copy(accptr_t dst, hostptr_t src, size_t count, stream_t &stream, async_event_t &event);
-    event_t &copy(hostptr_t dst, accptr_t src, size_t count, stream_t &stream, list_event &dependencies = list_event::empty);
-    event_t &copy(hostptr_t dst, accptr_t src, size_t count, stream_t &stream, async_event_t &event);
-    event_t &copy(accptr_t dst, accptr_t src, size_t count, stream_t &stream, list_event &dependencies = list_event::empty);
-    event_t &copy(accptr_t dst, accptr_t src, size_t count, stream_t &stream, async_event_t &event);
+    event_t *copy(accptr_t dst, hostptr_t src, size_t count, stream_t &stream, list_event_detail &dependencies, gmacError_t &err);
+    event_t *copy(accptr_t dst, hostptr_t src, size_t count, stream_t &stream, async_event_t &event, gmacError_t &err);
+    event_t *copy(accptr_t dst, hostptr_t src, size_t count, stream_t &stream, gmacError_t &err);
 
-    async_event_t &copy_async(accptr_t dst, buffer_t src, size_t off, size_t count, stream_t &stream, list_event &dependencies = list_event::empty);
-    async_event_t &copy_async(accptr_t dst, buffer_t src, size_t off, size_t count, stream_t &stream, async_event_t &event);
-    async_event_t &copy_async(buffer_t dst, size_t off, accptr_t src, size_t count, stream_t &stream, list_event &dependencies = list_event::empty);
-    async_event_t &copy_async(buffer_t dst, size_t off, accptr_t src, size_t count, stream_t &stream, async_event_t &event);
-    async_event_t &copy_async(accptr_t dst, accptr_t src, size_t count, stream_t &stream, list_event &dependencies = list_event::empty);
-    async_event_t &copy_async(accptr_t dst, accptr_t src, size_t count, stream_t &stream, async_event_t &event);
+    event_t *copy(hostptr_t dst, accptr_t src, size_t count, stream_t &stream, list_event_detail &dependencies, gmacError_t &err);
+    event_t *copy(hostptr_t dst, accptr_t src, size_t count, stream_t &stream, async_event_t &event, gmacError_t &err);
+    event_t *copy(hostptr_t dst, accptr_t src, size_t count, stream_t &stream, gmacError_t &err);
 
-    event_t &memset(accptr_t dst, int c, size_t count, stream_t &stream, list_event &dependencies = list_event::empty);
-    event_t &memset(accptr_t dst, int c, size_t count, stream_t &stream, async_event_t &event);
-    async_event_t &memset_async(accptr_t dst, int c, size_t count, stream_t &stream, list_event &dependencies = list_event::empty);
-    async_event_t &memset_async(accptr_t dst, int c, size_t count, stream_t &stream, async_event_t &event);
+    event_t *copy(accptr_t dst, accptr_t src, size_t count, stream_t &stream, list_event_detail &dependencies, gmacError_t &err);
+    event_t *copy(accptr_t dst, accptr_t src, size_t count, stream_t &stream, async_event_t &event, gmacError_t &err);
+    event_t *copy(accptr_t dst, accptr_t src, size_t count, stream_t &stream, gmacError_t &err);
+
+    async_event_t *copy_async(accptr_t dst, buffer_t src, size_t off, size_t count, stream_t &stream, list_event_detail &dependencies, gmacError_t &err);
+    async_event_t *copy_async(accptr_t dst, buffer_t src, size_t off, size_t count, stream_t &stream, async_event_t &event, gmacError_t &err);
+    async_event_t *copy_async(accptr_t dst, buffer_t src, size_t off, size_t count, stream_t &stream, gmacError_t &err);
+
+    async_event_t *copy_async(buffer_t dst, size_t off, accptr_t src, size_t count, stream_t &stream, list_event_detail &dependencies, gmacError_t &err);
+    async_event_t *copy_async(buffer_t dst, size_t off, accptr_t src, size_t count, stream_t &stream, async_event_t &event, gmacError_t &err);
+    async_event_t *copy_async(buffer_t dst, size_t off, accptr_t src, size_t count, stream_t &stream, gmacError_t &err);
+
+    async_event_t *copy_async(accptr_t dst, accptr_t src, size_t count, stream_t &stream, list_event_detail &dependencies, gmacError_t &err);
+    async_event_t *copy_async(accptr_t dst, accptr_t src, size_t count, stream_t &stream, async_event_t &event, gmacError_t &err);
+    async_event_t *copy_async(accptr_t dst, accptr_t src, size_t count, stream_t &stream, gmacError_t &err);
+
+    event_t *memset(accptr_t dst, int c, size_t count, stream_t &stream, list_event_detail &dependencies, gmacError_t &err);
+    event_t *memset(accptr_t dst, int c, size_t count, stream_t &stream, async_event_t &event, gmacError_t &err);
+    event_t *memset(accptr_t dst, int c, size_t count, stream_t &stream, gmacError_t &err);
+
+    async_event_t *memset_async(accptr_t dst, int c, size_t count, stream_t &stream, list_event_detail &dependencies, gmacError_t &err);
+    async_event_t *memset_async(accptr_t dst, int c, size_t count, stream_t &stream, async_event_t &event, gmacError_t &err);
+    async_event_t *memset_async(accptr_t dst, int c, size_t count, stream_t &stream, gmacError_t &err);
 
     accptr_t get_device_addr_from_pinned(hostptr_t addr);
 
@@ -111,8 +147,7 @@ class GMAC_LOCAL kernel_t :
     public hal::detail::kernel_t<device, backend_traits, implementation_traits> {
 
     typedef hal::detail::kernel_t<device, backend_traits, implementation_traits> Parent;
-    typedef hal::detail::list_event<device, backend_traits, implementation_traits> list_event;
-
+    
 public:
     class launch;
 
@@ -144,8 +179,9 @@ public:
     public:
         launch(kernel_t &parent, Parent::config &conf, stream_t &stream);
 
-        async_event_t &execute(list_event &dependencies = list_event::empty);
-        async_event_t &execute(async_event_t &event);
+        async_event_t *execute(list_event_detail &dependencies, gmacError_t &err);
+        async_event_t *execute(async_event_t &event, gmacError_t &err);
+        async_event_t *execute(gmacError_t &err);
     };
 
     kernel_t(CUfunction func, const std::string &name);
@@ -178,7 +214,7 @@ class GMAC_LOCAL event_t :
     public hal::detail::event_t<device, backend_traits, implementation_traits>,
     public _event_common_t {
     friend class device;
-    friend class context_t;
+
     typedef hal::detail::event_t<device, backend_traits, implementation_traits> Parent;
 
 public:
@@ -187,16 +223,16 @@ public:
 
 class GMAC_LOCAL async_event_t :
     public hal::detail::async_event_t<device, backend_traits, implementation_traits>,
-    public _event_common_t {
+    public event_t {
     friend class device;
 
     typedef hal::detail::async_event_t<device, backend_traits, implementation_traits> Parent;
 
 public:
-    async_event_t(Parent::type t, context_t &context);
+    async_event_t(event_t::type t, context_t &context);
     gmacError_t sync();
 
-    Parent::state get_state();
+    event_t::state get_state();
 };
 
 

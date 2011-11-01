@@ -39,11 +39,13 @@
 
 #include "config/common.h"
 
+#include "hal/types.h"
+
 #include "memory/map_object.h"
 
-#include "util/Lock.h"
+#include "util/lock.h"
 #include "util/Reference.h"
-#include "util/Unique.h"
+#include "util/unique.h"
 
 namespace __impl {
     
@@ -56,8 +58,7 @@ namespace core {
 class io_buffer;
 
 class GMAC_LOCAL address_space :
-    public util::unique<address_space, GmacAddressSpaceId>,
-    public util::Reference {
+    public util::unique<address_space, GmacAddressSpaceId> {
 
     memory::map_object map_;
 
@@ -78,16 +79,18 @@ public:
     virtual accptr_t get_host_pinned_mapping(hostptr_t ptr, gmacError_t &err) = 0;
 
     virtual gmacError_t copy(accptr_t acc, const hostptr_t host, size_t count) = 0;
-
     virtual gmacError_t copy(hostptr_t host, const accptr_t acc, size_t count) = 0;
-
     virtual gmacError_t copy(accptr_t dst, const accptr_t src, size_t count) = 0;
 
-    virtual gmacError_t copy(accptr_t dst, io_buffer &buffer, size_t off, size_t count) = 0;
+    virtual hal::async_event_t *copy_async(accptr_t acc, const hostptr_t host, size_t count, gmacError_t &err) = 0;
+    virtual hal::async_event_t *copy_async(hostptr_t host, const accptr_t acc, size_t count, gmacError_t &err) = 0;
+    virtual hal::async_event_t *copy_async(accptr_t dst, const accptr_t src, size_t count, gmacError_t &err) = 0;
 
+    virtual gmacError_t copy(accptr_t dst, io_buffer &buffer, size_t off, size_t count) = 0;
     virtual gmacError_t copy(io_buffer &buffer, size_t off, const accptr_t dst, size_t count) = 0;
 
     virtual gmacError_t memset(accptr_t addr, int c, size_t size) = 0;
+    virtual hal::async_event_t *memset_async(accptr_t addr, int c, size_t size, gmacError_t &err) = 0;
 
     memory::map_object &get_object_map();
     const memory::map_object &get_object_map() const;

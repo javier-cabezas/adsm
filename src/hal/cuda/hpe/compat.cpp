@@ -32,7 +32,7 @@ vdevice &get_current_virtual_device()
 static inline
 context_t &get_current_hal_context()
 {
-    return get_current_virtual_device().get_address_space().get_hal_context();
+    return get_current_virtual_device().get_address_space()->get_hal_context();
 }
 
 static inline
@@ -483,7 +483,7 @@ GMAC_API cudaError_t APICALL cudaMemcpy2DToArray(struct cudaArray *dst, size_t w
 	enterGmac();
 	cudaError_t ret = cudaSuccess;
     __impl::memory::Manager &manager = __impl::memory::getManager();
-    __impl::core::address_space *aspace = manager.owner(hostptr_t(src));
+    __impl::util::smart_ptr<__impl::core::address_space>::shared aspace = manager.owner(hostptr_t(src));
     if(aspace == NULL) {
 #if CUDA_VERSION >= 3020
         __cudaMemcpy2D((CUarray)dst, wOffset, hOffset, src, spitch, width, height);
@@ -494,7 +494,7 @@ GMAC_API cudaError_t APICALL cudaMemcpy2DToArray(struct cudaArray *dst, size_t w
 #endif
     }
     else {
-        long_t dummy = manager.translate(*aspace, hostptr_t(src)).get();
+        long_t dummy = manager.translate(aspace, hostptr_t(src)).get();
 #if CUDA_VERSION >= 3020
         __cudaInternalMemcpy2D((CUarray)dst, wOffset, hOffset, (CUdeviceptr)(dummy), spitch, width, height);
 #else

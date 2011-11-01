@@ -38,14 +38,14 @@ WITH THE SOFTWARE.  */
 #include <map>
 
 #include "config/common.h"
-#include "util/Lock.h"
+#include "util/lock.h"
 
 namespace __impl { namespace util { namespace allocator {
 
 /**
  * Simple buddy allocator
  */
-class GMAC_LOCAL Buddy : protected gmac::util::Lock  {
+class GMAC_LOCAL Buddy : protected gmac::util::mutex {
     DBC_FORCE_TEST(__impl::util::allocator::Buddy)
 
 protected:

@@ -36,7 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 #include "util/Logger.h"
-#include "util/Lock.h"
+#include "util/lock.h"
 
 namespace __impl { namespace memory {
 
@@ -57,7 +57,7 @@ public:
 
 class GMAC_LOCAL FileMap :
 	protected std::map<hostptr_t, FileMapEntry>,
-	public gmac::util::RWLock
+	public gmac::util::lock_rw
 {
 protected:
 	typedef std::map<hostptr_t, FileMapEntry> Parent;

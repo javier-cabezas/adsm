@@ -6,6 +6,21 @@
 namespace __impl { namespace hal { namespace cuda {
 
 inline
+gmacError_t
+list_event::sync()
+{
+    gmacError_t ret = gmacSuccess;
+    for (Parent::iterator it  = Parent::begin();
+            it != Parent::end();
+            it++) {
+        ret = (*it)->sync();
+        if (ret != gmacSuccess) break;
+    }
+
+    return ret;
+}
+
+inline
 buffer_t::buffer_t(hostptr_t addr, context_t &context) :
     Parent(context),
     addr_(addr)
