@@ -67,15 +67,15 @@ kernel_t::launch::execute(gmacError_t &err)
 
     ret->begin(get_stream());
     res = cuLaunchKernel(get_kernel()(), dimsGlobal.x,
-                                    dimsGlobal.y,
-                                    dimsGlobal.z,
-                                    dimsGroup.x,
-                                    dimsGroup.y,
-                                    dimsGroup.z,
-                                    get_config().memShared_,
-                                    get_stream()(),
-                                    (void **) get_config().params_,
-                                    NULL);
+                                         dimsGlobal.y,
+                                         dimsGlobal.z,
+                                         dimsGroup.x,
+                                         dimsGroup.y,
+                                         dimsGroup.z,
+                                         get_config().memShared_,
+                                         get_stream()(),
+                                         (void **) get_config().params_,
+                                         NULL);
     ret->end();
     err = error(res);
 

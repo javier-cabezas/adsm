@@ -16,7 +16,8 @@ namespace __impl { namespace memory {
 ListAddr AllAddresses;
 
 Manager::Manager(core::process &proc) :
-    proc_(proc)
+    proc_(proc),
+    mapAllocations_("map_manager_allocations")
 {
     TRACE(LOCAL,"Memory manager starts");
     Init();
@@ -140,7 +141,7 @@ gmacError_t Manager::alloc(util::smart_ptr<core::address_space>::shared aspace, 
 
     // Insert object into the global memory map
     ASSERTION(mapAllocations_.find(*addr) == mapAllocations_.end(), "Object already registered");
-    mapAllocations_.insert(MapAllocations::value_type(*addr + size, aspace));
+    mapAllocations_.insert(map_allocation::value_type(*addr + size, aspace));
 
     // Insert object into memory maps
     map.addObject(*object);
@@ -207,7 +208,7 @@ gmacError_t Manager::free(util::smart_ptr<core::address_space>::shared aspace, h
         map.removeObject(*object);
         object->decRef();
 
-        MapAllocations::iterator it = mapAllocations_.upper_bound(addr);
+        map_allocation::iterator it = mapAllocations_.upper_bound(addr);
         ASSERTION(it != mapAllocations_.end(), "Object not registered");
         mapAllocations_.erase(it);
     } else {
@@ -276,7 +277,7 @@ Manager::owner(hostptr_t addr, size_t size)
 {
     util::smart_ptr<core::address_space>::shared aspace;
 
-    MapAllocations::iterator it = mapAllocations_.upper_bound(addr);
+    map_allocation::iterator it = mapAllocations_.upper_bound(addr);
 
     if (it != mapAllocations_.end()) {
         aspace = it->second;

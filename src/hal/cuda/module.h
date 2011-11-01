@@ -47,6 +47,7 @@ WITH THE SOFTWARE.  */
 #include "config/config.h"
 
 #include "util/UniquePtr.h"
+#include "util/stl/locked_map.h"
 
 #include "descriptor.h"
 #include "types.h"
@@ -88,7 +89,7 @@ public:
 };
 
 class code_repository;
-typedef std::vector<code_repository *> vector_module;
+typedef util::stl::locked_map<context_t *, code_repository *> map_context_repository;
 
 class GMAC_LOCAL module_descriptor {
 	friend class code_repository;
@@ -114,7 +115,7 @@ public:
     void add(variable_descriptor &v);
     void add(texture_descriptor  &t);
 
-    static vector_module create_modules();
+    static code_repository *create_modules();
 };
 
 typedef std::vector<module_descriptor *> vector_module_descriptor;

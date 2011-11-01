@@ -126,7 +126,7 @@ public:
 
     accptr_t get_device_addr_from_pinned(hostptr_t addr);
 
-    const code_repository &get_code_repository() const;
+    const code_repository &get_code_repository();
 
     void set();
 };

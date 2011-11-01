@@ -37,6 +37,7 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 #include "include/gmac/types.h"
 #include "util/Singleton.h"
+#include "util/stl/locked_map.h"
 
 namespace __impl {
 
@@ -66,8 +67,8 @@ protected:
     core::process &proc_;
 
     // TODO: add locking to this abstraction
-    typedef std::map<hostptr_t, util::smart_ptr<core::address_space>::shared> MapAllocations;
-    MapAllocations mapAllocations_;
+    typedef util::stl::locked_map<hostptr_t, util::smart_ptr<core::address_space>::shared> map_allocation;
+    map_allocation mapAllocations_;
 
     /**
      * Allocates a host mapped memory

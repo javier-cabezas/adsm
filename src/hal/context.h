@@ -95,7 +95,7 @@ public:
     virtual typename I::async_event *memset_async(accptr_t dst, int c, size_t count, typename I::stream &stream, typename I::async_event &event, gmacError_t &err) = 0;
     virtual typename I::async_event *memset_async(accptr_t dst, int c, size_t count, typename I::stream &stream, gmacError_t &err) = 0;
 
-    virtual const typename I::code_repository &get_code_repository() const = 0;
+    virtual const typename I::code_repository &get_code_repository() = 0;
 };
 
 }

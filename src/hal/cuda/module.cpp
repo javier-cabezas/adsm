@@ -4,7 +4,7 @@
 
 namespace __impl { namespace hal {
         
-extern cuda::vector_module Modules_;
+extern cuda::map_context_repository Modules_;
 
 namespace cuda {
 
@@ -45,14 +45,12 @@ module_descriptor::module_descriptor(const void *fatBin) :
     ModuleDescriptors_.push_back(this);
 }
 
-vector_module
+code_repository *
 module_descriptor::create_modules()
 {
     TRACE(GLOBAL, "Creating modules");
-    vector_module modules;
 
     code_repository *ptr = new code_repository(ModuleDescriptors_);
-    modules.push_back(ptr);
 #if 0
     vector_module_descriptor::const_iterator it;
     for (it = ModuleDescriptors_.begin(); it != ModuleDescriptors_.end(); it++) {
@@ -60,7 +58,7 @@ module_descriptor::create_modules()
         modules.push_back(new cuda::module(*(*it)));
     }
 #endif
-    return modules;
+    return ptr;
 }
 
 static const int CUDA_MAGIC = 0x466243b1;

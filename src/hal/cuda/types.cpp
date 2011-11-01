@@ -4,7 +4,7 @@
 #include "device.h"
 #include "module.h"
 
-#define __GMAC_ERROR(r, err) case r: error = err; break
+#define __GMAC_ERROR(r, err) case r: error = err; if(r == CUDA_ERROR_INVALID_HANDLE) abort(); break
 
 static bool initialized = false;
 
@@ -25,7 +25,7 @@ init_platform()
     return ret;
 }
 
-cuda::vector_module Modules_;
+cuda::map_context_repository Modules_("map_context_repository");
 
 std::list<cuda::device *>
 init_devices()
@@ -116,6 +116,7 @@ gmacError_t error(CUresult err)
 context_t::context_t(CUcontext ctx, device &dev) :
     Parent(ctx, dev)
 {
+    TRACE(LOCAL, "Creating context: %p", (*this)());
 }
 
 accptr_t
@@ -575,19 +576,26 @@ context_t::memset_async(accptr_t dst, int c, size_t count, stream_t &stream, gma
 }
 
 const code_repository &
-context_t::get_code_repository() const
+context_t::get_code_repository()
 {
-    if (Modules_.size() == 0) {
-        Modules_ = module_descriptor::create_modules();
-    }
-    ASSERTION(Modules_.size() == 1, "More than one module found!");
+    code_repository *repository;
+    map_context_repository::iterator it = Modules_.find(this);
+    if (it == Modules_.end()) {
+        set();
 
-    return *Modules_[0];
+        repository = module_descriptor::create_modules();
+        Modules_.insert(map_context_repository::value_type(this, repository));
+    } else {
+        repository = it->second;
+    }
+
+    return *repository;
 }
 
 stream_t::stream_t(CUstream stream, context_t &context) :
     Parent(stream, context)
 {
+    TRACE(LOCAL, "Creating stream: %p", (*this)());
 }
 
 gmacError_t

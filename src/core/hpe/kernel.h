@@ -56,7 +56,7 @@ public:
         std::map<unsigned, std::list<memory::ObjectInfo>::iterator > paramToParamPtr_;
         std::list<memory::ObjectInfo> usedObjects_;
 
-        launch(kernel &parent, hal::kernel_t::config &config, vdevice &dev, hal::stream_t &stream);
+        launch(kernel &parent, hal::kernel_t::config &config, vdevice &dev, hal::stream_t &stream, gmacError_t &ret);
 
     public:
         gmacError_t wait();
