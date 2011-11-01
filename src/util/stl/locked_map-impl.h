@@ -44,7 +44,7 @@ locked_map<K, V>::insert(iterator first, iterator last)
 template <typename K, typename V>
 inline
 typename locked_map<K, V>::iterator
-locked_map<K, V>::find(const K &key)
+locked_map<K, V>::find(const key_type &key)
 {
     lockRead();
     iterator ret = Parent::find(key);
@@ -72,7 +72,7 @@ locked_map<K, V>::end()
 
 template <typename K, typename V>
 typename locked_map<K, V>::const_iterator
-locked_map<K, V>::find(const K &key) const
+locked_map<K, V>::find(const key_type &key) const
 {
     lockRead();
     const_iterator ret = Parent::find(key);
@@ -108,7 +108,7 @@ locked_map<K, V>::erase(iterator position)
 
 template <typename K, typename V>
 typename locked_map<K, V>::size_type
-locked_map<K, V>::erase(const K &x)
+locked_map<K, V>::erase(const key_type &x)
 {
     lockWrite();
     size_type ret = Parent::erase(x);
@@ -124,6 +124,35 @@ locked_map<K, V>::erase(iterator first, iterator last)
     lockWrite();
     Parent::erase(first, last);
     unlock();
+}
+
+template <typename K, typename V>
+typename locked_map<K, V>::iterator
+locked_map<K, V>::upper_bound(const key_type &x)
+{
+    lockWrite();
+    iterator ret = Parent::upper_bound(x);
+    unlock();
+
+    return ret;
+}
+
+template <typename K, typename V>
+typename locked_map<K, V>::const_iterator
+locked_map<K, V>::upper_bound(const key_type &x) const
+{
+    lockWrite();
+    const_iterator ret = Parent::upper_bound(x);
+    unlock();
+
+    return ret;
+}
+
+template <typename K, typename V>
+typename locked_map<K, V>::size_type
+locked_map<K, V>::size() const
+{
+    return Parent::size();
 }
 
 }}}

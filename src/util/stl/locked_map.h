@@ -50,6 +50,7 @@ public:
     typedef typename std::map<K, V>::const_iterator const_iterator;
     typedef typename std::map<K, V>::value_type value_type;
     typedef typename std::map<K, V>::size_type size_type;
+    typedef typename std::map<K, V>::key_type key_type;
 
     locked_map(const std::string &name);
 
@@ -57,17 +58,22 @@ public:
     iterator insert(iterator position, const value_type &x);
     void insert(iterator first, iterator last);
 
-    iterator find(const K &key);
+    iterator find(const key_type &key);
     //iterator begin();
     iterator end();
 
-    const_iterator find(const K &key) const;
+    const_iterator find(const key_type &key) const;
     //const_iterator begin() const;
     const_iterator end() const;
 
     void erase(iterator position);
-    size_type erase(const K &x);
+    size_type erase(const key_type &x);
     void erase(iterator first, iterator last);
+
+    iterator upper_bound(const key_type& x);
+    const_iterator upper_bound(const key_type& x) const;
+
+    size_type size() const;
 };
 
 }}}
