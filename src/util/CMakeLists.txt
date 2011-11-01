@@ -5,11 +5,11 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Parameter-def.h.in ${CMAKE_CURRENT_BI
 set(util_SRC
     Atomics.h
     FileLock.h
-    GMACBase.h
-    GMACBase.cpp
-    Lock.h
-    Lock-impl.h
-    Lock.cpp
+    gmac_base.h
+    gmac_base.cpp
+    lock.h
+    lock-impl.h
+    lock.cpp
     Logger.h
     Logger-impl.h
     Logger.cpp
@@ -27,11 +27,12 @@ set(util_SRC
     Singleton.h
     Singleton-impl.h
     Thread.h
-    Unique.h
-    Unique-impl.h
+    unique.h
+    unique-impl.h
     UniquePtr.h
     allocator/Buddy.h
     allocator/Buddy.cpp
+    stl/locked_map.h
 )
 
 set(util_DBC
