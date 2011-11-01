@@ -11,7 +11,8 @@ template <typename T>
 inline
 void Private<T>::init(Private &var)
 {
-    assert(pthread_key_create(&var.key_, NULL) == 0);
+    int ret = pthread_key_create(&var.key_, NULL);
+    assert(ret == 0);
 }
 
 
