@@ -49,27 +49,27 @@ namespace memory { namespace allocator {
  */
 class GMAC_LOCAL Slab : public memory::Allocator {
 protected:
-    class GMAC_LOCAL AddressMap : public std::map<hostptr_t, Cache *>, gmac::util::RWLock {
+    class GMAC_LOCAL AddressMap : public std::map<hostptr_t, Cache *>, gmac::util::lock_rw {
     protected:
         friend class Slab;
     public:
-        AddressMap() : gmac::util::RWLock("memory::Slab") {}
+        AddressMap() : gmac::util::lock_rw("memory::Slab") {}
     };
 
     typedef std::map<long_t, Cache *> CacheMap;
 
-    class GMAC_LOCAL aspace_map : public std::map<core::address_space *, CacheMap>, gmac::util::RWLock {
+    class GMAC_LOCAL aspace_map : public std::map<util::smart_ptr<core::address_space>::shared, CacheMap>, gmac::util::lock_rw {
         friend class Slab;
     public:
-        aspace_map() : gmac::util::RWLock("memory::Slab") {};
+        aspace_map() : gmac::util::lock_rw("memory::Slab") {}
     };
 
     AddressMap addresses_;
     aspace_map aspaces_; // Per-context cache map
 
-    Cache &createCache(core::address_space &aspace, CacheMap &map, long_t key, size_t size);
-    Cache &get(core::address_space &current, long_t key, size_t size);
-    void cleanup(core::address_space &current);
+    Cache &createCache(util::smart_ptr<core::address_space>::shared aspace, CacheMap &map, long_t key, size_t size);
+    Cache &get(util::smart_ptr<core::address_space>::shared current, long_t key, size_t size);
+    void cleanup(util::smart_ptr<core::address_space>::shared current);
 
     Manager &manager_;
 
@@ -77,8 +77,8 @@ protected:
 public:
     Slab(Manager &manager);
 
-    virtual hostptr_t alloc(core::address_space &current, const size_t size, const hostptr_t addr);
-    virtual bool free(core::address_space &current, const hostptr_t addr);
+    virtual hostptr_t alloc(util::smart_ptr<core::address_space>::shared current, const size_t size, const hostptr_t addr);
+    virtual bool free(util::smart_ptr<core::address_space>::shared current, const hostptr_t addr);
 };
 
 }}}

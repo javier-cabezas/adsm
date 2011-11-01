@@ -39,7 +39,7 @@ WITH THE SOFTWARE.  */
 
 #include "memory/Handler.h"
 #include "memory/Protocol.h"
-#include "util/Lock.h"
+#include "util/lock.h"
 
 #include "common/BlockList.h"
 #include "lazy/BlockState.h"
@@ -66,7 +66,8 @@ namespace protocol {
  * release operation. Data is transferred from accelerator memory to host memory
  * lazily, whenever it is needed by the application
  */
-class GMAC_LOCAL LazyBase : public Protocol, Handler, gmac::util::Lock {
+class GMAC_LOCAL LazyBase : public Protocol, Handler,
+                            private gmac::util::mutex {
     DBC_FORCE_TEST(LazyBase)
 
 protected:

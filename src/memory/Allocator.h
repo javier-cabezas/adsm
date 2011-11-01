@@ -63,14 +63,14 @@ public:
      * NULL to let the allocator choose the host memory address.
      * \return Host memory address where the data was allocated
      */
-    virtual hostptr_t alloc(core::address_space &current, const size_t size, const hostptr_t addr = NULL) = 0;
+    virtual hostptr_t alloc(util::smart_ptr<core::address_space>::shared current, const size_t size, const hostptr_t addr = NULL) = 0;
 
     /**
      * Release shared memory
      * \param current Execution mode where the data is released
      * \param addr Host memory address of the chunk of data to be release
      */
-    virtual bool free(core::address_space &current, const hostptr_t addr) = 0;
+    virtual bool free(util::smart_ptr<core::address_space>::shared current, const hostptr_t addr) = 0;
 };
 
 }}

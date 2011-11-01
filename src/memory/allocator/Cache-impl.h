@@ -58,8 +58,8 @@ void Arena::put(hostptr_t obj)
 }
 
 inline
-Cache::Cache(Manager &manager, core::address_space &aspace, size_t size) :
-    gmac::util::Lock("Cache"),
+Cache::Cache(Manager &manager, util::smart_ptr<core::address_space>::shared aspace, size_t size) :
+    gmac::util::mutex("Cache"),
     objectSize(size),
     arenaSize(memory::BlockSize_),
     manager_(manager),

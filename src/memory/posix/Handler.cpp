@@ -40,10 +40,10 @@ static void segvHandler(int s, siginfo_t *info, void *ctx)
 	else TRACE(GLOBAL, "Write SIGSEGV for %p", addr);
 
 	bool resolved = false;
-    core::address_space *aspace = Manager_->owner(addr);
+    util::smart_ptr<core::address_space>::shared aspace = Manager_->owner(addr);
     if(aspace != NULL) {
-	    if(!writeAccess) resolved = Manager_->signalRead(*aspace, addr);
-    	else             resolved = Manager_->signalWrite(*aspace, addr);
+	    if(!writeAccess) resolved = Manager_->signalRead(aspace, addr);
+    	else             resolved = Manager_->signalWrite(aspace, addr);
     }
 
 	if(resolved == false) {

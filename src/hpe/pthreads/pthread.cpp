@@ -16,7 +16,7 @@
 #include "trace/Tracer.h"
 
 #include "util/loader.h"
-#include "util/Lock.h"
+#include "util/lock.h"
 
 
 using namespace __impl::core::hpe;

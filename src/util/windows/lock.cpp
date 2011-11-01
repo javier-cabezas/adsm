@@ -1,37 +1,37 @@
 #include <string>
 
-#include "Lock.h"
+#include "mutex.h"
 
 namespace __impl { namespace util {
 
-SpinLock::SpinLock(const char *name) :
+spinlock::spinlock(const char *name) :
     __Lock(name), spinlock_(0)
 {
 }
 
-SpinLock::~SpinLock()
+spinlock::~spinlock()
 {
 }
 
-Lock::Lock(const char *name) :
+mutex::mutex(const char *name) :
     __Lock(name)
 {
     InitializeCriticalSection(&mutex_);
 }
 
-Lock::~Lock()
+mutex::~mutex()
 {
     DeleteCriticalSection(&mutex_);
 }
 
-RWLock::RWLock(const char *name) :
+lock_rw::lock_rw(const char *name) :
     __Lock(name),
 	owner_(0)
 {
-    InitializeSRWLock(&lock_);
+    InitializeSlock_rw(&lock_);
 }
 
-RWLock::~RWLock()
+lock_rw::~lock_rw()
 {
 }
 

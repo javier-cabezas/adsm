@@ -43,7 +43,7 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 #include "hal/types.h"
 #include "include/gmac/types.h"
-#include "util/Lock.h"
+#include "util/lock.h"
 #include "util/NonCopyable.h"
 
 namespace __impl { namespace core {
@@ -93,7 +93,7 @@ protected:
     /**
      * Event returned 
      */
-    hal::async_event_t *event_;
+    hal::event_t *event_;
 
 public:
     /**
@@ -142,9 +142,9 @@ public:
      */
     bool async() const;
 
-    gmacError_t to_host(hal::async_event_t &event);
+    void to_host(hal::event_t &event);
 
-    gmacError_t to_device(hal::async_event_t &event);
+    void to_device(hal::event_t &event);
 
     /**
      * Returns the current state of the buffer

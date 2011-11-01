@@ -38,7 +38,7 @@
 #include <map>
 
 #include "config/common.h"
-#include "util/Lock.h"
+#include "util/lock.h"
 
 
 namespace __impl { namespace core {
@@ -48,7 +48,7 @@ typedef std::map<hostptr_t, PairAlloc> MapAlloc;
 
 class GMAC_LOCAL AllocationMap :
     protected MapAlloc,
-    protected gmac::util::RWLock {
+    protected gmac::util::lock_rw {
     DBC_FORCE_TEST(__impl::core::AllocationMap)
 public:
     AllocationMap();

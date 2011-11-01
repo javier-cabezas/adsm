@@ -40,10 +40,10 @@ WITH THE SOFTWARE.  */
 #include "memory/vm/Bitmap.h"
 #endif
 #include "util/Atomics.h"
-#include "util/Lock.h"
+#include "util/lock.h"
 #include "util/NonCopyable.h"
 #include "util/Reference.h"
-#include "util/Unique.h"
+#include "util/unique.h"
 
 namespace __impl {
 
@@ -59,8 +59,7 @@ class Process;
 class GMAC_LOCAL vdevice :
     public util::Reference,
     public util::NonCopyable,
-    public util::unique<vdevice, GmacVirtualDeviceId>,
-    public gmac::util::SpinLock {
+    public util::unique<vdevice, GmacVirtualDeviceId> {
 protected:
     /**
      * vdevice constructor

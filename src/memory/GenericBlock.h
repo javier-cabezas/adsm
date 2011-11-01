@@ -39,7 +39,7 @@ WITH THE SOFTWARE.  */
 
 #include "include/gmac/types.h"
 
-#include "util/GMACBase.h"
+#include "util/gmac_base.h"
 
 #include "Block.h"
 
@@ -58,7 +58,7 @@ template <typename State>
 class GMAC_LOCAL GenericBlock :
     public gmac::memory::Block,
     public State,
-    util::GMACBase<GenericBlock<State> > {
+    util::gmac_base<GenericBlock<State> > {
 protected:
     BlockGroup<State> &parent_;
 

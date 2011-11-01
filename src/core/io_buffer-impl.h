@@ -108,29 +108,25 @@ io_buffer::wait()
 }
 
 inline
-gmacError_t
-io_buffer::to_host(hal::async_event_t &event)
+void
+io_buffer::to_host(hal::event_t &event)
 {
     ASSERTION(state_ == Idle);
     ASSERTION(event_ == NULL);
 
     state_ = ToHost;
     event_ = &event;
-
-    return event_->get_error();
 }
 
 inline
-gmacError_t
-io_buffer::to_device(hal::async_event_t &event)
+void
+io_buffer::to_device(hal::event_t &event)
 {
     ASSERTION(state_ == Idle);
     ASSERTION(event_ == NULL);
 
     state_ = ToAccelerator;
     event_ = &event;
-
-    return event_->get_error();
 }
 
 inline

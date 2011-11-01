@@ -39,7 +39,7 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 #include "memory/Manager.h"
-#include "util/Lock.h"
+#include "util/lock.h"
 
 namespace __impl { namespace memory { namespace allocator {
 
@@ -58,10 +58,10 @@ protected:
     ObjectList objects_;
 
     Manager &manager_;
-    core::address_space &aspace_;
+    util::smart_ptr<core::address_space>::shared aspace_;
 
 public:
-    Arena(Manager &manager, core::address_space &aspace, size_t objSize);
+    Arena(Manager &manager, util::smart_ptr<core::address_space>::shared aspace, size_t objSize);
     ~Arena();
 
     inline hostptr_t address() const { return ptr_; }
@@ -82,7 +82,7 @@ public:
  * \sa Slab
  */
 class GMAC_LOCAL Cache :
-    protected gmac::util::Lock {
+    protected gmac::util::mutex {
 protected:
     size_t objectSize;
     size_t arenaSize;
@@ -91,9 +91,9 @@ protected:
     ArenaMap arenas;
 
     Manager &manager_;
-    core::address_space &aspace_;
+    util::smart_ptr<core::address_space>::shared aspace_;
 public:
-    Cache(Manager &manager, core::address_space &aspace, size_t size);
+    Cache(Manager &manager, util::smart_ptr<core::address_space>::shared aspace, size_t size);
     virtual ~Cache();
 
     static Cache &get(long key, size_t size);

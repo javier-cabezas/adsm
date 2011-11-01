@@ -1,29 +1,29 @@
 #ifdef USE_DBC
 
-#include "Lock.h"
+#include "mutex.h"
 
 namespace __dbc { namespace util {
 
-SpinLock::SpinLock(const char *name) :
-    __impl::util::SpinLock(name),
+spinlock::spinlock(const char *name) :
+    __impl::util::spinlock(name),
     locked_(false),
     owner_(0)
 {
 	InitializeCriticalSection(&internal_);
 }
 
-SpinLock::~SpinLock()
+spinlock::~spinlock()
 {
     DeleteCriticalSection(&internal_);
 }
 
-void SpinLock::lock() const
+void spinlock::lock() const
 {
     EnterCriticalSection(&internal_);
     REQUIRES(owner_ != GetCurrentThreadId());
     LeaveCriticalSection(&internal_);
 
-    __impl::util::SpinLock::lock();
+    __impl::util::spinlock::lock();
 
     EnterCriticalSection(&internal_);
     ENSURES(locked_ == false);
@@ -32,7 +32,7 @@ void SpinLock::lock() const
     LeaveCriticalSection(&internal_);
 }
 
-void SpinLock::unlock() const
+void spinlock::unlock() const
 {
     EnterCriticalSection(&internal_);
     REQUIRES(locked_ == true);
@@ -40,28 +40,28 @@ void SpinLock::unlock() const
     owner_ = 0;
     locked_ = false;
 
-    __impl::util::SpinLock::unlock();
+    __impl::util::spinlock::unlock();
 
     LeaveCriticalSection(&internal_);
 }
 
 
-Lock::Lock(const char *name) :
-    __impl::util::Lock(name),
+mutex::mutex(const char *name) :
+    __impl::util::mutex(name),
     locked_(false),
     owner_(0)
 {
 	InitializeCriticalSection(&internal_);
 }
 
-Lock::~Lock()
+mutex::~mutex()
 {
     DeleteCriticalSection(&internal_);
 }
 
-void Lock::lock() const
+void mutex::lock() const
 {
-    __impl::util::Lock::lock();
+    __impl::util::mutex::lock();
 
     EnterCriticalSection(&internal_);
     ENSURES(locked_ == false);
@@ -70,7 +70,7 @@ void Lock::lock() const
     LeaveCriticalSection(&internal_);
 }
 
-void Lock::unlock() const
+void mutex::unlock() const
 {
     EnterCriticalSection(&internal_);
     REQUIRES(locked_ == true);
@@ -78,31 +78,31 @@ void Lock::unlock() const
     owner_ = 0;
     locked_ = false;
 
-    __impl::util::Lock::unlock();
+    __impl::util::mutex::unlock();
 
     LeaveCriticalSection(&internal_);
 }
 
-RWLock::RWLock(const char *name) :
-    __impl::util::RWLock(name),
+lock_rw::lock_rw(const char *name) :
+    __impl::util::lock_rw(name),
     state_(Idle),
     writer_(0)
 {
     InitializeCriticalSection(&internal_);
 }
 
-RWLock::~RWLock()
+lock_rw::~lock_rw()
 {
     DeleteCriticalSection(&internal_);
 }
 
-void RWLock::lockRead() const
+void lock_rw::lockRead() const
 {
     EnterCriticalSection(&internal_);
     REQUIRES(readers_.find(GetCurrentThreadId()) == readers_.end());
     LeaveCriticalSection(&internal_);
 
-    __impl::util::RWLock::lockRead();
+    __impl::util::lock_rw::lockRead();
 
     EnterCriticalSection(&internal_);
     ENSURES(state_ == Idle || state_ == Read);
@@ -111,14 +111,14 @@ void RWLock::lockRead() const
     LeaveCriticalSection(&internal_);
 }
 
-void RWLock::lockWrite() const
+void lock_rw::lockWrite() const
 {
     EnterCriticalSection(&internal_);
     REQUIRES(readers_.find(GetCurrentThreadId()) == readers_.end());
 	REQUIRES(writer_ != GetCurrentThreadId());
     LeaveCriticalSection(&internal_);
 
-    __impl::util::RWLock::lockWrite();
+    __impl::util::lock_rw::lockWrite();
 
     EnterCriticalSection(&internal_);
     ENSURES(readers_.empty() == true);
@@ -128,7 +128,7 @@ void RWLock::lockWrite() const
     LeaveCriticalSection(&internal_);
 }
 
-void RWLock::unlock() const
+void lock_rw::unlock() const
 {
     EnterCriticalSection(&internal_);
     if(writer_ == GetCurrentThreadId()) {
@@ -143,7 +143,7 @@ void RWLock::unlock() const
         if(readers_.empty() == true) state_ = Idle;
     }
 
-    __impl::util::RWLock::unlock();
+    __impl::util::lock_rw::unlock();
 
     LeaveCriticalSection(&internal_);
 }

@@ -36,7 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include "memory/object.h"
 
-#include "util/GMACBase.h"
+#include "util/gmac_base.h"
 
 namespace __impl { 
 
@@ -49,7 +49,7 @@ namespace memory {
 
 template<typename State>
 class GMAC_LOCAL BlockGroup :
-    util::GMACBase<BlockGroup<State> >,
+    util::gmac_base<BlockGroup<State> >,
     public memory::object {
 protected:
     hostptr_t shadow_;
@@ -62,7 +62,7 @@ protected:
     aspace_map owners_;
 #endif
     accptr_t deviceAddr_;
-    core::address_space *ownerShortcut_;
+    util::smart_ptr<core::address_space>::shared ownerShortcut_;
 
     gmacError_t repopulateBlocks(core::address_space &aspace);
 
@@ -77,8 +77,8 @@ public:
     core::address_space &owner();
     const core::address_space &owner() const;
 
-    gmacError_t addOwner(core::address_space &owner);
-    gmacError_t removeOwner(core::address_space &owner);
+    gmacError_t addOwner(util::smart_ptr<core::address_space>::shared owner);
+    gmacError_t removeOwner(util::smart_ptr<core::address_space>::shared owner);
 
     gmacError_t mapToAccelerator();
     gmacError_t unmapFromAccelerator();

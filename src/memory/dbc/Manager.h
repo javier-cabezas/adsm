@@ -52,7 +52,7 @@ class GMAC_LOCAL Manager :
 private:
     typedef __impl::memory::Manager Parent;
 
-    typedef __impl::core::address_space address_space_impl;
+    typedef __impl::util::smart_ptr<__impl::core::address_space>::shared address_space_impl;
     typedef __impl::core::io_buffer io_buffer_impl;
     typedef __impl::core::process ProcessImpl;
 
@@ -78,7 +78,7 @@ public:
      * \param size Size (in bytes) of shared memory to be allocated
      * \return Error code
      */
-    gmacError_t alloc(address_space_impl &aspace, hostptr_t *addr, size_t size);
+    gmacError_t alloc(address_space_impl aspace, hostptr_t *addr, size_t size);
 
     /**
      * Release shared memory
@@ -86,7 +86,7 @@ public:
      * \param addr Memory address of the shared memory chunk to be released
      * \return Error code
      */
-    gmacError_t free(address_space_impl &aspace, hostptr_t addr);
+    gmacError_t free(address_space_impl aspace, hostptr_t addr);
 
     /**
      * Notify a memory fault caused by a load operation
@@ -94,7 +94,7 @@ public:
      * \param addr Host memory address causing the memory fault
      * \return True if the Manager was able to fix the fault condition
      */
-    bool signalRead(address_space_impl &aspace, hostptr_t addr);
+    bool signalRead(address_space_impl aspace, hostptr_t addr);
 
     /**
      * Notify a memory fault caused by a store operation
@@ -102,7 +102,7 @@ public:
      * \param addr Host memory address causing the memory fault
      * \return True if the Manager was able to fix the fault condition
      */
-    bool signalWrite(address_space_impl &aspace, hostptr_t addr);
+    bool signalWrite(address_space_impl aspace, hostptr_t addr);
 
     /**
      * Copy data from a memory object to an I/O buffer
@@ -114,7 +114,7 @@ public:
      * \param size Size (in bytes) of the data to be copied
      * \return Error code
      */
-    gmacError_t toIOBuffer(address_space_impl &aspace, io_buffer_impl &buffer, size_t bufferOff, const hostptr_t addr, size_t size);
+    gmacError_t toIOBuffer(address_space_impl aspace, io_buffer_impl &buffer, size_t bufferOff, const hostptr_t addr, size_t size);
 
 
     /**
@@ -127,7 +127,7 @@ public:
      * \param size Size (in bytes) of the data to be copied
      * \return Error code
      */
-    gmacError_t fromIOBuffer(address_space_impl &aspace, hostptr_t addr, io_buffer_impl &buffer, size_t bufferOff, size_t size);
+    gmacError_t fromIOBuffer(address_space_impl aspace, hostptr_t addr, io_buffer_impl &buffer, size_t bufferOff, size_t size);
 
     /**
      * Initialize to a given value the contents of a host address of a memory
@@ -139,7 +139,7 @@ public:
      * \param size Size (in bytes) of the memory to initialize
      * \return Error code
      */
-    gmacError_t memset(address_space_impl &aspace, hostptr_t dst, int c, size_t size);
+    gmacError_t memset(address_space_impl aspace, hostptr_t dst, int c, size_t size);
 
     /**
      * Copy data from and/or to host memory addresses of memory objects
@@ -150,7 +150,7 @@ public:
      * to a memory object
      * \param size Size (in bytes) of the amoun of data to be copied
      */
-    gmacError_t memcpy(address_space_impl &aspace, hostptr_t dst, const hostptr_t src, size_t size);
+    gmacError_t memcpy(address_space_impl aspace, hostptr_t dst, const hostptr_t src, size_t size);
 
 };
 

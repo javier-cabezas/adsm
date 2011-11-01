@@ -18,6 +18,7 @@
 
 using namespace __impl::core;
 using namespace __impl::memory;
+using namespace __impl::util;
 using __impl::util::params::ParamBlockSize;
 
 SYM(size_t, __libc_fread, void *, size_t, size_t, FILE *);
@@ -36,7 +37,7 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
 
     enterGmac();
     Manager &manager = getManager();
-    address_space *aspaceDst = manager.owner(hostptr_t(buf));
+    smart_ptr<address_space>::shared aspaceDst = manager.owner(hostptr_t(buf));
 
     if(aspaceDst == NULL) {
         exitGmac();
@@ -67,7 +68,7 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
         size_t elems = __libc_fread(active->addr(), size, bytes/size, stream);
         if(elems == 0) break;
 		ret += elems;
-        err = manager.fromIOBuffer(*aspaceDst, (uint8_t *)buf + off, *active, 0, size * elems);
+        err = manager.fromIOBuffer(aspaceDst, (uint8_t *)buf + off, *active, 0, size * elems);
         ASSERTION(err == gmacSuccess);
 
         left -= size * elems;
@@ -100,7 +101,7 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
 
 	enterGmac();
     Manager &manager = getManager();
-    address_space *aspaceSrc = manager.owner(hostptr_t(buf));
+    smart_ptr<address_space>::shared aspaceSrc = manager.owner(hostptr_t(buf));
 
     if(aspaceSrc == NULL) {
         exitGmac();
@@ -126,7 +127,7 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
     size_t left = n;
 
     size_t bytesActive = left < active->size()? left : active->size();
-    err = manager.toIOBuffer(*aspaceSrc, *active, 0, hostptr_t(buf) + off, bytesActive);
+    err = manager.toIOBuffer(aspaceSrc, *active, 0, hostptr_t(buf) + off, bytesActive);
     ASSERTION(err == gmacSuccess);
     size_t bytesPassive = 0;
 
@@ -136,7 +137,7 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
 
         if (left > 0) {
             bytesPassive = left < passive->size()? left : passive->size();
-            err = manager.toIOBuffer(*aspaceSrc, *passive, 0, hostptr_t(buf) + off, bytesPassive);
+            err = manager.toIOBuffer(aspaceSrc, *passive, 0, hostptr_t(buf) + off, bytesPassive);
             ASSERTION(err == gmacSuccess);
         }
         err = active->wait();

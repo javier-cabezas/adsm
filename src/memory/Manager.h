@@ -66,7 +66,7 @@ protected:
     core::process &proc_;
 
     // TODO: add locking to this abstraction
-    typedef std::map<hostptr_t, core::address_space *> MapAllocations;
+    typedef std::map<hostptr_t, util::smart_ptr<core::address_space>::shared> MapAllocations;
     MapAllocations mapAllocations_;
 
     /**
@@ -77,7 +77,7 @@ protected:
      * \param size Size (in bytes) of the memory to be allocated
      * \return Error code
      */
-    gmacError_t hostMappedAlloc(core::address_space &aspace, hostptr_t *addr, size_t size);
+    gmacError_t hostMappedAlloc(util::smart_ptr<core::address_space>::shared aspace, hostptr_t *addr, size_t size);
 
     /**
      * Default destructor
@@ -99,9 +99,9 @@ public:
      * \param flags 
      * \return Error code
      */
-    gmacError_t map(core::address_space &aspace, hostptr_t *addr, size_t size, int flags);
+    gmacError_t map(util::smart_ptr<core::address_space>::shared aspace, hostptr_t *addr, size_t size, int flags);
 
-    gmacError_t remap(core::address_space &aspace, hostptr_t old_addr, hostptr_t *new_addr, size_t new_size, int flags);
+    gmacError_t remap(util::smart_ptr<core::address_space>::shared aspace, hostptr_t old_addr, hostptr_t *new_addr, size_t new_size, int flags);
 
     /**
      * Unmap the given host memory pointer from the accelerator memory
@@ -110,7 +110,7 @@ public:
      * \param size Size (in bytes) of shared memory to be unmapped
      * \return Error code
      */
-    gmacError_t unmap(core::address_space &aspace, hostptr_t addr, size_t size);
+    gmacError_t unmap(util::smart_ptr<core::address_space>::shared aspace, hostptr_t addr, size_t size);
 
     /**
      * Returns the size of the allocation represented by the given pointer
@@ -119,7 +119,7 @@ public:
      * \param size A reference to a variable to store the size of the allocation
      * \return Error code
      */
-    gmacError_t getAllocSize(core::address_space &aspace, hostptr_t addr, size_t &size) const;
+    gmacError_t getAllocSize(util::smart_ptr<core::address_space>::shared aspace, hostptr_t addr, size_t &size) const;
 
     /**
      * Allocate private shared memory.
@@ -131,7 +131,7 @@ public:
      * \param size Size (in bytes) of shared memory to be allocated
      * \return Error code
      */
-    TESTABLE gmacError_t alloc(core::address_space &aspace, hostptr_t *addr, size_t size);
+    TESTABLE gmacError_t alloc(util::smart_ptr<core::address_space>::shared aspace, hostptr_t *addr, size_t size);
 
 #if 0
     /**
@@ -145,7 +145,7 @@ public:
      * \param hint Type of memory (distributed or hostmapped) to be allocated
      * \return Error code
      */
-    TESTABLE gmacError_t globalAlloc(core::address_space &aspace, hostptr_t *addr, size_t size, GmacGlobalMallocType hint);
+    TESTABLE gmacError_t globalAlloc(util::smart_ptr<core::address_space>::shared aspace, hostptr_t *addr, size_t size, GmacGlobalMallocType hint);
 #endif
 
     /**
@@ -154,17 +154,17 @@ public:
      * \param addr Memory address of the shared memory chunk to be released
      * \return Error code
      */
-    TESTABLE gmacError_t free(core::address_space &aspace, hostptr_t addr);
+    TESTABLE gmacError_t free(util::smart_ptr<core::address_space>::shared aspace, hostptr_t addr);
 
     /** Get the accelerator address associated to a shared memory address
      * \param mode Execution mode requesting the translation
      * \param addr Host shared memory address
      * \return Accelerator memory address
      */
-    TESTABLE accptr_t translate(core::address_space &aspace, hostptr_t addr);
+    TESTABLE accptr_t translate(util::smart_ptr<core::address_space>::shared aspace, hostptr_t addr);
 
 
-    core::address_space *owner(hostptr_t addr, size_t size = 0);
+    util::smart_ptr<core::address_space>::shared owner(hostptr_t addr, size_t size = 0);
 
     /**
      * Get the CPU ownership of all objects bound to the current execution mode
@@ -173,7 +173,7 @@ public:
      * objects are acquired
      * \return Error code
      */
-    gmacError_t acquireObjects(core::address_space &aspace, const ListAddr &addrs = AllAddresses);
+    gmacError_t acquireObjects(util::smart_ptr<core::address_space>::shared aspace, const ListAddr &addrs = AllAddresses);
 
     /**
      * Release the CPU ownership of all objects bound to the current execution
@@ -183,7 +183,7 @@ public:
      * objects are released
      * \return Error code
      */
-    gmacError_t releaseObjects(core::address_space &aspace, const ListAddr &addrs = AllAddresses);
+    gmacError_t releaseObjects(util::smart_ptr<core::address_space>::shared aspace, const ListAddr &addrs = AllAddresses);
 
     /**
      * Notify a memory fault caused by a load operation
@@ -191,7 +191,7 @@ public:
      * \param addr Host memory address causing the memory fault
      * \return True if the Manager was able to fix the fault condition
      */
-    TESTABLE bool signalRead(core::address_space &aspace, hostptr_t addr);
+    TESTABLE bool signalRead(util::smart_ptr<core::address_space>::shared aspace, hostptr_t addr);
 
     /**
      * Notify a memory fault caused by a store operation
@@ -199,7 +199,7 @@ public:
      * \param addr Host memory address causing the memory fault
      * \return True if the Manager was able to fix the fault condition
      */
-    TESTABLE bool signalWrite(core::address_space &aspace, hostptr_t addr);
+    TESTABLE bool signalWrite(util::smart_ptr<core::address_space>::shared aspace, hostptr_t addr);
 
     /**
      * Copy data from a memory object to an I/O buffer
@@ -211,7 +211,7 @@ public:
      * \param size Size (in bytes) of the data to be copied
      * \return Error code
      */
-    TESTABLE gmacError_t toIOBuffer(core::address_space &aspace, core::io_buffer &buffer, size_t bufferOff, const hostptr_t addr, size_t size);
+    TESTABLE gmacError_t toIOBuffer(util::smart_ptr<core::address_space>::shared aspace, core::io_buffer &buffer, size_t bufferOff, const hostptr_t addr, size_t size);
 
     /**
      * Copy data from an I/O buffer to a memory object
@@ -223,7 +223,7 @@ public:
      * \param size Size (in bytes) of the data to be copied
      * \return Error code
      */
-    TESTABLE gmacError_t fromIOBuffer(core::address_space &aspace, hostptr_t addr, core::io_buffer &buffer, size_t bufferOff, size_t size);
+    TESTABLE gmacError_t fromIOBuffer(util::smart_ptr<core::address_space>::shared aspace, hostptr_t addr, core::io_buffer &buffer, size_t bufferOff, size_t size);
 
     /**
      * Initialize to a given value the contents of a host address of a memory
@@ -235,7 +235,7 @@ public:
      * \param size Size (in bytes) of the memory to initialize
      * \return Error code
      */
-    TESTABLE gmacError_t memset(core::address_space &aspace, hostptr_t dst, int c, size_t size);
+    TESTABLE gmacError_t memset(util::smart_ptr<core::address_space>::shared aspace, hostptr_t dst, int c, size_t size);
 
     /**
      * Copy data from and/or to host memory addresses of memory objects
@@ -246,9 +246,9 @@ public:
      * to a memory object
      * \param size Size (in bytes) of the amoun of data to be copied
      */
-    TESTABLE gmacError_t memcpy(core::address_space &aspace, hostptr_t dst, const hostptr_t src, size_t size);
+    TESTABLE gmacError_t memcpy(util::smart_ptr<core::address_space>::shared aspace, hostptr_t dst, const hostptr_t src, size_t size);
 
-    gmacError_t flushDirty(core::address_space &aspace);
+    gmacError_t flushDirty(util::smart_ptr<core::address_space>::shared aspace);
 };
 
 }}

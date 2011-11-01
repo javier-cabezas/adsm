@@ -5,7 +5,7 @@
 namespace __impl { namespace util { namespace allocator {
 
 Buddy::Buddy(hostptr_t addr, size_t size) :
-    gmac::util::Lock("Buddy"),
+    gmac::util::mutex("Buddy"),
     addr_(addr),
     size_(round((uint32_t)size)),
     index_(index(size_))

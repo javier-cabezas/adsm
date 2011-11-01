@@ -41,8 +41,9 @@ public:
         const typename I::kernel &get_kernel() const;
         const typename I::kernel::config &get_config() const;
 
-        virtual typename I::async_event &execute(list_event<D, B, I> &dependencies = list_event<D, B, I>::empty) = 0;
-        virtual typename I::async_event &execute(typename I::async_event &event) = 0;
+        virtual typename I::async_event *execute(list_event<D, B, I> &dependencies, gmacError_t &err) = 0;
+        virtual typename I::async_event *execute(typename I::async_event &event, gmacError_t &err) = 0;
+        virtual typename I::async_event *execute(gmacError_t &err) = 0;
     };
 
 private:

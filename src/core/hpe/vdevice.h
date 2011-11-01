@@ -46,7 +46,6 @@ WITH THE SOFTWARE.  */
 
 #include "hal/types.h"
 
-#include "util/Lock.h"
 #include "util/NonCopyable.h"
 #include "util/Reference.h"
 #include "util/Private.h"
@@ -55,7 +54,11 @@ WITH THE SOFTWARE.  */
 
 namespace __impl {
 
-namespace memory { class object; class Block; }
+namespace memory {
+    class object;
+    class map_object;
+    class Block;
+}
 
 namespace core {
 
@@ -81,7 +84,7 @@ class GMAC_LOCAL vdevice :
 protected:
     process &proc_;
 
-    address_space &aspace_;
+    util::smart_ptr<address_space>::shared aspace_;
 
     hal::stream_t &streamLaunch_;
 #ifdef USE_VM
@@ -111,9 +114,10 @@ public:
      *
      * \param proc Reference to the process which the mode belongs to
      * \param aspace Address space to which the virtual device is linked
+     * \param streamLaunch Stream to which enqueue kernel launch:w
     */
     vdevice(process &proc,
-            address_space &aspace,
+            util::smart_ptr<address_space>::shared aspace,
             hal::stream_t &streamLaunch);
 
 #if 0
@@ -187,7 +191,7 @@ public:
      * \param launch Reference to a KernelLaunch object
      * \return An event that represents the kernel execution
      */
-    gmacError_t execute(kernel::launch &launch);
+    hal::async_event_t *execute(kernel::launch &launch, gmacError_t &err);
 
     /**
      * Waits for kernel execution
@@ -283,8 +287,8 @@ public:
     memory::map_object &get_object_map();
     const memory::map_object &get_object_map() const;
 
-    address_space &get_address_space();
-    const address_space &get_address_space() const;
+    util::smart_ptr<address_space>::shared get_address_space();
+    util::smart_ptr<const address_space>::shared get_address_space() const;
 
     const hal::device &get_device();
 };

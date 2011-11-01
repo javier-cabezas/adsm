@@ -2,7 +2,7 @@
 #define GMAC_HAL_CUDA_DEVICE_H_
 
 #include "hal/device.h"
-#include "util/Unique.h"
+#include "util/unique.h"
 
 #include "types.h"
 

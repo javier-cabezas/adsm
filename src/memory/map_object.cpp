@@ -48,7 +48,7 @@ map_object::mapFind(const hostptr_t addr, size_t size) const
 }
 
 map_object::map_object(const char *name) :
-    gmac::util::RWLock(name),
+    gmac::util::lock_rw(name),
     protocol_(*ProtocolInit(0)),
     modifiedObjects_(false),
     releasedObjects_(false)

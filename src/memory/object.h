@@ -40,7 +40,7 @@ WITH THE SOFTWARE.  */
 #include "include/gmac/types.h"
 
 #include "util/Atomics.h"
-#include "util/Lock.h"
+#include "util/lock.h"
 #include "util/Reference.h"
 #include "memory/Protocol.h"
 
@@ -58,7 +58,7 @@ namespace memory {
  * divided into blocks, which are the unit of coherence
  */
 class GMAC_LOCAL object :
-    protected gmac::util::RWLock,
+    protected gmac::util::lock_rw,
     public util::Reference {
 
     // DBC_FORCE_TEST(object)
@@ -216,14 +216,14 @@ public:
      * \param owner The new owner of the mode
      * \return Wether it was possible to add the owner or not
      */
-    virtual gmacError_t addOwner(core::address_space &owner) = 0;
+    virtual gmacError_t addOwner(util::smart_ptr<core::address_space>::shared owner) = 0;
 
     /**
      * Remove an owner from the object
      *
      * \param owner The owner to be removed
      */
-    virtual gmacError_t removeOwner(core::address_space &owner) = 0;
+    virtual gmacError_t removeOwner(util::smart_ptr<core::address_space>::shared owner) = 0;
 
     /**
      * Acquire the ownership of the object for the CPU

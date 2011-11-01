@@ -168,236 +168,342 @@ context_t::free_buffer(buffer_t &buffer)
     return cuda::error(ret);
 }
 
-event_t &
-context_t::copy(accptr_t dst, hostptr_t src, size_t count, stream_t &stream, list_event &dependencies)
+event_t *
+context_t::copy(accptr_t dst, hostptr_t src, size_t count, stream_t &stream, list_event_detail &_dependencies, gmacError_t &err)
 {
-    set();
+    event_t *ret = NULL;
+    list_event &dependencies = reinterpret_cast<list_event &>(_dependencies);
+    err = dependencies.sync();
+
+    if (err == gmacSuccess) {
+        ret = copy(dst, src, count, stream, err);
+    }
+
+    return ret;
+}
+
+event_t *
+context_t::copy(accptr_t dst, hostptr_t src, size_t count, stream_t &stream, async_event_t &event, gmacError_t &err)
+{
+    event_t *ret = NULL;
+
+    err = event.sync();
+
+    if (err == gmacSuccess) {
+        ret = copy(dst, src, count, stream, err);
+    }
+
+    return ret;
+}
+
+event_t *
+context_t::copy(accptr_t dst, hostptr_t src, size_t count, stream_t &stream, gmacError_t &err)
+{
+    TRACE(LOCAL, "H (%p) -> D copy ("FMT_SIZE" bytes) on stream: %p", src, count, stream());
+    event_t *ret = new event_t(event_t::Transfer, *this);
 
     CUresult res;
 
-    TRACE(LOCAL, "H (%p) -> D copy ("FMT_SIZE" bytes) on stream: %p", src, count, stream());
-    event_t *ret = new event_t(event_t::Transfer, *this);
+    set();
 
     ret->begin(stream);
     res = cuMemcpyHtoD(dst.get(), src, count);
     ret->end();
 
-    if (res != CUDA_SUCCESS) {
-        ret->set_error(error(res));
+    err = error(res);
+    if (err != gmacSuccess) {
+        delete ret;
+        ret = NULL;
     }
 
-    return *ret;
+    return ret;
 }
 
-event_t &
-context_t::copy(accptr_t dst, hostptr_t src, size_t count, stream_t &stream, async_event_t &event)
+event_t *
+context_t::copy(hostptr_t dst, accptr_t src, size_t count, stream_t &stream, list_event_detail &_dependencies, gmacError_t &err)
 {
-    event_t *ret;
-    gmacError_t err = event.sync();
+    event_t *ret = NULL;
+    list_event &dependencies = reinterpret_cast<list_event &>(_dependencies);
+    err = dependencies.sync();
 
     if (err == gmacSuccess) {
-        ret = &copy(dst, src, count, stream);
-    } else {
-        ret = new event_t(event_t::Transfer, *this);
-        ret->set_error(err);
+        ret = copy(dst, src, count, stream, err);
     }
 
-    return *ret;
+    return ret;
 }
 
-event_t &
-context_t::copy(hostptr_t dst, accptr_t src, size_t count, stream_t &stream, list_event &dependencies)
+event_t *
+context_t::copy(hostptr_t dst, accptr_t src, size_t count, stream_t &stream, async_event_t &event, gmacError_t &err)
 {
-    set();
+    event_t *ret = NULL;
+
+    err = event.sync();
+
+    if (err == gmacSuccess) {
+        ret = copy(dst, src, count, stream, err);
+    }
+
+    return ret;
+}
+
+event_t *
+context_t::copy(hostptr_t dst, accptr_t src, size_t count, stream_t &stream, gmacError_t &err)
+{
+    TRACE(LOCAL, "D -> H (%p) copy ("FMT_SIZE" bytes) on stream: %p", dst, count, stream());
+    event_t *ret = new event_t(event_t::Transfer, *this);
 
     CUresult res;
 
-    TRACE(LOCAL, "D -> H (%p) copy ("FMT_SIZE" bytes) on stream: %p", dst, count, stream());
-    event_t *ret = new event_t(event_t::Transfer, *this);
+    set();
 
     ret->begin(stream);
     res = cuMemcpyDtoH(dst, src.get(), count);
     ret->end();
 
-    if (res != CUDA_SUCCESS) {
-        ret->set_error(error(res));
+    err = error(res);
+    if (err != gmacSuccess) {
+        delete ret;
+        ret = NULL;
     }
 
-    return *ret;
+    return ret;
 }
 
-event_t &
-context_t::copy(hostptr_t dst, accptr_t src, size_t count, stream_t &stream, async_event_t &event)
+event_t *
+context_t::copy(accptr_t dst, accptr_t src, size_t count, stream_t &stream, list_event_detail &_dependencies, gmacError_t &err)
 {
-    event_t *ret;
-    gmacError_t err = event.sync();
+    event_t *ret = NULL;
+    list_event &dependencies = reinterpret_cast<list_event &>(_dependencies);
+    err = dependencies.sync();
 
     if (err == gmacSuccess) {
-        ret = &copy(dst, src, count, stream);
-    } else {
-        ret = new event_t(event_t::Transfer, *this);
-        ret->set_error(err);
+        ret = copy(dst, src, count, stream, err);
     }
 
-    return *ret;
+    return ret;
 }
 
-event_t &
-context_t::copy(accptr_t dst, accptr_t src, size_t count, stream_t &stream, list_event &dependencies)
+event_t *
+context_t::copy(accptr_t dst, accptr_t src, size_t count, stream_t &stream, async_event_t &event, gmacError_t &err)
 {
-    set();
+    event_t *ret = NULL;
+
+    err = event.sync();
+
+    if (err == gmacSuccess) {
+        ret = copy(dst, src, count, stream, err);
+    }
+
+    return ret;
+}
+
+event_t *
+context_t::copy(accptr_t dst, accptr_t src, size_t count, stream_t &stream, gmacError_t &err)
+{
+    TRACE(LOCAL, "D -> D copy ("FMT_SIZE" bytes) on stream: %p", count, stream());
+    event_t *ret = new event_t(event_t::Transfer, *this);
 
     CUresult res;
 
-    TRACE(LOCAL, "D -> D copy ("FMT_SIZE" bytes) on stream: %p", count, stream());
-    event_t *ret = new event_t(event_t::Transfer, *this);
+    set();
 
     ret->begin(stream);
     res = cuMemcpyDtoD(dst.get(), src.get(), count);
     ret->end();
 
-    if (res != CUDA_SUCCESS) {
-        ret->set_error(error(res));
+    err = error(res);
+    if (err != gmacSuccess) {
+        delete ret;
+        ret = NULL;
     }
 
-    return *ret;
+    return ret;
 }
 
-event_t &
-context_t::copy(accptr_t dst, accptr_t src, size_t count, stream_t &stream, async_event_t &event)
+async_event_t *
+context_t::copy_async(accptr_t dst, buffer_t src, size_t off, size_t count, stream_t &stream, list_event_detail &_dependencies, gmacError_t &err)
 {
-    event_t *ret;
-    gmacError_t err = event.sync();
+    async_event_t *ret = NULL;
+    list_event &dependencies = reinterpret_cast<list_event &>(_dependencies);
+    err = dependencies.sync();
 
     if (err == gmacSuccess) {
-        ret = &copy(dst, src, count, stream);
-    } else {
-        ret = new event_t(event_t::Transfer, *this);
-        ret->set_error(err);
+        ret = copy_async(dst, src, off, count, stream, err);
     }
 
-    return *ret;
+    return ret;
 }
 
-async_event_t &
-context_t::copy_async(accptr_t dst, buffer_t buffer, size_t off, size_t count, stream_t &stream, list_event &dependencies)
+async_event_t *
+context_t::copy_async(accptr_t dst, buffer_t src, size_t off, size_t count, stream_t &stream, async_event_t &event, gmacError_t &err)
 {
-    set();
+    async_event_t *ret = NULL;
+
+    err = event.sync();
+
+    if (err == gmacSuccess) {
+        ret = copy_async(dst, src, off, count, stream, err);
+    }
+
+    return ret;
+}
+
+async_event_t *
+context_t::copy_async(accptr_t dst, buffer_t src, size_t off, size_t count, stream_t &stream, gmacError_t &err)
+{
+    TRACE(LOCAL, "H (%p) -> D copy_async ("FMT_SIZE" bytes) on stream: %p", src.get_addr() + off, count, stream());
+    async_event_t *ret = new async_event_t(async_event_t::Transfer, *this);
 
     CUresult res;
 
-    TRACE(LOCAL, "H (%p + "FMT_SIZE") -> D async copy ("FMT_SIZE" bytes) on stream: %p", buffer.get_addr(), off, count, stream());
-    async_event_t *ret = new async_event_t(event_t::Transfer, *this);
+    set();
 
     ret->begin(stream);
-    res = cuMemcpyHtoDAsync(dst.get(), buffer.get_addr() + off, count, stream());
+    res = cuMemcpyHtoDAsync(dst.get(), src.get_addr() + off, count, stream());
     ret->end();
 
-    if (res == CUDA_SUCCESS) {
-        stream.set_last_async_event(ret);
-    } else {
-        ret->set_error(error(res));
+    err = error(res);
+    if (err != gmacSuccess) {
+        delete ret;
+        ret = NULL;
     }
 
-    return *ret;
+    return ret;
 }
 
-async_event_t &
-context_t::copy_async(accptr_t dst, buffer_t buffer, size_t off, size_t count, stream_t &stream, async_event_t &event)
+async_event_t *
+context_t::copy_async(buffer_t dst, size_t off, accptr_t src, size_t count, stream_t &stream, list_event_detail &_dependencies, gmacError_t &err)
 {
-    async_event_t *ret;
-    gmacError_t err = event.sync();
+    async_event_t *ret = NULL;
+    list_event &dependencies = reinterpret_cast<list_event &>(_dependencies);
+    err = dependencies.sync();
 
     if (err == gmacSuccess) {
-        ret = &copy_async(dst, buffer, off, count, stream);
-    } else {
-        ret = new async_event_t(event_t::Transfer, *this);
-        ret->set_error(err);
+        ret = copy_async(dst, off, src, count, stream, err);
     }
 
-    return *ret;
+    return ret;
 }
 
-async_event_t &
-context_t::copy_async(buffer_t buffer, size_t off, accptr_t src, size_t count, stream_t &stream, list_event &dependencies)
+async_event_t *
+context_t::copy_async(buffer_t dst, size_t off, accptr_t src, size_t count, stream_t &stream, async_event_t &event, gmacError_t &err)
 {
-    set();
+    async_event_t *ret = NULL;
+
+    err = event.sync();
+
+    if (err == gmacSuccess) {
+        ret = copy_async(dst, off, src, count, stream, err);
+    }
+
+    return ret;
+}
+
+async_event_t *
+context_t::copy_async(buffer_t dst, size_t off, accptr_t src, size_t count, stream_t &stream, gmacError_t &err)
+{
+    TRACE(LOCAL, "D -> H (%p) copy_async ("FMT_SIZE" bytes) on stream: %p", dst.get_addr(), count, stream());
+    async_event_t *ret = new async_event_t(async_event_t::Transfer, *this);
 
     CUresult res;
 
-    TRACE(LOCAL, "D -> H (%p + "FMT_SIZE") async copy ("FMT_SIZE" bytes) on stream: %p", buffer.get_addr(), off, count, stream());
-    async_event_t *ret = new async_event_t(event_t::Transfer, *this);
+    set();
 
     ret->begin(stream);
-    res = cuMemcpyDtoHAsync(buffer.get_addr() + off, src.get(), count, stream());
+    res = cuMemcpyDtoHAsync(dst.get_addr() + off, src.get(), count, stream());
     ret->end();
 
-    if (res == CUDA_SUCCESS) {
-        stream.set_last_async_event(ret);
-    } else {
-        ret->set_error(error(res));
+    err = error(res);
+    if (err != gmacSuccess) {
+        delete ret;
+        ret = NULL;
     }
 
-    return *ret;
+    return ret;
 }
 
-async_event_t &
-context_t::copy_async(buffer_t buffer, size_t off, accptr_t src, size_t count, stream_t &stream, async_event_t &event)
+async_event_t *
+context_t::copy_async(accptr_t dst, accptr_t src, size_t count, stream_t &stream, list_event_detail &_dependencies, gmacError_t &err)
 {
-    async_event_t *ret;
-    gmacError_t err = event.sync();
+    async_event_t *ret = NULL;
+    list_event &dependencies = reinterpret_cast<list_event &>(_dependencies);
+    err = dependencies.sync();
 
     if (err == gmacSuccess) {
-        ret = &copy_async(buffer, off, src, count, stream);
-    } else {
-        ret = new async_event_t(event_t::Transfer, *this);
-        ret->set_error(err);
+        ret = copy_async(dst, src, count, stream, err);
     }
 
-    return *ret;
+    return ret;
 }
 
-async_event_t &
-context_t::copy_async(accptr_t dst, accptr_t src, size_t count, stream_t &stream, list_event &dependencies)
+async_event_t *
+context_t::copy_async(accptr_t dst, accptr_t src, size_t count, stream_t &stream, async_event_t &event, gmacError_t &err)
 {
-    set();
+    async_event_t *ret = NULL;
+
+    err = event.sync();
+
+    if (err == gmacSuccess) {
+        ret = copy_async(dst, src, count, stream, err);
+    }
+
+    return ret;
+}
+
+async_event_t *
+context_t::copy_async(accptr_t dst, accptr_t src, size_t count, stream_t &stream, gmacError_t &err)
+{
+    TRACE(LOCAL, "D -> D copy_async ("FMT_SIZE" bytes) on stream: %p", count, stream());
+    async_event_t *ret = new async_event_t(async_event_t::Transfer, *this);
 
     CUresult res;
 
-    TRACE(LOCAL, "D -> D async copy ("FMT_SIZE" bytes) on stream: %p", count, stream());
-    async_event_t *ret = new async_event_t(event_t::Transfer, *this);
+    set();
 
     ret->begin(stream);
     res = cuMemcpyDtoDAsync(dst.get(), src.get(), count, stream());
     ret->end();
 
-    if (res == CUDA_SUCCESS) {
-        stream.set_last_async_event(ret);
-    } else {
-        ret->set_error(error(res));
+    err = error(res);
+    if (err != gmacSuccess) {
+        delete ret;
+        ret = NULL;
     }
 
-    return *ret;
+    return ret;
 }
 
-async_event_t &
-context_t::copy_async(accptr_t dst, accptr_t src, size_t count, stream_t &stream, async_event_t &event)
+event_t *
+context_t::memset(accptr_t dst, int c, size_t count, stream_t &stream, list_event_detail &_dependencies, gmacError_t &err)
 {
-    async_event_t *ret;
-    gmacError_t err = event.sync();
+    event_t *ret = NULL;
+    list_event &dependencies = reinterpret_cast<list_event &>(_dependencies);
+    err = dependencies.sync();
 
     if (err == gmacSuccess) {
-        ret = &copy_async(dst, src, count, stream);
-    } else {
-        ret = new async_event_t(event_t::Transfer, *this);
-        ret->set_error(err);
+        ret = memset(dst, c, count, stream, err);
     }
 
-    return *ret;
+    return ret;
 }
 
-event_t &
-context_t::memset(accptr_t dst, int c, size_t count, stream_t &stream, list_event &dependencies)
+event_t *
+context_t::memset(accptr_t dst, int c, size_t count, stream_t &stream, async_event_t &event, gmacError_t &err)
+{
+    event_t *ret = NULL;
+
+    err = event.sync();
+
+    if (err == gmacSuccess) {
+        ret = memset(dst, c, count, stream, err);
+    }
+
+    return ret;
+}
+
+event_t *
+context_t::memset(accptr_t dst, int c, size_t count, stream_t &stream, gmacError_t &err)
 {
     set();
 
@@ -408,64 +514,64 @@ context_t::memset(accptr_t dst, int c, size_t count, stream_t &stream, list_even
     CUresult res = cuMemsetD8(dst.get(), (unsigned char)c, count);
     ret->end();
 
-    if (res != CUDA_SUCCESS) {
-        ret->set_error(error(res));
+    err = error(res);
+
+    if (err != gmacSuccess) {
+        delete ret;
+        ret = NULL;
     }
 
-    return *ret;
+    return ret;
 }
 
-event_t &
-context_t::memset(accptr_t dst, int c, size_t count, stream_t &stream, async_event_t &event)
+async_event_t *
+context_t::memset_async(accptr_t dst, int c, size_t count, stream_t &stream, list_event_detail &_dependencies, gmacError_t &err)
 {
-    event_t *ret;
-    gmacError_t err = event.sync();
+    async_event_t *ret = NULL;
+    list_event &dependencies = reinterpret_cast<list_event &>(_dependencies);
+    err = dependencies.sync();
 
     if (err == gmacSuccess) {
-        ret = &memset(dst, c, count, stream);
-    } else {
-        ret = new event_t(event_t::Transfer, *this);
-        ret->set_error(err);
+        ret = memset_async(dst, c, count, stream, err);
     }
 
-    return *ret;
+    return ret;
 }
 
-async_event_t &
-context_t::memset_async(accptr_t dst, int c, size_t count, stream_t &stream, list_event &dependencies)
+async_event_t *
+context_t::memset_async(accptr_t dst, int c, size_t count, stream_t &stream, async_event_t &event, gmacError_t &err)
+{
+    async_event_t *ret = NULL;
+
+    err = event.sync();
+
+    if (err == gmacSuccess) {
+        ret = memset_async(dst, c, count, stream, err);
+    }
+
+    return ret;
+}
+
+async_event_t *
+context_t::memset_async(accptr_t dst, int c, size_t count, stream_t &stream, gmacError_t &err)
 {
     set();
 
-    TRACE(LOCAL, "async memset ("FMT_SIZE" bytes) on stream: %p", count, stream());
-    async_event_t *ret = new async_event_t(event_t::Transfer, *this);
+    TRACE(LOCAL, "memset_async ("FMT_SIZE" bytes) on stream: %p", count, stream());
+    async_event_t *ret = new async_event_t(async_event_t::Transfer, *this);
 
     ret->begin(stream);
-    CUresult res = cuMemsetD8(dst.get(), (unsigned char)c, count);
+    CUresult res = cuMemsetD8Async(dst.get(), (unsigned char)c, count, stream());
     ret->end();
 
-    if (res == CUDA_SUCCESS) {
-        stream.set_last_async_event(ret);
-    } else {
-        ret->set_error(error(res));
+    err = error(res);
+
+    if (err != gmacSuccess) {
+        delete ret;
+        ret = NULL;
     }
 
-    return *ret;
-}
-
-async_event_t &
-context_t::memset_async(accptr_t dst, int c, size_t count, stream_t &stream, async_event_t &event)
-{
-    async_event_t *ret;
-    gmacError_t err = event.sync();
-
-    if (err == gmacSuccess) {
-        ret = &memset_async(dst, c, count, stream);
-    } else {
-        ret = new async_event_t(event_t::Transfer, *this);
-        ret->set_error(err);
-    }
-
-    return *ret;
+    return ret;
 }
 
 const code_repository &
@@ -495,10 +601,10 @@ stream_t::sync()
     return cuda::error(ret);
 }
 
-async_event_t::Parent::state
+async_event_t::state
 async_event_t::get_state()
 {
-    if (Parent::state_ != Parent::End) {
+    if (state_ != event_t::End) {
         get_stream().get_context().set();
 
         CUresult res = cuEventQuery(eventEnd_);

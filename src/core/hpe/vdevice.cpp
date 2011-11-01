@@ -13,7 +13,7 @@
 
 namespace __impl { namespace core { namespace hpe {
 
-vdevice::vdevice(process &proc, address_space &aspace,
+vdevice::vdevice(process &proc, util::smart_ptr<address_space>::shared aspace,
                  hal::stream_t &streamLaunch) :
     proc_(proc),
     aspace_(aspace),
@@ -58,7 +58,7 @@ vdevice::launch(gmac_kernel_id_t id, hal::kernel_t::config &config, gmacError_t 
     return ret;
 #endif
     kernel::launch *ret;
-    kernel *k = get_address_space().get_kernel(id);
+    kernel *k = get_address_space()->get_kernel(id);
     if (k != NULL) {
         ret = k->launch_config(config, *this, streamLaunch_, err);
     } else {
@@ -67,25 +67,26 @@ vdevice::launch(gmac_kernel_id_t id, hal::kernel_t::config &config, gmacError_t 
     return ret;
 }
 
-gmacError_t
-vdevice::execute(kernel::launch &launch)
+hal::async_event_t *
+vdevice::execute(kernel::launch &launch, gmacError_t &err)
 {
-    gmacError_t ret = gmacSuccess;
+    hal::async_event_t *ret;
+    err = gmacSuccess;
 
     if (launch.get_objects().size() == 0) {
-        hal::async_event_t *event = aspace_.streamToAccelerator_.get_last_async_event();
+        hal::async_event_t *event = aspace_->streamToAccelerator_.get_last_async_event();
         if (event != NULL) {
-            ret = launch.execute(*event).get_error();
+            ret = launch.execute(*event, err);
         } else {
-            ret = launch.execute().get_error();
+            ret = launch.execute(err);
         }
     } else {
         // TODO: Implement per object synchronization
-        hal::async_event_t *event = aspace_.streamToAccelerator_.get_last_async_event();
+        hal::async_event_t *event = aspace_->streamToAccelerator_.get_last_async_event();
         if (event != NULL) {
-            ret = launch.execute(*event).get_error();
+            ret = launch.execute(*event, err);
         } else {
-            ret = launch.execute().get_error();
+            ret = launch.execute(err);
         }
     }
 
@@ -194,8 +195,8 @@ vdevice::moveTo(Accelerator &acc)
 void
 vdevice::getMemInfo(size_t &free, size_t &total)
 {
-    free = aspace_.get_hal_context().get_device().get_free_memory();
-    total = aspace_.get_hal_context().get_device().get_total_memory();
+    free = aspace_->get_hal_context().get_device().get_free_memory();
+    total = aspace_->get_hal_context().get_device().get_total_memory();
 }
 
 gmacError_t

@@ -85,6 +85,7 @@ private:
 
 public:
     thread(process &proc);
+    virtual ~thread();
 
     // Virtual devices
     static vdevice *get_virtual_device(GmacVirtualDeviceId id);

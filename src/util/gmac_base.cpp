@@ -1,4 +1,4 @@
-#include "GMACBase.h"
+#include "gmac_base.h"
 
 namespace __impl { namespace util {
 

@@ -35,9 +35,9 @@ WITH THE SOFTWARE.  */
 #define GMAC_UTIL_GMAC_BASE_H_
 
 #include "Atomics.h"
-#include "Lock.h"
+#include "lock.h"
 #include "Logger.h"
-#include "Unique.h"
+#include "unique.h"
 
 namespace __impl { namespace util {
 
@@ -81,11 +81,6 @@ public:
     {
     }
 
-    std::string &getName()
-    {
-        return name_;
-    }
-
     const std::string &getName() const
     {
         return name_;
@@ -97,7 +92,7 @@ typedef void (*report_fn)();
 #ifdef DEBUG
 
 class Debug :
-    public gmac::util::Lock {
+    public gmac::util::mutex {
     static Debug debug_;
 
     typedef std::map<std::string, report_fn> MapTypes;
@@ -122,7 +117,7 @@ class Debug :
     }
 public:
     Debug() :
-        gmac::util::Lock("Debug")
+        gmac::util::mutex("Debug")
     {
     }
 
@@ -146,10 +141,10 @@ public:
 #endif
 
 template <typename T>
-class GMACBase
+class gmac_base
 #ifdef DEBUG
     :
-    public UniqueDebug<T>,
+    public unique_debug<T>,
     public MemoryDebug<T>,
     public Named
 #endif
@@ -171,9 +166,9 @@ private:
     static Atomic registered;
 
 public:
-    GMACBase() :
-        UniqueDebug<T>(),
-        Named(getTmpName(UniqueDebug<T>::getDebugId()))
+    gmac_base() :
+        unique_debug<T>(),
+        Named(getTmpName(unique_debug<T>::get_debug_id()))
     {
         if (AtomicInc(registered) == 1) {
             Debug::registerType(getTypeName(), &reportDebugInfo);
@@ -186,12 +181,12 @@ public:
         MemoryDebug<T>::reportDebugInfo();
     }
 
-    GMACBase(const std::string &name) :
+    gmac_base(const std::string &name) :
         Named(name)
     {
     }
 
-    virtual ~GMACBase()
+    virtual ~gmac_base()
     {
     }
 #endif
@@ -199,7 +194,7 @@ public:
 
 #ifdef DEBUG
 template <typename T>
-Atomic GMACBase<T>::registered = 0;
+Atomic gmac_base<T>::registered = 0;
 #endif
 
 }}

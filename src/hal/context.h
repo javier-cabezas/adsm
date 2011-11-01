@@ -10,6 +10,8 @@ namespace detail {
 template <typename D, typename B, typename I>
 class list_event :
     public std::list<typename I::async_event *> {
+
+    typedef std::list<typename I::async_event *> Parent;
 public:
     static list_event empty;
 };
@@ -61,24 +63,37 @@ public:
     //virtual gmacError_t free_host_pinned(hostptr_t ptr) = 0;
     virtual gmacError_t free_buffer(typename I::buffer &buffer) = 0;
 
-    virtual typename I::event &copy(accptr_t dst, hostptr_t src, size_t count, typename I::stream &stream, list_event<D, B, I> &dependencies = list_event<D, B, I>::empty) = 0;
-    virtual typename I::event &copy(accptr_t dst, hostptr_t src, size_t count, typename I::stream &stream, typename I::async_event &event) = 0;
-    virtual typename I::event &copy(hostptr_t dst, accptr_t src, size_t count, typename I::stream &stream, list_event<D, B, I> &dependencies = list_event<D, B, I>::empty) = 0;
-    virtual typename I::event &copy(hostptr_t dst, accptr_t src, size_t count, typename I::stream &stream, typename I::async_event &event) = 0;
-    virtual typename I::event &copy(accptr_t dst, accptr_t src, size_t count, typename I::stream &stream, list_event<D, B, I> &dependencies = list_event<D, B, I>::empty) = 0;
-    virtual typename I::event &copy(accptr_t dst, accptr_t src, size_t count, typename I::stream &stream, typename I::async_event &event) = 0;
+    virtual typename I::event *copy(accptr_t dst, hostptr_t src, size_t count, typename I::stream &stream, list_event<D, B, I> &dependencies, gmacError_t &err) = 0;
+    virtual typename I::event *copy(accptr_t dst, hostptr_t src, size_t count, typename I::stream &stream, typename I::async_event &event, gmacError_t &err) = 0;
+    virtual typename I::event *copy(accptr_t dst, hostptr_t src, size_t count, typename I::stream &stream, gmacError_t &err) = 0;
 
-    virtual typename I::async_event &copy_async(accptr_t dst, typename I::buffer src, size_t off, size_t count, typename I::stream &stream, list_event<D, B, I> &dependencies = list_event<D, B, I>::empty) = 0;
-    virtual typename I::async_event &copy_async(accptr_t dst, typename I::buffer src, size_t off, size_t count, typename I::stream &stream, typename I::async_event &event) = 0;
-    virtual typename I::async_event &copy_async(typename I::buffer dst, size_t off, accptr_t src, size_t count, typename I::stream &stream, list_event<D, B, I> &dependencies = list_event<D, B, I>::empty) = 0;
-    virtual typename I::async_event &copy_async(typename I::buffer dst, size_t off, accptr_t src, size_t count, typename I::stream &stream, typename I::async_event &event) = 0;
-    virtual typename I::async_event &copy_async(accptr_t dst, accptr_t src, size_t count, typename I::stream &stream, list_event<D, B, I> &dependencies = list_event<D, B, I>::empty) = 0;
-    virtual typename I::async_event &copy_async(accptr_t dst, accptr_t src, size_t count, typename I::stream &stream, typename I::async_event &event) = 0;
+    virtual typename I::event *copy(hostptr_t dst, accptr_t src, size_t count, typename I::stream &stream, list_event<D, B, I> &dependencies, gmacError_t &err) = 0;
+    virtual typename I::event *copy(hostptr_t dst, accptr_t src, size_t count, typename I::stream &stream, typename I::async_event &event, gmacError_t &err) = 0;
+    virtual typename I::event *copy(hostptr_t dst, accptr_t src, size_t count, typename I::stream &stream, gmacError_t &err) = 0;
 
-    virtual typename I::event &memset(accptr_t dst, int c, size_t count, typename I::stream &stream, list_event<D, B, I>  &dependencies = list_event<D, B, I>::empty) = 0;
-    virtual typename I::event &memset(accptr_t dst, int c, size_t count, typename I::stream &stream, typename I::async_event &event) = 0;
-    virtual typename I::async_event &memset_async(accptr_t dst, int c, size_t count, typename I::stream &stream, list_event<D, B, I>  &dependencies = list_event<D, B, I>::empty) = 0;
-    virtual typename I::async_event &memset_async(accptr_t dst, int c, size_t count, typename I::stream &stream, typename I::async_event &event) = 0;
+    virtual typename I::event *copy(accptr_t dst, accptr_t src, size_t count, typename I::stream &stream, list_event<D, B, I> &dependencies, gmacError_t &err) = 0;
+    virtual typename I::event *copy(accptr_t dst, accptr_t src, size_t count, typename I::stream &stream, typename I::async_event &event, gmacError_t &err) = 0;
+    virtual typename I::event *copy(accptr_t dst, accptr_t src, size_t count, typename I::stream &stream, gmacError_t &err) = 0;
+
+    virtual typename I::async_event *copy_async(accptr_t dst, typename I::buffer src, size_t off, size_t count, typename I::stream &stream, list_event<D, B, I> &dependencies, gmacError_t &err) = 0;
+    virtual typename I::async_event *copy_async(accptr_t dst, typename I::buffer src, size_t off, size_t count, typename I::stream &stream, typename I::async_event &event, gmacError_t &err) = 0;
+    virtual typename I::async_event *copy_async(accptr_t dst, typename I::buffer src, size_t off, size_t count, typename I::stream &stream, gmacError_t &err) = 0;
+
+    virtual typename I::async_event *copy_async(typename I::buffer dst, size_t off, accptr_t src, size_t count, typename I::stream &stream, list_event<D, B, I> &dependencies, gmacError_t &err) = 0;
+    virtual typename I::async_event *copy_async(typename I::buffer dst, size_t off, accptr_t src, size_t count, typename I::stream &stream, typename I::async_event &event, gmacError_t &err) = 0;
+    virtual typename I::async_event *copy_async(typename I::buffer dst, size_t off, accptr_t src, size_t count, typename I::stream &stream, gmacError_t &err) = 0;
+
+    virtual typename I::async_event *copy_async(accptr_t dst, accptr_t src, size_t count, typename I::stream &stream, list_event<D, B, I> &dependencies, gmacError_t &err) = 0;
+    virtual typename I::async_event *copy_async(accptr_t dst, accptr_t src, size_t count, typename I::stream &stream, typename I::async_event &event, gmacError_t &err) = 0;
+    virtual typename I::async_event *copy_async(accptr_t dst, accptr_t src, size_t count, typename I::stream &stream, gmacError_t &err) = 0;
+
+    virtual typename I::event *memset(accptr_t dst, int c, size_t count, typename I::stream &stream, list_event<D, B, I> &dependencies, gmacError_t &err) = 0;
+    virtual typename I::event *memset(accptr_t dst, int c, size_t count, typename I::stream &stream, typename I::async_event &event, gmacError_t &err) = 0;
+    virtual typename I::event *memset(accptr_t dst, int c, size_t count, typename I::stream &stream, gmacError_t &err) = 0;
+
+    virtual typename I::async_event *memset_async(accptr_t dst, int c, size_t count, typename I::stream &stream, list_event<D, B, I> &dependencies, gmacError_t &err) = 0;
+    virtual typename I::async_event *memset_async(accptr_t dst, int c, size_t count, typename I::stream &stream, typename I::async_event &event, gmacError_t &err) = 0;
+    virtual typename I::async_event *memset_async(accptr_t dst, int c, size_t count, typename I::stream &stream, gmacError_t &err) = 0;
 
     virtual const typename I::code_repository &get_code_repository() const = 0;
 };

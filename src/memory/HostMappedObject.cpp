@@ -44,7 +44,7 @@ bool HostMappedSet::remove(hostptr_t addr)
 
 HostMappedSet HostMappedObject::set_;
 
-HostMappedObject::HostMappedObject(core::address_space &aspace, size_t size) :
+HostMappedObject::HostMappedObject(util::smart_ptr<core::address_space>::shared aspace, size_t size) :
     util::Reference("HostMappedObject"),
     size_(size),
     owner_(aspace)
@@ -64,7 +64,7 @@ HostMappedObject::~HostMappedObject()
 }
 
 accptr_t
-HostMappedObject::get_device_addr(core::address_space &current, const hostptr_t addr) const
+HostMappedObject::get_device_addr(util::smart_ptr<core::address_space>::shared current, const hostptr_t addr) const
 {
     //ASSERTION(current == owner_);
     accptr_t ret = accptr_t(0);
@@ -77,28 +77,28 @@ HostMappedObject::get_device_addr(core::address_space &current, const hostptr_t 
 }
 
 hostptr_t
-HostMappedObject::alloc(core::address_space &aspace)
+HostMappedObject::alloc(util::smart_ptr<core::address_space>::shared aspace)
 {
     hostptr_t ret = NULL;
     //ret = Memory::map(NULL, size_, GMAC_PROT_READWRITE);
     gmacError_t err;
-    ret = aspace.alloc_host_pinned(size_, err);
+    ret = aspace->alloc_host_pinned(size_, err);
     if (err != gmacSuccess) return NULL;
     return ret;
 }
 
 void
-HostMappedObject::free(core::address_space &aspace)
+HostMappedObject::free(util::smart_ptr<core::address_space>::shared aspace)
 {
     //Memory::unmap(addr_, size_);
-    aspace.free_host_pinned(addr_);
+    aspace->free_host_pinned(addr_);
 }
 
 accptr_t
-HostMappedObject::getAccPtr(core::address_space &aspace) const
+HostMappedObject::getAccPtr(util::smart_ptr<core::address_space>::shared aspace) const
 {
     gmacError_t err;
-    return aspace.get_host_pinned_mapping(addr_, err);
+    return aspace->get_host_pinned_mapping(addr_, err);
 }
 
 }}

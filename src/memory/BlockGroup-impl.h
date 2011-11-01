@@ -75,8 +75,7 @@ BlockGroup<State>::BlockGroup(Protocol &protocol,
                               gmacError_t &err) :
     object(hostAddr, size),
     hasUserMemory_(hostAddr != NULL),
-    deviceAddr_(NULL),
-    ownerShortcut_(NULL)
+    deviceAddr_(NULL)
 {
     shadow_ = NULL;
     err = gmacSuccess;
@@ -220,13 +219,13 @@ BlockGroup<State>::owner() const
 
 template<typename State>
 inline gmacError_t
-BlockGroup<State>::addOwner(core::address_space &aspace)
+BlockGroup<State>::addOwner(util::smart_ptr<core::address_space>::shared owner)
 {
     ASSERTION(ownerShortcut_ == NULL);
-    ownerShortcut_ = &aspace;
+    ownerShortcut_ = owner;
 
-    gmacError_t ret = mallocAccelerator(aspace, addr_, size_, deviceAddr_);
-    TRACE(LOCAL, "Add owner %p Object @ %p with device addr: %p", &aspace, addr_, deviceAddr_.get());
+    gmacError_t ret = mallocAccelerator(*owner, addr_, size_, deviceAddr_);
+    TRACE(LOCAL, "Add owner %p Object @ %p with device addr: %p", owner.get(), addr_, deviceAddr_.get());
 
     return ret;
 #if 0
@@ -262,9 +261,9 @@ BlockGroup<State>::addOwner(core::address_space &aspace)
 // TODO: move checks to DBC
 template<typename State>
 inline gmacError_t
-BlockGroup<State>::removeOwner(core::address_space &aspace)
+BlockGroup<State>::removeOwner(util::smart_ptr<core::address_space>::shared owner)
 {
-    ASSERTION(ownerShortcut_ == &aspace);
+    ASSERTION(ownerShortcut_ == owner);
 
     gmacError_t ret = coherenceOp(&Protocol::deleteBlock);
     ASSERTION(ret == gmacSuccess);
@@ -283,7 +282,7 @@ BlockGroup<State>::removeOwner(core::address_space &aspace)
     }
     blocks_.clear();
 
-    ownerShortcut_ = NULL;
+    ownerShortcut_.reset();
 
     return gmacSuccess;
 #if 0

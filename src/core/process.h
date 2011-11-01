@@ -92,7 +92,6 @@ public:
      * \return Accelerator address
      */
     virtual accptr_t translate(const hostptr_t addr) = 0;
-#endif
 
     /**
      * Gets the protocol used by the process for the global objects
@@ -102,7 +101,6 @@ public:
      */
     virtual memory::Protocol *getProtocol() = 0;
 
-#if 0
     /**
      * Inserts an object into the orphan (objects without owner) list
      * \param object Object that becomes orphan

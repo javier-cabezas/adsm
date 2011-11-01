@@ -23,7 +23,7 @@ namespace __impl { namespace memory { namespace protocol {
 
 
 LazyBase::LazyBase(bool eager) :
-    gmac::util::Lock("LazyBase"),
+    gmac::util::mutex("LazyBase"),
     eager_(eager),
     limit_(1)
 {

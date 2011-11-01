@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,70 +31,43 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_UTIL_LOCK_H_
-#define GMAC_UTIL_LOCK_H_
+#ifndef GMAC_UTIL_UNIQUE_H_
+#define GMAC_UTIL_UNIQUE_H_
 
-#include "config/common.h"
-
-#if defined(USE_TRACE_LOCKS)
-#include <string>
-#endif
+#include "Atomics.h"
 
 namespace __impl { namespace util {
 
-class GMAC_LOCAL __Lock {
-protected:
-#if defined(USE_TRACE_LOCKS)
-    //! Signal that the lock is exclusive, e.g., due to a lock-write
-    mutable bool exclusive_;
-    std::string name_;
-#endif
+template <typename T, typename R = unsigned>
+class unique {
+    static Atomic Count_;
+
+private:
+    R id_;
+
 public:
-    //! Default constructor
-    /*!
-        \param name Lock name for tracing purposes
-    */
-    __Lock(const char *name);
+    unique();
 
-    //! The thread requests the lock
-    void enter() const;
-    
-    //! The thread gets an exclusive lock
-    void locked() const;
+    R get_id() const;
+};
 
-    //! The thread gets a shared lock
-    void done() const;
+template <typename T, typename R = unsigned>
+class unique_debug {
+#ifdef DEBUG
+    static Atomic Count_;
 
-    //! The thread releases a lock
-    void exit() const;
+private:
+    R id_;
+
+public:
+    unique_debug();
+
+    R get_debug_id() const;
+#endif
 };
 
 }}
 
-#if defined(POSIX)
-#include "util/posix/Lock.h"
-#elif defined(WINDOWS)
-#include "util/windows/Lock.h"
-#endif
-
-namespace __impl { namespace util {
-template <typename T>
-class scoped_lock {
-    T &obj_;
-    bool owned_;
-public:
-    explicit scoped_lock(T &obj);
-    explicit scoped_lock(scoped_lock<T> &obj);
-    ~scoped_lock();
-
-    T &operator()();
-    const T &operator()() const;
-
-    scoped_lock<T> &operator=(scoped_lock<T> &lock);
-};
-
-}}
-
-#include "Lock-impl.h"
+#include "unique-impl.h"
 
 #endif

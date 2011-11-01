@@ -41,7 +41,7 @@ Manager::unmap(void *addr, size_t size)
 }
 #endif
 gmacError_t
-Manager::alloc(address_space_impl &aspace, hostptr_t *addr, size_t size)
+Manager::alloc(address_space_impl aspace, hostptr_t *addr, size_t size)
 {
     // PRECONDITIONS
     REQUIRES(size > 0);
@@ -67,7 +67,7 @@ Manager::globalAlloc(void **addr, size_t size, GmacGlobalMallocType hint)
 #endif
 
 gmacError_t
-Manager::free(address_space_impl &aspace, hostptr_t addr)
+Manager::free(address_space_impl aspace, hostptr_t addr)
 {
     // PRECONDITIONS
     REQUIRES(addr != NULL);
@@ -79,7 +79,7 @@ Manager::free(address_space_impl &aspace, hostptr_t addr)
 }
 
 bool
-Manager::signalRead(address_space_impl &aspace, hostptr_t addr)
+Manager::signalRead(address_space_impl aspace, hostptr_t addr)
 {
     // PRECONDITIONS
     REQUIRES(addr != NULL);
@@ -91,7 +91,7 @@ Manager::signalRead(address_space_impl &aspace, hostptr_t addr)
 }
 
 bool
-Manager::signalWrite(address_space_impl &aspace, hostptr_t addr)
+Manager::signalWrite(address_space_impl aspace, hostptr_t addr)
 {
     // PRECONDITIONS
     REQUIRES(addr != NULL);
@@ -104,7 +104,7 @@ Manager::signalWrite(address_space_impl &aspace, hostptr_t addr)
 
 
 gmacError_t
-Manager::toIOBuffer(address_space_impl &aspace, io_buffer_impl &buffer, size_t bufferOff, const hostptr_t addr, size_t size)
+Manager::toIOBuffer(address_space_impl aspace, io_buffer_impl &buffer, size_t bufferOff, const hostptr_t addr, size_t size)
 {
     // PRECONDITIONS
     REQUIRES(addr != NULL);
@@ -118,7 +118,7 @@ Manager::toIOBuffer(address_space_impl &aspace, io_buffer_impl &buffer, size_t b
 }
 
 gmacError_t
-Manager::fromIOBuffer(address_space_impl &aspace, hostptr_t addr, io_buffer_impl &buffer, size_t bufferOff, size_t size)
+Manager::fromIOBuffer(address_space_impl aspace, hostptr_t addr, io_buffer_impl &buffer, size_t bufferOff, size_t size)
 {
     // PRECONDITIONS
     REQUIRES(addr != NULL);
@@ -131,7 +131,7 @@ Manager::fromIOBuffer(address_space_impl &aspace, hostptr_t addr, io_buffer_impl
     return ret;
 }
 gmacError_t
-Manager::memcpy(address_space_impl &aspace, hostptr_t dst, const hostptr_t src, size_t n)
+Manager::memcpy(address_space_impl aspace, hostptr_t dst, const hostptr_t src, size_t n)
 {
     // PRECONDITIONS
     REQUIRES(src != NULL);
@@ -145,7 +145,7 @@ Manager::memcpy(address_space_impl &aspace, hostptr_t dst, const hostptr_t src, 
 }
 
 gmacError_t
-Manager::memset(address_space_impl &aspace, hostptr_t dst, int c, size_t n)
+Manager::memset(address_space_impl aspace, hostptr_t dst, int c, size_t n)
 {
     // PRECONDITIONS
     REQUIRES(dst != NULL);

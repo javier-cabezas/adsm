@@ -4,7 +4,7 @@
 namespace __impl { namespace memory {
 
 inline HostMappedSet::HostMappedSet() :
-    RWLock("HostMappedSet")
+    lock_rw("HostMappedSet")
 {}
 
 inline HostMappedSet::~HostMappedSet()
@@ -12,7 +12,7 @@ inline HostMappedSet::~HostMappedSet()
 
 #ifdef USE_OPENCL
 inline gmacError_t
-HostMappedObject::acquire(core::address_space &current)
+HostMappedObject::acquire(util::smart_ptr<core::address_space>::shared current)
 {
     gmacError_t ret = gmacSuccess;
     ret = current.acquire(addr_);
@@ -20,7 +20,7 @@ HostMappedObject::acquire(core::address_space &current)
 }
 
 inline gmacError_t
-HostMappedObject::release(core::address_space &current)
+HostMappedObject::release(util::smart_ptr<core::address_space>::shared current)
 {
     gmacError_t ret = gmacSuccess;
     ret = current.release(addr_);

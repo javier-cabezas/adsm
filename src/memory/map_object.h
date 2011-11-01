@@ -38,7 +38,7 @@ WITH THE SOFTWARE.  */
 #include <set>
 
 #include "config/common.h"
-#include "util/Lock.h"
+#include "util/lock.h"
 #include "util/NonCopyable.h"
 
 #include "protocol/common/BlockState.h"
@@ -59,7 +59,7 @@ class Protocol;
 
 //! A map of objects that is not bound to any Mode
 class GMAC_LOCAL map_object :
-     protected gmac::util::RWLock,
+     protected gmac::util::lock_rw,
      protected std::map<const hostptr_t, object *>,
      public util::NonCopyable {
 protected:

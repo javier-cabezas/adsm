@@ -12,7 +12,7 @@
 namespace __impl { namespace memory {
 
 inline object::object(hostptr_t addr, size_t size) :
-    gmac::util::RWLock("Object"),
+    gmac::util::lock_rw("Object"),
     util::Reference("Object"),
     addr_(addr),
     size_(size),

@@ -8,7 +8,7 @@ namespace __impl { namespace core {
 
 inline
 AllocationMap::AllocationMap() :
-    gmac::util::RWLock("AllocationMap")
+    gmac::util::lock_rw("AllocationMap")
 {
 }
 

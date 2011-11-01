@@ -5,7 +5,6 @@ namespace __impl { namespace core {
 
 inline
 address_space::address_space() :
-    util::Reference("AddressSpace"),
     map_("AddressSpace")
 {
 }
@@ -13,6 +12,7 @@ address_space::address_space() :
 inline
 address_space::~address_space()
 {
+    printf("Cucu\n");
 }
 
 inline

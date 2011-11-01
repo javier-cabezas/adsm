@@ -41,26 +41,26 @@ WITH THE SOFTWARE.  */
 #include "config/config.h"
 #include "config/dbc/Contract.h"
 #include "config/dbc/types.h"
-#include "util/posix/Lock.h"
+#include "util/posix/lock.h"
 
 namespace __dbc { namespace util {
 
 #if defined(__APPLE__)
-class Lock;
-typedef Lock SpinLock;
+class lock;
+typedef lock spinlock;
 #else
-class GMAC_API SpinLock :
-    public __impl::util::SpinLock,
+class GMAC_API spinlock :
+    public __impl::util::spinlock,
     public virtual Contract {
-    DBC_TESTED(__impl::util::SpinLock)
+    DBC_TESTED(__impl::util::spinlock)
 
 protected:
     mutable pthread_mutex_t internal_;
     mutable bool locked_;
     mutable pthread_t owner_;
 public:
-    SpinLock(const char *name);
-    virtual ~SpinLock();
+    spinlock(const char *name);
+    virtual ~spinlock();
 protected:
     void lock() const;
     void unlock() const;
@@ -68,27 +68,27 @@ protected:
 };
 #endif
 
-class GMAC_API Lock :
-    public __impl::util::Lock,
+class GMAC_API mutex :
+    public __impl::util::mutex,
     public virtual Contract {
-    DBC_TESTED(__impl::util::Lock)
+    DBC_TESTED(__impl::util::mutex)
 
 protected:
     mutable pthread_mutex_t internal_;
     mutable bool locked_;
     mutable pthread_t owner_;
 public:
-    Lock(const char *name);
-    virtual ~Lock();
+    mutex(const char *name);
+    virtual ~mutex();
 protected:
     void lock() const;
     void unlock() const;
 };
 
-class GMAC_API RWLock :
-    public __impl::util::RWLock,
+class GMAC_API lock_rw :
+    public __impl::util::lock_rw,
     public virtual Contract {
-    DBC_TESTED(__impl::util::RWLock)
+    DBC_TESTED(__impl::util::lock_rw)
 
 protected:
     mutable enum { Idle, Read, Write } state_;
@@ -98,8 +98,8 @@ protected:
 
     mutable unsigned magic_;
 public:
-    RWLock(const char *name);
-    virtual ~RWLock();
+    lock_rw(const char *name);
+    virtual ~lock_rw();
 protected:
     void lockRead() const;
     void lockWrite() const;

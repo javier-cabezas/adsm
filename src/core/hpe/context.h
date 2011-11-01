@@ -40,7 +40,7 @@ WITH THE SOFTWARE.  */
 
 #include "include/gmac/types.h"
 
-#include "util/Lock.h"
+#include "util/lock.h"
 #include "util/NonCopyable.h"
 #include "util/Private.h"
 
@@ -56,7 +56,8 @@ class KernelLaunch;
 /**
  * Generic context class that represents the per-thread operations' state in the accelerator
  */
-class GMAC_LOCAL context : public gmac::util::RWLock, public util::NonCopyable {
+class GMAC_LOCAL context : public gmac::util::lock_rw,
+                           public util::NonCopyable {
     friend class resource_manager;
 #if 0
     DBC_FORCE_TEST(context)
@@ -129,17 +130,22 @@ public:
     TESTABLE gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
 #endif
 
-    gmacError_t copy(accptr_t acc, const hostptr_t host, size_t count);
+    hal::event_t *copy(accptr_t acc, const hostptr_t host, size_t count, gmacError_t &err);
+    hal::event_t *copy(hostptr_t host, const accptr_t acc, size_t count, gmacError_t &err);
+    hal::event_t *copy(accptr_t dst, const accptr_t src, size_t count, gmacError_t &err);
 
-    gmacError_t copy(hostptr_t host, const accptr_t acc, size_t count);
-
-    gmacError_t copy(accptr_t dst, const accptr_t src, size_t count);
+    hal::async_event_t *copy_async(accptr_t acc, const hostptr_t host, size_t count, gmacError_t &err);
+    hal::async_event_t *copy_async(hostptr_t host, const accptr_t acc, size_t count, gmacError_t &err);
+    hal::async_event_t *copy_async(accptr_t dst, const accptr_t src, size_t count, gmacError_t &err);
 
     gmacError_t copy(accptr_t dst, core::io_buffer &buffer, size_t off, size_t count);
-
     gmacError_t copy(core::io_buffer &buffer, size_t off, const accptr_t src, size_t count);
 
-    gmacError_t memset(accptr_t addr, int c, size_t count);
+    gmacError_t copy_async(accptr_t dst, core::io_buffer &buffer, size_t off, size_t count);
+    gmacError_t copy_async(core::io_buffer &buffer, size_t off, const accptr_t src, size_t count);
+
+    hal::event_t *memset(accptr_t addr, int c, size_t count, gmacError_t &err);
+    hal::async_event_t *memset_async(accptr_t addr, int c, size_t count, gmacError_t &err);
 
 };
 

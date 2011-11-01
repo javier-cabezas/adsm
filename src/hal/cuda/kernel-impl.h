@@ -23,12 +23,41 @@ kernel_t::launch::launch(kernel_t &parent, Parent::config &conf, stream_t &strea
 }
 
 inline
-async_event_t &
-kernel_t::launch::execute(list_event &dependencies)
+async_event_t *
+kernel_t::launch::execute(list_event_detail &_dependencies, gmacError_t &err)
+{
+    async_event_t *ret = NULL;
+    list_event &dependencies = reinterpret_cast<list_event &>(_dependencies);
+    err = dependencies.sync();
+
+    if (err == gmacSuccess) {
+        ret = execute(err);
+    }
+
+    return ret;
+}
+
+inline
+async_event_t *
+kernel_t::launch::execute(async_event_t &event, gmacError_t &err)
+{
+    async_event_t *ret = NULL;
+    err = event.sync();
+
+    if (err == gmacSuccess) {
+        ret = execute(err);
+    }
+
+    return ret;
+}
+
+inline
+async_event_t *
+kernel_t::launch::execute(gmacError_t &err)
 {
     get_stream().get_context().set();
 
-    CUresult err;
+    CUresult res;
 
     dim3 dimsGlobal = get_config().get_dims_global();
     dim3 dimsGroup = get_config().get_dims_group();
@@ -37,7 +66,7 @@ kernel_t::launch::execute(list_event &dependencies)
     async_event_t *ret = new async_event_t(async_event_t::Kernel, get_stream().get_context());
 
     ret->begin(get_stream());
-    err = cuLaunchKernel(get_kernel()(), dimsGlobal.x,
+    res = cuLaunchKernel(get_kernel()(), dimsGlobal.x,
                                     dimsGlobal.y,
                                     dimsGlobal.z,
                                     dimsGroup.x,
@@ -48,27 +77,17 @@ kernel_t::launch::execute(list_event &dependencies)
                                     (void **) get_config().params_,
                                     NULL);
     ret->end();
-    ret->set_error(error(err));
+    err = error(res);
 
-    return *ret;
-}
-
-inline
-async_event_t &
-kernel_t::launch::execute(async_event_t &event)
-{
-    async_event_t *ret;
-    gmacError_t err = event.sync();
-
-    if (err == gmacSuccess) {
-        ret = &execute();
-    } else {
-        ret = new async_event_t(async_event_t::Kernel, get_stream().get_context());
-        ret->set_error(err);
+    if (err != gmacSuccess) {
+        delete ret;
+        ret = NULL;
     }
 
-    return *ret;
+    return ret;
 }
+
+
 
 inline
 kernel_t::config::config(dim3 global, dim3 group, size_t shared, cudaStream_t tokens) :

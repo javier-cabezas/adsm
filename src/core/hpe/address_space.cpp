@@ -25,12 +25,15 @@ address_space::address_space(hal::context_t &context,
                              hal::stream_t &streamToHost,
                              hal::stream_t &streamAccelerator,
                              process &proc) :
+    gmac::util::mutex("address_space"),
     ctx_(context),
     streamLaunch_(streamLaunch),
     streamToAccelerator_(streamToAccelerator),
     streamToHost_(streamToHost),
     streamAccelerator_(streamAccelerator),
     proc_(proc),
+    mapDeviceAddresses_("device_addresses"),
+    mapPinnedBuffers_("map_pinned_buffers"),
     changes_(false)
 {
 }
@@ -85,11 +88,11 @@ gmacError_t
 address_space::unmap(hostptr_t addr, size_t count)
 {
     gmacError_t ret = gmacSuccess;
-    DeviceAddresses::iterator it = deviceAddresses_.find(addr);
+    map_addresses::iterator it = mapDeviceAddresses_.find(addr);
 
-    if (it != deviceAddresses_.end()) {
+    if (it != mapDeviceAddresses_.end()) {
         ret = ctx_.free(it->second);
-        deviceAddresses_.erase(it);
+        mapDeviceAddresses_.erase(it);
     } else {
         ret = gmacErrorInvalidValue;
     }
@@ -104,7 +107,7 @@ address_space::alloc_host_pinned(size_t count, gmacError_t &err)
     if (buf != NULL) {
         ret = buf->get_addr();
 
-        pinnedBuffers_.insert(PinnedBuffers::value_type(ret, buf));
+        mapPinnedBuffers_.insert(map_buffers::value_type(ret, buf));
     }
 
     // TODO: cache pinned allocations
@@ -115,12 +118,12 @@ gmacError_t
 address_space::free_host_pinned(hostptr_t ptr)
 {
     gmacError_t ret = gmacSuccess;
-    PinnedBuffers::iterator it;
-    it = pinnedBuffers_.find(ptr);
+    map_buffers::iterator it;
+    it = mapPinnedBuffers_.find(ptr);
 
-    if (it != pinnedBuffers_.end()) {
+    if (it != mapPinnedBuffers_.end()) {
         ctx_.free_buffer(*it->second);
-        pinnedBuffers_.erase(it);
+        mapPinnedBuffers_.erase(it);
     } else {
         ret = gmacErrorInvalidValue;
     }
@@ -132,10 +135,10 @@ accptr_t
 address_space::get_host_pinned_mapping(hostptr_t ptr, gmacError_t &err)
 {
     accptr_t ret(0);
-    PinnedBuffers::iterator it;
-    it = pinnedBuffers_.find(ptr);
+    map_buffers::iterator it;
+    it = mapPinnedBuffers_.find(ptr);
 
-    if (it != pinnedBuffers_.end()) {
+    if (it != mapPinnedBuffers_.end()) {
         ret = it->second->get_device_addr();
         err = gmacSuccess;
     } else {
@@ -149,7 +152,11 @@ gmacError_t
 address_space::copy(accptr_t acc, const hostptr_t host, size_t count)
 {
     context &context = get_context();
-    gmacError_t ret = context.copy(acc, host, count);
+    gmacError_t ret;
+
+    // TODO: use the event
+    // hal::event_t *event =
+        context.copy(acc, host, count, ret);
     return ret;
 }
 
@@ -157,7 +164,11 @@ gmacError_t
 address_space::copy(hostptr_t host, const accptr_t acc, size_t count)
 {
     context &context = get_context();
-    gmacError_t ret = context.copy(host, acc, count);
+    gmacError_t ret;
+
+    // TODO: use the event
+    // hal::event_t *event =
+        context.copy(host, acc, count, ret);
     return ret;
 }
 
@@ -165,7 +176,41 @@ gmacError_t
 address_space::copy(accptr_t dst, const accptr_t src, size_t count)
 {
     context &context = get_context();
-    gmacError_t ret = context.copy(dst, src, count);
+    gmacError_t ret;
+
+    // TODO: use the event
+    // hal::event_t *event =
+        context.copy(dst, src, count, ret);
+    return ret;
+}
+
+hal::async_event_t *
+address_space::copy_async(accptr_t acc, const hostptr_t host, size_t count, gmacError_t &err)
+{
+    context &context = get_context();
+
+    // TODO: use the event
+    hal::async_event_t *ret = context.copy_async(acc, host, count, err);
+    return ret;
+}
+
+hal::async_event_t *
+address_space::copy_async(hostptr_t host, const accptr_t acc, size_t count, gmacError_t &err)
+{
+    context &context = get_context();
+
+    // TODO: use the event
+    hal::async_event_t *ret = context.copy_async(host, acc, count, err);
+    return ret;
+}
+
+hal::async_event_t *
+address_space::copy_async(accptr_t dst, const accptr_t src, size_t count, gmacError_t &err)
+{
+    context &context = get_context();
+
+    // TODO: use the event
+    hal::async_event_t *ret = context.copy_async(dst, src, count, err);
     return ret;
 }
 
@@ -173,7 +218,13 @@ gmacError_t
 address_space::copy(accptr_t dst, core::io_buffer &buffer, size_t off, size_t count)
 {
     context &context = get_context();
-    gmacError_t ret = context.copy(dst, buffer, off, count);
+    gmacError_t ret;
+
+    if (buffer.async()) {
+        ret = context.copy_async(dst, buffer, off, count);
+    } else {
+        ret = context.copy(dst, buffer, off, count);
+    }
     return ret;
 }
 
@@ -181,7 +232,13 @@ gmacError_t
 address_space::copy(core::io_buffer &buffer, size_t off, const accptr_t src, size_t count)
 {
     context &context = get_context();
-    gmacError_t ret = context.copy(buffer, off, src, count);
+    gmacError_t ret;
+
+    if (buffer.async()) {
+        ret = context.copy_async(buffer, off, src, count);
+    } else {
+        ret = context.copy(buffer, off, src, count);
+    }
     return ret;
 }
 
@@ -189,7 +246,21 @@ gmacError_t
 address_space::memset(accptr_t addr, int c, size_t count)
 {
     context &context = get_context();
-    gmacError_t ret = context.memset(addr, c, count);
+    gmacError_t ret;
+
+    // TODO: use the event
+    // hal::event_t *event =
+        context.memset(addr, c, count, ret);
+    return ret;
+}
+
+hal::async_event_t *
+address_space::memset_async(accptr_t addr, int c, size_t count, gmacError_t &err)
+{
+    context &context = get_context();
+
+    hal::async_event_t *ret = context.memset_async(addr, c, count, err);
+
     return ret;
 }
 

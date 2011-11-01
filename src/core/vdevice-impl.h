@@ -10,8 +10,7 @@ namespace __impl { namespace core {
 
 inline
 vdevice::vdevice() :
-    util::Reference("vdevice"),
-    gmac::util::SpinLock("vdevice")
+    util::Reference("vdevice")
 {
     TRACE(LOCAL,"Creating Execution vdevice %p", this);
     trace::StartThread(THREAD_T(get_id().val), "GPU");

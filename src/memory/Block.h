@@ -39,7 +39,7 @@ WITH THE SOFTWARE.  */
 
 #include "include/gmac/types.h"
 #include "memory/Protocol.h"
-#include "util/Lock.h"
+#include "util/lock.h"
 #include "util/Logger.h"
 #include "util/Reference.h"
 
@@ -63,7 +63,7 @@ namespace memory {
  * stil be accessible from the CPU.
  * Memory block methods should only be called from GMAC objects and GMAC memory coherence protocols.
  */
-class GMAC_LOCAL Block : public gmac::util::Lock,
+class GMAC_LOCAL Block : public gmac::util::mutex,
                          public util::Reference {
     DBC_FORCE_TEST(Block)
 

@@ -3,9 +3,9 @@ set(util_os_SRC
     FileLock-impl.h
     FileLock.cpp
     loader.h
-    Lock.h
-    Lock-impl.h
-    Lock.cpp
+    lock.h
+    lock-impl.h
+    lock.cpp
     Thread-impl.h
     Semaphore.h
     Semaphore-impl.h
@@ -13,8 +13,8 @@ set(util_os_SRC
 )
 
 set(util_os_DBC
-    dbc/Lock.h
-    dbc/Lock.cpp
+    dbc/lock.h
+    dbc/lock.cpp
 )
 
 add_gmac_sources(gmac-util ${util_os_SRC} ${util_os_DBC})
