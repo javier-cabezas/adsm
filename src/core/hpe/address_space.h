@@ -109,15 +109,15 @@ public:
     gmacError_t copy(hostptr_t host, const accptr_t acc, size_t count);
     gmacError_t copy(accptr_t dst, const accptr_t src, size_t count);
 
-    hal::async_event_t *copy_async(accptr_t acc, const hostptr_t host, size_t count, gmacError_t &err);
-    hal::async_event_t *copy_async(hostptr_t host, const accptr_t acc, size_t count, gmacError_t &err);
-    hal::async_event_t *copy_async(accptr_t dst, const accptr_t src, size_t count, gmacError_t &err);
+    hal::event_t copy_async(accptr_t acc, const hostptr_t host, size_t count, gmacError_t &err);
+    hal::event_t copy_async(hostptr_t host, const accptr_t acc, size_t count, gmacError_t &err);
+    hal::event_t copy_async(accptr_t dst, const accptr_t src, size_t count, gmacError_t &err);
 
     gmacError_t copy(accptr_t dst, core::io_buffer &buffer, size_t off, size_t count);
     gmacError_t copy(core::io_buffer &buffer, size_t off, const accptr_t src, size_t count);
 
     gmacError_t memset(accptr_t addr, int c, size_t count);
-    hal::async_event_t *memset_async(accptr_t addr, int c, size_t count, gmacError_t &err);
+    hal::event_t memset_async(accptr_t addr, int c, size_t count, gmacError_t &err);
 
     hal::context_t &get_hal_context();
     const hal::context_t &get_hal_context() const;

@@ -26,7 +26,7 @@ using __impl::core::hpe::vdevice;
 static inline
 vdevice &get_current_virtual_device()
 {
-    return thread::get_current_virtual_device();
+    return thread::get_current_thread().get_current_virtual_device();
 }
 
 static inline

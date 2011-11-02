@@ -5,10 +5,19 @@ namespace __impl { namespace hal { namespace detail {
 
 template <typename D, typename B, typename I>
 inline
-event_t<D, B, I>::event_t(type t, context_parent_t &context) :
+event_t<D, B, I>::event_t(bool async, type t, context_parent_t &context) :
     context_(context),
+    isAsynchronous_(async),
+    synced_(async? false: true),
     type_(t),
+    state_(None),
     err_(gmacSuccess)
+{
+}
+
+template <typename D, typename B, typename I>
+inline
+event_t<D, B, I>::~event_t()
 {
 }
 
@@ -30,27 +39,21 @@ event_t<D, B, I>::sync()
 
 template <typename D, typename B, typename I>
 inline
-bool
-event_t<D, B, I>::is_synced() const
-{
-    return true;
-}
-
-template <typename D, typename B, typename I>
-inline
 typename event_t<D, B, I>::type
 event_t<D, B, I>::get_type() const
 {
     return type_;
 }
 
+#if 0
 template <typename D, typename B, typename I>
 inline
 typename event_t<D, B, I>::state
 event_t<D, B, I>::get_state()
 {
-    return End;
+    return state_;
 }
+#endif
 
 template <typename D, typename B, typename I>
 inline
@@ -85,25 +88,28 @@ event_t<D, B, I>::get_time_end() const
     return timeEnd_;
 }
 
+#if 0
 template <typename D, typename B, typename I>
 inline
-async_event_t<D, B, I>::async_event_t() :
-    synced_(false)
+void
+event_t<D, B, I>::set_state(state s)
 {
+    state_ = s;
 }
 
 template <typename D, typename B, typename I>
 inline
 void
-async_event_t<D, B, I>::set_synced(bool synced)
+event_t<D, B, I>::set_synced(bool synced)
 {
     synced_ = synced;
 }
+#endif
 
 template <typename D, typename B, typename I>
 inline
 bool
-async_event_t<D, B, I>::is_synced() const
+event_t<D, B, I>::is_synced() const
 {
     return synced_;
 }

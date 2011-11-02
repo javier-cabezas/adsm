@@ -29,7 +29,7 @@ public:
     private:
         kernel_t &kernel_;
         typename I::kernel::config config_;
-        typename I::stream stream_;
+        typename I::stream &stream_;
 
     protected:
         launch(typename I::kernel &kernel, typename I::kernel::config &conf, typename I::stream &stream);
@@ -41,9 +41,9 @@ public:
         const typename I::kernel &get_kernel() const;
         const typename I::kernel::config &get_config() const;
 
-        virtual typename I::async_event *execute(list_event<D, B, I> &dependencies, gmacError_t &err) = 0;
-        virtual typename I::async_event *execute(typename I::async_event &event, gmacError_t &err) = 0;
-        virtual typename I::async_event *execute(gmacError_t &err) = 0;
+        virtual typename I::event execute(list_event<D, B, I> &dependencies, gmacError_t &err) = 0;
+        virtual typename I::event execute(typename I::event event, gmacError_t &err) = 0;
+        virtual typename I::event execute(gmacError_t &err) = 0;
     };
 
 private:

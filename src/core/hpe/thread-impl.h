@@ -36,6 +36,9 @@ inline
 thread &
 thread::get_current_thread()
 {
+    if (has_current_thread() == false) {
+        getProcess().initThread(true, 0);
+    }
     return static_cast<thread &>(TLS::get_current_thread());
 }
 
@@ -45,8 +48,6 @@ thread::has_current_thread()
 {
     return TLS::has_current_thread();
 }
-
-
 
 #if 0
 inline
@@ -72,7 +73,7 @@ thread::get_virtual_device(GmacVirtualDeviceId id)
     vdevice *ret = NULL;
 
     map_vdevice::iterator it;
-    map_vdevice &mapVDevices = get_current_thread().mapVDevices_;
+    map_vdevice &mapVDevices = mapVDevices_;
     it = mapVDevices.find(id);
     if (it != mapVDevices.end()) {
         ret = it->second;
@@ -83,13 +84,10 @@ thread::get_virtual_device(GmacVirtualDeviceId id)
 
 inline
 vdevice &
-thread::get_current_virtual_device()
+thread::get_current_virtual_device() const
 {
-    if (has_current_thread() == false) {
-        getProcess().initThread(true, 0);
-    }
-    ASSERTION(get_current_thread().currentVirtualDevice_ != NULL);
-    vdevice *ret = get_current_thread().currentVirtualDevice_;
+    ASSERTION(currentVirtualDevice_ != NULL);
+    vdevice *ret = currentVirtualDevice_;
     return *ret;
 }
 
@@ -100,7 +98,7 @@ thread::add_virtual_device(GmacVirtualDeviceId id, vdevice &dev)
     gmacError_t ret;
 
     ret = gmacSuccess;
-    map_vdevice &mapVDevices = get_current_thread().mapVDevices_;
+    map_vdevice &mapVDevices = mapVDevices_;
 
     map_vdevice::iterator it;
     it = mapVDevices.find(id);
@@ -117,10 +115,10 @@ inline
 gmacError_t
 thread::remove_virtual_device(vdevice &dev)
 {
-    ASSERTION(get_current_thread().currentVirtualDevice_ != NULL);
+    ASSERTION(currentVirtualDevice_ != NULL);
 
     gmacError_t ret;
-    map_vdevice &mapVDevices = get_current_thread().mapVDevices_;
+    map_vdevice &mapVDevices = mapVDevices_;
 
     ret = gmacSuccess;
     map_vdevice::iterator it;
@@ -138,7 +136,7 @@ inline
 void
 thread::set_current_virtual_device(vdevice &dev)
 {
-    get_current_thread().currentVirtualDevice_ = &dev;
+    currentVirtualDevice_ = &dev;
 }
 
 inline
@@ -146,7 +144,7 @@ context *
 thread::get_context(address_space &aspace)
 {
     context *ret = NULL;
-    map_context &mapContexts = get_current_thread().mapContexts_;
+    map_context &mapContexts = mapContexts_;
 
     map_context::iterator it;
     it = mapContexts.find(&aspace);
@@ -166,13 +164,11 @@ thread::new_kernel_config(hal::kernel_t::config &config)
 inline gmacError_t
 thread::new_kernel_config(hal::kernel_t::config &config, vdevice &dev)
 {
-    thread &thread = get_current_thread();
+    map_config::iterator it = mapConfigs_.find(&dev);
 
-    map_config::iterator it = thread.mapConfigs_.find(&dev);
-
-    if (it == thread.mapConfigs_.end()) {
+    if (it == mapConfigs_.end()) {
         hal::kernel_t::config *c = new hal::kernel_t::config(config);
-        thread.mapConfigs_.insert(map_config::value_type(&dev, c));
+        mapConfigs_.insert(map_config::value_type(&dev, c));
     } else {
         *(it->second) = config;
     }
@@ -189,11 +185,9 @@ thread::get_kernel_config()
 inline hal::kernel_t::config &
 thread::get_kernel_config(vdevice &dev)
 {
-    thread &thread = get_current_thread();
+    map_config::iterator it = mapConfigs_.find(&dev);
 
-    map_config::iterator it = thread.mapConfigs_.find(&dev);
-
-    ASSERTION(it != thread.mapConfigs_.end());
+    ASSERTION(it != mapConfigs_.end());
 
     return *(it->second);
 }

@@ -59,7 +59,7 @@ struct backend_traits
     typedef KC kernel_config;
 };
 
-template <typename CD, typename C, typename S, typename K, typename T, typename V, typename R, typename E, typename AE, typename B> 
+template <typename CD, typename C, typename S, typename K, typename T, typename V, typename R, typename E, typename B> 
 struct implementation_traits
 {
     typedef CD coherence_domain;
@@ -70,7 +70,6 @@ struct implementation_traits
     typedef V variable;
     typedef R code_repository;
     typedef E event;
-    typedef AE async_event;
     typedef B buffer;
 };
 

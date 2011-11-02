@@ -51,7 +51,7 @@ public:
         friend class kernel;
 
         vdevice &dev_;
-        hal::async_event_t *event_;
+        hal::event_t event_;
 
         std::map<unsigned, std::list<memory::ObjectInfo>::iterator > paramToParamPtr_;
         std::list<memory::ObjectInfo> usedObjects_;
@@ -81,7 +81,7 @@ public:
          */
         const list_object_info &get_objects() const;
 
-        hal::async_event_t *get_event();
+        hal::event_t get_event();
     };
 
     kernel(const hal::kernel_t &parent);

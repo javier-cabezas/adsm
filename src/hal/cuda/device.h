@@ -16,7 +16,6 @@ class device :
     public hal_device,
     public util::unique<device> {
     friend class context_t;
-    friend class async_event_t;
 
     typedef hal_device Parent;
 protected:

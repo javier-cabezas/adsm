@@ -31,22 +31,22 @@ context::init()
 {
 }
 
-hal::event_t *
+hal::event_t
 context::copy(accptr_t acc, const hostptr_t host, size_t size, gmacError_t &err)
 {
-    hal::event_t *ret = ctx_.copy(acc, host, size, streamToAccelerator_, err);
+    hal::event_t ret = ctx_.copy(acc, host, size, streamToAccelerator_, err);
 
     return ret;
 }
 
-hal::async_event_t *
+hal::event_t
 context::copy_async(accptr_t acc, const hostptr_t host, size_t size, gmacError_t &err)
 {
-    hal::async_event_t *ret = NULL;
+    hal::event_t ret;
     TRACE(LOCAL,"Transferring "FMT_SIZE" bytes from host %p to accelerator %p", size, host, acc.get());
     if(size == 0) {
         err = gmacErrorInvalidValue;
-        return NULL; /* Fast path */
+        return ret; /* Fast path */
     }
     trace::EnterCurrentFunction();
     /* In case there is no page-locked memory available, use the slow path */
@@ -56,7 +56,7 @@ context::copy_async(accptr_t acc, const hostptr_t host, size_t size, gmacError_t
         bufferWrite_ = NULL;
         TRACE(LOCAL,"Not using pinned memory for transfer");
         trace::ExitCurrentFunction();
-        return NULL;
+        return ret;
     }
 
     ptroff_t offset = 0;
@@ -72,7 +72,7 @@ context::copy_async(accptr_t acc, const hostptr_t host, size_t size, gmacError_t
         ret = ctx_.copy_async(acc + offset, bufferWrite_->get_buffer(), 0, len, streamToAccelerator_, err);
         ASSERTION(err == gmacSuccess);
         if(err != gmacSuccess) break;
-        bufferWrite_->to_device(*ret);
+        bufferWrite_->to_device(ret);
         offset += len;
     }
 
@@ -80,22 +80,22 @@ context::copy_async(accptr_t acc, const hostptr_t host, size_t size, gmacError_t
     return ret;
 }
 
-hal::event_t *
+hal::event_t 
 context::copy(hostptr_t host, const accptr_t acc, size_t size, gmacError_t &err)
 {
-    hal::event_t *ret = ctx_.copy(host, acc, size, streamToHost_, err);
+    hal::event_t ret = ctx_.copy(host, acc, size, streamToHost_, err);
 
     return ret;
 }
 
-hal::async_event_t *
+hal::event_t 
 context::copy_async(hostptr_t host, const accptr_t acc, size_t size, gmacError_t &err)
 {
-    hal::async_event_t *ret = NULL;
+    hal::event_t ret;
     TRACE(LOCAL,"Transferring "FMT_SIZE" bytes from accelerator %p to host %p", size, acc.get(), host);
     if(size == 0) {
         err = gmacErrorInvalidValue;
-        return NULL; /* Fast path */
+        return ret; /* Fast path */
     }
     trace::EnterCurrentFunction();
     if(bufferRead_ == NULL) bufferRead_ = new gmac::core::io_buffer(ctx_, util::params::ParamBlockSize, GMAC_PROT_READ);
@@ -104,11 +104,11 @@ context::copy_async(hostptr_t host, const accptr_t acc, size_t size, gmacError_t
         bufferRead_ = NULL;
         TRACE(LOCAL,"Not using pinned memory for transfer");
         trace::ExitCurrentFunction();
-        return NULL;
+        return ret;
     }
 
     err = bufferRead_->wait();
-    if(err != gmacSuccess) { trace::ExitCurrentFunction(); return NULL; }
+    if(err != gmacSuccess) { trace::ExitCurrentFunction(); return ret; }
     ptroff_t offset = 0;
     while(size_t(offset) < size) {
         ptroff_t len = ptroff_t(bufferRead_->size());
@@ -116,7 +116,7 @@ context::copy_async(hostptr_t host, const accptr_t acc, size_t size, gmacError_t
         ret = ctx_.copy_async(bufferRead_->get_buffer(), 0, acc + offset, len, streamToHost_, err);
         ASSERTION(err == gmacSuccess);
         if(err != gmacSuccess) break;
-        bufferRead_->to_host(*ret);
+        bufferRead_->to_host(ret);
         err = bufferRead_->wait();
         if(err != gmacSuccess) break;
         trace::EnterCurrentFunction();
@@ -128,31 +128,31 @@ context::copy_async(hostptr_t host, const accptr_t acc, size_t size, gmacError_t
     return ret;
 }
 
-hal::event_t *
+hal::event_t 
 context::copy(accptr_t dst, const accptr_t src, size_t count, gmacError_t &err)
 {
     TRACE(LOCAL,"Copy device %p to device %p ("FMT_SIZE" bytes)", src.get(), dst.get(), count);
     trace::EnterCurrentFunction();
 
-    hal::event_t *ret = ctx_.copy(dst,
-                                  src,
-                                  count,
-                                  streamAccelerator_, err);
+    hal::event_t ret = ctx_.copy(dst,
+                                 src,
+                                 count,
+                                 streamAccelerator_, err);
     trace::ExitCurrentFunction();
     return ret;
 
 }
 
-hal::async_event_t *
+hal::event_t 
 context::copy_async(accptr_t dst, const accptr_t src, size_t count, gmacError_t &err)
 {
     TRACE(LOCAL,"Copy device %p to device %p ("FMT_SIZE" bytes)", src.get(), dst.get(), count);
     trace::EnterCurrentFunction();
 
-    hal::async_event_t *ret = ctx_.copy_async(dst,
-                                              src,
-                                              count,
-                                              streamAccelerator_, err);
+    hal::event_t ret = ctx_.copy_async(dst,
+                                       src,
+                                       count,
+                                       streamAccelerator_, err);
     trace::ExitCurrentFunction();
     return ret;
 
@@ -166,13 +166,13 @@ context::copy(accptr_t dst, core::io_buffer &buffer, size_t off, size_t count)
 
     gmacError_t ret;
 
-    hal::event_t *event = ctx_.copy(dst,
-                                    buffer.addr() + off,
-                                    count,
-                                    streamToAccelerator_, ret);
+    hal::event_t event = ctx_.copy(dst,
+                                   buffer.addr() + off,
+                                   count,
+                                   streamToAccelerator_, ret);
 
     if (ret == gmacSuccess) {
-        buffer.to_device(*event);
+        buffer.to_device(event);
     }
 
     trace::ExitCurrentFunction();
@@ -187,13 +187,13 @@ context::copy(core::io_buffer &buffer, size_t off, const accptr_t src, size_t co
 
     gmacError_t ret;
 
-    hal::event_t *event = ctx_.copy(buffer.addr() + off,
-                                    src,
-                                    count,
-                                    streamToHost_, ret);
+    hal::event_t event = ctx_.copy(buffer.addr() + off,
+                                   src,
+                                   count,
+                                   streamToHost_, ret);
     
     if (ret == gmacSuccess) {
-        buffer.to_host(*event);
+        buffer.to_host(event);
     }
 
     trace::ExitCurrentFunction();
@@ -212,12 +212,12 @@ context::copy_async(accptr_t dst, core::io_buffer &buffer, size_t off, size_t co
 
     gmacError_t ret;
 
-    hal::async_event_t *event = ctx_.copy_async(dst,
-                                                buffer.get_buffer(), off,
-                                                count,
-                                                streamToAccelerator_, ret);
+    hal::event_t event = ctx_.copy_async(dst,
+                                         buffer.get_buffer(), off,
+                                         count,
+                                         streamToAccelerator_, ret);
     if (ret == gmacSuccess) {
-        buffer.to_device(*event);
+        buffer.to_device(event);
     }
 
     trace::ExitCurrentFunction();
@@ -236,36 +236,36 @@ context::copy_async(core::io_buffer &buffer, size_t off, const accptr_t src, siz
 
     gmacError_t ret;
 
-    hal::async_event_t *event = ctx_.copy_async(buffer.get_buffer(), off,
-                                                src,
-                                                count,
-                                                streamToHost_, ret);
+    hal::event_t event = ctx_.copy_async(buffer.get_buffer(), off,
+                                         src,
+                                         count,
+                                         streamToHost_, ret);
     if (ret == gmacSuccess) {
-        buffer.to_host(*event);
+        buffer.to_host(event);
     }
 
     trace::ExitCurrentFunction();
     return ret;
 }
 
-hal::event_t *
+hal::event_t 
 context::memset(accptr_t addr, int c, size_t count, gmacError_t &err)
 {
-    hal::event_t *ret = ctx_.memset(addr,
-                                    c,
-                                    count,
-                                    streamToAccelerator_, err);
+    hal::event_t ret = ctx_.memset(addr,
+                                   c,
+                                   count,
+                                   streamToAccelerator_, err);
 
     return ret;
 }
 
-hal::async_event_t *
+hal::event_t 
 context::memset_async(accptr_t addr, int c, size_t count, gmacError_t &err)
 {
-    hal::async_event_t *ret = ctx_.memset_async(addr,
-                                                c,
-                                                count,
-                                                streamToAccelerator_, err);
+    hal::event_t ret = ctx_.memset_async(addr,
+                                         c,
+                                         count,
+                                         streamToAccelerator_, err);
 
     return ret;
 }

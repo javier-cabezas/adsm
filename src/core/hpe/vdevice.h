@@ -191,7 +191,7 @@ public:
      * \param launch Reference to a KernelLaunch object
      * \return An event that represents the kernel execution
      */
-    hal::async_event_t *execute(kernel::launch &launch, gmacError_t &err);
+    hal::event_t execute(kernel::launch &launch, gmacError_t &err);
 
     /**
      * Waits for kernel execution

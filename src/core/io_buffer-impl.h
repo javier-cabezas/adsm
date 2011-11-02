@@ -7,7 +7,7 @@ namespace __impl { namespace core {
 
 inline
 io_buffer::io_buffer(hal::context_t &context, size_t size, GmacProtection prot) :
-    size_(size), state_(Idle), prot_(prot), event_(NULL)
+    size_(size), state_(Idle), prot_(prot)
 {
     gmacError_t res;
 
@@ -78,12 +78,12 @@ io_buffer::state() const
 inline gmacError_t
 io_buffer::wait()
 {
-    ASSERTION(state_ == Idle || event_ != NULL);
+    ASSERTION(state_ == Idle || event_.is_valid());
 
     gmacError_t ret = gmacSuccess;
 
     if (state_ != Idle) {
-        ret = event_->sync();
+        ret = event_.sync();
 #if 0
         ASSERTION(mode_ != NULL);
         ASSERTION(started_ == true);
@@ -109,24 +109,24 @@ io_buffer::wait()
 
 inline
 void
-io_buffer::to_host(hal::event_t &event)
+io_buffer::to_host(hal::event_t event)
 {
     ASSERTION(state_ == Idle);
-    ASSERTION(event_ == NULL);
+    ASSERTION(event_.is_valid() == false);
 
     state_ = ToHost;
-    event_ = &event;
+    event_ = event;
 }
 
 inline
 void
-io_buffer::to_device(hal::event_t &event)
+io_buffer::to_device(hal::event_t event)
 {
     ASSERTION(state_ == Idle);
-    ASSERTION(event_ == NULL);
+    ASSERTION(event_.is_valid() == false);
 
     state_ = ToAccelerator;
-    event_ = &event;
+    event_ = event;
 }
 
 inline

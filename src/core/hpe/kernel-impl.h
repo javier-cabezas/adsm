@@ -41,7 +41,7 @@ kernel::launch::get_objects() const
 }
 
 inline
-hal::async_event_t *
+hal::event_t
 kernel::launch::get_event()
 {
     return event_;
