@@ -48,24 +48,17 @@ _event_common_t::get_stream()
 }
 
 inline
-event_t::event_t(Parent::type t, context_t &context) :
-    Parent(t, context)
-{
-}
-
-inline
-async_event_t::async_event_t(event_t::type t, context_t &context) :
-    Parent(),
-    event_t(t, context)
+_event_t::_event_t(bool async, type t, context_t &context) :
+    Parent(async, t, context)
 {
 }
 
 inline
 gmacError_t
-async_event_t::sync()
+_event_t::sync()
 {
     gmacError_t ret;
-    if (Parent::is_synced() == false) {
+    if (synced_ == false) {
         get_stream().get_context().set();
 
         TRACE(LOCAL, "Waiting for event: %p", eventEnd_);
@@ -78,13 +71,26 @@ async_event_t::sync()
                 timeEnd_ = timeQueued_ + time_t(mili * 1000.f);
             }
         }
-        set_synced(true);
+        synced_ = true;
         ret = error(res);
     } else {
         ret = err_;
     }
 
     return ret;
+}
+
+inline
+void
+event_deleter::operator()(_event_t *ev)
+{
+    ev->get_context().dispose_event(*ev);
+}
+
+inline
+event_t::event_t(bool async, _event_t::type t, context_t &context) :
+    ptrEvent_(context.get_new_event(async, t), event_deleter())
+{
 }
 
 }}}

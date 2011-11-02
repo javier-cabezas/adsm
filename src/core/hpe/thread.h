@@ -64,6 +64,7 @@ public:
 /** Contains some thread-dependent values */
 class GMAC_LOCAL thread :
     public core::thread {
+    friend class process;
     friend class resource_manager;
 
 private:
@@ -79,7 +80,6 @@ private:
     map_context mapContexts_;
     map_config mapConfigs_;
 
-    static thread &get_current_thread();
     static bool has_current_thread();
     //static vdevice_table &getCurrentVirtualDeviceTable();
 
@@ -88,21 +88,23 @@ public:
     virtual ~thread();
 
     // Virtual devices
-    static vdevice *get_virtual_device(GmacVirtualDeviceId id);
-    static vdevice &get_current_virtual_device();
-    static gmacError_t add_virtual_device(GmacVirtualDeviceId id, vdevice &dev);
-    static gmacError_t remove_virtual_device(vdevice &dev);
-    static void set_current_virtual_device(vdevice &dev);
+    vdevice *get_virtual_device(GmacVirtualDeviceId id);
+    vdevice &get_current_virtual_device() const;
+    gmacError_t add_virtual_device(GmacVirtualDeviceId id, vdevice &dev);
+    gmacError_t remove_virtual_device(vdevice &dev);
+    void set_current_virtual_device(vdevice &dev);
 
     // contexts
-    static context *get_context(address_space &aspace);
-    static gmacError_t set_context(address_space &aspace, context *context);
+    context *get_context(address_space &aspace);
+    gmacError_t set_context(address_space &aspace, context *context);
 
     // Kernel configuration
-    static gmacError_t new_kernel_config(hal::kernel_t::config &config);
-    static gmacError_t new_kernel_config(hal::kernel_t::config &config, vdevice &dev);
-    static hal::kernel_t::config &get_kernel_config();
-    static hal::kernel_t::config &get_kernel_config(vdevice &dev);
+    gmacError_t new_kernel_config(hal::kernel_t::config &config);
+    gmacError_t new_kernel_config(hal::kernel_t::config &config, vdevice &dev);
+    hal::kernel_t::config &get_kernel_config();
+    hal::kernel_t::config &get_kernel_config(vdevice &dev);
+
+    static thread &get_current_thread();
 };
 
 }}}

@@ -92,10 +92,10 @@ namespace __impl {
     namespace core {
         core::process &getProcess() { return *Process_; }
         namespace hpe {
-            //Mode &getCurrentVirtualDevice() { return __impl::core::hpe::thread::getCurrentVirtualDevice(); }
+            //Mode &getCurrentVirtualDevice() { return __impl::core::hpe::thread::get_current_thread().getCurrentVirtualDevice(); }
             process &getProcess() { return *Process_; }
         }
-        vdevice &get_virtual_device() { return __impl::core::hpe::thread::get_current_virtual_device(); }
+        vdevice &get_virtual_device() { return __impl::core::hpe::thread::get_current_thread().get_current_virtual_device(); }
     }
 
     namespace memory {

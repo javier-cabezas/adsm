@@ -10,7 +10,7 @@ namespace __impl { namespace core { namespace hpe {
 context &
 address_space::get_context()
 {
-    context *context = thread::get_context(*this);
+    context *context = thread::get_current_thread().get_context(*this);
     if (context == NULL) {
         context = proc_.get_resource_manager().create_context(util::GetThreadId(), *this);
         ASSERTION(context != NULL);
@@ -155,7 +155,7 @@ address_space::copy(accptr_t acc, const hostptr_t host, size_t count)
     gmacError_t ret;
 
     // TODO: use the event
-    // hal::event_t *event =
+    // hal::event_t event =
         context.copy(acc, host, count, ret);
     return ret;
 }
@@ -167,7 +167,7 @@ address_space::copy(hostptr_t host, const accptr_t acc, size_t count)
     gmacError_t ret;
 
     // TODO: use the event
-    // hal::event_t *event =
+    // hal::event_t event =
         context.copy(host, acc, count, ret);
     return ret;
 }
@@ -179,38 +179,38 @@ address_space::copy(accptr_t dst, const accptr_t src, size_t count)
     gmacError_t ret;
 
     // TODO: use the event
-    // hal::event_t *event =
+    // hal::event_t event =
         context.copy(dst, src, count, ret);
     return ret;
 }
 
-hal::async_event_t *
+hal::event_t
 address_space::copy_async(accptr_t acc, const hostptr_t host, size_t count, gmacError_t &err)
 {
     context &context = get_context();
 
     // TODO: use the event
-    hal::async_event_t *ret = context.copy_async(acc, host, count, err);
+    hal::event_t ret = context.copy_async(acc, host, count, err);
     return ret;
 }
 
-hal::async_event_t *
+hal::event_t
 address_space::copy_async(hostptr_t host, const accptr_t acc, size_t count, gmacError_t &err)
 {
     context &context = get_context();
 
     // TODO: use the event
-    hal::async_event_t *ret = context.copy_async(host, acc, count, err);
+    hal::event_t ret = context.copy_async(host, acc, count, err);
     return ret;
 }
 
-hal::async_event_t *
+hal::event_t
 address_space::copy_async(accptr_t dst, const accptr_t src, size_t count, gmacError_t &err)
 {
     context &context = get_context();
 
     // TODO: use the event
-    hal::async_event_t *ret = context.copy_async(dst, src, count, err);
+    hal::event_t ret = context.copy_async(dst, src, count, err);
     return ret;
 }
 
@@ -249,17 +249,17 @@ address_space::memset(accptr_t addr, int c, size_t count)
     gmacError_t ret;
 
     // TODO: use the event
-    // hal::event_t *event =
+    // hal::event_t event =
         context.memset(addr, c, count, ret);
     return ret;
 }
 
-hal::async_event_t *
+hal::event_t
 address_space::memset_async(accptr_t addr, int c, size_t count, gmacError_t &err)
 {
     context &context = get_context();
 
-    hal::async_event_t *ret = context.memset_async(addr, c, count, err);
+    hal::event_t ret = context.memset_async(addr, c, count, err);
 
     return ret;
 }
@@ -292,8 +292,6 @@ address_space::register_kernel(gmac_kernel_id_t k, const hal::kernel_t &ker)
     kernel *kernelNew = new kernel(ker);
     kernels_[k] = kernelNew;
 }
-
-
 
 #if 0
 void

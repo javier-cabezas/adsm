@@ -113,6 +113,25 @@ gmacError_t error(CUresult err)
     return error;
 }
 
+_event_t *
+context_t::get_new_event(bool async,_event_t::type t)
+{
+    _event_t *ret = queueEvents_.pop();
+    if (ret == NULL) {
+        ret = new _event_t(async, t, *this);
+    } else {
+        ret->reset(async, t);
+    }
+
+    return ret;
+}
+
+void
+context_t::dispose_event(_event_t &event)
+{
+    queueEvents_.push(event);
+}
+
 context_t::context_t(CUcontext ctx, device &dev) :
     Parent(ctx, dev)
 {
@@ -169,10 +188,10 @@ context_t::free_buffer(buffer_t &buffer)
     return cuda::error(ret);
 }
 
-event_t *
+event_t 
 context_t::copy(accptr_t dst, hostptr_t src, size_t count, stream_t &stream, list_event_detail &_dependencies, gmacError_t &err)
 {
-    event_t *ret = NULL;
+    event_t ret;
     list_event &dependencies = reinterpret_cast<list_event &>(_dependencies);
     err = dependencies.sync();
 
@@ -183,10 +202,10 @@ context_t::copy(accptr_t dst, hostptr_t src, size_t count, stream_t &stream, lis
     return ret;
 }
 
-event_t *
-context_t::copy(accptr_t dst, hostptr_t src, size_t count, stream_t &stream, async_event_t &event, gmacError_t &err)
+event_t 
+context_t::copy(accptr_t dst, hostptr_t src, size_t count, stream_t &stream, event_t event, gmacError_t &err)
 {
-    event_t *ret = NULL;
+    event_t ret;
 
     err = event.sync();
 
@@ -197,33 +216,34 @@ context_t::copy(accptr_t dst, hostptr_t src, size_t count, stream_t &stream, asy
     return ret;
 }
 
-event_t *
+event_t 
 context_t::copy(accptr_t dst, hostptr_t src, size_t count, stream_t &stream, gmacError_t &err)
 {
     TRACE(LOCAL, "H (%p) -> D copy ("FMT_SIZE" bytes) on stream: %p", src, count, stream());
-    event_t *ret = new event_t(event_t::Transfer, *this);
+    event_t ret(false, _event_t::Transfer, *this);
 
     CUresult res;
 
     set();
 
-    ret->begin(stream);
+    ret.begin(stream);
     res = cuMemcpyHtoD(dst.get(), src, count);
-    ret->end();
+    ret.end();
 
     err = error(res);
     if (err != gmacSuccess) {
-        delete ret;
-        ret = NULL;
+        ret.reset();
+    } else {
+        stream.set_last_event(ret);
     }
 
     return ret;
 }
 
-event_t *
+event_t 
 context_t::copy(hostptr_t dst, accptr_t src, size_t count, stream_t &stream, list_event_detail &_dependencies, gmacError_t &err)
 {
-    event_t *ret = NULL;
+    event_t ret;
     list_event &dependencies = reinterpret_cast<list_event &>(_dependencies);
     err = dependencies.sync();
 
@@ -234,10 +254,10 @@ context_t::copy(hostptr_t dst, accptr_t src, size_t count, stream_t &stream, lis
     return ret;
 }
 
-event_t *
-context_t::copy(hostptr_t dst, accptr_t src, size_t count, stream_t &stream, async_event_t &event, gmacError_t &err)
+event_t 
+context_t::copy(hostptr_t dst, accptr_t src, size_t count, stream_t &stream, event_t event, gmacError_t &err)
 {
-    event_t *ret = NULL;
+    event_t ret;
 
     err = event.sync();
 
@@ -248,33 +268,34 @@ context_t::copy(hostptr_t dst, accptr_t src, size_t count, stream_t &stream, asy
     return ret;
 }
 
-event_t *
+event_t 
 context_t::copy(hostptr_t dst, accptr_t src, size_t count, stream_t &stream, gmacError_t &err)
 {
     TRACE(LOCAL, "D -> H (%p) copy ("FMT_SIZE" bytes) on stream: %p", dst, count, stream());
-    event_t *ret = new event_t(event_t::Transfer, *this);
+    event_t ret(false, _event_t::Transfer, *this);
 
     CUresult res;
 
     set();
 
-    ret->begin(stream);
+    ret.begin(stream);
     res = cuMemcpyDtoH(dst, src.get(), count);
-    ret->end();
+    ret.end();
 
     err = error(res);
     if (err != gmacSuccess) {
-        delete ret;
-        ret = NULL;
+        ret.reset();
+    } else {
+        stream.set_last_event(ret);
     }
 
     return ret;
 }
 
-event_t *
+event_t 
 context_t::copy(accptr_t dst, accptr_t src, size_t count, stream_t &stream, list_event_detail &_dependencies, gmacError_t &err)
 {
-    event_t *ret = NULL;
+    event_t ret;
     list_event &dependencies = reinterpret_cast<list_event &>(_dependencies);
     err = dependencies.sync();
 
@@ -285,10 +306,10 @@ context_t::copy(accptr_t dst, accptr_t src, size_t count, stream_t &stream, list
     return ret;
 }
 
-event_t *
-context_t::copy(accptr_t dst, accptr_t src, size_t count, stream_t &stream, async_event_t &event, gmacError_t &err)
+event_t 
+context_t::copy(accptr_t dst, accptr_t src, size_t count, stream_t &stream, event_t event, gmacError_t &err)
 {
-    event_t *ret = NULL;
+    event_t ret;
 
     err = event.sync();
 
@@ -299,33 +320,34 @@ context_t::copy(accptr_t dst, accptr_t src, size_t count, stream_t &stream, asyn
     return ret;
 }
 
-event_t *
+event_t 
 context_t::copy(accptr_t dst, accptr_t src, size_t count, stream_t &stream, gmacError_t &err)
 {
     TRACE(LOCAL, "D -> D copy ("FMT_SIZE" bytes) on stream: %p", count, stream());
-    event_t *ret = new event_t(event_t::Transfer, *this);
+    event_t ret(false, _event_t::Transfer, *this);
 
     CUresult res;
 
     set();
 
-    ret->begin(stream);
+    ret.begin(stream);
     res = cuMemcpyDtoD(dst.get(), src.get(), count);
-    ret->end();
+    ret.end();
 
     err = error(res);
     if (err != gmacSuccess) {
-        delete ret;
-        ret = NULL;
+        ret.reset();
+    } else {
+        stream.set_last_event(ret);
     }
 
     return ret;
 }
 
-async_event_t *
+event_t 
 context_t::copy_async(accptr_t dst, buffer_t src, size_t off, size_t count, stream_t &stream, list_event_detail &_dependencies, gmacError_t &err)
 {
-    async_event_t *ret = NULL;
+    event_t ret;
     list_event &dependencies = reinterpret_cast<list_event &>(_dependencies);
     err = dependencies.sync();
 
@@ -336,10 +358,10 @@ context_t::copy_async(accptr_t dst, buffer_t src, size_t off, size_t count, stre
     return ret;
 }
 
-async_event_t *
-context_t::copy_async(accptr_t dst, buffer_t src, size_t off, size_t count, stream_t &stream, async_event_t &event, gmacError_t &err)
+event_t 
+context_t::copy_async(accptr_t dst, buffer_t src, size_t off, size_t count, stream_t &stream, event_t event, gmacError_t &err)
 {
-    async_event_t *ret = NULL;
+    event_t ret;
 
     err = event.sync();
 
@@ -350,33 +372,34 @@ context_t::copy_async(accptr_t dst, buffer_t src, size_t off, size_t count, stre
     return ret;
 }
 
-async_event_t *
+event_t 
 context_t::copy_async(accptr_t dst, buffer_t src, size_t off, size_t count, stream_t &stream, gmacError_t &err)
 {
     TRACE(LOCAL, "H (%p) -> D copy_async ("FMT_SIZE" bytes) on stream: %p", src.get_addr() + off, count, stream());
-    async_event_t *ret = new async_event_t(async_event_t::Transfer, *this);
+    event_t ret(true, _event_t::Transfer, *this);
 
     CUresult res;
 
     set();
 
-    ret->begin(stream);
+    ret.begin(stream);
     res = cuMemcpyHtoDAsync(dst.get(), src.get_addr() + off, count, stream());
-    ret->end();
+    ret.end();
 
     err = error(res);
     if (err != gmacSuccess) {
-        delete ret;
-        ret = NULL;
+        ret.reset();
+    } else {
+        stream.set_last_event(ret);
     }
 
     return ret;
 }
 
-async_event_t *
+event_t 
 context_t::copy_async(buffer_t dst, size_t off, accptr_t src, size_t count, stream_t &stream, list_event_detail &_dependencies, gmacError_t &err)
 {
-    async_event_t *ret = NULL;
+    event_t ret;
     list_event &dependencies = reinterpret_cast<list_event &>(_dependencies);
     err = dependencies.sync();
 
@@ -387,10 +410,10 @@ context_t::copy_async(buffer_t dst, size_t off, accptr_t src, size_t count, stre
     return ret;
 }
 
-async_event_t *
-context_t::copy_async(buffer_t dst, size_t off, accptr_t src, size_t count, stream_t &stream, async_event_t &event, gmacError_t &err)
+event_t 
+context_t::copy_async(buffer_t dst, size_t off, accptr_t src, size_t count, stream_t &stream, event_t event, gmacError_t &err)
 {
-    async_event_t *ret = NULL;
+    event_t ret;
 
     err = event.sync();
 
@@ -401,33 +424,34 @@ context_t::copy_async(buffer_t dst, size_t off, accptr_t src, size_t count, stre
     return ret;
 }
 
-async_event_t *
+event_t 
 context_t::copy_async(buffer_t dst, size_t off, accptr_t src, size_t count, stream_t &stream, gmacError_t &err)
 {
     TRACE(LOCAL, "D -> H (%p) copy_async ("FMT_SIZE" bytes) on stream: %p", dst.get_addr(), count, stream());
-    async_event_t *ret = new async_event_t(async_event_t::Transfer, *this);
+    event_t ret(true, _event_t::Transfer, *this);
 
     CUresult res;
 
     set();
 
-    ret->begin(stream);
+    ret.begin(stream);
     res = cuMemcpyDtoHAsync(dst.get_addr() + off, src.get(), count, stream());
-    ret->end();
+    ret.end();
 
     err = error(res);
     if (err != gmacSuccess) {
-        delete ret;
-        ret = NULL;
+        ret.reset();
+    } else {
+        stream.set_last_event(ret);
     }
 
     return ret;
 }
 
-async_event_t *
+event_t 
 context_t::copy_async(accptr_t dst, accptr_t src, size_t count, stream_t &stream, list_event_detail &_dependencies, gmacError_t &err)
 {
-    async_event_t *ret = NULL;
+    event_t ret;
     list_event &dependencies = reinterpret_cast<list_event &>(_dependencies);
     err = dependencies.sync();
 
@@ -438,10 +462,10 @@ context_t::copy_async(accptr_t dst, accptr_t src, size_t count, stream_t &stream
     return ret;
 }
 
-async_event_t *
-context_t::copy_async(accptr_t dst, accptr_t src, size_t count, stream_t &stream, async_event_t &event, gmacError_t &err)
+event_t 
+context_t::copy_async(accptr_t dst, accptr_t src, size_t count, stream_t &stream, event_t event, gmacError_t &err)
 {
-    async_event_t *ret = NULL;
+    event_t ret;
 
     err = event.sync();
 
@@ -452,33 +476,34 @@ context_t::copy_async(accptr_t dst, accptr_t src, size_t count, stream_t &stream
     return ret;
 }
 
-async_event_t *
+event_t 
 context_t::copy_async(accptr_t dst, accptr_t src, size_t count, stream_t &stream, gmacError_t &err)
 {
     TRACE(LOCAL, "D -> D copy_async ("FMT_SIZE" bytes) on stream: %p", count, stream());
-    async_event_t *ret = new async_event_t(async_event_t::Transfer, *this);
+    event_t ret(true, _event_t::Transfer, *this);
 
     CUresult res;
 
     set();
 
-    ret->begin(stream);
+    ret.begin(stream);
     res = cuMemcpyDtoDAsync(dst.get(), src.get(), count, stream());
-    ret->end();
+    ret.end();
 
     err = error(res);
     if (err != gmacSuccess) {
-        delete ret;
-        ret = NULL;
+        ret.reset();
+    } else {
+        stream.set_last_event(ret);
     }
 
     return ret;
 }
 
-event_t *
+event_t 
 context_t::memset(accptr_t dst, int c, size_t count, stream_t &stream, list_event_detail &_dependencies, gmacError_t &err)
 {
-    event_t *ret = NULL;
+    event_t ret;
     list_event &dependencies = reinterpret_cast<list_event &>(_dependencies);
     err = dependencies.sync();
 
@@ -489,10 +514,10 @@ context_t::memset(accptr_t dst, int c, size_t count, stream_t &stream, list_even
     return ret;
 }
 
-event_t *
-context_t::memset(accptr_t dst, int c, size_t count, stream_t &stream, async_event_t &event, gmacError_t &err)
+event_t 
+context_t::memset(accptr_t dst, int c, size_t count, stream_t &stream, event_t event, gmacError_t &err)
 {
-    event_t *ret = NULL;
+    event_t ret;
 
     err = event.sync();
 
@@ -503,32 +528,33 @@ context_t::memset(accptr_t dst, int c, size_t count, stream_t &stream, async_eve
     return ret;
 }
 
-event_t *
+event_t 
 context_t::memset(accptr_t dst, int c, size_t count, stream_t &stream, gmacError_t &err)
 {
     set();
 
     TRACE(LOCAL, "memset ("FMT_SIZE" bytes) on stream: %p", count, stream());
-    event_t *ret = new event_t(event_t::Transfer, *this);
+    event_t ret(false, _event_t::Transfer, *this);
 
-    ret->begin(stream);
+    ret.begin(stream);
     CUresult res = cuMemsetD8(dst.get(), (unsigned char)c, count);
-    ret->end();
+    ret.end();
 
     err = error(res);
 
     if (err != gmacSuccess) {
-        delete ret;
-        ret = NULL;
+        ret.reset();
+    } else {
+        stream.set_last_event(ret);
     }
 
     return ret;
 }
 
-async_event_t *
+event_t 
 context_t::memset_async(accptr_t dst, int c, size_t count, stream_t &stream, list_event_detail &_dependencies, gmacError_t &err)
 {
-    async_event_t *ret = NULL;
+    event_t ret;
     list_event &dependencies = reinterpret_cast<list_event &>(_dependencies);
     err = dependencies.sync();
 
@@ -539,10 +565,10 @@ context_t::memset_async(accptr_t dst, int c, size_t count, stream_t &stream, lis
     return ret;
 }
 
-async_event_t *
-context_t::memset_async(accptr_t dst, int c, size_t count, stream_t &stream, async_event_t &event, gmacError_t &err)
+event_t 
+context_t::memset_async(accptr_t dst, int c, size_t count, stream_t &stream, event_t event, gmacError_t &err)
 {
-    async_event_t *ret = NULL;
+    event_t ret;
 
     err = event.sync();
 
@@ -553,23 +579,24 @@ context_t::memset_async(accptr_t dst, int c, size_t count, stream_t &stream, asy
     return ret;
 }
 
-async_event_t *
+event_t 
 context_t::memset_async(accptr_t dst, int c, size_t count, stream_t &stream, gmacError_t &err)
 {
     set();
 
     TRACE(LOCAL, "memset_async ("FMT_SIZE" bytes) on stream: %p", count, stream());
-    async_event_t *ret = new async_event_t(async_event_t::Transfer, *this);
+    event_t ret(true, _event_t::Transfer, *this);
 
-    ret->begin(stream);
+    ret.begin(stream);
     CUresult res = cuMemsetD8Async(dst.get(), (unsigned char)c, count, stream());
-    ret->end();
+    ret.end();
 
     err = error(res);
 
     if (err != gmacSuccess) {
-        delete ret;
-        ret = NULL;
+        ret.reset();
+    } else {
+        stream.set_last_event(ret);
     }
 
     return ret;
@@ -609,10 +636,20 @@ stream_t::sync()
     return cuda::error(ret);
 }
 
-async_event_t::state
-async_event_t::get_state()
+void
+_event_t::reset(bool async, type t)
 {
-    if (state_ != event_t::End) {
+    isAsynchronous_ = async;
+    type_ = t;
+    err_ = gmacSuccess;
+    synced_ = false;
+    state_ = None;
+}
+
+_event_t::state
+_event_t::get_state()
+{
+    if (state_ != End) {
         get_stream().get_context().set();
 
         CUresult res = cuEventQuery(eventEnd_);

@@ -12,7 +12,6 @@ class GMAC_LOCAL stream_t {
 protected:
     typename B::stream stream_;
     context_parent_t &context_;
-    typename I::async_event *lastAsyncEvent_;
 
     stream_t(typename B::stream stream, context_parent_t &context);
 
@@ -25,9 +24,6 @@ public:
     context_parent_t &get_context();
     typename B::stream &operator()();
     const typename B::stream &operator()() const;
-
-    typename I::async_event *get_last_async_event();
-    void set_last_async_event(typename I::async_event *event);
 
     virtual state query() = 0;
     virtual gmacError_t sync() = 0;

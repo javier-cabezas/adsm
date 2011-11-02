@@ -7,7 +7,7 @@ inline
 stream_t::Parent::state
 stream_t::query()
 {
-    Parent::state ret;
+    Parent::state ret = Running;
 
     get_context().set();
 
@@ -22,6 +22,20 @@ stream_t::query()
     }
 
     return ret;
+}
+
+inline
+void
+stream_t::set_last_event(event_t event)
+{
+    lastEvent_ = event;
+}
+
+inline
+event_t
+stream_t::get_last_event()
+{
+    return lastEvent_;
 }
 
 inline

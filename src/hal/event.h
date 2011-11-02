@@ -17,13 +17,22 @@ public:
         Kernel
     };
 
+    enum state {
+        Queued,
+        Submit,
+        Start,
+        End,
+        None
+    };
+
 private:
     context_parent_t &context_;
+
+protected:
     bool isAsynchronous_;
     bool synced_;
     type type_;
-
-protected:
+    state state_;
     gmacError_t err_;
 
     hal::time_t timeQueued_;
@@ -31,47 +40,23 @@ protected:
     hal::time_t timeStart_;
     hal::time_t timeEnd_;
 
-    event_t(type t, context_parent_t &context);
+    event_t(bool async, type t, context_parent_t &context);
 
 public:
-    enum state {
-        Queued,
-        Submit,
-        Start,
-        End
-    };
+    virtual ~event_t();
 
     virtual gmacError_t sync();
-    virtual bool is_synced() const;
 
     context_parent_t &get_context();
 
     type get_type() const;
-    virtual state get_state();
+    virtual state get_state() = 0;
 
     hal::time_t get_time_queued() const;
     hal::time_t get_time_submit() const;
     hal::time_t get_time_start() const;
     hal::time_t get_time_end() const;
-};
 
-template <typename D, typename B, typename I>
-class GMAC_LOCAL async_event_t {
-    typedef typename I::context context_parent_t;
-
-    typedef event_t<D, B, I> Parent;
-
-private:
-    bool synced_;
-
-protected:
-    typename Parent::state state_;
-
-    async_event_t();
-
-    void set_synced(bool synced);
-
-public:
     bool is_synced() const;
 };
 

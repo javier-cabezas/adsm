@@ -10,6 +10,7 @@
 #include "config/order.h"
 
 #include "core/hpe/process.h"
+#include "core/hpe/thread.h"
 
 #include "hpe/init.h"
 
@@ -77,7 +78,10 @@ int pthread_create(pthread_t *__restrict newthread,
 {
     int ret = 0;
     bool externCall = inGmac() == 0;
-    if(externCall) enterGmac();
+    if(externCall) {
+        enterGmac();
+        thread::get_current_thread();
+    }
     TRACE(GLOBAL, "New POSIX thread");
     gmac_thread_t *gthread = (gmac_thread_t *)malloc(sizeof(gmac_thread_t));
     gthread->start_routine = start_routine;

@@ -49,7 +49,7 @@ process::process() :
 
 process::~process()
 {
-    finiThread();
+    if (thread::has_current_thread()) finiThread();
 }
 
 void process::init()

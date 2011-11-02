@@ -7,25 +7,8 @@ template <typename D, typename B, typename I>
 inline
 stream_t<D, B, I>::stream_t(typename B::stream stream, context_parent_t &context) :
     stream_(stream),
-    context_(context),
-    lastAsyncEvent_(NULL)
+    context_(context)
 {
-}
-
-template <typename D, typename B, typename I>
-inline
-void
-stream_t<D, B, I>::set_last_async_event(typename I::async_event *event)
-{
-    lastAsyncEvent_ = event;
-}
-
-template <typename D, typename B, typename I>
-inline
-typename I::async_event *
-stream_t<D, B, I>::get_last_async_event()
-{
-    return lastAsyncEvent_;
 }
 
 template <typename D, typename B, typename I>

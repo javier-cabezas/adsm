@@ -93,7 +93,7 @@ protected:
     /**
      * Event returned 
      */
-    hal::event_t *event_;
+    hal::event_t event_;
 
 public:
     /**
@@ -142,9 +142,9 @@ public:
      */
     bool async() const;
 
-    void to_host(hal::event_t &event);
+    void to_host(hal::event_t event);
 
-    void to_device(hal::event_t &event);
+    void to_device(hal::event_t event);
 
     /**
      * Returns the current state of the buffer

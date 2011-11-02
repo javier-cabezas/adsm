@@ -57,7 +57,7 @@ vdevice::launch(gmac_kernel_id_t id, hal::kernel_t::config &config, gmacError_t 
     }
     return ret;
 #endif
-    kernel::launch *ret;
+    kernel::launch *ret = NULL;
     kernel *k = get_address_space()->get_kernel(id);
     if (k != NULL) {
         ret = k->launch_config(config, *this, streamLaunch_, err);
@@ -67,27 +67,19 @@ vdevice::launch(gmac_kernel_id_t id, hal::kernel_t::config &config, gmacError_t 
     return ret;
 }
 
-hal::async_event_t *
+hal::event_t
 vdevice::execute(kernel::launch &launch, gmacError_t &err)
 {
-    hal::async_event_t *ret;
+    hal::event_t ret;
     err = gmacSuccess;
 
     if (launch.get_objects().size() == 0) {
-        hal::async_event_t *event = aspace_->streamToAccelerator_.get_last_async_event();
-        if (event != NULL) {
-            ret = launch.execute(*event, err);
-        } else {
-            ret = launch.execute(err);
-        }
+        hal::event_t event = aspace_->streamToAccelerator_.get_last_event();
+        ret = launch.execute(event, err);
     } else {
         // TODO: Implement per object synchronization
-        hal::async_event_t *event = aspace_->streamToAccelerator_.get_last_async_event();
-        if (event != NULL) {
-            ret = launch.execute(*event, err);
-        } else {
-            ret = launch.execute(err);
-        }
+        hal::event_t event = aspace_->streamToAccelerator_.get_last_event();
+        ret = launch.execute(event, err);
     }
 
     return ret;
@@ -97,10 +89,9 @@ gmacError_t
 vdevice::wait(kernel::launch &launch)
 {
     gmacError_t ret = gmacSuccess;
-    hal::async_event_t *event = launch.get_event();
-    if (event != NULL) {
-        ret = event->sync();
-    }
+    hal::event_t event = launch.get_event();
+
+    ret = event.sync();
 
     return ret;
 }

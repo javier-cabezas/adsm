@@ -25,14 +25,6 @@ protected:
 
     bool integrated_;
 
-#if 0
-    virtual gmacError_t sync(typename I::async_event &event) = 0;
-    virtual gmacError_t sync(typename I::stream &stream) = 0;
-
-    virtual typename I::stream::state query(typename I::stream &stream) const;
-    virtual typename I::async_event::state query(typename I::async_event &async_event) const;
-#endif
-    
 public:
     virtual typename I::context *create_context(const SetSiblings &siblings = None) = 0;
     virtual gmacError_t destroy_context(typename I::context &context) = 0;
