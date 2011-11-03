@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <malloc.h>
+#include <string.h>
 
 #include "gmac/cl.h"
 
@@ -49,7 +49,7 @@ bitonicSortCPUReference(
                 cl_uint l;
 
                 if(i < length) {
-                    if((k == i) || ((k % i) == 0) && (k != halfLength))
+                    if(((k == i) || ((k % i) == 0)) && (k != halfLength))
                         increasing = !increasing;
                 }
 
@@ -121,9 +121,9 @@ int main(int argc, char *argv[])
 
     getTime(&s);
     // Print the input data
-    fprintf(stdout, "Unsorted Input: ");
+    printf("Unsorted Input: ");
     for(cl_uint i = 0; i < length; i++)
-        printf_s("%d ", input[i]);
+        printf("%d ", input[i]);
     getTime(&t);
     printTime(&s, &t, "\nPrint: ", "\n");
 
@@ -152,9 +152,9 @@ int main(int argc, char *argv[])
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");
 
-    fprintf(stdout, "Output: ");
+    printf("Output: ");
     for(cl_uint i = 0; i < length; i++) {
-        printf_s("%d ", input[i]);
+        printf("%d ", input[i]);
     }
 
     getTime(&s);

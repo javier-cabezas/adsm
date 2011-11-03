@@ -1,8 +1,9 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <malloc.h>
 #include <math.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
+#include <cassert>
 
 #include "gmac/cl.h"
 
@@ -10,7 +11,6 @@
 #include "debug.h"
 
 #include "clBinomialOptionKernel.cl"
-
 #define VOLATILITY 0.30f
 #define RISKFREE 0.02f
 
@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
     error_code = clGetKernelWorkGroupInfo(kernel, device, CL_KERNEL_WORK_GROUP_SIZE, sizeof(size_t), &kernelWorkGroupSize, 0);
     assert(error_code == CL_SUCCESS);
     if((size_t)(numSteps + 1) > kernelWorkGroupSize) {
-        fprintf(stdout,"Out of Resources!\n");
+        printf("Out of Resources!\n");
         numSteps = (cl_int)kernelWorkGroupSize - 2;
     }
 
@@ -160,9 +160,9 @@ int main(int argc, char *argv[])
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");
 
-    fprintf(stdout, "Output: ");
+    printf("Output: ");
     for(int i = 0; i < numSamples; i++) {
-        printf_s("%f ", output[i]);
+        printf("%f ", output[i]);
     }
 
     getTime(&s);
@@ -187,9 +187,9 @@ int main(int argc, char *argv[])
         result = error < 0.001f;
     }
     if(result)
-        fprintf(stdout, "\nPassed!\n");
+        printf("\nPassed!\n");
     else
-        fprintf(stdout, "\nFailed!\n");
+        printf("\nFailed!\n");
     getTime(&t);
     printTime(&s, &t, "Check: ", "\n");
 
