@@ -1,4 +1,3 @@
-
 static const char * code = " \
 \n \
 #define S_LOWER_LIMIT 10.0f\n \

@@ -1,6 +1,8 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
+#include <cassert>
 
 #include "gmac/cl.h"
 
@@ -13,7 +15,6 @@ int
 binarySearchCPUReference(cl_uint *input, cl_uint *output, cl_uint findMe, unsigned vecSize)
 {
     cl_uint globalLowerBound = output[0];
-    cl_uint globalUpperBound = output[1];
     cl_uint isElementFound = output[2];
 
     if(isElementFound) {
@@ -43,7 +44,7 @@ int main(int argc, char *argv[])
     gmactime_t s, t;
 
     cl_uint *input, *output;
-    cl_uint findMe = 2527837;
+    cl_uint findMe = 200;
     unsigned vecSize = 512;
     unsigned int numSubdivisions = 256;
 
@@ -80,9 +81,9 @@ int main(int argc, char *argv[])
 
     getTime(&s);
     // Print the input data
-    fprintf(stdout, "Sorted data: ");
+    printf("Sorted data: ");
     for(cl_uint i = 0; i < vecSize; i++)
-        printf_s("%d ", input[i]);
+        printf("%d ", input[i]);
     getTime(&t);
     printTime(&s, &t, "\nPrint: ", "\n");
 
@@ -107,7 +108,7 @@ int main(int argc, char *argv[])
         output[0] = 0;
         output[1] = vecSize - 1;
         output[2] = 0;
-        fprintf(stdout, "Not find %d\n", findMe);
+        printf("Not find %d\n", findMe);
 
         return 0;
     }
@@ -152,9 +153,6 @@ int main(int argc, char *argv[])
 
     printf("l = %d, u = %d, isfound = %d, fm = %d\n", globalLowerBound, globalUpperBound, isElementFound, findMe);
 
-    /**
-    * CPU verification for the BinarySearch algorithm
-    */
     getTime(&s);
     cl_int verified = binarySearchCPUReference(input, output, findMe, vecSize);
     /* compare the results and see if they match */

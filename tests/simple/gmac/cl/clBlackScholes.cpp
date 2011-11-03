@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <math.h>
-#include <malloc.h>
+#include <string.h>
 
 #include "gmac/cl.h"
 
@@ -193,7 +193,7 @@ int main(int argc, char *argv[])
     if(localThreads[0] > maxWorkItemSizes[0] ||
        localThreads[1] > maxWorkItemSizes[1] ||
        (size_t)blockSizeX * blockSizeY > maxWorkGroupSize) {
-        fprintf(stdout, "Unsupported: Device does not support \n requested number of work items.");
+        printf("Unsupported: Device does not support \n requested number of work items.");
         free(maxWorkItemSizes);
         maxWorkItemSizes = NULL;
         return 0;
@@ -213,21 +213,21 @@ int main(int argc, char *argv[])
     printTime(&s, &t, "Run: ", "\n");
 
     getTime(&s);
-    printf("deviceCallPrice\n");
+    printf("deviceCallPrice£º\n");
     for(cl_uint i = 0; i < width; i++) {
         printf("%f ", deviceCallPrice[i]);
     }
-    printf("\ndevicePutPrice\n");
+    printf("\ndevicePutPrice£º\n");
     for(cl_uint i = 0; i < width; i++) {
         printf("%f ", devicePutPrice[i]);
     }
 
     blackScholesCPU(randArray, width, height, hostCallPrice, hostPutPrice);
-    printf("\nhostCallPrice\n");
+    printf("\nhostCallPrice£º\n");
     for(cl_uint i = 0; i < width; i++) {
         printf("%f ", hostCallPrice[i]);
     }
-    printf("\nhostPutPrice\n");
+    printf("\nhostPutPrice£º\n");
     for(cl_uint i = 0; i < width; i++) {
         printf("%f ", hostPutPrice[i]);
     }
@@ -275,9 +275,9 @@ int main(int argc, char *argv[])
     }
 
     if(!(callPriceResult ? (putPriceResult ? true : false) : false)) {
-        fprintf(stdout, "Failed\n");
+        printf("Failed!\n");
     } else {
-        fprintf(stdout, "Passed!\n");
+        printf("Passed!\n");
     }
     getTime(&t);
     printTime(&s, &t, "Check: ", "\n");
