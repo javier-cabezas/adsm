@@ -1,7 +1,5 @@
 #ifdef USE_DBC
 
-#include "core/io_buffer.h"
-
 #include "Manager.h"
 
 namespace __dbc { namespace memory {

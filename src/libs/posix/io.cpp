@@ -8,7 +8,6 @@
 #include <errno.h>
 
 #include "core/address_space.h"
-#include "core/io_buffer.h"
 #include "core/vdevice.h"
 
 #include "libs/common.h"

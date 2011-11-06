@@ -204,45 +204,6 @@ public:
      */
     gmacError_t wait();
 
-#if 0
-    /**
-     * Destroys an io_buffer
-     * \param buffer Pointer to the buffer to be destroyed
-     */
-    virtual void destroy_io_buffer(io_buffer &buffer) = 0;
-
-    /** Copies count bytes from an io_buffer to accelerator memory
-     * \param dst Pointer to accelerator memory
-     * \param buffer Reference to the source io_buffer
-     * \param count Number of bytes to be copied
-     * \param off Offset within the buffer
-     */
-    TESTABLE gmacError_t bufferToAccelerator(accptr_t dst, io_buffer &buffer, size_t count, size_t off = 0);
-
-    /**
-     * Copies count bytes from accelerator memory to a io_buffer
-     * \param buffer Reference to the destination buffer
-     * \param dst Pointer to accelerator memory
-     * \param count Number of bytes to be copied
-     * \param off Offset within the buffer
-     */
-    TESTABLE gmacError_t acceleratorToBuffer(io_buffer &buffer, const accptr_t dst, size_t count, size_t off = 0);
-
-    /**
-     * Returns the kernel name identified by k
-     *
-     * \param k A key that identifies the kernel object
-     */
-    TESTABLE std::string getKernelName(gmac_kernel_id_t k) const;
-
-    /**
-     * Moves the mode to accelerator acc
-     * \param acc Accelerator to move the mode to
-     * \return Error code
-     */
-    TESTABLE gmacError_t moveTo(Accelerator &acc);
-#endif
-
     /**
      * Returns the process which the mode belongs to
      * \return A reference to the process which the mode belongs to

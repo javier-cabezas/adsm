@@ -45,8 +45,6 @@ private:
     typedef __impl::core::hpe::vdevice Parent;
 
     typedef __impl::core::IOBuffer IOBufferImpl;
-    typedef __impl::core::hpe::Accelerator AcceleratorImpl;
-    typedef __impl::core::hpe::Kernel KernelImpl;
     typedef __impl::core::hpe::process ProcessImpl;
     typedef __impl::core::hpe::address_space AddressSpaceImpl;
 

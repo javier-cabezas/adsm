@@ -18,8 +18,6 @@
 #include "util/Atomics.h"
 #include "util/Logger.h"
 
-#include "core/io_buffer.h"
-
 #include "core/hpe/address_space.h"
 #include "core/hpe/kernel.h"
 #include "core/hpe/process.h"
@@ -371,8 +369,8 @@ gmacPtr(const void *ptr)
     enterGmac();
     ret = getManager().translate(thread::get_current_thread().get_current_virtual_device().get_address_space(), hostptr_t(ptr));
     exitGmac();
-    TRACE(GLOBAL, "Translate %p to %p", ptr, ret.get());
-    return __gmac_accptr_t(ret.get());
+    TRACE(GLOBAL, "Translate %p to %p", ptr, ret.get_device_addr());
+    return __gmac_accptr_t(ret.get_device_addr());
 }
 
 gmacError_t GMAC_LOCAL

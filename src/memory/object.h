@@ -48,7 +48,6 @@ namespace __impl {
 
 namespace core {
     class address_space;
-    class io_buffer;
 }
 
 namespace memory {

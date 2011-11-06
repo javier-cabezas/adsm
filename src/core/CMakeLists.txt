@@ -11,8 +11,6 @@ set(core_SRC
 )
 
 set(core_DBC
-    dbc/AllocationMap.h
-    dbc/AllocationMap.cpp
 )
 
 add_gmac_sources(gmac-core ${core_SRC} ${core_DBC})

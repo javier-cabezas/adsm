@@ -100,7 +100,7 @@ public:
     vdevice *create_virtual_device(GmacAddressSpaceId id, gmacError_t &err);
     gmacError_t destroy_virtual_device(vdevice &dev);
 
-    context *create_context(THREAD_T id, address_space &aspace);
+    //context *create_context(THREAD_T id, address_space &aspace);
 
     unsigned get_number_of_devices() const;
     bool are_all_devices_integrated() const;

@@ -22,7 +22,12 @@ namespace __impl { namespace hal {
     typedef hal::cuda::event_t event_t;
 
     typedef hal::cuda::buffer_t buffer_t;
+
+    typedef hal::cuda::ptr_t ptr_t;
 }}
+
+typedef __impl::hal::cuda::ptr_t accptr_t;
+
 #else
 #include "opencl/types.h"
 #include "opencl/device.h"

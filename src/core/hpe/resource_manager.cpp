@@ -3,13 +3,14 @@
 #include "core/hpe/resource_manager.h"
 
 #include "core/hpe/address_space.h"
-#include "core/hpe/context.h"
+// #include "core/hpe/context.h"
 #include "core/hpe/vdevice.h"
 #include "core/hpe/vdevice_table.h"
 #include "core/hpe/thread.h"
 
 namespace __impl { namespace core { namespace hpe {
 
+#if 0
 context *
 resource_manager::create_context(THREAD_T id, address_space &aspace)
 {
@@ -27,6 +28,7 @@ resource_manager::create_context(THREAD_T id, address_space &aspace)
 
     return ctx;
 }
+#endif
 
 resource_manager::resource_manager(process &proc) :
     proc_(proc),

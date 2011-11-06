@@ -1,7 +1,6 @@
 #include "config/config.h"
 
 #include "core/address_space.h"
-#include "core/io_buffer.h"
 
 #include "Memory.h"
 #include "object.h"

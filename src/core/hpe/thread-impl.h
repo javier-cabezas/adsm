@@ -139,6 +139,7 @@ thread::set_current_virtual_device(vdevice &dev)
     currentVirtualDevice_ = &dev;
 }
 
+#if 0
 inline
 context *
 thread::get_context(address_space &aspace)
@@ -154,6 +155,7 @@ thread::get_context(address_space &aspace)
 
     return ret;
 }
+#endif
 
 inline gmacError_t
 thread::new_kernel_config(hal::kernel_t::config &config)

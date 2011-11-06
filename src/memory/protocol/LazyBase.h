@@ -47,7 +47,6 @@ WITH THE SOFTWARE.  */
 namespace __impl {
 
 namespace core {
-    class io_buffer;
     class Mode;
 }
 

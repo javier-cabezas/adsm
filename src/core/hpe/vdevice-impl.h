@@ -4,7 +4,6 @@
 #include "memory/object.h"
 
 #include "core/hpe/process.h"
-#include "core/hpe/context.h"
 
 namespace __impl { namespace core { namespace hpe {
 

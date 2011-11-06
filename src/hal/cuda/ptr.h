@@ -37,17 +37,16 @@ WITH THE SOFTWARE.  */
 #include <cstdio>
 #include <cuda.h>
 
-#include "config/ptr.h"
+#include "hal/ptr.h"
 
-typedef CUstream stream_t;
-typedef CUevent event;
+namespace __impl { namespace hal {
 
 class _cuda_ptr_t {
 private:
     CUdeviceptr ptr_;
 
 public:
-    typedef CUdeviceptr base_type;
+    typedef CUdeviceptr backend_type;
 
     inline explicit _cuda_ptr_t(CUdeviceptr ptr) :
         ptr_(ptr)
@@ -60,10 +59,6 @@ public:
         return ptr_;
     }
 #endif
-
-    inline ~_cuda_ptr_t()
-    {
-    }
 
     inline _cuda_ptr_t &operator=(const _cuda_ptr_t &ptr)
     {
@@ -116,10 +111,8 @@ public:
     {
         return 0;
     }
-
 };
 
-typedef _common_ptr_t<_cuda_ptr_t> accptr_t;
-typedef const char * gmac_kernel_id_t;
+}}
 
 #endif

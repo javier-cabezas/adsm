@@ -29,7 +29,7 @@ inline void BlockGroup<State>::modifiedObject()
 static inline gmacError_t
 mallocAccelerator(core::address_space &aspace, hostptr_t addr, size_t size, accptr_t &acceleratorAddr)
 {
-    acceleratorAddr = accptr_t(0);
+    acceleratorAddr = accptr_t();
     // Allocate accelerator memory
 #ifdef USE_VM
     gmacError_t ret = aspace.map(, acceleratorAddr, addr, size, unsigned(SubBlockSize_));
@@ -74,10 +74,10 @@ BlockGroup<State>::BlockGroup(Protocol &protocol,
                               typename State::ProtocolState init,
                               gmacError_t &err) :
     object(hostAddr, size),
+    shadow_(NULL),
     hasUserMemory_(hostAddr != NULL),
-    deviceAddr_(NULL)
+    deviceAddr_(0)
 {
-    shadow_ = NULL;
     err = gmacSuccess;
 
     // Allocate memory (if necessary)
@@ -90,8 +90,8 @@ BlockGroup<State>::BlockGroup(Protocol &protocol,
     }
 
     // Create a shadow mapping for the host memory
-    shadow_ = hostptr_t(Memory::shadow(addr_, size_));
-    if (shadow_ == NULL) {
+    shadow_ = Memory::shadow(addr_, size_);
+    if (shadow_) {
         err = gmacErrorMemoryAllocation;
         return;
     }
@@ -225,7 +225,7 @@ BlockGroup<State>::addOwner(util::smart_ptr<core::address_space>::shared owner)
     ownerShortcut_ = owner;
 
     gmacError_t ret = mallocAccelerator(*owner, addr_, size_, deviceAddr_);
-    TRACE(LOCAL, "Add owner %p Object @ %p with device addr: %p", owner.get(), addr_, deviceAddr_.get());
+    TRACE(LOCAL, "Add owner %p Object @ %p with device addr: %p", owner.get(), addr_, deviceAddr_.get_device_addr());
 
     return ret;
 #if 0

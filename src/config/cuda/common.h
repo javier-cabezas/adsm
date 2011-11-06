@@ -31,9 +31,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
+
 #ifndef GMAC_CONFIG_CUDA_COMMON_H_
 #define GMAC_CONFIG_CUDA_COMMON_H_
 
+#if 0
 #include <cstdio>
 #include <cuda.h>
 
@@ -120,6 +122,7 @@ public:
 };
 
 typedef _common_ptr_t<_cuda_ptr_t> accptr_t;
+#endif
 typedef const char * gmac_kernel_id_t;
 
 #endif

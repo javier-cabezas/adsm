@@ -36,7 +36,7 @@ buffer_t::get_addr()
 }
 
 inline
-accptr_t
+ptr_t
 buffer_t::get_device_addr()
 {
     return get_context().get_device_addr_from_pinned(addr_);
@@ -67,16 +67,16 @@ context_t::set()
 }
 
 inline
-accptr_t
+ptr_t
 context_t::get_device_addr_from_pinned(hostptr_t addr)
 {
-    accptr_t ret(0);
+    ptr_t ret(0, NULL);
     set();
 
     CUdeviceptr ptr;
     CUresult res = cuMemHostGetDevicePointer(&ptr, addr, 0);
     if (res == CUDA_SUCCESS) {
-        ret = accptr_t(ptr);
+        ret = ptr_t(ptr, this);
     }
 
     return ret;

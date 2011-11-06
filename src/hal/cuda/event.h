@@ -15,8 +15,9 @@ namespace __impl { namespace hal {
 namespace cuda {
 
 class GMAC_LOCAL _event_common_t {
-    friend class device;
     friend class context_t;
+    friend class device;
+    friend class event_t;
     friend class kernel_t;
     stream_t *stream_;
 
