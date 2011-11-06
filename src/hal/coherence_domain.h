@@ -10,7 +10,7 @@ namespace __impl { namespace hal {
 namespace detail {
 
 template <typename D> 
-class coherence_domain :
+class GMAC_LOCAL coherence_domain :
     D::SetSiblings {
     typedef typename D::SetSiblings Parent;
 protected:
@@ -25,6 +25,7 @@ public:
     typename D::SetSiblings &get_devices();
     const typename D::SetSiblings &get_devices() const;
 };
+
 }
 
 }}

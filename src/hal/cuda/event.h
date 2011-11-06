@@ -73,7 +73,7 @@ public:
     {
     }
 
-#if 0
+#ifdef USE_CXX0X
     inline
     event_t(event_t &&event) :
         ptrEvent_(std::move(event.ptrEvent_))
@@ -98,7 +98,7 @@ public:
         return *this;
     }
 
-#if 0
+#ifdef USE_CXX0X
     inline
     event_t &operator=(event_t &&event)
     {
@@ -143,6 +143,14 @@ public:
     bool is_valid() const
     {
         return ptrEvent_;
+    }
+
+    inline
+    void add_observer(util::observer<event_t> &obj)
+    {
+        ASSERTION(ptrEvent_);
+
+        ptrEvent_->add_observer(obj);
     }
 };
 

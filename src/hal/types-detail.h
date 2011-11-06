@@ -45,22 +45,31 @@ time_t get_timestamp()
 }
 #endif
 
+class GMAC_LOCAL device_input {
+public:
+    virtual bool read(void *ptr, size_t count) = 0;
+};
 
+class GMAC_LOCAL device_output {
+public:
+    virtual bool write(void *ptr, size_t count) = 0;
+};
 
 namespace detail {
 
-template <typename C, typename S, typename E, typename K, typename KC>
-struct backend_traits
+template <typename C, typename S, typename E, typename K, typename KC, typename A>
+struct GMAC_LOCAL backend_traits
 {
     typedef C context;
     typedef S stream;
     typedef E event;
     typedef K kernel;
     typedef KC kernel_config;
+    typedef A alloc;
 };
 
 template <typename CD, typename C, typename S, typename K, typename T, typename V, typename R, typename E, typename B> 
-struct implementation_traits
+struct GMAC_LOCAL implementation_traits
 {
     typedef CD coherence_domain;
     typedef C context;

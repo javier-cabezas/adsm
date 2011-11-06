@@ -38,15 +38,12 @@ WITH THE SOFTWARE.  */
 #include <list>
 
 #include "config/common.h"
+#include "hal/types.h"
 #include "include/gmac/types.h"
 
 #include "memory/protocol/common/BlockState.h"
 
 namespace __impl {
-
-namespace core {
-class io_buffer;
-}
 
 namespace memory {
 
@@ -209,39 +206,6 @@ public:
     virtual gmacError_t toAccelerator(Block &block) = 0;
 #endif
 
-    /** Copy the contents of a memory block to an I/O buffer
-     *
-     * \param block Memory block from where data is being copied
-     * \param buffer I/O buffer where the data is being copied to
-     * \param size Size (in bytes) of the data being copied
-     * \param bufferOffset Offset (in bytes) from the begining of the buffer
-     * where the data is being copied to
-     * \param blockOffset Offset (in bytes) from the begining og the block from
-     * where the data is being copied
-     * \return Error code
-     * \warning This method assumes that the block is not modified during its
-     * execution
-     */
-    virtual gmacError_t copyToBuffer(Block &block, core::io_buffer &buffer, size_t size,
-                                     size_t bufferOffset, size_t blockOffset) = 0;
-
-    /**
-     * Copy the contents an I/O buffer to a memory block
-     *
-     * \param block Memory block where data is being copied to
-     * \param buffer I/O buffer from where the data is being copied
-     * \param size Size (in bytes) of the data being copied
-     * \param bufferOffset Offset (in bytes) from the begining of the buffer
-     * from where the data is being copied
-     * \param blockOffset Offset (in bytes) from the begining og the block where
-     * the data is being copied to
-     * \return Error code
-     * \warning This method assumes that the block is not modified during its
-     * execution
-     */
-    virtual gmacError_t copyFromBuffer(Block &block, core::io_buffer &buffer, size_t size,
-                                       size_t bufferOffset, size_t blockOffset) = 0;
-
     /**
      * Initializes a memory range within a memory block to a specific value
      *
@@ -254,8 +218,8 @@ public:
      * \warning This method assumes that the block is not modified during its
      * execution
      */
-    virtual gmacError_t memset(const Block &block, int v, size_t size,
-                               size_t blockOffset) = 0;
+    virtual hal::event_t memset(const Block &block, size_t blockOffset, int v, size_t size,
+                                gmacError_t &err) = 0;
 
     virtual gmacError_t flushDirty() = 0;
 
@@ -269,14 +233,38 @@ public:
      * \param srcOffset Offset within the source block
      * \param count Size (in bytes) of the memory transfer
      */
-    virtual gmacError_t copyBlockToBlock(Block &dst, size_t dstOffset,
-                                         Block &src, size_t srcOffset, size_t count) = 0;
+    virtual hal::event_t copyBlockToBlock(Block &dst, size_t dstOffset,
+                                          Block &src, size_t srcOffset,
+                                          size_t count, gmacError_t &err) = 0;
+
+    virtual hal::event_t copyToBlock(Block    &dst, size_t dstOffset,
+                                     hostptr_t src,
+                                     size_t count, gmacError_t &err) = 0;
+
+    virtual hal::event_t copyFromBlock(hostptr_t dst,
+                                       Block    &src, size_t srcOffset,
+                                       size_t count, gmacError_t &err) = 0;
+
+    virtual hal::event_t to_io_device(hal::device_output &output,
+                                      Block &src, size_t srcffset,
+                                      size_t count, gmacError_t &err) = 0;
+
+    virtual hal::event_t from_io_device(Block &dst, size_t dstOffset,
+                                        hal::device_input &input,
+                                        size_t count, gmacError_t &err) = 0;
+
+
 
     virtual gmacError_t dump(Block &block, std::ostream &out, protocol::common::Statistic stat) = 0;
 
     typedef gmacError_t (Protocol::*CoherenceOp)(Block &);
-    typedef gmacError_t (Protocol::*CopyOp)(Block &, size_t, Block &, size_t, size_t);
-    typedef gmacError_t (Protocol::*MemoryOp)(Block &, core::io_buffer &, size_t, size_t, size_t);
+
+    typedef hal::event_t (Protocol::*CopyOp1To)(Block &, size_t, const hostptr_t, size_t, gmacError_t &);
+    typedef hal::event_t (Protocol::*CopyOp1From)(hostptr_t, Block &, size_t, size_t, gmacError_t &);
+    typedef hal::event_t (Protocol::*CopyOp2)(Block &, size_t, Block &, size_t, size_t, gmacError_t &);
+
+    typedef hal::event_t (Protocol::*DeviceOpTo)(hal::device_output &, Block &, size_t, size_t, gmacError_t &);
+    typedef hal::event_t (Protocol::*DeviceOpFrom)(Block &, size_t, hal::device_input &, size_t, gmacError_t &);
 };
 
 typedef std::list<object *> ListObject;

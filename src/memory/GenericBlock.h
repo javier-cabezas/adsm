@@ -133,17 +133,8 @@ public:
     gmacError_t copyFromBuffer(size_t blockOff, core::io_buffer &buffer,
                                size_t bufferOff, size_t count, Destination dst) const;
 
-    gmacError_t copyFromBlock(size_t dstOff, GenericBlock &srcBlock,
-                              size_t srcOff, size_t count,
-                              Destination dst,
-                              Source src) const;
-
-    gmacError_t memset(int v, size_t count, size_t blockOffset, Destination dst) const;
-
 #if 0
-    void addOwner(core::address_space &owner, accptr_t addr);
-
-    void removeOwner(core::address_space &owner);
+    gmacError_t memset(int v, size_t count, size_t blockOffset, Destination dst) const;
 #endif
 };
 

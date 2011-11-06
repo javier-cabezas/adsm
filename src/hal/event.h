@@ -1,12 +1,15 @@
 #ifndef GMAC_HAL_TYPES_EVENT_H_
 #define GMAC_HAL_TYPES_EVENT_H_
 
+#include "util/observer.h"
+
 namespace __impl { namespace hal {
 
 namespace detail {
 
 template <typename D, typename B, typename I>
-class GMAC_LOCAL event_t {
+class GMAC_LOCAL event_t :
+    public util::observable<typename I::event> {
     friend class I::context;
     friend class I::kernel;
 

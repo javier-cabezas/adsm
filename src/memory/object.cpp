@@ -39,7 +39,8 @@ object::firstBlock(size_t objectOffset, size_t &blockOffset) const
     return i;
 }
 
-gmacError_t object::coherenceOp(gmacError_t (Protocol::*f)(Block &))
+gmacError_t
+object::coherenceOp(gmacError_t (Protocol::*f)(Block &))
 {
     gmacError_t ret = gmacSuccess;
     BlockMap::const_iterator i;
@@ -50,6 +51,54 @@ gmacError_t object::coherenceOp(gmacError_t (Protocol::*f)(Block &))
     return ret;
 }
 
+gmacError_t
+object::to_io_device(hal::device_output &output, size_t objOff, size_t count)
+{
+    hal::event_t event;
+    gmacError_t ret = gmacSuccess;
+    size_t blockOffset = 0;
+    size_t off = 0;
+    BlockMap::const_iterator i = firstBlock(objOff, blockOffset);
+    for(; i != blocks_.end() && count > 0; i++) {
+        Block &block = *i->second;
+        size_t blockSize = block.size() - blockOffset;
+        blockSize = count < blockSize? count: blockSize;
+        event = Block::device_op(&Protocol::to_io_device, output,
+                                                          block, blockOffset,
+                                                          blockSize, ret);
+        //block.memoryOp(op, buffer, blockSize, bufferOffset, blockOffset);
+        blockOffset = 0;
+        off   += blockSize;
+        count -= blockSize;
+    }
+    return ret;
+}
+
+gmacError_t
+object::from_io_device(size_t objOff, hal::device_input &input, size_t count)
+{
+    hal::event_t event;
+    gmacError_t ret = gmacSuccess;
+    size_t blockOffset = 0;
+    size_t off = 0;
+    BlockMap::const_iterator i = firstBlock(objOff, blockOffset);
+    for(; i != blocks_.end() && count > 0; i++) {
+        Block &block = *i->second;
+        size_t blockSize = block.size() - blockOffset;
+        blockSize = count < blockSize? count: blockSize;
+        event = Block::device_op(&Protocol::from_io_device, block, blockOffset,
+                                                            input,
+                                                            blockSize, ret);
+        //block.memoryOp(op, buffer, blockSize, bufferOffset, blockOffset);
+        blockOffset = 0;
+        off   += blockSize;
+        count -= blockSize;
+    }
+    return ret;
+
+}
+
+#if 0
 gmacError_t object::memoryOp(Protocol::MemoryOp op,
                              core::io_buffer &buffer, size_t size, size_t bufferOffset, size_t objectOffset)
 {
@@ -68,7 +117,7 @@ gmacError_t object::memoryOp(Protocol::MemoryOp op,
     }
     return ret;
 }
-
+#endif
 
 gmacError_t object::memset(size_t offset, int v, size_t size)
 {
@@ -87,22 +136,46 @@ gmacError_t object::memset(size_t offset, int v, size_t size)
 }
 
 gmacError_t
-object::memcpyToObject(size_t objOffset, const hostptr_t src, size_t size)
+object::memcpyToObject(size_t objOff, const hostptr_t src, size_t size)
 {
+    hal::event_t event;
+    gmacError_t ret = gmacSuccess;
+    size_t blockOffset = 0;
+    size_t off = 0;
+    BlockMap::const_iterator i = firstBlock(objOff, blockOffset);
+    for(; i != blocks_.end() && size > 0; i++) {
+        Block &block = *i->second;
+        size_t blockSize = block.size() - blockOffset;
+        blockSize = size < blockSize? size: blockSize;
+        event = Block::copy_op(&Protocol::copyToBlock, block, blockOffset,
+                                                     src + off,
+                                                     blockSize, ret);
+        //block.memoryOp(op, buffer, blockSize, bufferOffset, blockOffset);
+        blockOffset = 0;
+        off  += blockSize;
+        size -= blockSize;
+    }
+    return ret;
+
+#if 0
     trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
 
+#if 0
     // We need to I/O buffers to double-buffer the copy
     core::io_buffer *active;
     core::io_buffer *passive;
+#endif
 
     // Control variables
     size_t left = size;
 
     // Adjust the first copy to deal with a single block
-    size_t copySize = size < blockEnd(objOffset)? size: blockEnd(objOffset);
+    size_t copySize = size < blockEnd(objOff)? size: blockEnd(objOff);
 
+#if 0
     size_t bufSize = size < blockSize()? size: blockSize();
+
     active = owner().create_io_buffer(bufSize, GMAC_PROT_WRITE);
     ASSERTION(bufSize >= copySize);
 
@@ -114,17 +187,18 @@ object::memcpyToObject(size_t objOffset, const hostptr_t src, size_t size)
 
     // Copy the data to the first block
     ::memcpy(active->addr(), src, copySize);
+#endif
 
     hostptr_t ptr = src;
     while(left > 0) {
         // We do not need for the active buffer to be full because ::memcpy() is
         // a synchronous call
-        ret = copyFromBuffer(*active, copySize, 0, objOffset);
+        ret = copyFromBuffer(*active, copySize, 0, objOff);
         ASSERTION(ret == gmacSuccess);
         //if (ret != gmacSuccess) return ret;
         ptr       += copySize;
         left      -= copySize;
-        objOffset += copySize;
+        objOff += copySize;
         if(left > 0) {
             // Start copying data from host memory to the passive I/O buffer
             copySize = (left < passive->size()) ? left : passive->size();
@@ -137,6 +211,8 @@ object::memcpyToObject(size_t objOffset, const hostptr_t src, size_t size)
         active = passive;
         passive = tmp;
     }
+
+#if 0
     // Clean up buffers after they are idle
     if (passive != NULL) {
         passive->wait();
@@ -146,9 +222,11 @@ object::memcpyToObject(size_t objOffset, const hostptr_t src, size_t size)
         active->wait();
         owner().destroy_io_buffer(*active);
     }
+#endif
 
     trace::ExitCurrentFunction();
     return ret;
+#endif
 }
 
 gmacError_t
@@ -157,70 +235,75 @@ object::memcpyObjectToObject(object &dstObj, size_t dstOffset, size_t srcOffset,
     trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
 
+    hal::event_t event;
+
+#if 0
     hostptr_t dstPtr = dstObj.addr() + dstOffset;
     hostptr_t srcPtr = addr() + srcOffset;
 
-    if (__impl::util::params::ParamMemcpyAccToAcc &&
-        dstObj.get_device_addr(dstPtr).getPAddressSpace() ==
-        get_device_addr(srcPtr).getPAddressSpace()) {
-        TRACE(LOCAL, "Using fast path!: %p -> %p ("FMT_SIZE")",        addr() + srcOffset,
-                                                                dstObj.addr() + dstOffset, size);
-#if 0
         accptr_t dstPtr = dstObj.get_device_addr(dstOwner, dstObj.addr() + dstOffset);
         accptr_t srcPtr = get_device_addr(srcOwner, addr() + srcOffset);
 
         lockWrite();
         dstObj.lockWrite();
 #endif
-        size_t dummyOffset = 0;
-        BlockMap::const_iterator i = firstBlock(srcOffset, dummyOffset);
-        TRACE(LOCAL, "FP: %p "FMT_SIZE, dstObj.addr() + dstOffset, size);
-        BlockMap::const_iterator j = dstObj.firstBlock(dstOffset, dummyOffset);
-        TRACE(LOCAL, "FP: %p vs %p "FMT_SIZE, j->second->addr(), dstObj.addr() + dstOffset, size);
-        size_t left = size;
-        while (left > 0) {
-            size_t copySize = left < dstObj.blockEnd(dstOffset)? left: dstObj.blockEnd(dstOffset);
-            // Single copy from the source to fill the buffer
-            if (copySize <= blockEnd(srcOffset)) {
-                TRACE(LOCAL, "FP: Copying1: "FMT_SIZE" bytes", copySize);
-                ret = i->second->copyOp(&Protocol::copyBlockToBlock, *j->second, dstOffset % blockSize(), srcOffset % blockSize(), copySize);
-                ASSERTION(ret == gmacSuccess);
-                i++;
-            }
-            else { // Two copies from the source to fill the buffer
-                TRACE(LOCAL, "FP: Copying2: "FMT_SIZE" bytes", copySize);
-                size_t firstCopySize = blockEnd(srcOffset);
-                size_t secondCopySize = copySize - firstCopySize;
-
-                ret = i->second->copyOp(&Protocol::copyBlockToBlock, *j->second,
-                                        dstOffset % blockSize(),
-                                        srcOffset % blockSize(),
-                                        firstCopySize);
-                ASSERTION(ret == gmacSuccess);
-                i++;
-                ret = i->second->copyOp(&Protocol::copyBlockToBlock, *j->second,
-                                        (dstOffset + firstCopySize) % blockSize(),
-                                        (srcOffset + firstCopySize) % blockSize(),
-                                        secondCopySize);
-                ASSERTION(ret == gmacSuccess);
-            }
-            left -= copySize;
-            dstOffset += copySize;
-            srcOffset += copySize;
-            j++;
+    size_t dummyOffset = 0;
+    BlockMap::const_iterator i = firstBlock(srcOffset, dummyOffset);
+    TRACE(LOCAL, "FP: %p "FMT_SIZE, dstObj.addr() + dstOffset, size);
+    BlockMap::const_iterator j = dstObj.firstBlock(dstOffset, dummyOffset);
+    TRACE(LOCAL, "FP: %p vs %p "FMT_SIZE, j->second->addr(), dstObj.addr() + dstOffset, size);
+    size_t left = size;
+    while (left > 0) {
+        size_t copySize = left < dstObj.blockEnd(dstOffset)? left: dstObj.blockEnd(dstOffset);
+        // Single copy from the source to fill the buffer
+        if (copySize <= blockEnd(srcOffset)) {
+            TRACE(LOCAL, "FP: Copying1: "FMT_SIZE" bytes", copySize);
+            event = Block::copy_op(&Protocol::copyBlockToBlock,
+                                  *j->second, dstOffset % blockSize(),
+                                  *i->second, srcOffset % blockSize(), copySize, ret);
+            ASSERTION(ret == gmacSuccess);
+            i++;
         }
+        else { // Two copies from the source to fill the buffer
+            TRACE(LOCAL, "FP: Copying2: "FMT_SIZE" bytes", copySize);
+            size_t firstCopySize = blockEnd(srcOffset);
+            size_t secondCopySize = copySize - firstCopySize;
+
+            event = Block::copy_op(&Protocol::copyBlockToBlock,
+                                  *j->second,
+                                  dstOffset % blockSize(),
+                                  *i->second,
+                                  srcOffset % blockSize(),
+                                  firstCopySize, ret);
+            ASSERTION(ret == gmacSuccess);
+            i++;
+            event = Block::copy_op(&Protocol::copyBlockToBlock,
+                                  *j->second,
+                                  (dstOffset + firstCopySize) % blockSize(),
+                                  *i->second,
+                                  (srcOffset + firstCopySize) % blockSize(),
+                                  secondCopySize, ret);
+            ASSERTION(ret == gmacSuccess);
+        }
+        left -= copySize;
+        dstOffset += copySize;
+        srcOffset += copySize;
+        j++;
+    }
+
+    if (event.is_valid()) {
+        ret = event.sync();
+    }
 
 #if 0
         dstObj.unlock();
         unlock();
 #endif
 
-        TRACE(LOCAL, "Fast path finished!");
+    trace::ExitCurrentFunction();
+    return ret;
 
-        trace::ExitCurrentFunction();
-        return ret;
-    }
-
+#if 0
     // We need to I/O buffers to double-buffer the copy
     core::io_buffer *active;
     core::io_buffer *passive;
@@ -309,11 +392,32 @@ object::memcpyObjectToObject(object &dstObj, size_t dstOffset, size_t srcOffset,
 
     trace::ExitCurrentFunction();
     return ret;
+#endif
 }
 
 gmacError_t
-object::memcpyFromObject(hostptr_t dst, size_t objOffset, size_t size)
+object::memcpyFromObject(hostptr_t dst, size_t objOff, size_t size)
 {
+    hal::event_t event;
+    gmacError_t ret = gmacSuccess;
+    size_t blockOffset = 0;
+    size_t off = 0;
+    BlockMap::const_iterator i = firstBlock(objOff, blockOffset);
+    for(; i != blocks_.end() && size > 0; i++) {
+        Block &block = *i->second;
+        size_t blockSize = block.size() - blockOffset;
+        blockSize = size < blockSize? size: blockSize;
+        event = Block::copy_op(&Protocol::copyFromBlock, dst + off,
+                                                         block, blockOffset,
+                                                         blockSize, ret);
+        //block.memoryOp(op, buffer, blockSize, bufferOffset, blockOffset);
+        blockOffset = 0;
+        off  += blockSize;
+        size -= blockSize;
+    }
+    return ret;
+
+#if 0
     trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
 
@@ -325,7 +429,7 @@ object::memcpyFromObject(hostptr_t dst, size_t objOffset, size_t size)
     size_t left = size;
 
     // Adjust the first copy to deal with a single block
-    size_t copySize = size < blockEnd(objOffset)? size: blockEnd(objOffset);
+    size_t copySize = size < blockEnd(objOff)? size: blockEnd(objOff);
 
     size_t bufSize = size < blockSize()? size: blockSize();
     active = owner().create_io_buffer(bufSize, GMAC_PROT_READ);
@@ -338,21 +442,21 @@ object::memcpyFromObject(hostptr_t dst, size_t objOffset, size_t size)
     }
 
     // Copy the data to the first block
-    ret = copyToBuffer(*active, copySize, 0, objOffset);
+    ret = copyToBuffer(*active, copySize, 0, objOff);
     ASSERTION(ret == gmacSuccess);
     //if(ret != gmacSuccess) return ret;
     while(left > 0) {
         // Save values to use when copying the buffer to host memory
         size_t previousCopySize = copySize;
         left      -= copySize;
-        objOffset += copySize;
+        objOff += copySize;
         if(left > 0) {
             // Start copying data from host memory to the passive I/O buffer
             copySize = (left < passive->size()) ? left : passive->size();
             ASSERTION(bufSize >= copySize);
             // No need to wait for the buffer, because ::memcpy is a
             // synchronous call
-            ret = copyToBuffer(*passive, copySize, 0, objOffset);
+            ret = copyToBuffer(*passive, copySize, 0, objOff);
             ASSERTION(ret == gmacSuccess);
         }
         // Wait for the active buffer to be full
@@ -372,6 +476,7 @@ object::memcpyFromObject(hostptr_t dst, size_t objOffset, size_t size)
 
     trace::ExitCurrentFunction();
     return ret;
+#endif
 }
 
 gmacError_t

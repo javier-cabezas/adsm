@@ -31,12 +31,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_CORE_HPE_DESCRIPTOR_H_
-#define GMAC_CORE_HPE_DESCRIPTOR_H_
+#ifndef GMAC_UTIL_DESCRIPTOR_H_
+#define GMAC_UTIL_DESCRIPTOR_H_
 
 #include "config/common.h"
 
-namespace __impl { namespace hal { namespace cuda {
+namespace __impl { namespace util {
 
 template <typename K>
 class GMAC_LOCAL descriptor {
@@ -50,7 +50,7 @@ public:
     K get_key() const;
 };
 
-}}}
+}}
 
 #include "descriptor-impl.h"
 

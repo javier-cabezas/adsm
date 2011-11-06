@@ -62,8 +62,6 @@ namespace memory {
 
 namespace core {
 
-class io_buffer;
-
 namespace hpe {
 
 class process;

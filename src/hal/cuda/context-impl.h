@@ -6,25 +6,26 @@
 namespace __impl { namespace hal { namespace cuda {
 
 inline
-gmacError_t
-list_event::sync()
+buffer_t::buffer_t(type t, hostptr_t addr, size_t size, context_t &context) :
+    Parent(t, size, context),
+    addr_(addr)
 {
-    gmacError_t ret = gmacSuccess;
-    for (Parent::iterator it  = Parent::begin();
-            it != Parent::end();
-            it++) {
-        ret = (*it)->sync();
-        if (ret != gmacSuccess) break;
-    }
-
-    return ret;
 }
 
 inline
-buffer_t::buffer_t(hostptr_t addr, context_t &context) :
-    Parent(context),
-    addr_(addr)
+void
+buffer_t::update(event_t &event)
 {
+    switch (get_type()) {
+    case ToHost:
+        get_context().put_input_buffer(*this);
+        break;
+    case ToDevice:
+        get_context().put_output_buffer(*this);
+        break;
+    case DeviceToDevice:
+        FATAL("Unhandled case");
+    }
 }
 
 inline
@@ -39,6 +40,22 @@ accptr_t
 buffer_t::get_device_addr()
 {
     return get_context().get_device_addr_from_pinned(addr_);
+}
+
+
+inline
+gmacError_t
+list_event::sync()
+{
+    gmacError_t ret = gmacSuccess;
+    for (Parent::iterator it  = Parent::begin();
+            it != Parent::end();
+            it++) {
+        ret = (*it).sync();
+        if (ret != gmacSuccess) break;
+    }
+
+    return ret;
 }
 
 inline

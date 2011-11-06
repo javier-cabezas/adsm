@@ -2,7 +2,7 @@
 #define GMAC_HAL_OPENCL_COHERENCE_DOMAIN_H_
 
 #include "hal/coherence_domain.h"
-#include "util/Unique.h"
+#include "util/unique.h"
 
 #include "types.h"
 
@@ -10,15 +10,16 @@
 
 namespace __impl { namespace hal { namespace opencl {
 
-class coherence_domain :
+class GMAC_LOCAL coherence_domain :
     public hal::detail::coherence_domain<device>,
-    public __impl::util::Unique<coherence_domain> {
+    public util::unique<coherence_domain> {
+
 public:
     coherence_domain();
 };
 
 }}}
 
-#endif /* GMAC_HAL_COHERENCE_DOMAIN_H_ */
+#endif /* GMAC_HAL_OPENCL_COHERENCE_DOMAIN_H_ */
 
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

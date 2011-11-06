@@ -10,7 +10,7 @@
 
 namespace __impl { namespace hal { namespace cuda {
 
-class coherence_domain :
+class GMAC_LOCAL coherence_domain :
     public hal::detail::coherence_domain<device>,
     public util::unique<coherence_domain> {
 public:
@@ -19,6 +19,6 @@ public:
 
 }}}
 
-#endif /* GMAC_HAL_COHERENCE_DOMAIN_H_ */
+#endif /* GMAC_HAL_CUDA_COHERENCE_DOMAIN_H_ */
 
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

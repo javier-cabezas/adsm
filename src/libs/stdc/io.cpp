@@ -24,6 +24,68 @@ using __impl::util::params::ParamBlockSize;
 SYM(size_t, __libc_fread, void *, size_t, size_t, FILE *);
 SYM(size_t, __libc_fwrite, const void *, size_t, size_t, FILE *);
 
+class GMAC_LOCAL stdc_input :
+    public __impl::hal::device_input {
+    FILE *file_;
+    size_t sizeElem_;
+
+    ssize_t result_;
+
+public:
+    stdc_input(FILE *file, size_t sizeElem) :
+        file_(file),
+        sizeElem_(sizeElem)
+    {
+    }
+
+    bool read(void *ptr, size_t count)
+    {
+        bool ok;
+
+        size_t res = fread(ptr, sizeElem_, count/sizeElem_, file_);
+        ok = (res == count);
+        result_ += res;
+
+        return ok;
+    }
+
+    ssize_t get_result() const
+    {
+        return result_;
+    }
+};
+
+class GMAC_LOCAL stdc_output :
+    public __impl::hal::device_output {
+    FILE *file_;
+    size_t sizeElem_;
+
+    ssize_t result_;
+
+public:
+    stdc_output(FILE *file, size_t sizeElem) :
+        file_(file),
+        sizeElem_(sizeElem)
+    {
+    }
+
+    bool write(void *ptr, size_t count)
+    {
+        bool ok;
+
+        size_t res = fwrite(ptr, sizeElem_, count/sizeElem_, file_);
+        ok = (res == count);
+        result_ += res;
+
+        return ok;
+    }
+
+    ssize_t get_result() const
+    {
+        return result_;
+    }
+};
+
 /* Library wrappers */
 
 #ifdef __cplusplus
@@ -45,6 +107,12 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
     }
 
 	gmac::trace::SetThreadState(gmac::trace::IO);
+
+    stdc_input op(stream, size);
+
+    manager.from_io_device(aspaceDst, hostptr_t(buf), op, size * nmemb);
+    ssize_t ret = op.get_result();
+#if 0
     gmacError_t err;
     size_t n = size * nmemb;
     size_t ret = 0;
@@ -84,6 +152,7 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
     if (buffer2 != NULL) {
         aspaceDst->destroy_io_buffer(*buffer2);
     }
+#endif
 	gmac::trace::SetThreadState(gmac::trace::Running);
 	exitGmac();
 
@@ -109,6 +178,12 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
     }
 
 	gmac::trace::SetThreadState(gmac::trace::IO);
+
+    stdc_output op(stream, size);
+
+    manager.to_io_device(op, aspaceSrc, hostptr_t(buf), size * nmemb);
+    ssize_t ret = op.get_result();
+#if 0
     gmacError_t err;
     size_t n = size * nmemb;
     size_t ret = 0;
@@ -161,6 +236,7 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
     if (buffer2 != NULL) {
         aspaceSrc->destroy_io_buffer(*buffer2);
     }
+#endif
 	gmac::trace::SetThreadState(gmac::trace::Running);
 	exitGmac();
 

@@ -5,9 +5,10 @@ set(hal_opencl_SRC
     device.cpp
     types.h
     types-impl.h
-    util/opencl_util.h
-    util/opencl_util-impl.h
-    util/opencl_util.cpp
+    types.cpp
+    helper/opencl_helper.h
+    helper/opencl_helper-impl.h
+    helper/opencl_helper.cpp
 )
 
 add_gmac_sources(gmac-hal-api ${hal_opencl_SRC})

@@ -2,8 +2,6 @@ set(core_hpe_SRC
     address_space.h
     address_space-impl.h
     address_space.cpp
-    context.h
-    context.cpp
     kernel.h
     kernel-impl.h
     vdevice.h

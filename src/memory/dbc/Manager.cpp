@@ -102,7 +102,7 @@ Manager::signalWrite(address_space_impl aspace, hostptr_t addr)
     return ret;
 }
 
-
+#if 0
 gmacError_t
 Manager::toIOBuffer(address_space_impl aspace, io_buffer_impl &buffer, size_t bufferOff, const hostptr_t addr, size_t size)
 {
@@ -130,6 +130,8 @@ Manager::fromIOBuffer(address_space_impl aspace, hostptr_t addr, io_buffer_impl 
 
     return ret;
 }
+#endif
+
 gmacError_t
 Manager::memcpy(address_space_impl aspace, hostptr_t dst, const hostptr_t src, size_t n)
 {

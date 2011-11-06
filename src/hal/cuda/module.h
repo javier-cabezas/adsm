@@ -46,10 +46,10 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 #include "config/config.h"
 
+#include "util/descriptor.h"
 #include "util/UniquePtr.h"
 #include "util/stl/locked_map.h"
 
-#include "descriptor.h"
 #include "types.h"
 
 namespace __impl { namespace hal { namespace cuda {
@@ -57,10 +57,10 @@ namespace __impl { namespace hal { namespace cuda {
 typedef const char *cuda_variable_t;
 typedef const struct textureReference *cuda_texture_t;
 
-typedef descriptor<gmac_kernel_id_t> kernel_descriptor;
-typedef descriptor<cuda_texture_t> texture_descriptor;
+typedef util::descriptor<gmac_kernel_id_t> kernel_descriptor;
+typedef util::descriptor<cuda_texture_t> texture_descriptor;
 
-class GMAC_LOCAL variable_descriptor : public descriptor<cuda_variable_t> {
+class GMAC_LOCAL variable_descriptor : public util::descriptor<cuda_variable_t> {
 protected:
     bool constant_;
 

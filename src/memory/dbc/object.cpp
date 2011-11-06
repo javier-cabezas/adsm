@@ -80,6 +80,7 @@ object::signalWrite(hostptr_t addr)
     return ret;
 }
 
+#if 0
 gmacError_t
 object::copyToBuffer(__impl::core::io_buffer &buffer, size_t size, 
         size_t bufferOffset, size_t objectOffset)
@@ -109,6 +110,7 @@ object::copyFromBuffer(__impl::core::io_buffer &buffer, size_t size,
     
     return ret;
 }
+#endif
 
 gmacError_t
 object::memset(size_t offset, int v, size_t size)

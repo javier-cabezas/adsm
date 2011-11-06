@@ -1,9 +1,9 @@
-#ifndef GMAC_CORE_HPE_DESCRIPTOR_IMPL_H_
-#define GMAC_CORE_HPE_DESCRIPTOR_IMPL_H_
+#ifndef GMAC_UTIL_DESCRIPTOR_IMPL_H_
+#define GMAC_UTIL_DESCRIPTOR_IMPL_H_
 
 #include "util/Logger.h"
 
-namespace __impl { namespace hal { namespace cuda {
+namespace __impl { namespace util {
 
 template <typename K>
 inline
@@ -27,6 +27,6 @@ descriptor<K>::get_key() const
     return key_;
 }
 
-}}}
+}}
 
 #endif

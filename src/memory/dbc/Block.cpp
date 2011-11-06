@@ -18,6 +18,7 @@ Block::~Block()
 {
 }
 
+#if 0
 gmacError_t
 Block::memoryOp(__impl::memory::Protocol::MemoryOp op, __impl::core::io_buffer &buffer, size_t size, size_t bufferOffset, size_t blockOffset)
 {
@@ -31,7 +32,7 @@ Block::memoryOp(__impl::memory::Protocol::MemoryOp op, __impl::core::io_buffer &
     
     return ret;
 }
-
+#endif
 
 gmacError_t
 Block::memset(int v, size_t size, size_t blockOffset)

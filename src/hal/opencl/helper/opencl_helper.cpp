@@ -7,7 +7,7 @@
 #define sscanf(...) sscanf_s(__VA_ARGS__)
 #endif
 
-namespace __impl { namespace hal { namespace opencl { namespace util {
+namespace __impl { namespace hal { namespace opencl { namespace helper {
 
 std::string
 get_platform_string(int string, cl_platform_id id)

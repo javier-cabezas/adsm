@@ -1,17 +1,18 @@
-#include "hal/types.h"
-
 #include "util/Logger.h"
 
+#include "hal/types.h"
 #include "device.h"
 
 namespace __impl { namespace hal { namespace opencl {
 
-device::device(cl_device_id openclDeviceId,
-               cl_platform_id openclPlatformId,
-               coherence_domain &coherenceDomain) :
+device::device(platform &p,
+               cl_device_id openclDeviceId,
+               coherence_domain &coherenceDomain,
+               cl_context context) :
     Parent(coherenceDomain),
+    platform_(p),
     openclDeviceId_(openclDeviceId),
-    openclPlatformId_(openclPlatformId)
+    context_(context)
 {
     // Memory size
     {
@@ -27,7 +28,7 @@ device::device(cl_device_id openclDeviceId,
 
     // OpenCL version
     {
-        openclVersion_ = util::get_opencl_version(openclPlatformId);
+        openclVersion_ = helper::get_opencl_version(platform_.get_cl_platform_id());
     }
 
     // Uses integrated memory
@@ -40,25 +41,33 @@ device::device(cl_device_id openclDeviceId,
     }
 }
 
-aspace_t
-device::create_address_space(const Parent::SetSiblings &siblings)
+context_t *
+device::create_context(const SetSiblings &siblings)
 {
-    cl_int ret;
+    cl_int res;
     cl_context ctx;
+
+    cl_device *devices = platform_.get_cl_device_array();
 
     cl_context_properties prop[] = {
         CL_CONTEXT_PLATFORM,
-        (cl_context_properties) openclPlatformId_,
+        (cl_context_properties) platform_.get_cl_platform_id(),
         0
     };
 
+    ctx = clCreateContext(prop, siblings.size(), clDevices, NULL, NULL, &ret);
+    ASSERTION(ret == CL_SUCCESS);
+
+#if 0
     // Checks
     {
         ASSERTION(siblings.size() >= 1, "Siblings' set is empty");
         ASSERTION(siblings.find(this) != siblings.end(), "Siblings does not contain the current device");
 
-        cl_device_id *clDevices = new cl_device_id[siblings.size()];
-        int i = 0;
+        cl_device_id *clDevices = new cl_device_id[siblings.size() + 1];
+        clDevices[0] = openclDeviceId_;
+
+        unsigned i = 1;
 
         for (SetSiblings::const_iterator it = siblings.begin(); it != siblings.end(); it++) {
             ASSERTION(&(*it)->get_coherence_domain() == &coherenceDomain_, "Coherence domain do not match");
@@ -68,12 +77,21 @@ device::create_address_space(const Parent::SetSiblings &siblings)
         ctx = clCreateContext(prop, siblings.size(), clDevices, NULL, NULL, &ret);
         ASSERTION(ret == CL_SUCCESS);
 
-        return aspace_t(ctx, *this);
+        return new context_t(ctx, *this);
     }
+#endif
 }
 
-stream_t
-device::create_stream(aspace_t &aspace)
+gmacError_t
+device::destroy_context(context_t &context)
+{
+    cl_int ret = clReleaseContext(context());
+
+    return error(ret);
+}
+
+stream_t *
+device::create_stream(context_t &context)
 {
     cl_command_queue stream;
     cl_int error;
@@ -81,11 +99,20 @@ device::create_stream(aspace_t &aspace)
 #if defined(USE_TRACE)
     prop |= CL_QUEUE_PROFILING_ENABLE;
 #endif
-    stream = clCreateCommandQueue(aspace(), openclDeviceId_, prop, &error);
+    stream = clCreateCommandQueue(context(), openclDeviceId_, prop, &error);
     CFATAL(error == CL_SUCCESS, "Unable to create OpenCL stream");
-    return stream_t(stream, aspace);
+    return new stream_t(stream, context);
 }
 
+gmacError_t
+device::destroy_stream(stream_t &stream)
+{
+    cl_int ret = clReleaseCommandQueue(stream());
+
+    return error(ret);
+}
+
+#if 0
 event_t
 device::copy(accptr_t dst, hostptr_t src, size_t count, stream_t &stream)
 {
@@ -180,6 +207,21 @@ device::sync(stream_t &stream)
 
     return opencl::error(res);
 }
+#endif
+bool
+device::has_direct_copy(const Parent &/*_dev*/) const
+{
+#if 0
+    const device &dev = reinterpret_cast<const device &>(_dev);
+    int canAccess;
+    CUresult ret = cuDeviceCanAccessPeer(&canAccess, cudaDevice_, dev.cudaDevice_);
+    ASSERTION(ret == CUDA_SUCCESS, "Error querying devices");
+
+    return canAccess == 1;
+#endif
+    return false;
+}
+
 
 }}}
 

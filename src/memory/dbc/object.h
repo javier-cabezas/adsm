@@ -53,10 +53,12 @@ public:
 	gmacError_t signalRead(hostptr_t addr);
     gmacError_t signalWrite(hostptr_t addr);
 
+#if 0
     gmacError_t copyToBuffer(__impl::core::io_buffer &buffer, size_t size, 
             size_t bufferOffset = 0, size_t objectOffset = 0);
     gmacError_t copyFromBuffer(__impl::core::io_buffer &buffer, size_t size, 
             size_t bufferOffset = 0, size_t objectOffset = 0);
+#endif
 
     gmacError_t memset(size_t offset, int v, size_t size);
 };

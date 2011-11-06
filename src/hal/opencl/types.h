@@ -9,63 +9,48 @@ namespace __impl { namespace hal { namespace opencl {
 
 class device;
 
-typedef hal::detail::backend_traits<cl_context, cl_command_queue, cl_event> backend_traits;
+class coherence_domain;
+class context_t;
+class stream_t;
+class kernel_t;
+class texture_t;
+class variable_t;
+class code_repository;
+class _event_t;
+class event_t;
+class buffer_t;
+
+typedef hal::detail::backend_traits<cl_context,
+                                    cl_command_queue,
+                                    cl_event,
+                                    cl_kernel,
+                                    size_t *> backend_traits;
+
+typedef hal::detail::implementation_traits<coherence_domain,
+                                           context_t,
+                                           stream_t,
+                                           kernel_t,
+                                           texture_t,
+                                           variable_t,
+                                           code_repository,
+                                           event_t,
+                                           buffer_t> implementation_traits;
 
 gmacError_t error(cl_int err);
 
-class aspace_t :
-    public hal::detail::aspace_t<device, backend_traits> {
-public:
-    aspace_t(cl_context ctx, device &device);
-
-    device &get_device();
-};
-
-class stream_t :
-    public hal::detail::stream_t<device, backend_traits> {
-public:
-    stream_t(cl_command_queue stream, aspace_t &aspace);
-
-    aspace_t &get_address_space();
-    cl_command_queue &operator()();
-};
-
-class _event_common_t {
-protected:
-    _event_common_t()
-    {
-    }
-
-    cl_event event_;
-
-public:
-    cl_event &operator()();
-    const cl_event &operator()() const;
-};
-
-class event_t :
-    public hal::detail::event_t<device, backend_traits>,
-    public _event_common_t {
-    friend class device;
-public:
-    event_t(stream_t &stream, gmacError_t err = gmacSuccess);
-    stream_t &get_stream();
-};
-
-class async_event_t :
-    public hal::detail::async_event_t<device, backend_traits>,
-    public _event_common_t {
-    friend class device;
-public:
-    async_event_t(stream_t &stream, gmacError_t err = gmacSuccess);
-    gmacError_t sync();
-    stream_t &get_stream();
-};
-
-
 }}}
 
-#include "types-impl.h"
+#include "event.h"
+#include "context.h"
+#include "kernel.h"
+#include "stream.h"
+
+#include "context-impl.h"
+#include "stream-impl.h"
+#include "kernel-impl.h"
+#include "event-impl.h"
+
+#include "module.h"
 
 #endif /* GMAC_HAL_OPENCL_TYPES_H_ */
 

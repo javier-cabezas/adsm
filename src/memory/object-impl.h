@@ -174,6 +174,7 @@ inline gmacError_t object::toAccelerator()
     return ret;
 }
 
+#if 0
 inline gmacError_t
 object::copyToBuffer(core::io_buffer &buffer, size_t size,
                      size_t bufferOffset, size_t objectOffset)
@@ -194,6 +195,7 @@ inline gmacError_t object::copyFromBuffer(core::io_buffer &buffer, size_t size,
     unlock();
     return ret;
 }
+#endif
 
 #if 0
 inline gmacError_t object::copyObjectToObject(object &dst, size_t dstOff,

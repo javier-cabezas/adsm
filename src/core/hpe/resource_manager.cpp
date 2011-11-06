@@ -52,7 +52,7 @@ resource_manager::init_thread(thread &t, const thread *parent)
     vdevice *dev = NULL;
 
     if (parent == NULL) {
-        util::smart_ptr<address_space>::shared aspace = create_address_space(0, ret);
+        address_space_ptr aspace = create_address_space(0, ret);
         if (ret == gmacSuccess) {
             dev = create_virtual_device(aspace->get_id(), ret);
         }
@@ -79,7 +79,7 @@ resource_manager::register_device(hal::device &dev)
     return gmacSuccess;
 }
 
-util::smart_ptr<address_space>::shared
+address_space_ptr
 resource_manager::create_address_space(unsigned accId, gmacError_t &err)
 {
     err = gmacSuccess;
@@ -101,7 +101,7 @@ resource_manager::create_address_space(unsigned accId, gmacError_t &err)
                                               *resources.streamAccelerator_,
                                               proc_);
     ASSERTION(aspace != NULL);
-    util::smart_ptr<address_space>::shared ptrAspace(aspace);
+    address_space_ptr ptrAspace(aspace);
     aspaceMap_.insert(map_aspace::value_type(aspace->get_id(), ptrAspace));
     aspaceResourcesMap_.insert(map_aspace_resources::value_type(aspace, resources));
 
@@ -139,7 +139,7 @@ resource_manager::create_virtual_device(GmacAddressSpaceId id, gmacError_t &err)
     it = aspaceMap_.find(id);
 
     if (it != aspaceMap_.end()) {
-        util::smart_ptr<address_space>::shared aspace = it->second;
+        address_space_ptr aspace = it->second;
 
         TRACE(LOCAL,"Creatintg Execution vdevice on aspace#"FMT_ASPACE, aspace->get_id().val);
 
@@ -162,10 +162,10 @@ resource_manager::destroy_virtual_device(vdevice &dev)
     return ret;
 }
 
-util::smart_ptr<address_space>::shared
+address_space_ptr
 resource_manager::get_address_space(GmacAddressSpaceId aSpaceId)
 {
-    util::smart_ptr<address_space>::shared ret;
+    address_space_ptr ret;
 
     map_aspace::iterator it;
     it = aspaceMap_.find(aSpaceId);

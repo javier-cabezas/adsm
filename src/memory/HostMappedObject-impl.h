@@ -15,7 +15,7 @@ inline gmacError_t
 HostMappedObject::acquire(util::smart_ptr<core::address_space>::shared current)
 {
     gmacError_t ret = gmacSuccess;
-    ret = current.acquire(addr_);
+    ret = current->acquire(addr_);
     return ret;
 }
 
@@ -23,7 +23,7 @@ inline gmacError_t
 HostMappedObject::release(util::smart_ptr<core::address_space>::shared current)
 {
     gmacError_t ret = gmacSuccess;
-    ret = current.release(addr_);
+    ret = current->release(addr_);
     return ret;
 }
 #endif

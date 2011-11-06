@@ -5,6 +5,8 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Parameter-def.h.in ${CMAKE_CURRENT_BI
 set(util_SRC
     Atomics.h
     FileLock.h
+    descriptor.h
+    descriptor-impl.h
     gmac_base.h
     gmac_base.cpp
     lock.h
@@ -14,6 +16,8 @@ set(util_SRC
     Logger-impl.h
     Logger.cpp
     NonCopyable.h
+    observer.h
+    observer-impl.h
     Parameter.h
     Parameter-impl.h
     Parameter.cpp
