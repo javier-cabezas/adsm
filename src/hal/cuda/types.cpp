@@ -142,19 +142,6 @@ context_t::context_t(CUcontext ctx, device &dev) :
     TRACE(LOCAL, "Creating context: %p", (*this)());
 }
 
-accptr_t
-context_t::alloc(size_t count, gmacError_t &err)
-{
-    set();
-
-    CUdeviceptr devPtr = 0;
-    CUresult res = cuMemAlloc(&devPtr, count);
-
-    err = cuda::error(res);
-
-    return accptr_t(devPtr);
-}
-
 const code_repository &
 context_t::get_code_repository()
 {

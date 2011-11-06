@@ -70,30 +70,26 @@ public:
     //virtual io_buffer *create_io_buffer(size_t count, GmacProtection prot) = 0;
     //virtual gmacError_t destroy_io_buffer(io_buffer &buffer) = 0;
 
-    virtual gmacError_t map(accptr_t &dst, hostptr_t src, size_t count, unsigned align = 1) = 0;
+    virtual gmacError_t map(hal::ptr_t &dst, hostptr_t src, size_t count, unsigned align = 1) = 0;
     virtual gmacError_t unmap(hostptr_t addr, size_t count) = 0;
 
     virtual hostptr_t alloc_host_pinned(size_t count, gmacError_t &err) = 0;
     virtual gmacError_t free_host_pinned(hostptr_t ptr) = 0;
 
-    virtual accptr_t get_host_pinned_mapping(hostptr_t ptr, gmacError_t &err) = 0;
+    virtual hal::ptr_t get_host_pinned_mapping(hostptr_t ptr, gmacError_t &err) = 0;
 
-    virtual gmacError_t copy(accptr_t acc, const hostptr_t host, size_t count) = 0;
-    virtual gmacError_t copy(hostptr_t host, const accptr_t acc, size_t count) = 0;
-    virtual gmacError_t copy(accptr_t dst, const accptr_t src, size_t count) = 0;
+    virtual gmacError_t copy(hal::ptr_t dst, const hal::ptr_t src, size_t count) = 0;
 
-    virtual gmacError_t copy(accptr_t dst, hal::device_input &input, size_t count) = 0;
-    virtual gmacError_t copy(hal::device_output &output, const accptr_t dst, size_t count) = 0;
+    virtual gmacError_t copy(hal::ptr_t dst, hal::device_input &input, size_t count) = 0;
+    virtual gmacError_t copy(hal::device_output &output, const hal::ptr_t dst, size_t count) = 0;
 
-    virtual hal::event_t copy_async(accptr_t acc, const hostptr_t host, size_t count, gmacError_t &err) = 0;
-    virtual hal::event_t copy_async(hostptr_t host, const accptr_t acc, size_t count, gmacError_t &err) = 0;
-    virtual hal::event_t copy_async(accptr_t dst, const accptr_t src, size_t count, gmacError_t &err) = 0;
+    virtual hal::event_t copy_async(hal::ptr_t dst, const hal::ptr_t src, size_t count, gmacError_t &err) = 0;
 
-    virtual hal::event_t copy_async(accptr_t dst, hal::device_input &input, size_t count, gmacError_t &err) = 0;
-    virtual hal::event_t copy_async(hal::device_output &output, const accptr_t src, size_t count, gmacError_t &err) = 0;
+    virtual hal::event_t copy_async(hal::ptr_t dst, hal::device_input &input, size_t count, gmacError_t &err) = 0;
+    virtual hal::event_t copy_async(hal::device_output &output, const hal::ptr_t src, size_t count, gmacError_t &err) = 0;
 
-    virtual gmacError_t memset(accptr_t addr, int c, size_t size) = 0;
-    virtual hal::event_t memset_async(accptr_t addr, int c, size_t size, gmacError_t &err) = 0;
+    virtual gmacError_t memset(hal::ptr_t addr, int c, size_t size) = 0;
+    virtual hal::event_t memset_async(hal::ptr_t addr, int c, size_t size, gmacError_t &err) = 0;
 
     memory::map_object &get_object_map();
     const memory::map_object &get_object_map() const;

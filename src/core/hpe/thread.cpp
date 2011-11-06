@@ -8,9 +8,11 @@ thread::~thread()
         delete it->second;
     }
 
+#if 0
     for (map_context::iterator it = mapContexts_.begin(); it != mapContexts_.end(); it++) {
         delete it->second;
     }
+#endif
 
     for (map_vdevice::iterator it = mapVDevices_.begin(); it != mapVDevices_.end(); it++) {
         process_.get_resource_manager().destroy_virtual_device(*it->second);

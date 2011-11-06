@@ -36,103 +36,195 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace hal {
 
-template <typename D, typename B, typename I>
-class ptr_t {
+template <typename Ptr, typename C>
+class GMAC_LOCAL _ptr_t {
 protected:
-    typename B::alloc devPtr_;
-    typename I::context *ctx_;
+    Ptr ptrDev_;
+    hostptr_t ptrHost_;
+
+    C *ctx_;
 
 public:
-    inline ptr_t(typename B::alloc ptr, typename I::context *ctx = NULL) :
-        devPtr_(ptr),
-        ctx_(ctx)
-
-    {
-    }
-
-    inline ptr_t(typename B::alloc value, typename I::context *ctx = NULL) :
-        devPtr_(value),
+    inline
+    _ptr_t(Ptr ptr, C *ctx) :
+        ptrDev_(ptr),
         ctx_(ctx)
     {
     }
 
-    inline ptr_t(const ptr_t<typename B::alloc> &ptr) :
-        devPtr_(ptr.devPtr_),
+    inline
+    _ptr_t(typename Ptr::backend_type value, C *ctx) :
+        ptrDev_(value),
+        ctx_(ctx)
+    {
+    }
+
+    inline
+    explicit _ptr_t(hostptr_t ptr) :
+        ptrDev_(0),
+        ptrHost_(ptr),
+        ctx_(NULL)
+    {
+    }
+
+    inline
+    _ptr_t() :
+        ptrDev_(0),
+        ptrHost_(0),
+        ctx_(NULL)
+    {
+    }
+
+    inline
+    _ptr_t(const _ptr_t &ptr) :
+        ptrDev_(ptr.ptrDev_),
+        ptrHost_(ptr.ptrHost_),
         ctx_(ptr.ctx_)
     {
     }
 
-    inline ~ptr_t()
+    inline
+    operator bool()
     {
+        return ctx_ != NULL || ptrHost_ != NULL;
     }
 
-    inline ptr_t &operator=(const ptr_t<typename B::alloc> &ptr)
+    inline _ptr_t &
+    operator=(const _ptr_t &ptr)
     {
         if (this != &ptr) {
-            devPtr_ = ptr.devPtr_;
-            ctx_    = ptr.ctx_;
+            ptrDev_ = ptr.ptrDev_;
+            ptrHost_ = ptr.ptrHost_;
+            ctx_  = ptr.ctx_;
         }
         return *this;
     }
 
-    inline bool operator==(const ptr_t<typename B::alloc> &ptr) const
+    inline bool
+    operator==(const _ptr_t &ptr) const
     {
-        return devPtr_ == ptr.devPtr_ && ctx_ == ptr.ctx_;
+        bool ret;
+        if (ctx_ == NULL) {
+            ret = (ptrHost_ == ptr.ptrHost_);
+        } else {
+            ret = (ptrDev_ == ptr.ptrDev_);
+        }
+        return ret;
     }
 
-    inline bool operator==(long i) const
+    inline bool
+    operator==(long i) const
     {
-        return devPtr_ == i;
+        bool ret;
+        if (ctx_ == NULL) {
+            ret = (ptrHost_ == hostptr_t(i));
+        } else {
+            ret = (ptrDev_ == i);
+        }
+        return ret;
     }
 
-    inline bool operator!=(const ptr_t<typename B::alloc> &ptr) const
+    inline bool
+    operator!=(const _ptr_t &ptr) const
     {
-        return devPtr_ != ptr.devPtr_ || ctx_ != ptr.ctx_;
+        bool ret;
+        if (ctx_ == NULL) {
+            ret = (ptrHost_ != ptr.ptrHost_);
+        } else {
+            ret = (ptrDev_ != ptr.ptrDev_);
+        }
+        return ret;
     }
 
-    inline bool operator!=(long i) const
+    inline bool
+    operator!=(long i) const
     {
-        return devPtr_ != i;
+        bool ret;
+        if (ctx_ == NULL) {
+            ret = (ptrHost_ != hostptr_t(i));
+        } else {
+            ret = (ptrDev_ != i);
+        }
+        return ret;
+
     }
 
-    inline bool operator<(const ptr_t<typename B::alloc> &ptr) const
+    inline bool
+    operator<(const _ptr_t &ptr) const
     {
-        return ctx_ < ptr.ctx_ || (ctx_ == ptr.ctx_ && devPtr_ < ptr.devPtr_);
+        bool ret;
+        if (ctx_ == NULL) {
+            return ptrHost_ < ptr.ptrHost_;
+        } else {
+            return ctx_ < ptr.ctx_ || (ctx_ == ptr.ctx_ && ptrDev_ < ptr.ptrDev_);
+        }
+        return ret;
     }
 
     template <typename T>
-    inline ptr_t &operator+=(const T &off)
+    inline _ptr_t &
+    operator+=(const T &off)
     {
-        devPtr_ += off;
+        if (ctx_ == NULL) {
+            ptrHost_ += off;
+        } else {
+            ptrDev_ += off;
+        }
         return *this;
     }
 
     template <typename T>
-    inline const ptr_t operator+(const T &off) const
+    inline const _ptr_t
+    operator+(const T &off) const
     {
-        ptr_t ret(*this);
+        _ptr_t ret(*this);
         ret += off;
         return ret;
     }
 
-    inline typename typename B::alloc get() const
+    inline typename Ptr::backend_type
+    get_device_addr() const
     {
-        return devPtr_.get();
+        ASSERTION(is_device_ptr());
+        return ptrDev_.get();
     }
 
-    inline size_t offset() const
+    inline hostptr_t
+    get_host_addr() const
     {
-        return devPtr_.offset();
+        ASSERTION(is_host_ptr());
+        return ptrHost_;
     }
 
-    inline context_t &get_hal_context()
+    inline size_t
+    get_offset() const
+    {
+        ASSERTION(is_device_ptr());
+        return ptrDev_.offset();
+    }
+
+    inline C *
+    get_hal_context()
     {
         return ctx_;
     }
 
-    inline const context_t &get_hal_context() const
+    inline const C *
+    get_hal_context() const
     {
         return ctx_;
+    }
+
+    inline bool
+    is_host_ptr() const
+    {
+        return ctx_ == NULL;
+    }
+
+    inline bool
+    is_device_ptr() const
+    {
+        return ctx_ != NULL;
     }
 };
 

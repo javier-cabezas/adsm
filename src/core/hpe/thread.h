@@ -42,7 +42,6 @@ WITH THE SOFTWARE.  */
 namespace __impl { namespace core { namespace hpe {
 
 class address_space;
-class context;
 class process;
 class vdevice;
 
@@ -71,13 +70,13 @@ private:
     process &process_;
 
     typedef std::map<GmacVirtualDeviceId, vdevice *> map_vdevice;
-    typedef std::map<address_space *, context *> map_context;
+    //typedef std::map<address_space *, context *> map_context;
     typedef std::map<vdevice *, hal::kernel_t::config *> map_config;
 
     vdevice *currentVirtualDevice_;
 
     map_vdevice mapVDevices_;
-    map_context mapContexts_;
+    //map_context mapContexts_;
     map_config mapConfigs_;
 
     static bool has_current_thread();
@@ -95,8 +94,8 @@ public:
     void set_current_virtual_device(vdevice &dev);
 
     // contexts
-    context *get_context(address_space &aspace);
-    gmacError_t set_context(address_space &aspace, context *context);
+    //context *get_context(address_space &aspace);
+    //gmacError_t set_context(address_space &aspace, context *context);
 
     // Kernel configuration
     gmacError_t new_kernel_config(hal::kernel_t::config &config);

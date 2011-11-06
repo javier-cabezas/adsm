@@ -57,7 +57,7 @@ public:
 
 namespace detail {
 
-template <typename C, typename S, typename E, typename K, typename KC, typename A>
+template <typename C, typename S, typename E, typename K, typename KC>
 struct GMAC_LOCAL backend_traits
 {
     typedef C context;
@@ -65,10 +65,9 @@ struct GMAC_LOCAL backend_traits
     typedef E event;
     typedef K kernel;
     typedef KC kernel_config;
-    typedef A alloc;
 };
 
-template <typename CD, typename C, typename S, typename K, typename T, typename V, typename R, typename E, typename B> 
+template <typename CD, typename C, typename S, typename K, typename T, typename V, typename R, typename E, typename B, typename P> 
 struct GMAC_LOCAL implementation_traits
 {
     typedef CD coherence_domain;
@@ -80,6 +79,7 @@ struct GMAC_LOCAL implementation_traits
     typedef R code_repository;
     typedef E event;
     typedef B buffer;
+    typedef P ptr;
 };
 
 }

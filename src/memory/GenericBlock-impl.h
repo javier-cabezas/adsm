@@ -3,7 +3,6 @@
 
 #include <algorithm>
 
-#include "core/io_buffer.h"
 #include "core/address_space.h"
 
 namespace __impl { namespace memory {
@@ -155,7 +154,7 @@ GenericBlock<State>::toHost(unsigned blockOff, size_t count)
 {
     gmacError_t ret = gmacSuccess;
 
-    ret = parent_.owner().copy(this->shadow_ + blockOff,
+    ret = parent_.owner().copy(hal::ptr_t(this->shadow_ + blockOff),
                                get_device_addr() + blockOff,
                                count);
 #if 0
@@ -180,7 +179,7 @@ GenericBlock<State>::toAccelerator(unsigned blockOff, size_t count)
     gmacError_t ret = gmacSuccess;
 
     ret = parent_.owner().copy(get_device_addr() + blockOff,
-                               shadow_ + blockOff,
+                               hal::ptr_t(shadow_ + blockOff),
                                count);
 #if 0
     // Fast path

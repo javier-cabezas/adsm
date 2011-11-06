@@ -7,6 +7,8 @@
 
 #include "hal/types-detail.h"
 
+#include "ptr.h"
+
 namespace __impl { namespace hal { namespace cuda {
 
 class device;
@@ -22,6 +24,9 @@ class _event_t;
 class event_t;
 class buffer_t;
 
+typedef __impl::hal::_ptr_t<_cuda_ptr_t,
+                            context_t> ptr_t;
+
 typedef hal::detail::backend_traits<CUcontext,
                                     CUstream,
                                     CUevent,
@@ -36,7 +41,8 @@ typedef hal::detail::implementation_traits<coherence_domain,
                                            variable_t,
                                            code_repository,
                                            event_t,
-                                           buffer_t> implementation_traits;
+                                           buffer_t,
+                                           ptr_t> implementation_traits;
 
 gmacError_t error(CUresult err);
 

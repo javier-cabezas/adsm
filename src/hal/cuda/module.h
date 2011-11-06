@@ -148,8 +148,8 @@ public:
     template <typename T>
     void register_kernels(T &t) const;
 
-    const kernel_t   *kernel(gmac_kernel_id_t key) const;
-    const kernel_t   *kernelByName(const std::string &name) const;
+    const kernel_t *get_kernel(gmac_kernel_id_t key) const;
+    const kernel_t *get_kernel(const std::string &name) const;
 
     const variable_t *variable(cuda_variable_t key) const;
 	const variable_t *constant(cuda_variable_t key) const;

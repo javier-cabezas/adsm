@@ -127,13 +127,13 @@ public:
         return toHost(0, size_);
     }
 
+#if 0
     gmacError_t copyToBuffer(core::io_buffer &buffer, size_t bufferOff,
                              size_t blockOff, size_t count, Source src) const;
 
     gmacError_t copyFromBuffer(size_t blockOff, core::io_buffer &buffer,
                                size_t bufferOff, size_t count, Destination dst) const;
 
-#if 0
     gmacError_t memset(int v, size_t count, size_t blockOffset, Destination dst) const;
 #endif
 };
