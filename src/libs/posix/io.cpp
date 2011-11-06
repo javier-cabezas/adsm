@@ -25,6 +25,72 @@ using __impl::util::params::ParamBlockSize;
 SYM(ssize_t, __libc_read, int, void *, size_t);
 SYM(ssize_t, __libc_write, int, const void *, size_t);
 
+class GMAC_LOCAL posix_input :
+    public __impl::hal::device_input {
+    int fd_;
+
+    ssize_t result_;
+
+public:
+    posix_input(int fd) :
+        fd_(fd)
+    {
+    }
+
+    bool read(void *ptr, size_t count)
+    {
+        bool ok;
+
+        ssize_t res = ::read(fd_, ptr, count);
+        ok = (res == ssize_t(count));
+        if (res < 0) {
+            result_ = res;
+        } else {
+            result_ += res;
+        }
+
+        return ok;
+    }
+
+    ssize_t get_result() const
+    {
+        return result_;
+    }
+};
+
+class GMAC_LOCAL posix_output :
+    public __impl::hal::device_output {
+    int fd_;
+
+    ssize_t result_;
+
+public:
+    posix_output(int fd) :
+        fd_(fd)
+    {
+    }
+
+    bool write(void *ptr, size_t count)
+    {
+        bool ok;
+
+        ssize_t res = ::write(fd_, ptr, count);
+        ok = (res == ssize_t(count));
+        if (res < 0) {
+            result_ = res;
+        } else {
+            result_ += res;
+        }
+
+        return ok;
+    }
+
+    ssize_t get_result() const
+    {
+        return result_;
+    }
+};
+
 /* System call wrappers */
 
 #ifdef __cplusplus
@@ -38,7 +104,7 @@ ssize_t SYMBOL(read)(int fd, void *buf, size_t count)
 
     enterGmac();
     Manager &manager = getManager();
-    smart_ptr<address_space>::shared aspaceDst = manager.owner(hostptr_t(buf));
+    address_space_ptr aspaceDst = manager.owner(hostptr_t(buf));
 
     if(aspaceDst == NULL) {
         exitGmac();
@@ -46,6 +112,12 @@ ssize_t SYMBOL(read)(int fd, void *buf, size_t count)
     }
 
 	gmac::trace::SetThreadState(gmac::trace::IO);
+
+    posix_input op(fd);
+
+    manager.from_io_device(aspaceDst, hostptr_t(buf), op, count);
+    ssize_t ret = op.get_result();
+#if 0
     gmacError_t err;
     ssize_t ret = 0;
     size_t bufferSize = ParamBlockSize > count ? ParamBlockSize : count;
@@ -80,6 +152,7 @@ ssize_t SYMBOL(read)(int fd, void *buf, size_t count)
     if (buffer2 != NULL) {
         aspaceDst->destroy_io_buffer(*buffer2);
     }
+#endif
 	gmac::trace::SetThreadState(gmac::trace::Running);
 	exitGmac();
 
@@ -97,7 +170,7 @@ ssize_t SYMBOL(write)(int fd, const void *buf, size_t count)
 
 	enterGmac();
     Manager &manager = getManager();
-    smart_ptr<address_space>::shared aspaceSrc = manager.owner(hostptr_t(buf));
+    address_space_ptr aspaceSrc = manager.owner(hostptr_t(buf));
 
     if(aspaceSrc == NULL) {
         exitGmac();
@@ -105,6 +178,12 @@ ssize_t SYMBOL(write)(int fd, const void *buf, size_t count)
     }
 
 	gmac::trace::SetThreadState(gmac::trace::IO);
+
+    posix_output op(fd);
+
+    manager.to_io_device(op, aspaceSrc, hostptr_t(buf), count);
+    ssize_t ret = op.get_result();
+#if 0
     gmacError_t err;
     ssize_t ret = 0;
 
@@ -153,6 +232,7 @@ ssize_t SYMBOL(write)(int fd, const void *buf, size_t count)
     if (buffer2 != NULL) {
         aspaceSrc->destroy_io_buffer(*buffer2);
     }
+#endif
 	gmac::trace::SetThreadState(gmac::trace::Running);
 	exitGmac();
 

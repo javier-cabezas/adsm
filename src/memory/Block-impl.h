@@ -69,27 +69,68 @@ inline R Block::coherenceOp(R (Protocol::*op)(Block &, T &), T &param)
     return ret;
 }
 
-inline gmacError_t Block::copyOp(Protocol::CopyOp op, Block &dst, size_t dstOff, size_t srcOff, size_t count)
+inline
+hal::event_t
+Block::copy_op(Protocol::CopyOp1To op, Block &dst, size_t dstOff, const hostptr_t src, size_t count, gmacError_t &err)
 {
-    lock();
-    gmacError_t ret = (protocol_.*op)(dst, dstOff, *this, srcOff, count);
-    unlock();
+    dst.lock();
+    hal::event_t ret = (dst.protocol_.*op)(dst, dstOff, src, count, err);
+    dst.unlock();
+
     return ret;
 }
 
-inline gmacError_t Block::memoryOp(Protocol::MemoryOp op,
-                                   core::io_buffer &buffer, size_t size, size_t bufferOffset, size_t blockOffset)
+inline
+hal::event_t
+Block::copy_op(Protocol::CopyOp1From op, hostptr_t dst, Block &src, size_t srcOff, size_t count, gmacError_t &err)
 {
-    lock();
-    gmacError_t ret =(protocol_.*op)(*this, buffer, size, bufferOffset, blockOffset);
-    unlock();
+    src.lock();
+    hal::event_t ret = (src.protocol_.*op)(dst, src, srcOff, count, err);
+    src.unlock();
+
+    return ret;
+}
+
+inline hal::event_t
+Block::copy_op(Protocol::CopyOp2 op, Block &dst, size_t dstOff, Block &src, size_t srcOff, size_t count, gmacError_t &err)
+{
+    src.lock();
+    dst.lock();
+    hal::event_t ret = (dst.protocol_.*op)(dst, dstOff, src, srcOff, count, err);
+    dst.unlock();
+    src.unlock();
+    return ret;
+}
+
+inline hal::event_t
+Block::device_op(Protocol::DeviceOpTo op,
+                 hal::device_output &output,
+                 Block &b, size_t blockOffset,
+                 size_t count, gmacError_t &err)
+{
+    b.lock();
+    hal::event_t ret =(b.protocol_.*op)(output, b, blockOffset, count, err);
+    b.unlock();
+    return ret;
+}
+
+inline hal::event_t
+Block::device_op(Protocol::DeviceOpFrom op,
+                 Block &b, size_t blockOffset,
+                 hal::device_input &input,
+                 size_t count, gmacError_t &err)
+{
+    b.lock();
+    hal::event_t ret =(b.protocol_.*op)(b, blockOffset, input, count, err);
+    b.unlock();
     return ret;
 }
 
 inline gmacError_t Block::memset(int v, size_t size, size_t blockOffset)
 {
     lock();
-    gmacError_t ret = protocol_.memset(*this, v, size, blockOffset);
+    gmacError_t ret;
+    hal::event_t event = protocol_.memset(*this, blockOffset, v, size, ret);
     unlock();
     return ret;
 }

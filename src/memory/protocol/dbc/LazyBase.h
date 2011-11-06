@@ -65,17 +65,12 @@ public:
 
     gmacError_t toHost(BlockImpl &block);
 
-    gmacError_t copyToBuffer(BlockImpl &block, io_buffer_impl &buffer, size_t size,
-                             size_t bufferOffset, size_t blockOffset);
-
-    gmacError_t copyFromBuffer(BlockImpl &block, io_buffer_impl &buffer, size_t size,
-                               size_t bufferOffset, size_t blockOffset);
-
-    gmacError_t memset(const BlockImpl &block, int v, size_t size, size_t blockOffset);
+    __impl::hal::event_t memset(const BlockImpl &block, size_t blockOffset, int v, size_t size,
+                                gmacError_t &err);
 
     gmacError_t flushDirty();
 
-    gmacError_t copyBlockToBlock(Block &d, size_t dstOffset, Block &s, size_t srcOffset, size_t count);
+    __impl::hal::event_t copyBlockToBlock(Block &d, size_t dstOffset, Block &s, size_t srcOffset, size_t count, gmacError_t &err);
 };
 
 }}}

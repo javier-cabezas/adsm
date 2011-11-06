@@ -7,13 +7,7 @@
 
 #include "hal/types-detail.h"
 
-#include "util/unique.h"
-#include "util/UniquePtr.h"
-
-
-namespace __impl { namespace hal {
-    
-namespace cuda {
+namespace __impl { namespace hal { namespace cuda {
 
 class device;
 
@@ -27,8 +21,6 @@ class code_repository;
 class _event_t;
 class event_t;
 class buffer_t;
-
-//typedef util::smart_ptr<_event_t>::shared event_t;
 
 typedef hal::detail::backend_traits<CUcontext,
                                     CUstream,

@@ -29,7 +29,7 @@ Manager::~Manager()
 }
 
 gmacError_t
-Manager::map(util::smart_ptr<core::address_space>::shared aspace, hostptr_t *addr, size_t size, int flags)
+Manager::map(core::address_space_ptr aspace, hostptr_t *addr, size_t size, int flags)
 {
     FATAL("MAP NOT IMPLEMENTED YET");
     gmacError_t ret = gmacSuccess;
@@ -74,7 +74,7 @@ done:
 
 
 gmacError_t
-Manager::remap(util::smart_ptr<core::address_space>::shared aspace, hostptr_t old_addr, hostptr_t *new_addr, size_t new_size, int flags)
+Manager::remap(core::address_space_ptr aspace, hostptr_t old_addr, hostptr_t *new_addr, size_t new_size, int flags)
 {
     FATAL("MAP NOT IMPLEMENTED YET");
     gmacError_t ret = gmacSuccess;
@@ -86,7 +86,7 @@ Manager::remap(util::smart_ptr<core::address_space>::shared aspace, hostptr_t ol
 }
 
 gmacError_t
-Manager::unmap(util::smart_ptr<core::address_space>::shared aspace, hostptr_t addr, size_t size)
+Manager::unmap(core::address_space_ptr aspace, hostptr_t addr, size_t size)
 {
     FATAL("UNMAP NOT IMPLEMENTED YET");
     TRACE(LOCAL, "Unmap allocation");
@@ -115,7 +115,7 @@ Manager::unmap(util::smart_ptr<core::address_space>::shared aspace, hostptr_t ad
     return ret;
 }
 
-gmacError_t Manager::alloc(util::smart_ptr<core::address_space>::shared aspace, hostptr_t *addr, size_t size)
+gmacError_t Manager::alloc(core::address_space_ptr aspace, hostptr_t *addr, size_t size)
 {
     TRACE(LOCAL, "New allocation");
     trace::EnterCurrentFunction();
@@ -150,7 +150,7 @@ gmacError_t Manager::alloc(util::smart_ptr<core::address_space>::shared aspace, 
     return gmacSuccess;
 }
 
-gmacError_t Manager::hostMappedAlloc(util::smart_ptr<core::address_space>::shared aspace, hostptr_t *addr, size_t size)
+gmacError_t Manager::hostMappedAlloc(core::address_space_ptr aspace, hostptr_t *addr, size_t size)
 {
     TRACE(LOCAL, "New host-mapped allocation");
     trace::EnterCurrentFunction();
@@ -166,7 +166,7 @@ gmacError_t Manager::hostMappedAlloc(util::smart_ptr<core::address_space>::share
 }
 
 #if 0
-gmacError_t Manager::globalAlloc(util::smart_ptr<core::address_space>::shared aspace, hostptr_t *addr, size_t size, GmacGlobalMallocType hint)
+gmacError_t Manager::globalAlloc(core::address_space_ptr aspace, hostptr_t *addr, size_t size, GmacGlobalMallocType hint)
 {
     TRACE(LOCAL, "New global allocation");
     trace::EnterCurrentFunction();
@@ -195,7 +195,7 @@ gmacError_t Manager::globalAlloc(util::smart_ptr<core::address_space>::shared as
 }
 #endif
 
-gmacError_t Manager::free(util::smart_ptr<core::address_space>::shared aspace, hostptr_t addr)
+gmacError_t Manager::free(core::address_space_ptr aspace, hostptr_t addr)
 {
     TRACE(LOCAL, "Free allocation");
     trace::EnterCurrentFunction();
@@ -227,7 +227,7 @@ gmacError_t Manager::free(util::smart_ptr<core::address_space>::shared aspace, h
 }
 
 gmacError_t
-Manager::getAllocSize(util::smart_ptr<core::address_space>::shared aspace, const hostptr_t addr, size_t &size) const
+Manager::getAllocSize(core::address_space_ptr aspace, const hostptr_t addr, size_t &size) const
 {
     gmacError_t ret = gmacSuccess;
     trace::EnterCurrentFunction();
@@ -251,7 +251,7 @@ Manager::getAllocSize(util::smart_ptr<core::address_space>::shared aspace, const
 }
 
 accptr_t
-Manager::translate(util::smart_ptr<core::address_space>::shared aspace, const hostptr_t addr)
+Manager::translate(core::address_space_ptr aspace, const hostptr_t addr)
 {
     trace::EnterCurrentFunction();
     memory::map_object &map = aspace->get_object_map();
@@ -272,10 +272,10 @@ Manager::translate(util::smart_ptr<core::address_space>::shared aspace, const ho
     return ret;
 }
 
-util::smart_ptr<core::address_space>::shared
+core::address_space_ptr
 Manager::owner(hostptr_t addr, size_t size)
 {
-    util::smart_ptr<core::address_space>::shared aspace;
+    core::address_space_ptr aspace;
 
     map_allocation::iterator it = mapAllocations_.upper_bound(addr);
 
@@ -287,7 +287,7 @@ Manager::owner(hostptr_t addr, size_t size)
 }
 
 gmacError_t
-Manager::acquireObjects(util::smart_ptr<core::address_space>::shared aspace, const ListAddr &addrs)
+Manager::acquireObjects(core::address_space_ptr aspace, const ListAddr &addrs)
 {
     trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
@@ -309,7 +309,7 @@ Manager::acquireObjects(util::smart_ptr<core::address_space>::shared aspace, con
                 HostMappedObject *hostMappedObject = HostMappedObject::get(it->first);
                 ASSERTION(hostMappedObject != NULL, "Address not found");
 #ifdef USE_OPENCL
-                hostMappedObject->acquire(mode);
+                hostMappedObject->acquire(aspace);
 #endif
                 hostMappedObject->decRef();
             } else {
@@ -325,7 +325,7 @@ Manager::acquireObjects(util::smart_ptr<core::address_space>::shared aspace, con
 }
 
 gmacError_t
-Manager::releaseObjects(util::smart_ptr<core::address_space>::shared aspace, const ListAddr &addrs)
+Manager::releaseObjects(core::address_space_ptr aspace, const ListAddr &addrs)
 {
     trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
@@ -353,7 +353,7 @@ Manager::releaseObjects(util::smart_ptr<core::address_space>::shared aspace, con
                 HostMappedObject *hostMappedObject = HostMappedObject::get(it->first);
                 ASSERTION(hostMappedObject != NULL, "Address not found");
 #ifdef USE_OPENCL
-                hostMappedObject->release(mode);
+                hostMappedObject->release(aspace);
 #endif
                 hostMappedObject->decRef();
             } else {
@@ -375,7 +375,8 @@ Manager::releaseObjects(util::smart_ptr<core::address_space>::shared aspace, con
     return ret;
 }
 
-gmacError_t Manager::toIOBuffer(util::smart_ptr<core::address_space>::shared current, core::io_buffer &buffer, size_t bufferOff, const hostptr_t addr, size_t count)
+#if 0
+gmacError_t Manager::toIOBuffer(core::address_space_ptr current, core::io_buffer &buffer, size_t bufferOff, const hostptr_t addr, size_t count)
 {
     if (count > (buffer.size() - bufferOff)) return gmacErrorInvalidSize;
     trace::EnterCurrentFunction();
@@ -383,7 +384,7 @@ gmacError_t Manager::toIOBuffer(util::smart_ptr<core::address_space>::shared cur
     size_t off = 0;
     do {
         // Check if the address range belongs to one GMAC object
-        util::smart_ptr<core::address_space>::shared aspace = owner(addr + off);
+        core::address_space_ptr aspace = owner(addr + off);
         if (aspace == NULL) {
             trace::ExitCurrentFunction();
             return gmacErrorInvalidValue;
@@ -422,7 +423,7 @@ gmacError_t Manager::toIOBuffer(util::smart_ptr<core::address_space>::shared cur
     return ret;
 }
 
-gmacError_t Manager::fromIOBuffer(util::smart_ptr<core::address_space>::shared current, hostptr_t addr, core::io_buffer &buffer, size_t bufferOff, size_t count)
+gmacError_t Manager::fromIOBuffer(core::address_space_ptr current, hostptr_t addr, core::io_buffer &buffer, size_t bufferOff, size_t count)
 {
     if (count > (buffer.size() - bufferOff)) return gmacErrorInvalidSize;
     trace::EnterCurrentFunction();
@@ -430,7 +431,7 @@ gmacError_t Manager::fromIOBuffer(util::smart_ptr<core::address_space>::shared c
     size_t off = 0;
     do {
         // Check if the address range belongs to one GMAC object
-        util::smart_ptr<core::address_space>::shared aspace = owner(addr + off);
+        core::address_space_ptr aspace = owner(addr + off);
         if (aspace == NULL) {
             trace::ExitCurrentFunction();
             return gmacErrorInvalidValue;
@@ -465,9 +466,10 @@ gmacError_t Manager::fromIOBuffer(util::smart_ptr<core::address_space>::shared c
     trace::ExitCurrentFunction();
     return ret;
 }
+#endif
 
 bool
-Manager::signalRead(util::smart_ptr<core::address_space>::shared aspace, hostptr_t addr)
+Manager::signalRead(core::address_space_ptr aspace, hostptr_t addr)
 {
     trace::EnterCurrentFunction();
     memory::map_object &map = aspace->get_object_map();
@@ -496,7 +498,7 @@ Manager::signalRead(util::smart_ptr<core::address_space>::shared aspace, hostptr
 }
 
 bool
-Manager::signalWrite(util::smart_ptr<core::address_space>::shared aspace, hostptr_t addr)
+Manager::signalWrite(core::address_space_ptr aspace, hostptr_t addr)
 {
     trace::EnterCurrentFunction();
     bool ret = true;
@@ -524,10 +526,10 @@ Manager::signalWrite(util::smart_ptr<core::address_space>::shared aspace, hostpt
 }
 
 gmacError_t
-Manager::memset(util::smart_ptr<core::address_space>::shared aspace, hostptr_t s, int c, size_t size)
+Manager::memset(core::address_space_ptr aspace, hostptr_t s, int c, size_t size)
 {
     trace::EnterCurrentFunction();
-    util::smart_ptr<core::address_space>::shared aspaceOwner = owner(s, size);
+    core::address_space_ptr aspaceOwner = owner(s, size);
 
     if (aspaceOwner == NULL) {
         ::memset(s, c, size);
@@ -621,12 +623,12 @@ hostMemory(hostptr_t addr, size_t size, const object *obj)
 }
 
 gmacError_t
-Manager::memcpy(util::smart_ptr<core::address_space>::shared aspace, hostptr_t dst, const hostptr_t src,
+Manager::memcpy(core::address_space_ptr aspace, hostptr_t dst, const hostptr_t src,
                 size_t size)
 {
     trace::EnterCurrentFunction();
-    util::smart_ptr<core::address_space>::shared aspaceDst = owner(dst, size);
-    util::smart_ptr<core::address_space>::shared aspaceSrc = owner(src, size);
+    core::address_space_ptr aspaceDst = owner(dst, size);
+    core::address_space_ptr aspaceSrc = owner(src, size);
 
     if(aspaceDst == NULL && aspaceSrc == NULL) {
         ::memcpy(dst, src, size);
@@ -708,7 +710,7 @@ Manager::memcpy(util::smart_ptr<core::address_space>::shared aspace, hostptr_t d
 }
 
 gmacError_t
-Manager::flushDirty(util::smart_ptr<core::address_space>::shared aspace)
+Manager::flushDirty(core::address_space_ptr aspace)
 {
     gmacError_t ret;
     TRACE(LOCAL,"Flushing Objects");
@@ -719,8 +721,84 @@ Manager::flushDirty(util::smart_ptr<core::address_space>::shared aspace)
     return ret;
 }
 
+gmacError_t
+Manager::from_io_device(core::address_space_ptr aspace, hostptr_t addr,
+                        hal::device_input &input, size_t count)
+{
+    trace::EnterCurrentFunction();
+    gmacError_t ret = gmacSuccess;
+    size_t off = 0;
+    do {
+        // Check if the address range belongs to one GMAC object
+        core::address_space_ptr aspace = owner(addr + off);
+        if (aspace == NULL) {
+            trace::ExitCurrentFunction();
+            return gmacErrorInvalidValue;
+        }
+        memory::map_object &map = aspace->get_object_map();
+        object *obj = map.getObject(addr + off);
+        if (!obj) {
+            trace::ExitCurrentFunction();
+            return gmacErrorInvalidValue;
+        }
+        // Compute sizes for the current object
+        size_t objCount = obj->addr() + obj->size() - (addr + off);
+        size_t c = objCount <= count - off? objCount: count - off;
+        size_t objOff = addr - obj->addr();
+        ret = obj->from_io_device(objOff, input, c);
+        obj->decRef();
+        if(ret != gmacSuccess) {
+            trace::ExitCurrentFunction();
+            return ret;
+        }
+        off += objCount;
+        TRACE(LOCAL,"Copying to obj %p: "FMT_SIZE" of "FMT_SIZE, obj->addr(), c, count);
+    } while(addr + off < addr + count);
+    trace::ExitCurrentFunction();
+    return ret;
+
+}
+
+gmacError_t
+Manager::to_io_device(hal::device_output &output, core::address_space_ptr aspace, const hostptr_t addr, size_t count)
+{
+    trace::EnterCurrentFunction();
+    gmacError_t ret = gmacSuccess;
+    size_t off = 0;
+    do {
+        // Check if the address range belongs to one GMAC object
+        core::address_space_ptr aspace = owner(addr + off);
+        if (aspace) {
+            trace::ExitCurrentFunction();
+            return gmacErrorInvalidValue;
+        }
+        memory::map_object &map = aspace->get_object_map();
+        object *obj = map.getObject(addr + off);
+        if (!obj) {
+            trace::ExitCurrentFunction();
+            return gmacErrorInvalidValue;
+        }
+        // Compute sizes for the current object
+        size_t objCount = obj->addr() + obj->size() - (addr + off);
+        size_t c = objCount <= count - off? objCount: count - off;
+        size_t objOff = addr - obj->addr();
+        // Handle objects with no memory in the accelerator
+        ret = obj->to_io_device(output, objOff, c);
+        obj->decRef();
+        if(ret != gmacSuccess) {
+            trace::ExitCurrentFunction();
+            return ret;
+        }
+        off += objCount;
+        TRACE(LOCAL,"Copying from obj %p: "FMT_SIZE" of "FMT_SIZE, obj->addr(), c, count);
+    } while(addr + off < addr + count);
+    trace::ExitCurrentFunction();
+    return ret;
+
+}
+
 #if 0
-gmacError_t Manager::moveTo(hostptr_t addr, util::smart_ptr<core::address_space>::shared aspace)
+gmacError_t Manager::moveTo(hostptr_t addr, core::address_space_ptr aspace)
 {
     object * obj = mode.getObjectWrite(addr);
     if(obj == NULL) return gmacErrorInvalidValue;

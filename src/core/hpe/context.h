@@ -31,6 +31,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
+#if 0
+
 #ifndef GMAC_CORE_HPE_CONTEXT_H_
 #define GMAC_CORE_HPE_CONTEXT_H_
 
@@ -134,15 +136,15 @@ public:
     hal::event_t copy(hostptr_t host, const accptr_t acc, size_t count, gmacError_t &err);
     hal::event_t copy(accptr_t dst, const accptr_t src, size_t count, gmacError_t &err);
 
+    hal::event_t copy(accptr_t dst, hal::device_input &input, size_t count, gmacError_t &err);
+    hal::event_t copy(hal::device_output &output, const accptr_t src, size_t count, gmacError_t &err);
+
     hal::event_t copy_async(accptr_t acc, const hostptr_t host, size_t count, gmacError_t &err);
     hal::event_t copy_async(hostptr_t host, const accptr_t acc, size_t count, gmacError_t &err);
     hal::event_t copy_async(accptr_t dst, const accptr_t src, size_t count, gmacError_t &err);
 
-    gmacError_t copy(accptr_t dst, core::io_buffer &buffer, size_t off, size_t count);
-    gmacError_t copy(core::io_buffer &buffer, size_t off, const accptr_t src, size_t count);
-
-    gmacError_t copy_async(accptr_t dst, core::io_buffer &buffer, size_t off, size_t count);
-    gmacError_t copy_async(core::io_buffer &buffer, size_t off, const accptr_t src, size_t count);
+    hal::event_t copy_async(accptr_t dst, hal::device_input &input, size_t count, gmacError_t &err);
+    hal::event_t copy_async(hal::device_output &output, const accptr_t src, size_t count, gmacError_t &err);
 
     hal::event_t memset(accptr_t addr, int c, size_t count, gmacError_t &err);
     hal::event_t memset_async(accptr_t addr, int c, size_t count, gmacError_t &err);
@@ -155,6 +157,8 @@ public:
 #if 0
 #include "core/hpe/dbc/context.h"
 #endif
+#endif
+
 #endif
 
 #endif

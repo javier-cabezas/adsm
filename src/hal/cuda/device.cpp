@@ -50,20 +50,14 @@ device::destroy_context(context_t &context)
 {
     CUresult ret = cuCtxDestroy(context());
 
-    return cuda::error(ret);
-}
-
-void
-device::set_context(context_t &context)
-{
-    CUresult res = cuCtxSetCurrent(context());
-    ASSERTION(res == CUDA_SUCCESS, "Error setting the context");
+    return error(ret);
 }
 
 stream_t *
 device::create_stream(context_t &context)
 {
-    set_context(context); 
+    context.set(); 
+
     CUstream stream;
     CUresult ret = cuStreamCreate(&stream, 0);
     CFATAL(ret == CUDA_SUCCESS, "Unable to create CUDA stream");
@@ -76,7 +70,7 @@ device::destroy_stream(stream_t &stream)
 {
     CUresult ret = cuStreamDestroy(stream());
 
-    return cuda::error(ret);
+    return error(ret);
 }
 
 int

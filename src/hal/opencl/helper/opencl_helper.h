@@ -2,10 +2,11 @@
 #define GMAC_HAL_OPENCL_OPENCLUTIL_H_
 
 #include <string>
+#include <vector>
 
 #include "config/common.h"
 
-namespace __impl { namespace hal { namespace opencl { namespace util {
+namespace __impl { namespace hal { namespace opencl { namespace helper {
 
 enum GMAC_LOCAL opencl_vendor {
     VENDOR_AMD,
@@ -63,6 +64,6 @@ get_queue_context(cl_command_queue queue);
 
 }}}}
 
-#include "opencl_util-impl.h"
+#include "opencl_helper-impl.h"
 
 #endif

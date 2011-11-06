@@ -46,7 +46,9 @@ protected:
     virtual ~Block();
 public:
 
+#if 0
 	gmacError_t memoryOp(__impl::memory::Protocol::MemoryOp op, __impl::core::io_buffer &buffer, size_t size, size_t bufferOffset, size_t blockOffset);
+#endif
     gmacError_t memset(int v, size_t size, size_t blockOffset = 0);
 };
 

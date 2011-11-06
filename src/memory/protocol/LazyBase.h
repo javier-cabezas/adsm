@@ -130,21 +130,37 @@ public:
 
 #if 0
     gmacError_t toAccelerator(Block &block);
-#endif
 
     TESTABLE gmacError_t copyToBuffer(Block &block, core::io_buffer &buffer, size_t size,
                                       size_t bufferOffset, size_t blockOffset);
 
     TESTABLE gmacError_t copyFromBuffer(Block &block, core::io_buffer &buffer, size_t size,
                                         size_t bufferOffset, size_t blockOffset);
+#endif
 
-    TESTABLE gmacError_t memset(const Block &block, int v, size_t size,
-                                size_t blockOffset);
+    TESTABLE hal::event_t memset(const Block &block, size_t blockOffset, int v, size_t size,
+                                 gmacError_t &err);
 
     TESTABLE gmacError_t flushDirty();
 
     //bool isInAccelerator(Block &block);
-    TESTABLE gmacError_t copyBlockToBlock(Block &d, size_t dstOffset, Block &s, size_t srcOffset, size_t count);
+    hal::event_t copyBlockToBlock(Block &d, size_t dstOffset, Block &s, size_t srcOffset, size_t count, gmacError_t &err);
+
+    hal::event_t copyToBlock(Block    &dst, size_t dstOffset,
+                             hostptr_t src,
+                             size_t count, gmacError_t &err);
+
+    hal::event_t copyFromBlock(hostptr_t dst,
+                               Block    &src, size_t srcOffset,
+                               size_t count, gmacError_t &err);
+
+    hal::event_t to_io_device(hal::device_output &output,
+                              Block &src, size_t srcffset,
+                              size_t count, gmacError_t &err);
+
+    hal::event_t from_io_device(Block &dst, size_t dstOffset,
+                                hal::device_input &input,
+                                size_t count, gmacError_t &err);
 
     gmacError_t dump(Block &block, std::ostream &out, common::Statistic stat);
 };

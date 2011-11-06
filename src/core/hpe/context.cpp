@@ -158,91 +158,61 @@ context::copy_async(accptr_t dst, const accptr_t src, size_t count, gmacError_t 
 
 }
 
-gmacError_t
-context::copy(accptr_t dst, core::io_buffer &buffer, size_t off, size_t count)
+hal::event_t
+context::copy(accptr_t dst, hal::device_input &input, size_t count, gmacError_t &err)
 {
-    TRACE(LOCAL,"Copy %p to device %p ("FMT_SIZE" bytes)", buffer.addr(), dst.get(), count);
+    TRACE(LOCAL,"Copy to device %p ("FMT_SIZE" bytes)", dst.get(), count);
     trace::EnterCurrentFunction();
 
-    gmacError_t ret;
-
-    hal::event_t event = ctx_.copy(dst,
-                                   buffer.addr() + off,
-                                   count,
-                                   streamToAccelerator_, ret);
-
-    if (ret == gmacSuccess) {
-        buffer.to_device(event);
-    }
+    hal::event_t ret = ctx_.copy(dst,
+                                 input, 
+                                 count,
+                                 streamToAccelerator_, err);
 
     trace::ExitCurrentFunction();
     return ret;
 }
 
-gmacError_t
-context::copy(core::io_buffer &buffer, size_t off, const accptr_t src, size_t count)
+hal::event_t
+context::copy(hal::device_output &output, const accptr_t src, size_t count, gmacError_t &err)
 {
-    TRACE(LOCAL,"Copy %p to host %p ("FMT_SIZE" bytes)", src.get(), buffer.addr(), count);
+    TRACE(LOCAL,"Copy %p to host ("FMT_SIZE" bytes)", src.get(), count);
     trace::EnterCurrentFunction();
 
-    gmacError_t ret;
-
-    hal::event_t event = ctx_.copy(buffer.addr() + off,
-                                   src,
-                                   count,
-                                   streamToHost_, ret);
+    hal::event_t ret = ctx_.copy(output,
+                                 src,
+                                 count,
+                                 streamToHost_, err);
     
-    if (ret == gmacSuccess) {
-        buffer.to_host(event);
-    }
+    trace::ExitCurrentFunction();
+    return ret;
+}
+
+hal::event_t
+context::copy_async(accptr_t dst, hal::device_input &input, size_t count, gmacError_t &err)
+{
+    TRACE(LOCAL,"Copy to device %p ("FMT_SIZE" bytes)", dst.get(), count);
+    trace::EnterCurrentFunction();
+
+    hal::event_t ret = ctx_.copy_async(dst,
+                                       input,
+                                       count,
+                                       streamToAccelerator_, err);
 
     trace::ExitCurrentFunction();
     return ret;
 }
 
-gmacError_t
-context::copy_async(accptr_t dst, core::io_buffer &buffer, size_t off, size_t count)
+hal::event_t
+context::copy_async(hal::device_output &output, const accptr_t src, size_t count, gmacError_t &err)
 {
-    if (buffer.async() == false) {
-        return gmacErrorInvalidValue;
-    }
-
-    TRACE(LOCAL,"Copy %p to device %p ("FMT_SIZE" bytes)", buffer.addr(), dst.get(), count);
+    TRACE(LOCAL,"Copy %p to host ("FMT_SIZE" bytes)", src.get(), count);
     trace::EnterCurrentFunction();
 
-    gmacError_t ret;
-
-    hal::event_t event = ctx_.copy_async(dst,
-                                         buffer.get_buffer(), off,
-                                         count,
-                                         streamToAccelerator_, ret);
-    if (ret == gmacSuccess) {
-        buffer.to_device(event);
-    }
-
-    trace::ExitCurrentFunction();
-    return ret;
-}
-
-gmacError_t
-context::copy_async(core::io_buffer &buffer, size_t off, const accptr_t src, size_t count)
-{
-    if (buffer.async() == false) {
-        return gmacErrorInvalidValue;
-    }
-
-    TRACE(LOCAL,"Copy %p to host %p ("FMT_SIZE" bytes)", src.get(), buffer.addr(), count);
-    trace::EnterCurrentFunction();
-
-    gmacError_t ret;
-
-    hal::event_t event = ctx_.copy_async(buffer.get_buffer(), off,
-                                         src,
-                                         count,
-                                         streamToHost_, ret);
-    if (ret == gmacSuccess) {
-        buffer.to_host(event);
-    }
+    hal::event_t ret = ctx_.copy_async(output,
+                                       src,
+                                       count,
+                                       streamToHost_, err);
 
     trace::ExitCurrentFunction();
     return ret;

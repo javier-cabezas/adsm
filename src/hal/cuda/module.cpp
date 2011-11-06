@@ -11,7 +11,7 @@ namespace cuda {
 module_descriptor::vector_module_descriptor module_descriptor::ModuleDescriptors_;
 
 variable_descriptor::variable_descriptor(const std::string &name, cuda_variable_t key, bool constant) :
-    descriptor<cuda_variable_t>(name, key),
+    util::descriptor<cuda_variable_t>(name, key),
     constant_(constant)
 {
 }

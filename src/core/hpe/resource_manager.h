@@ -61,6 +61,8 @@ struct GMAC_LOCAL address_space_resources {
     hal::stream_t *streamAccelerator_;
 };
 
+typedef util::smart_ptr<address_space>::shared address_space_ptr;
+
 /** Represents the resources used by a running process */
 class GMAC_LOCAL resource_manager {
     // Needed to let Singleton call the protected constructor
@@ -68,7 +70,7 @@ class GMAC_LOCAL resource_manager {
 protected:
     process &proc_;
 
-    typedef util::stl::locked_map<GmacAddressSpaceId, util::smart_ptr<address_space>::shared> map_aspace;
+    typedef util::stl::locked_map<GmacAddressSpaceId, address_space_ptr> map_aspace;
     typedef util::stl::locked_map<address_space *, address_space_resources> map_aspace_resources;
 
     map_aspace aspaceMap_;
@@ -90,10 +92,10 @@ protected:
 public:
     gmacError_t register_device(hal::device &dev);
 
-    util::smart_ptr<address_space>::shared create_address_space(unsigned deviceId, gmacError_t &err);
+    address_space_ptr create_address_space(unsigned deviceId, gmacError_t &err);
     gmacError_t destroy_address_space(address_space &aspace);
 
-    util::smart_ptr<address_space>::shared get_address_space(GmacAddressSpaceId aspaceId);
+    address_space_ptr get_address_space(GmacAddressSpaceId aspaceId);
 
     vdevice *create_virtual_device(GmacAddressSpaceId id, gmacError_t &err);
     gmacError_t destroy_virtual_device(vdevice &dev);

@@ -167,8 +167,14 @@ public:
     template <typename R, typename T>
     R coherenceOp(R (Protocol::*op)(Block &, T &), T &param);
 
-    gmacError_t copyOp(Protocol::CopyOp op, Block &dst, size_t dstOff, size_t srcOff, size_t count);
+    static hal::event_t copy_op(Protocol::CopyOp1To op, Block &dst, size_t dstOff, const hostptr_t src, size_t count, gmacError_t &err);
+    static hal::event_t copy_op(Protocol::CopyOp1From op, hostptr_t dst, Block &src, size_t srcOff, size_t count, gmacError_t &err);
+    static hal::event_t copy_op(Protocol::CopyOp2 op, Block &dst, size_t dstOff, Block &src, size_t srcOff, size_t count, gmacError_t &err);
 
+    static hal::event_t device_op(Protocol::DeviceOpTo op, hal::device_output &output, Block &src, size_t srcOff, size_t count, gmacError_t &err);
+    static hal::event_t device_op(Protocol::DeviceOpFrom op, Block &dst, size_t dstOff, hal::device_input &input, size_t count, gmacError_t &err);
+
+#if 0
     /**
      *  Request a memory operation over an I/O buffer
      * \param op Memory operation to be executed
@@ -186,6 +192,7 @@ public:
      */
     TESTABLE gmacError_t memoryOp(Protocol::MemoryOp op,
                                   core::io_buffer &buffer, size_t size, size_t bufferOffset, size_t blockOffset);
+#endif
 
     /**
      * Copy data from a GMAC object to the memory block

@@ -84,36 +84,12 @@ LazyBase::toHost(BlockImpl &_block)
     return ret;
 }
 
-gmacError_t
-LazyBase::copyToBuffer(BlockImpl &block, io_buffer_impl &buffer, size_t size,
-    size_t bufferOffset, size_t blockOffset)
-{
-    REQUIRES(blockOffset  + size <= block.size());
-    REQUIRES(bufferOffset + size <= buffer.size());
-
-    gmacError_t ret = Parent::copyToBuffer(block, buffer, size, bufferOffset, blockOffset);
-
-    return ret;
-}
-
-gmacError_t
-LazyBase::copyFromBuffer(BlockImpl &block, io_buffer_impl &buffer, size_t size,
-    size_t bufferOffset, size_t blockOffset)
-{
-    REQUIRES(blockOffset  + size <= block.size());
-    REQUIRES(bufferOffset + size <= buffer.size());
-
-    gmacError_t ret = Parent::copyFromBuffer(block, buffer, size, bufferOffset, blockOffset);
-
-    return ret;
-}
-
-gmacError_t
-LazyBase::memset(const BlockImpl &block, int v, size_t size, size_t blockOffset)
+__impl::hal::event_t
+LazyBase::memset(const BlockImpl &block, size_t blockOffset, int v, size_t size, gmacError_t &err)
 {
     REQUIRES(blockOffset + size <= block.size());
 
-    gmacError_t ret = Parent::memset(block, v, size, blockOffset);
+    __impl::hal::event_t ret = Parent::memset(block, blockOffset, v, size, err);
 
     return ret;
 }
@@ -128,8 +104,8 @@ LazyBase::flushDirty()
     return ret;
 }
 
-gmacError_t
-LazyBase::copyBlockToBlock(Block &d, size_t dstOffset, Block &s, size_t srcOffset, size_t count)
+__impl::hal::event_t
+LazyBase::copyBlockToBlock(Block &d, size_t dstOffset, Block &s, size_t srcOffset, size_t count, gmacError_t &err)
 {
     LazyBlockImpl &dst = dynamic_cast<LazyBlockImpl &>(d);
     LazyBlockImpl &src = dynamic_cast<LazyBlockImpl &>(s);
@@ -140,7 +116,7 @@ LazyBase::copyBlockToBlock(Block &d, size_t dstOffset, Block &s, size_t srcOffse
     StateImpl dstState = dst.getState();
     StateImpl srcState = src.getState();
 
-    gmacError_t ret = Parent::copyBlockToBlock(d, dstOffset, s, srcOffset, count);
+    __impl::hal::event_t ret = Parent::copyBlockToBlock(d, dstOffset, s, srcOffset, count, err);
 
     ENSURES(dst.getState() == dstState);
     ENSURES(src.getState() == srcState);

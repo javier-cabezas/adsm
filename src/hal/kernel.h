@@ -19,10 +19,10 @@ public:
         unsigned get_ndims() const;
         virtual unsigned get_nargs() const = 0;
 
-        virtual const typename B::kernel_config &get_dims_global() const = 0;
-        virtual const typename B::kernel_config &get_dims_group() const = 0;
+        // virtual const typename B::kernel_config &get_dims_global() const = 0;
+        // virtual const typename B::kernel_config &get_dims_group() const = 0;
 
-        virtual gmacError_t set_arg(const void *arg, size_t size, unsigned index) = 0;
+        // virtual gmacError_t set_arg(const void *arg, size_t size, unsigned index) = 0;
     };
 
     class GMAC_LOCAL launch {

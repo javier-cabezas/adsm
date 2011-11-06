@@ -13,7 +13,7 @@ template <typename D>
 class coherence_domain;
 
 template <typename I> 
-class device {
+class GMAC_LOCAL device {
 public:
     typedef device<I> Current;
     typedef std::set<Current *> SetSiblings;

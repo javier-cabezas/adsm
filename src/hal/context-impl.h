@@ -5,8 +5,10 @@ namespace __impl { namespace hal { namespace detail {
 
 template <typename D, typename B, typename I>
 inline
-buffer_t<D, B, I>::buffer_t(typename I::context &context) :
-    context_(context)
+buffer_t<D, B, I>::buffer_t(type t, size_t size, typename I::context &context) :
+    context_(context),
+    type_(t),
+    size_(size)
 {
 }
 
@@ -24,6 +26,22 @@ const typename I::context &
 buffer_t<D, B, I>::get_context() const
 {
     return context_;
+}
+
+template <typename D, typename B, typename I>
+inline
+size_t
+buffer_t<D, B, I>::get_size() const
+{
+    return size_;
+}
+
+template <typename D, typename B, typename I>
+inline
+void
+list_event<D, B, I>::add_event(typename I::event event) 
+{
+    Parent::push_back(event);
 }
 
 template <typename D, typename B, typename I>

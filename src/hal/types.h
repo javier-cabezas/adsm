@@ -34,6 +34,7 @@ namespace __impl { namespace hal {
     typedef hal::opencl::coherence_domain coherence_domain;
 
     typedef hal::opencl::kernel_t kernel_t;
+    typedef hal::opencl::code_repository code_repository;
     typedef hal::opencl::context_t context_t;
     typedef hal::opencl::stream_t stream_t;
     typedef hal::opencl::event_t event_t;

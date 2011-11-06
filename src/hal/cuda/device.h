@@ -12,7 +12,7 @@ class coherence_domain;
 
 typedef hal::detail::device<implementation_traits> hal_device;
 
-class device :
+class GMAC_LOCAL device :
     public hal_device,
     public util::unique<device> {
     friend class context_t;
@@ -24,7 +24,6 @@ protected:
     int major_;
     int minor_;
 
-    void set_context(context_t &context);
 public:
     device(CUdevice cudaDevice, coherence_domain &coherenceDomain);
 
@@ -45,6 +44,6 @@ public:
 
 }}}
 
-#endif /* GMAC_HAL_DEVICE_H_ */
+#endif /* GMAC_HAL_CUDA_DEVICE_H_ */
 
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

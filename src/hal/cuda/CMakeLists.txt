@@ -5,6 +5,9 @@ set(hal_cuda_SRC
     coherence_domain.cpp
     device.h
     device.cpp
+    context.h
+    context-impl.h
+    context.cpp
     module.h
     module-impl.h
     module.cpp

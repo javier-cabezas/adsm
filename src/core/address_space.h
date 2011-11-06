@@ -67,8 +67,8 @@ protected:
     virtual ~address_space();
 
 public:
-    virtual io_buffer *create_io_buffer(size_t count, GmacProtection prot) = 0;
-    virtual gmacError_t destroy_io_buffer(io_buffer &buffer) = 0;
+    //virtual io_buffer *create_io_buffer(size_t count, GmacProtection prot) = 0;
+    //virtual gmacError_t destroy_io_buffer(io_buffer &buffer) = 0;
 
     virtual gmacError_t map(accptr_t &dst, hostptr_t src, size_t count, unsigned align = 1) = 0;
     virtual gmacError_t unmap(hostptr_t addr, size_t count) = 0;
@@ -82,12 +82,15 @@ public:
     virtual gmacError_t copy(hostptr_t host, const accptr_t acc, size_t count) = 0;
     virtual gmacError_t copy(accptr_t dst, const accptr_t src, size_t count) = 0;
 
+    virtual gmacError_t copy(accptr_t dst, hal::device_input &input, size_t count) = 0;
+    virtual gmacError_t copy(hal::device_output &output, const accptr_t dst, size_t count) = 0;
+
     virtual hal::event_t copy_async(accptr_t acc, const hostptr_t host, size_t count, gmacError_t &err) = 0;
     virtual hal::event_t copy_async(hostptr_t host, const accptr_t acc, size_t count, gmacError_t &err) = 0;
     virtual hal::event_t copy_async(accptr_t dst, const accptr_t src, size_t count, gmacError_t &err) = 0;
 
-    virtual gmacError_t copy(accptr_t dst, io_buffer &buffer, size_t off, size_t count) = 0;
-    virtual gmacError_t copy(io_buffer &buffer, size_t off, const accptr_t dst, size_t count) = 0;
+    virtual hal::event_t copy_async(accptr_t dst, hal::device_input &input, size_t count, gmacError_t &err) = 0;
+    virtual hal::event_t copy_async(hal::device_output &output, const accptr_t src, size_t count, gmacError_t &err) = 0;
 
     virtual gmacError_t memset(accptr_t addr, int c, size_t size) = 0;
     virtual hal::event_t memset_async(accptr_t addr, int c, size_t size, gmacError_t &err) = 0;
@@ -99,10 +102,16 @@ public:
 
     virtual bool has_direct_copy(const address_space &aspace) const = 0;
 
+#ifdef USE_OPENCL
+    virtual gmacError_t acquire(hostptr_t addr) = 0;
+    virtual gmacError_t release(hostptr_t addr) = 0;
+#endif
 #if 0
     virtual void notify_pending_changes() = 0;
 #endif
 };
+
+typedef util::smart_ptr<address_space>::shared address_space_ptr;
 
 }}
 

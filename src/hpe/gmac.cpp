@@ -160,9 +160,9 @@ gmacCreateAddressSpace(GmacAddressSpaceId *aspaceId, int accId)
     gmac::trace::EnterCurrentFunction();
     if ((accId == ADDRESS_SPACE_ACCELERATOR_ANY) ||
         (accId >= 0 && accId < int(get_resource_manager().get_number_of_devices()))) {
-        address_space *aspace = get_resource_manager().create_address_space(accId, ret).get();
+        address_space_ptr aspace = get_resource_manager().create_address_space(accId, ret);
         if (ret == gmacSuccess) {
-            ASSERTION(aspace != NULL);
+            ASSERTION(aspace);
             *aspaceId = aspace->get_id();
         }
     } else {
@@ -182,8 +182,8 @@ gmacDeleteAddressSpace(GmacAddressSpaceId aspaceId)
     enterGmac();
     gmac::trace::EnterCurrentFunction();
 
-    __impl::util::smart_ptr<address_space>::shared aspace = get_resource_manager().get_address_space(aspaceId);
-    if (aspace != NULL) {
+    address_space_ptr aspace = get_resource_manager().get_address_space(aspaceId);
+    if (aspace) {
         ret = get_resource_manager().destroy_address_space(*aspace);
     } else {
         ret = gmacErrorInvalidValue;

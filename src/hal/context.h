@@ -3,35 +3,51 @@
 
 #include <list>
 
+#include "util/observer.h"
+
 namespace __impl { namespace hal {
 
 namespace detail {
 
 template <typename D, typename B, typename I>
-class list_event :
-    public std::list<typename I::event *> {
-
-    typedef std::list<typename I::event *> Parent;
+class GMAC_LOCAL buffer_t :
+    public util::observer<typename I::event> {
 public:
-    static list_event empty;
-};
-
-template <typename D, typename B, typename I>
-list_event<D, B, I> list_event<D, B, I>::empty;
-
-template <typename D, typename B, typename I>
-class GMAC_LOCAL buffer_t {
+    enum type {
+        ToHost,
+        ToDevice,
+        DeviceToDevice
+    };
+private:
     typename I::context &context_;
+    type type_;
+    size_t size_;
 
 protected:
-    buffer_t(typename I::context &context);
+    buffer_t(type t, size_t size, typename I::context &context);
+    type get_type() const;
 
 public:
     virtual hostptr_t get_addr() = 0;
     virtual accptr_t get_device_addr() = 0;
     typename I::context &get_context();
     const typename I::context &get_context() const;
+    size_t get_size() const;
 };
+
+template <typename D, typename B, typename I>
+class GMAC_LOCAL list_event :
+    protected std::list<typename I::event> {
+
+    typedef std::list<typename I::event> Parent;
+public:
+    static list_event empty;
+
+    void add_event(typename I::event event);
+};
+
+template <typename D, typename B, typename I>
+list_event<D, B, I> list_event<D, B, I>::empty;
 
 template <typename D, typename B, typename I>
 class GMAC_LOCAL code_repository
@@ -56,12 +72,12 @@ public:
     typename B::context &operator()();
     const typename B::context &operator()() const;
 
-    virtual accptr_t alloc(size_t count, gmacError_t &err) = 0;
-    //virtual gmacError_t alloc_host_pinned(hostptr_t &ptr, size_t count, GmacProtection hint, gmacError_t &err) = 0;
-    virtual typename I::buffer *alloc_buffer(size_t count, GmacProtection hint, gmacError_t &err) = 0;
+    virtual accptr_t alloc(size_t size, gmacError_t &err) = 0;
+    virtual hostptr_t alloc_host_pinned(size_t size, GmacProtection hint, gmacError_t &err) = 0;
+    //virtual typename I::buffer *alloc_buffer(size_t count, GmacProtection hint, gmacError_t &err) = 0;
     virtual gmacError_t free(accptr_t acc) = 0;
-    //virtual gmacError_t free_host_pinned(hostptr_t ptr) = 0;
-    virtual gmacError_t free_buffer(typename I::buffer &buffer) = 0;
+    virtual gmacError_t free_host_pinned(hostptr_t ptr) = 0;
+    //virtual gmacError_t free_buffer(typename I::buffer &buffer) = 0;
 
     virtual typename I::event copy(accptr_t dst, hostptr_t src, size_t count, typename I::stream &stream, list_event<D, B, I> &dependencies, gmacError_t &err) = 0;
     virtual typename I::event copy(accptr_t dst, hostptr_t src, size_t count, typename I::stream &stream, typename I::event event, gmacError_t &err) = 0;
@@ -75,6 +91,14 @@ public:
     virtual typename I::event copy(accptr_t dst, accptr_t src, size_t count, typename I::stream &stream, typename I::event event, gmacError_t &err) = 0;
     virtual typename I::event copy(accptr_t dst, accptr_t src, size_t count, typename I::stream &stream, gmacError_t &err) = 0;
 
+    virtual typename I::event copy(accptr_t dst, device_input &input, size_t count, typename I::stream &stream, list_event<D, B, I> &dependencies, gmacError_t &err) = 0;
+    virtual typename I::event copy(accptr_t dst, device_input &input, size_t count, typename I::stream &stream, typename I::event event, gmacError_t &err) = 0;
+    virtual typename I::event copy(accptr_t dst, device_input &input, size_t count, typename I::stream &stream, gmacError_t &err) = 0;
+
+    virtual typename I::event copy(device_output &output, accptr_t src, size_t count, typename I::stream &stream, list_event<D, B, I> &dependencies, gmacError_t &err) = 0;
+    virtual typename I::event copy(device_output &output, accptr_t src, size_t count, typename I::stream &stream, typename I::event event, gmacError_t &err) = 0;
+    virtual typename I::event copy(device_output &output, accptr_t src, size_t count, typename I::stream &stream, gmacError_t &err) = 0;
+
     virtual typename I::event copy_async(accptr_t dst, typename I::buffer src, size_t off, size_t count, typename I::stream &stream, list_event<D, B, I> &dependencies, gmacError_t &err) = 0;
     virtual typename I::event copy_async(accptr_t dst, typename I::buffer src, size_t off, size_t count, typename I::stream &stream, typename I::event event, gmacError_t &err) = 0;
     virtual typename I::event copy_async(accptr_t dst, typename I::buffer src, size_t off, size_t count, typename I::stream &stream, gmacError_t &err) = 0;
@@ -86,6 +110,14 @@ public:
     virtual typename I::event copy_async(accptr_t dst, accptr_t src, size_t count, typename I::stream &stream, list_event<D, B, I> &dependencies, gmacError_t &err) = 0;
     virtual typename I::event copy_async(accptr_t dst, accptr_t src, size_t count, typename I::stream &stream, typename I::event event, gmacError_t &err) = 0;
     virtual typename I::event copy_async(accptr_t dst, accptr_t src, size_t count, typename I::stream &stream, gmacError_t &err) = 0;
+
+    virtual typename I::event copy_async(accptr_t dst, device_input &input, size_t count, typename I::stream &stream, list_event<D, B, I> &dependencies, gmacError_t &err) = 0;
+    virtual typename I::event copy_async(accptr_t dst, device_input &input, size_t count, typename I::stream &stream, typename I::event event, gmacError_t &err) = 0;
+    virtual typename I::event copy_async(accptr_t dst, device_input &input, size_t count, typename I::stream &stream, gmacError_t &err) = 0;
+
+    virtual typename I::event copy_async(device_output &output, accptr_t src, size_t count, typename I::stream &stream, list_event<D, B, I> &dependencies, gmacError_t &err) = 0;
+    virtual typename I::event copy_async(device_output &output, accptr_t src, size_t count, typename I::stream &stream, typename I::event event, gmacError_t &err) = 0;
+    virtual typename I::event copy_async(device_output &output, accptr_t src, size_t count, typename I::stream &stream, gmacError_t &err) = 0;
 
     virtual typename I::event memset(accptr_t dst, int c, size_t count, typename I::stream &stream, list_event<D, B, I> &dependencies, gmacError_t &err) = 0;
     virtual typename I::event memset(accptr_t dst, int c, size_t count, typename I::stream &stream, typename I::event event, gmacError_t &err) = 0;

@@ -103,6 +103,7 @@ protected:
     template <typename T>
     gmacError_t coherenceOp(gmacError_t (Protocol::*op)(Block &, T &), T &param);
 
+#if 0
     /**
      * Execute a memory operation involving an I/O buffer on all the blocks of the object
      *
@@ -119,6 +120,7 @@ protected:
      */
     TESTABLE gmacError_t memoryOp(Protocol::MemoryOp op,
                                   core::io_buffer &buffer, size_t size, size_t bufferOffset, size_t objectOffset);
+#endif
 
     /**
      * Execute an operation on all the blocks of the object
@@ -296,6 +298,7 @@ public:
      */
     TESTABLE gmacError_t signalWrite(hostptr_t addr);
 
+#if 0
     /**
      * Copies the data from the object to an I/O buffer
      *
@@ -319,6 +322,11 @@ public:
      */
     TESTABLE gmacError_t copyFromBuffer(core::io_buffer &buffer, size_t size,
                                         size_t bufferOffset = 0, size_t objectOffset = 0);
+#endif
+
+    gmacError_t to_io_device(hal::device_output &output, size_t objOff, size_t count);
+
+    gmacError_t from_io_device(size_t objOff, hal::device_input &input, size_t count);
 
     /**
      * Initializes a memory range within the object to a specific value

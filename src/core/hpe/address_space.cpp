@@ -1,5 +1,3 @@
-#include "core/io_buffer.h"
-
 #include "address_space.h"
 #include "thread.h"
 #include "vdevice.h"
@@ -42,6 +40,7 @@ address_space::~address_space()
 {
 }
 
+#if 0
 core::io_buffer *
 address_space::create_io_buffer(size_t count, GmacProtection prot)
 {
@@ -59,6 +58,7 @@ address_space::destroy_io_buffer(core::io_buffer &buffer)
 
     return ret;
 }
+#endif
 
 gmacError_t
 address_space::map(accptr_t &dst, hostptr_t src, size_t count, unsigned align)
@@ -103,11 +103,9 @@ hostptr_t
 address_space::alloc_host_pinned(size_t count, gmacError_t &err)
 {
     hostptr_t ret(0);
-    hal::buffer_t *buf = ctx_.alloc_buffer(count, GMAC_PROT_READWRITE, err);
-    if (buf != NULL) {
-        ret = buf->get_addr();
-
-        mapPinnedBuffers_.insert(map_buffers::value_type(ret, buf));
+    ret = ctx_.alloc_host_pinned(count, GMAC_PROT_READWRITE, err);
+    if (ret != NULL) {
+        mapPinnedBuffers_.insert(map_buffers::value_type(ret, NULL));
     }
 
     // TODO: cache pinned allocations
@@ -122,7 +120,7 @@ address_space::free_host_pinned(hostptr_t ptr)
     it = mapPinnedBuffers_.find(ptr);
 
     if (it != mapPinnedBuffers_.end()) {
-        ctx_.free_buffer(*it->second);
+        ctx_.free_host_pinned(it->first);
         mapPinnedBuffers_.erase(it);
     } else {
         ret = gmacErrorInvalidValue;
@@ -151,115 +149,111 @@ address_space::get_host_pinned_mapping(hostptr_t ptr, gmacError_t &err)
 gmacError_t
 address_space::copy(accptr_t acc, const hostptr_t host, size_t count)
 {
-    context &context = get_context();
     gmacError_t ret;
 
     // TODO: use the event
     // hal::event_t event =
-        context.copy(acc, host, count, ret);
+        ctx_.copy(acc, host, count, streamToAccelerator_, ret);
     return ret;
 }
 
 gmacError_t
 address_space::copy(hostptr_t host, const accptr_t acc, size_t count)
 {
-    context &context = get_context();
     gmacError_t ret;
 
     // TODO: use the event
     // hal::event_t event =
-        context.copy(host, acc, count, ret);
+        ctx_.copy(host, acc, count, streamToHost_, ret);
     return ret;
 }
 
 gmacError_t
 address_space::copy(accptr_t dst, const accptr_t src, size_t count)
 {
-    context &context = get_context();
     gmacError_t ret;
 
     // TODO: use the event
     // hal::event_t event =
-        context.copy(dst, src, count, ret);
+        ctx_.copy(dst, src, count, streamAccelerator_, ret);
+    return ret;
+}
+
+gmacError_t
+address_space::copy(accptr_t dst, hal::device_input &input, size_t count)
+{
+    gmacError_t ret;
+
+    // TODO: use the event
+    // hal::event_t event =
+        ctx_.copy(dst, input, count, streamToAccelerator_, ret);
+    return ret;
+}
+
+gmacError_t
+address_space::copy(hal::device_output &output, const accptr_t src, size_t count)
+{
+    gmacError_t ret;
+
+    // TODO: use the event
+    // hal::event_t event =
+        ctx_.copy(output, src, count, streamToHost_, ret);
     return ret;
 }
 
 hal::event_t
 address_space::copy_async(accptr_t acc, const hostptr_t host, size_t count, gmacError_t &err)
 {
-    context &context = get_context();
-
     // TODO: use the event
-    hal::event_t ret = context.copy_async(acc, host, count, err);
+    hal::event_t ret = ctx_.copy_async(acc, host, count, streamToAccelerator_, err);
     return ret;
 }
 
 hal::event_t
 address_space::copy_async(hostptr_t host, const accptr_t acc, size_t count, gmacError_t &err)
 {
-    context &context = get_context();
-
     // TODO: use the event
-    hal::event_t ret = context.copy_async(host, acc, count, err);
+    hal::event_t ret = ctx_.copy_async(host, acc, count, streamToHost_, err);
     return ret;
 }
 
 hal::event_t
 address_space::copy_async(accptr_t dst, const accptr_t src, size_t count, gmacError_t &err)
 {
-    context &context = get_context();
-
     // TODO: use the event
-    hal::event_t ret = context.copy_async(dst, src, count, err);
+    hal::event_t ret = ctx_.copy_async(dst, src, count, streamAccelerator_, err);
     return ret;
 }
 
-gmacError_t
-address_space::copy(accptr_t dst, core::io_buffer &buffer, size_t off, size_t count)
+hal::event_t
+address_space::copy_async(accptr_t dst, hal::device_input &input, size_t count, gmacError_t &err)
 {
-    context &context = get_context();
-    gmacError_t ret;
-
-    if (buffer.async()) {
-        ret = context.copy_async(dst, buffer, off, count);
-    } else {
-        ret = context.copy(dst, buffer, off, count);
-    }
+    hal::event_t ret = ctx_.copy_async(dst, input, count, streamToAccelerator_, err);
     return ret;
 }
 
-gmacError_t
-address_space::copy(core::io_buffer &buffer, size_t off, const accptr_t src, size_t count)
+hal::event_t
+address_space::copy_async(hal::device_output &output, const accptr_t src, size_t count, gmacError_t &err)
 {
-    context &context = get_context();
-    gmacError_t ret;
-
-    if (buffer.async()) {
-        ret = context.copy_async(buffer, off, src, count);
-    } else {
-        ret = context.copy(buffer, off, src, count);
-    }
+    hal::event_t ret = ctx_.copy_async(output, src, count, streamToHost_, err);
     return ret;
 }
 
 gmacError_t
 address_space::memset(accptr_t addr, int c, size_t count)
 {
-    context &context = get_context();
     gmacError_t ret;
 
     // TODO: use the event
     // hal::event_t event =
-        context.memset(addr, c, count, ret);
+        ctx_.memset(addr, c, count, streamAccelerator_, ret);
     return ret;
 }
 
 hal::event_t
 address_space::memset_async(accptr_t addr, int c, size_t count, gmacError_t &err)
 {
-    context &context = get_context();
-
-    hal::event_t ret = context.memset_async(addr, c, count, err);
+    hal::event_t ret = context.memset_async(addr, c, count, streamAccelerator_, err);
 
     return ret;
 }

@@ -5,7 +5,6 @@
 
 #include "core/hpe/process.h"
 #include "core/hpe/context.h"
-#include "core/io_buffer.h"
 
 namespace __impl { namespace core { namespace hpe {
 
