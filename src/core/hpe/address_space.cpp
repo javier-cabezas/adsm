@@ -100,32 +100,22 @@ address_space::unmap(hostptr_t addr, size_t count)
     return ret;
 }
 
-hostptr_t
+hal::ptr_t
 address_space::alloc_host_pinned(size_t count, gmacError_t &err)
 {
-    hostptr_t ret(0);
+    hal::ptr_t ret;
     ret = ctx_.alloc_host_pinned(count, GMAC_PROT_READWRITE, err);
-    if (ret != NULL) {
-        mapPinnedBuffers_.insert(map_buffers::value_type(ret, NULL));
-    }
 
     // TODO: cache pinned allocations
     return ret;
 }
 
 gmacError_t
-address_space::free_host_pinned(hostptr_t ptr)
+address_space::free_host_pinned(hal::ptr_t ptr)
 {
-    gmacError_t ret = gmacSuccess;
-    map_buffers::iterator it;
-    it = mapPinnedBuffers_.find(ptr);
+    gmacError_t ret;
 
-    if (it != mapPinnedBuffers_.end()) {
-        ctx_.free_host_pinned(it->first);
-        mapPinnedBuffers_.erase(it);
-    } else {
-        ret = gmacErrorInvalidValue;
-    }
+    ret = ctx_.free_host_pinned(ptr);
 
     return ret;
 }

@@ -14,6 +14,14 @@ buffer_t<D, B, I>::buffer_t(type t, size_t size, typename I::context &context) :
 
 template <typename D, typename B, typename I>
 inline
+typename buffer_t<D, B, I>::type
+buffer_t<D, B, I>::get_type() const
+{
+    return type_;
+}
+
+template <typename D, typename B, typename I>
+inline
 typename I::context &
 buffer_t<D, B, I>::get_context()
 {
