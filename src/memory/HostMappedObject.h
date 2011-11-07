@@ -94,7 +94,7 @@ class GMAC_LOCAL HostMappedObject :
     public util::Reference {
 protected:
     //! Starting host memory address of the object
-    hostptr_t addr_;
+    hal::ptr_t addr_;
 
     //! Size (in bytes) of the object
     size_t size_;
@@ -102,12 +102,12 @@ protected:
     //! Set of all host mapped memory objects
     static HostMappedSet set_;
 
-    hostptr_t alloc(util::smart_ptr<core::address_space>::shared aspace);
-    void free(util::smart_ptr<core::address_space>::shared aspace);
+    hal::ptr_t alloc(core::address_space_ptr aspace, gmacError_t &err);
+    void free(core::address_space_ptr aspace);
 
-    accptr_t getAccPtr(util::smart_ptr<core::address_space>::shared aspace) const;
+    accptr_t getAccPtr(core::address_space_ptr aspace) const;
 
-    util::smart_ptr<core::address_space>::shared owner_;
+    core::address_space_ptr owner_;
 public:
     /**
      * Default constructor
@@ -115,14 +115,14 @@ public:
      * \param aspace Execution aspace creating the object
      * \param size Size (in bytes) of the object being created
      */
-    HostMappedObject(util::smart_ptr<core::address_space>::shared aspace, size_t size);
+    HostMappedObject(core::address_space_ptr aspace, size_t size);
 
     /// Default destructor
     virtual ~HostMappedObject();
 
 #ifdef USE_OPENCL
-    gmacError_t acquire(util::smart_ptr<core::address_space>::shared current);
-    gmacError_t release(util::smart_ptr<core::address_space>::shared current);
+    gmacError_t acquire(core::address_space_ptr current);
+    gmacError_t release(core::address_space_ptr current);
 #endif
     
     /**
@@ -146,7 +146,7 @@ public:
      * \param addr Host memory address within the object
      * \return Accelerator memory address where the requested host memory address is mapped
      */
-    accptr_t get_device_addr(util::smart_ptr<core::address_space>::shared current, const hostptr_t addr) const;
+    accptr_t get_device_addr(core::address_space_ptr current, const hostptr_t addr) const;
 
     /**
      * Remove a host mapped object from the list of all present host mapped object

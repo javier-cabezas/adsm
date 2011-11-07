@@ -204,13 +204,13 @@ public:
     }
 
     inline C *
-    get_hal_context()
+    get_context()
     {
         return ctx_;
     }
 
     inline const C *
-    get_hal_context() const
+    get_context() const
     {
         return ctx_;
     }

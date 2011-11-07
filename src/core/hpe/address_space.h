@@ -95,8 +95,8 @@ public:
     gmacError_t map(hal::ptr_t &dst, hostptr_t src, size_t count, unsigned align = 1);
     gmacError_t unmap(hostptr_t addr, size_t count);
 
-    hostptr_t alloc_host_pinned(size_t count, gmacError_t &err);
-    gmacError_t free_host_pinned(hostptr_t ptr);
+    hal::ptr_t alloc_host_pinned(size_t count, gmacError_t &err);
+    gmacError_t free_host_pinned(hal::ptr_t ptr);
 
     hal::ptr_t get_host_pinned_mapping(hostptr_t ptr, gmacError_t &err);
 

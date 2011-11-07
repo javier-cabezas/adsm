@@ -1,5 +1,7 @@
 #include "types.h"
 
+#include "device.h"
+
 namespace __impl { namespace hal { namespace cuda {
 
 queue_event::queue_event() :
@@ -72,9 +74,17 @@ context_t::copy(ptr_t dst, ptr_t src, size_t count, stream_t &stream, gmacError_
         src.is_device_ptr()) {
         TRACE(LOCAL, "D -> D copy ("FMT_SIZE" bytes) on stream: %p", count, stream());
 
-        Seguir aqui mañana!
-        if (dst.get_context().has_direct_copy(src.get_context())) {
+        if (dst.get_context()->get_device().has_direct_copy(src.get_context()->get_device())) {
             res = cuMemcpyDtoD(dst.get_device_addr(), src.get_device_addr(), count);
+        } else {
+            hostptr_t host = get_memory(count);
+
+            res = cuMemcpyDtoH(host, src.get_device_addr(), count);
+            if (res == CUDA_SUCCESS) {
+                res = cuMemcpyHtoD(src.get_device_addr(), host, count);
+            }
+
+            put_memory(host, count);
         }
     } else if (dst.is_device_ptr() &&
                src.is_host_ptr()) {
@@ -160,7 +170,6 @@ context_t::copy(ptr_t dst, device_input &input, size_t count, stream_t &stream, 
         } else {
             stream.set_last_event(ret);
         }
-
     }
 
     put_memory(host, count);
@@ -626,7 +635,7 @@ context_t::alloc(size_t count, gmacError_t &err)
     return ptr_t(devPtr, this);
 }
 
-hostptr_t
+ptr_t
 context_t::alloc_host_pinned(size_t size, GmacProtection hint, gmacError_t &err)
 {
     set();
@@ -640,8 +649,7 @@ context_t::alloc_host_pinned(size_t size, GmacProtection hint, gmacError_t &err)
     CUresult res = cuMemHostAlloc(&addr, size, flags);
     err = cuda::error(res);
 
-    //return new buffer_t(hostptr_t(addr), size, *this);
-    return NULL;
+    return ptr_t(hostptr_t(addr));
 }
 
 buffer_t *
@@ -681,6 +689,18 @@ context_t::free_buffer(buffer_t &buffer)
 
     return cuda::error(ret);
 }
+
+gmacError_t
+context_t::free_host_pinned(ptr_t ptr)
+{
+    set();
+
+    CUresult ret = cuMemFreeHost(ptr.get_host_addr());
+
+    return cuda::error(ret);
+}
+
+
 
 }}}
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

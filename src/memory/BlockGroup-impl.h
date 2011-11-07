@@ -91,7 +91,7 @@ BlockGroup<State>::BlockGroup(Protocol &protocol,
 
     // Create a shadow mapping for the host memory
     shadow_ = Memory::shadow(addr_, size_);
-    if (shadow_) {
+    if (shadow_ == NULL) {
         err = gmacErrorMemoryAllocation;
         return;
     }

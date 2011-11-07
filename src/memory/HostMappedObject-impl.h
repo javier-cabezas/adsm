@@ -12,7 +12,7 @@ inline HostMappedSet::~HostMappedSet()
 
 #ifdef USE_OPENCL
 inline gmacError_t
-HostMappedObject::acquire(util::smart_ptr<core::address_space>::shared current)
+HostMappedObject::acquire(core::address_space_ptr current)
 {
     gmacError_t ret = gmacSuccess;
     ret = current->acquire(addr_);
@@ -20,7 +20,7 @@ HostMappedObject::acquire(util::smart_ptr<core::address_space>::shared current)
 }
 
 inline gmacError_t
-HostMappedObject::release(util::smart_ptr<core::address_space>::shared current)
+HostMappedObject::release(core::address_space_ptr current)
 {
     gmacError_t ret = gmacSuccess;
     ret = current->release(addr_);
@@ -30,7 +30,7 @@ HostMappedObject::release(util::smart_ptr<core::address_space>::shared current)
 
 inline hostptr_t HostMappedObject::addr() const
 {
-    return addr_;
+    return addr_.get_host_addr();
 }
 
 inline size_t HostMappedObject::size() const

@@ -25,6 +25,7 @@ private:
 
 protected:
     buffer_t(type t, size_t size, typename I::context &context);
+
     type get_type() const;
 
 public:
@@ -73,10 +74,10 @@ public:
     const typename B::context &operator()() const;
 
     virtual typename I::ptr alloc(size_t size, gmacError_t &err) = 0;
-    virtual hostptr_t alloc_host_pinned(size_t size, GmacProtection hint, gmacError_t &err) = 0;
+    virtual typename I::ptr alloc_host_pinned(size_t size, GmacProtection hint, gmacError_t &err) = 0;
     //virtual typename I::buffer *alloc_buffer(size_t count, GmacProtection hint, gmacError_t &err) = 0;
     virtual gmacError_t free(typename I::ptr acc) = 0;
-    virtual gmacError_t free_host_pinned(hostptr_t ptr) = 0;
+    virtual gmacError_t free_host_pinned(typename I::ptr ptr) = 0;
     //virtual gmacError_t free_buffer(typename I::buffer &buffer) = 0;
 
     virtual typename I::event copy(typename I::ptr dst, typename I::ptr src, size_t count, typename I::stream &stream, list_event<D, B, I> &dependencies, gmacError_t &err) = 0;
@@ -91,9 +92,9 @@ public:
     virtual typename I::event copy(device_output &output, typename I::ptr src, size_t count, typename I::stream &stream, typename I::event event, gmacError_t &err) = 0;
     virtual typename I::event copy(device_output &output, typename I::ptr src, size_t count, typename I::stream &stream, gmacError_t &err) = 0;
 
-    virtual typename I::event copy_async(typename I::ptr dst, typename I::ptr src, size_t count, typename I::stream &stream, list_event<D, B, I> &dependencies, gmacError_t &err) = 0;
-    virtual typename I::event copy_async(typename I::ptr dst, typename I::ptr src, size_t count, typename I::stream &stream, typename I::event event, gmacError_t &err) = 0;
-    virtual typename I::event copy_async(typename I::ptr dst, typename I::ptr src, size_t count, typename I::stream &stream, gmacError_t &err) = 0;
+    virtual typename I::event copy_async(typename I::ptr dst, const typename I::ptr src, size_t count, typename I::stream &stream, list_event<D, B, I> &dependencies, gmacError_t &err) = 0;
+    virtual typename I::event copy_async(typename I::ptr dst, const typename I::ptr src, size_t count, typename I::stream &stream, typename I::event event, gmacError_t &err) = 0;
+    virtual typename I::event copy_async(typename I::ptr dst, const typename I::ptr src, size_t count, typename I::stream &stream, gmacError_t &err) = 0;
 
     virtual typename I::event copy_async(typename I::ptr dst, device_input &input, size_t count, typename I::stream &stream, list_event<D, B, I> &dependencies, gmacError_t &err) = 0;
     virtual typename I::event copy_async(typename I::ptr dst, device_input &input, size_t count, typename I::stream &stream, typename I::event event, gmacError_t &err) = 0;
