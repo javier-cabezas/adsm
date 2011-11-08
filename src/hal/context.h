@@ -71,63 +71,12 @@ public:
     void push(typename I::event::event_type &event);
 };
 
-template <typename T>
-class GMAC_LOCAL map_pool :
-    std::map<size_t, std::queue<T *> >,
-    gmac::util::mutex {
-
-    typedef std::queue<T *> queue_subset;
-    typedef std::map<size_t, queue_subset> Parent;
-
-public:
-    map_pool() :
-        gmac::util::mutex("map_pool")
-    {}
-
-    T *pop(size_t size)
-    {
-        T *ret = NULL;
-
-        lock();
-        typename Parent::iterator it;
-        it = Parent::find(size);
-        if (it != Parent::end()) {
-            queue_subset &queue = it->second;
-            if (queue.size() > 0) {
-                ret = queue.front();
-                queue.pop();
-            }
-        }
-        unlock();
-
-        return ret;
-    }
-
-    void push(T *v, size_t size = 0)
-    {
-        lock();
-        typename Parent::iterator it;
-        it = Parent::find(size);
-        if (it != Parent::end()) {
-            queue_subset &queue = it->second;
-            queue.push(v);
-        } else {
-            Parent::insert(typename Parent::value_type(size, queue_subset()));
-        }
-        unlock();
-    }
-};
-
 template <typename D, typename B, typename I>
 class GMAC_LOCAL context_t {
 private:
-    typedef map_pool<typename I::buffer> map_buffer;
     typedef map_pool<void> map_memory;
 
 protected:
-    map_buffer mapBuffersIn_;
-    map_buffer mapBuffersOut_;
-    
     map_memory mapMemory_;
 
     queue_event<I> queueEvents_;
@@ -150,45 +99,7 @@ protected:
     {
         mapMemory_.push(ptr, size);
     }
-
-    typename I::buffer &get_input_buffer(size_t size)
-    {
-        typename I::buffer *buffer = mapBuffersIn_.pop(size);
-
-        if (buffer == NULL) {
-            gmacError_t err;
-
-            buffer = this->alloc_buffer(size, GMAC_PROT_READ, err);
-            ASSERTION(err == gmacSuccess);
-        }
-
-        return *buffer;
-    }
-
-    typename I::buffer &get_output_buffer(size_t size)
-    {
-        typename I::buffer *buffer = mapBuffersOut_.pop(size);
-
-        if (buffer == NULL) {
-            gmacError_t err;
-
-            buffer = this->alloc_buffer(size, GMAC_PROT_WRITE, err);
-            ASSERTION(err == gmacSuccess);
-        }
-
-        return *buffer;
-    }
-
-    void put_input_buffer(typename I::buffer &buffer)
-    {
-        mapBuffersIn_.push(&buffer);
-    }
-
-    void put_output_buffer(typename I::buffer &buffer)
-    {
-        mapBuffersOut_.push(&buffer);
-    }
-
+ 
     virtual typename I::buffer *alloc_buffer(size_t size, GmacProtection hint, gmacError_t &err) = 0;
     virtual gmacError_t free_buffer(typename I::buffer &buffer) = 0;
 

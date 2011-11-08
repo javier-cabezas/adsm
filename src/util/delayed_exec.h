@@ -66,6 +66,22 @@ protected:
             (**it)();
         }
     }
+
+    void remove_triggers()
+    {
+        list_trigger::iterator it;
+        for (it  = triggers_.begin();
+             it != triggers_.end();
+             it++) {
+            delete *it;
+        }
+        triggers_.clear();
+    }
+
+    virtual ~delayed_exec()
+    {
+        remove_triggers();
+    }
 public:
     template <typename F, typename R>
     void add_trigger(F fun, R ret)

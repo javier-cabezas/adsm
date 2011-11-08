@@ -190,7 +190,12 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
         if (dst.get_context()->get_device().has_direct_copy(src.get_context()->get_device())) {
             res = cuMemcpyDtoDAsync(dst.get_device_addr(), src.get_device_addr(), count, stream());
         } else {
-            buffer_t &buffer = get_input_buffer(count);
+            event_t last = stream.get_last_event();
+            if (last.is_valid()) {
+                last.sync();
+            }
+
+            buffer_t &buffer = stream.get_buffer(count);
 
             res = cuMemcpyDtoHAsync(buffer.get_addr(), src.get_device_addr(), count, stream());
             if (res == CUDA_SUCCESS) {
@@ -199,7 +204,7 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
             }
 
             if (res == CUDA_SUCCESS) {
-                ret.add_trigger(do_member(context_t::put_input_buffer, this, buffer));
+                ret.add_trigger(do_member(stream_t::put_buffer, &stream, buffer));
             }
         }
     } else if (dst.is_device_ptr() &&
@@ -208,15 +213,20 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
                      src.get_host_addr(),
                      dst.get_device_addr(),
                      count, stream());
+        event_t last = stream.get_last_event();
+        if (last.is_valid()) {
+            last.sync();
+        }
 
-        buffer_t &buffer = get_output_buffer(count);
+        buffer_t &buffer = stream.get_buffer(count);
+
         memcpy(buffer.get_addr(), src.get_host_addr(), count);
 
         res = cuMemcpyHtoDAsync(dst.get_device_addr(), buffer.get_addr(), count, stream());
 
         if (res == CUDA_SUCCESS) {
             // Release buffer after asynchronous copy
-            ret.add_trigger(do_member(context_t::put_output_buffer, this, buffer));
+            ret.add_trigger(do_member(stream_t::put_buffer, &stream, buffer));
         }
     } else if (dst.is_host_ptr() &&
                src.is_device_ptr()) {
@@ -224,15 +234,19 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
                      src.get_device_addr(),
                      dst.get_host_addr(),
                      count, stream());
+        event_t last = stream.get_last_event();
+        if (last.is_valid()) {
+            last.sync();
+        }
 
-        buffer_t &buffer = get_input_buffer(count);
+        buffer_t &buffer = stream.get_buffer(count);
 
         res = cuMemcpyDtoHAsync(buffer.get_addr(), src.get_device_addr(), count, stream());
 
         // Perform memcpy after asynchronous copy
         ret.add_trigger(util::do_func(memcpy, buffer.get_addr(), src.get_host_addr(), count));
         // Release buffer after memcpy
-        ret.add_trigger(util::do_member(context_t::put_input_buffer, this, buffer));
+        ret.add_trigger(util::do_member(stream_t::put_buffer, &stream, buffer));
     } else if (dst.is_host_ptr() &&
                src.is_host_ptr()) {
         TRACE(LOCAL, "H (%p) -> H (%p) copy ("FMT_SIZE" bytes) on stream: %p",
@@ -272,7 +286,7 @@ context_t::copy_async_backend(ptr_t dst, device_input &input, size_t count, stre
     TRACE(LOCAL, "IO -> D async copy ("FMT_SIZE" bytes) on stream: %p", count, stream());
     event_t ret(true, _event_t::Transfer, *this);
 
-    buffer_t &buffer = get_output_buffer(count);
+    buffer_t &buffer = stream.get_buffer(count);
 
     bool ok = input.read(buffer.get_addr(), count);
 
@@ -290,7 +304,7 @@ context_t::copy_async_backend(ptr_t dst, device_input &input, size_t count, stre
             ret.reset();
         } else {
             stream.set_last_event(ret);
-            ret.add_trigger(do_member(context_t::put_output_buffer, this, buffer));
+            ret.add_trigger(do_member(stream_t::put_buffer, &stream, buffer));
         }
     }
 
@@ -452,8 +466,7 @@ context_t::alloc_buffer(size_t size, GmacProtection hint, gmacError_t &err)
     CUresult res = cuMemHostAlloc(&addr, size, flags);
     err = cuda::error(res);
 
-    //return new buffer_t(hostptr_t(addr), size, *this);
-    return NULL;
+    return new buffer_t(hostptr_t(addr), size, *this);
 }
 
 gmacError_t

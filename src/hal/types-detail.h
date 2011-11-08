@@ -87,8 +87,8 @@ struct GMAC_LOCAL implementation_traits
 
 }}
 
-#include "context.h"
 #include "stream.h"
+#include "context.h"
 #include "kernel.h"
 #include "event.h"
 
