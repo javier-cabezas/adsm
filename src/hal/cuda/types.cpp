@@ -184,6 +184,7 @@ _event_t::reset(bool async, type t)
     err_ = gmacSuccess;
     synced_ = false;
     state_ = None;
+    remove_triggers();
 }
 
 _event_t::state

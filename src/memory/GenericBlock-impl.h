@@ -178,9 +178,9 @@ GenericBlock<State>::toAccelerator(unsigned blockOff, size_t count)
 {
     gmacError_t ret = gmacSuccess;
 
-    ret = parent_.owner().copy(get_device_addr() + blockOff,
+    parent_.owner().copy_async(get_device_addr() + blockOff,
                                hal::ptr_t(shadow_ + blockOff),
-                               count);
+                               count, ret);
 #if 0
     // Fast path
     if (owners_.size() == 1) {

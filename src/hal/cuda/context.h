@@ -52,6 +52,7 @@ class GMAC_LOCAL context_t :
     friend class _event_common_t;
     friend class event_t;
     friend class event_deleter;
+    friend class detail::stream_t<backend_traits, implementation_traits>;
     friend class stream_t;
 
     _event_t *get_new_event(bool async, _event_t::type t);
