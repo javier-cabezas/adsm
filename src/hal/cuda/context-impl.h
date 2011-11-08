@@ -6,26 +6,10 @@
 namespace __impl { namespace hal { namespace cuda {
 
 inline
-buffer_t::buffer_t(type t, hostptr_t addr, size_t size, context_t &context) :
-    Parent(t, size, context),
+buffer_t::buffer_t(hostptr_t addr, size_t size, context_t &context) :
+    Parent(size, context),
     addr_(addr)
 {
-}
-
-inline
-void
-buffer_t::update(event_t &event)
-{
-    switch (get_type()) {
-    case ToHost:
-        get_context().put_input_buffer(*this);
-        break;
-    case ToDevice:
-        get_context().put_output_buffer(*this);
-        break;
-    case DeviceToDevice:
-        FATAL("Unhandled case");
-    }
 }
 
 inline

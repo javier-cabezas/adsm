@@ -14,8 +14,8 @@ namespace __impl { namespace hal {
 namespace cuda {
 
 class GMAC_LOCAL stream_t :
-    public hal::detail::stream_t<device, backend_traits, implementation_traits> {
-    typedef hal::detail::stream_t<device, backend_traits, implementation_traits> Parent;
+    public hal::detail::stream_t<backend_traits, implementation_traits> {
+    typedef hal::detail::stream_t<backend_traits, implementation_traits> Parent;
 
     event_t lastEvent_;
 

@@ -22,7 +22,9 @@ class variable_t;
 class code_repository;
 class _event_t;
 class event_t;
+class event_list;
 class buffer_t;
+
 
 typedef __impl::hal::_ptr_t<_cuda_ptr_t,
                             context_t> ptr_t;
@@ -41,6 +43,7 @@ typedef hal::detail::implementation_traits<coherence_domain,
                                            variable_t,
                                            code_repository,
                                            event_t,
+                                           event_list,
                                            buffer_t,
                                            ptr_t> implementation_traits;
 

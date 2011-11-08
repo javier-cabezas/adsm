@@ -5,7 +5,7 @@ namespace __impl { namespace hal {
 
 namespace detail {
 
-template <typename D, typename B, typename I>
+template <typename B, typename I>
 class GMAC_LOCAL kernel_t {
 public:
     class GMAC_LOCAL config {
@@ -41,7 +41,7 @@ public:
         const typename I::kernel &get_kernel() const;
         const typename I::kernel::config &get_config() const;
 
-        virtual typename I::event execute(list_event<D, B, I> &dependencies, gmacError_t &err) = 0;
+        virtual typename I::event execute(list_event<I> &dependencies, gmacError_t &err) = 0;
         virtual typename I::event execute(typename I::event event, gmacError_t &err) = 0;
         virtual typename I::event execute(gmacError_t &err) = 0;
     };

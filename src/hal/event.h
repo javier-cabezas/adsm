@@ -1,15 +1,16 @@
 #ifndef GMAC_HAL_TYPES_EVENT_H_
 #define GMAC_HAL_TYPES_EVENT_H_
 
-#include "util/observer.h"
+#include "util/delayed_exec.h"
+#include "util/UniquePtr.h"
 
 namespace __impl { namespace hal {
 
 namespace detail {
 
-template <typename D, typename B, typename I>
-class GMAC_LOCAL event_t :
-    public util::observable<typename I::event> {
+template <typename I>
+class GMAC_LOCAL _event_t :
+    public util::delayed_exec {
     friend class I::context;
     friend class I::kernel;
 
@@ -32,7 +33,7 @@ private:
     context_parent_t &context_;
 
 protected:
-    bool isAsynchronous_;
+    bool async_;
     bool synced_;
     type type_;
     state state_;
@@ -43,10 +44,10 @@ protected:
     hal::time_t timeStart_;
     hal::time_t timeEnd_;
 
-    event_t(bool async, type t, context_parent_t &context);
+    _event_t(bool async, type t, context_parent_t &context);
 
 public:
-    virtual ~event_t();
+    virtual ~_event_t();
 
     virtual gmacError_t sync();
 

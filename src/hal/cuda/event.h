@@ -37,12 +37,12 @@ protected:
 };
 
 class GMAC_LOCAL _event_t :
-    public hal::detail::event_t<device, backend_traits, implementation_traits>,
+    public hal::detail::_event_t<implementation_traits>,
     public _event_common_t {
     friend class context_t;
     friend class event_t;
 
-    typedef hal::detail::event_t<device, backend_traits, implementation_traits> Parent;
+    typedef hal::detail::_event_t<implementation_traits> Parent;
 
 protected:
     virtual void reset(bool async, type t);
@@ -69,6 +69,7 @@ private:
     event_t(bool async, _event_t::type t, context_t &context);
 
 public:
+    typedef _event_t event_type;
     inline
     event_t()
     {
@@ -146,12 +147,13 @@ public:
         return ptrEvent_;
     }
 
+    template <typename F>
     inline
-    void add_observer(util::observer<event_t> &obj)
+    void add_trigger(F fun)
     {
         ASSERTION(ptrEvent_);
 
-        ptrEvent_->add_observer(obj);
+        ptrEvent_->add_trigger(fun);
     }
 };
 

@@ -18,7 +18,7 @@ kernel_t::launch_config(Parent::config &conf, stream_t &stream)
 
 inline
 kernel_t::launch::launch(kernel_t &parent, Parent::config &conf, stream_t &stream) :
-    hal::detail::kernel_t<device, backend_traits, implementation_traits>::launch(parent, dynamic_cast<config &>(conf), stream)
+    hal::detail::kernel_t<backend_traits, implementation_traits>::launch(parent, dynamic_cast<config &>(conf), stream)
 {
 }
 
@@ -90,7 +90,7 @@ kernel_t::launch::execute(gmacError_t &err)
 
 inline
 kernel_t::config::config(dim3 global, dim3 group, size_t shared, cudaStream_t tokens) :
-    hal::detail::kernel_t<device, backend_traits, implementation_traits>::config(3),
+    hal::detail::kernel_t<backend_traits, implementation_traits>::config(3),
     nArgs_(0),
     dimsGlobal_(global),
     dimsGroup_(group),

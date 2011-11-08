@@ -71,8 +71,9 @@ _event_t::sync()
                 timeEnd_ = timeQueued_ + time_t(mili * 1000.f);
             }
         }
-        notify();
         synced_ = true;
+        // Execute pending operations associated to the event
+        exec_triggers();
         ret = error(res);
     } else {
         ret = err_;

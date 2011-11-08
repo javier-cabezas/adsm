@@ -3,11 +3,11 @@
 
 namespace __impl { namespace hal { namespace detail {
 
-template <typename D, typename B, typename I>
+template <typename I>
 inline
-event_t<D, B, I>::event_t(bool async, type t, context_parent_t &context) :
+_event_t<I>::_event_t(bool async, type t, context_parent_t &context) :
     context_(context),
-    isAsynchronous_(async),
+    async_(async),
     synced_(async? false: true),
     type_(t),
     state_(None),
@@ -15,101 +15,106 @@ event_t<D, B, I>::event_t(bool async, type t, context_parent_t &context) :
 {
 }
 
-template <typename D, typename B, typename I>
+template <typename I>
 inline
-event_t<D, B, I>::~event_t()
+_event_t<I>::~_event_t()
 {
 }
 
-template <typename D, typename B, typename I>
+template <typename I>
 inline
 typename I::context &
-event_t<D, B, I>::get_context()
+_event_t<I>::get_context()
 {
     return context_;
 }
 
-template <typename D, typename B, typename I>
+template <typename I>
 inline
 gmacError_t
-event_t<D, B, I>::sync()
+_event_t<I>::sync()
 {
+    if (err_ == gmacSuccess) {
+        // Execute triggers
+        exec_triggers();
+    }
+
     return err_;
 }
 
-template <typename D, typename B, typename I>
+template <typename I>
 inline
-typename event_t<D, B, I>::type
-event_t<D, B, I>::get_type() const
+typename _event_t<I>::type
+_event_t<I>::get_type() const
 {
     return type_;
 }
 
 #if 0
-template <typename D, typename B, typename I>
+template <typename I>
 inline
-typename event_t<D, B, I>::state
-event_t<D, B, I>::get_state()
+typename _event_t<I>::state
+_event_t<I>::get_state()
 {
     return state_;
 }
 #endif
 
-template <typename D, typename B, typename I>
+template <typename I>
 inline
 hal::time_t
-event_t<D, B, I>::get_time_queued() const
+_event_t<I>::get_time_queued() const
 {
     return timeQueued_;
 }
 
 
-template <typename D, typename B, typename I>
+template <typename I>
 inline
 hal::time_t
-event_t<D, B, I>::get_time_submit() const
+_event_t<I>::get_time_submit() const
 {
     return timeSubmit_;
 }
 
-template <typename D, typename B, typename I>
+template <typename I>
 inline
 hal::time_t
-event_t<D, B, I>::get_time_start() const
+_event_t<I>::get_time_start() const
 {
     return timeStart_;
 }
 
-template <typename D, typename B, typename I>
+template <typename I>
 inline
 hal::time_t
-event_t<D, B, I>::get_time_end() const
+_event_t<I>::get_time_end() const
 {
     return timeEnd_;
 }
 
 #if 0
-template <typename D, typename B, typename I>
+template <typename I>
 inline
 void
-event_t<D, B, I>::set_state(state s)
+_event_t<I>::set_state(state s)
 {
     state_ = s;
 }
 
-template <typename D, typename B, typename I>
+template <typename I>
 inline
 void
-event_t<D, B, I>::set_synced(bool synced)
+_event_t<I>::set_synced(bool synced)
 {
     synced_ = synced;
 }
 #endif
 
-template <typename D, typename B, typename I>
+template <typename I>
 inline
 bool
-event_t<D, B, I>::is_synced() const
+_event_t<I>::is_synced() const
 {
     return synced_;
 }
