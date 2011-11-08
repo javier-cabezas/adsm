@@ -5,7 +5,7 @@ namespace __impl { namespace hal {
 
 namespace detail {
 
-template <typename D, typename B, typename I>
+template <typename B, typename I>
 class GMAC_LOCAL stream_t {
     typedef typename I::context context_parent_t;
 

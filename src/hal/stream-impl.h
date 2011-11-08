@@ -3,34 +3,34 @@
 
 namespace __impl { namespace hal { namespace detail {
 
-template <typename D, typename B, typename I>
+template <typename B, typename I>
 inline
-stream_t<D, B, I>::stream_t(typename B::stream stream, context_parent_t &context) :
+stream_t<B, I>::stream_t(typename B::stream stream, context_parent_t &context) :
     stream_(stream),
     context_(context)
 {
 }
 
-template <typename D, typename B, typename I>
+template <typename B, typename I>
 inline
-typename stream_t<D, B, I>::context_parent_t &
-stream_t<D, B, I>::get_context()
+typename stream_t<B, I>::context_parent_t &
+stream_t<B, I>::get_context()
 {
     return context_;
 }
 
-template <typename D, typename B, typename I>
+template <typename B, typename I>
 inline
 typename B::stream &
-stream_t<D, B, I>::operator()()
+stream_t<B, I>::operator()()
 {
     return stream_;
 }
 
-template <typename D, typename B, typename I>
+template <typename B, typename I>
 inline
 const typename B::stream &
-stream_t<D, B, I>::operator()() const
+stream_t<B, I>::operator()() const
 {
     return stream_;
 }

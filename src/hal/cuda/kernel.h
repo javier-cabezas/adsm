@@ -14,15 +14,15 @@ namespace __impl { namespace hal {
 namespace cuda {
 
 class GMAC_LOCAL kernel_t :
-    public hal::detail::kernel_t<device, backend_traits, implementation_traits> {
+    public hal::detail::kernel_t<backend_traits, implementation_traits> {
 
-    typedef hal::detail::kernel_t<device, backend_traits, implementation_traits> Parent;
+    typedef hal::detail::kernel_t<backend_traits, implementation_traits> Parent;
     
 public:
     class launch;
 
     class GMAC_LOCAL config :
-        public hal::detail::kernel_t<device, backend_traits, implementation_traits>::config {
+        public hal::detail::kernel_t<backend_traits, implementation_traits>::config {
         friend class launch;
 
         unsigned nArgs_;
@@ -44,7 +44,7 @@ public:
     };
 
     class GMAC_LOCAL launch :
-        public hal::detail::kernel_t<device, backend_traits, implementation_traits>::launch {
+        public hal::detail::kernel_t<backend_traits, implementation_traits>::launch {
 
     public:
         launch(kernel_t &parent, Parent::config &conf, stream_t &stream);

@@ -179,7 +179,7 @@ stream_t::sync()
 void
 _event_t::reset(bool async, type t)
 {
-    isAsynchronous_ = async;
+    async_ = async;
     type_ = t;
     err_ = gmacSuccess;
     synced_ = false;

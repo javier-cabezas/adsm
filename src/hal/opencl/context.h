@@ -81,6 +81,55 @@ public:
     }
 };
 
+template <typename T>
+class GMAC_LOCAL map_pool :
+    std::map<size_t, std::queue<T *> >,
+    gmac::util::mutex {
+
+    typedef std::queue<T *> queue_subset;
+    typedef std::map<size_t, queue_subset> Parent;
+
+public:
+    map_pool() :
+        gmac::util::mutex("map_pool")
+    {}
+
+    T *pop(size_t size)
+    {
+        T *ret = NULL;
+
+        lock();
+        typename Parent::iterator it;
+        it = Parent::find(size);
+        if (it != Parent::end()) {
+            queue_subset &queue = it->second;
+            if (queue.size() > 0) {
+                ret = queue.front();
+                queue.pop();
+            }
+        }
+        unlock();
+
+        return ret;
+    }
+
+    void push(T *v, size_t size = 0)
+    {
+        lock();
+        typename Parent::iterator it;
+        it = Parent::find(size);
+        if (it != Parent::end()) {
+            queue_subset &queue = it->second;
+            queue.push(v);
+        } else {
+            Parent::insert(typename Parent::value_type(size, queue_subset()));
+        }
+        unlock();
+    }
+};
+
+
+
 class GMAC_LOCAL context_t :
     public hal::detail::context_t<device, backend_traits, implementation_traits>,
     util::unique<context_t, GmacAddressSpaceId> {
