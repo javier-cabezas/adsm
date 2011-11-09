@@ -69,7 +69,7 @@ if(MAKE_INSTALLER)
             set(CPACK_COMPONENT_RUNTIME_DISPLAY_NAME "GMAC run-time library")
             set(CPACK_COMPONENT_LIBRARIES_DESCRIPTION "GMAC LIB file needed to develop programs that use GMAC")
 
-            set(CPACK_COMPONENT_RUNTIME_INSTALL_TYPES Normal Developer)
+            set(CPACK_COMPONENT_RUNTIME_INSTALL_TYPES Runtime Developer)
             set(CPACK_COMPONENT_LIBRARIES_INSTALL_TYPES Developer)
     	else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
             set(CPACK_COMPONENTS_ALL libraries headers documentation samples)
@@ -77,7 +77,7 @@ if(MAKE_INSTALLER)
             set(CPACK_COMPONENT_LIBRARIES_DISPLAY_NAME "GMAC library")
             set(CPACK_COMPONENT_LIBRARIES_DESCRIPTION "GMAC library needed to run programs that use GMAC")
 
-            set(CPACK_COMPONENT_LIBRARIES_INSTALL_TYPES Normal Developer)
+            set(CPACK_COMPONENT_LIBRARIES_INSTALL_TYPES Runtime Developer)
     	endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
         set(CPACK_COMPONENT_HEADERS_DISPLAY_NAME "GMAC headers")
@@ -88,7 +88,7 @@ if(MAKE_INSTALLER)
 	    set(CPACK_COMPONENT_DOCUMENTATION_DESCRIPTION "GMAC user manual in PDF")
 	    set(CPACK_COMPONENT_SAMPLES_DESCRIPTION "GMAC sample source code")
 
-        set(CPACK_ALL_INSTALL_TYPES Normal Developer)
+        set(CPACK_ALL_INSTALL_TYPES Developer Runtime)
 
         set(CPACK_COMPONENT_HEADERS_INSTALL_TYPES Developer)
 	    set(CPACK_COMPONENT_DOCUMENTATION_INSTALL_TYPES Developer)
