@@ -71,6 +71,7 @@ float doTest(float *a, float *b, float *c, float *orig, const char *name)
     getTime(&t);
     snprintf(buffer, 1024, "%s-Check: ", name);
     printTime(&s, &t, buffer, "\n");
+    if(error != 0) fprintf(stderr, "Error: %f\n", error);
 
     return error;
 }

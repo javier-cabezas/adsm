@@ -178,20 +178,24 @@ inline gmacError_t
 Object::copyToBuffer(core::IOBuffer &buffer, size_t size,
                      size_t bufferOffset, size_t objectOffset)
 {
+    trace::EnterCurrentFunction();
     lockRead();
     gmacError_t ret = memoryOp(&Protocol::copyToBuffer, buffer, size,
                                bufferOffset, objectOffset);
     unlock();
+    trace::ExitCurrentFunction();
     return ret;
 }
 
 inline gmacError_t Object::copyFromBuffer(core::IOBuffer &buffer, size_t size,
                                           size_t bufferOffset, size_t objectOffset)
 {
+    trace::EnterCurrentFunction();
     lockRead();
     gmacError_t ret = memoryOp(&Protocol::copyFromBuffer, buffer, size,
                                bufferOffset, objectOffset);
     unlock();
+    trace::ExitCurrentFunction();
     return ret;
 }
 

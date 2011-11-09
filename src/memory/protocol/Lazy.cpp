@@ -403,10 +403,19 @@ gmacError_t LazyBase::copyFromBuffer(Block &b, core::IOBuffer &buffer, size_t si
         ret = block.copyFromBuffer(blockOff, buffer, bufferOff, size, lazy::Block::ACCELERATOR);
         if(ret != gmacSuccess) break;
 #else
-        ret = block.copyFromBuffer(blockOff, buffer, bufferOff, size, lazy::Block::ACCELERATOR);
-        if(ret != gmacSuccess) break;
-        ret = block.copyFromBuffer(blockOff, buffer, bufferOff, size, lazy::Block::HOST);
-        if(ret != gmacSuccess) break;
+        if(size == block.size() && blockOff == 0) { 
+            if(block.protect(GMAC_PROT_NONE) < 0) FATAL("Unable to set memory permissions");
+            block.setState(lazy::Invalid);
+
+            ret = block.copyFromBuffer(blockOff, buffer, bufferOff, size, lazy::Block::ACCELERATOR);
+            if(ret != gmacSuccess) break;
+        }
+        else {
+            ret = block.copyFromBuffer(blockOff, buffer, bufferOff, size, lazy::Block::ACCELERATOR);
+            if(ret != gmacSuccess) break;
+            ret = block.copyFromBuffer(blockOff, buffer, bufferOff, size, lazy::Block::HOST);
+            if(ret != gmacSuccess) break;
+        }
 #endif
         /* block.setState(lazy::Invalid); */
         break;

@@ -185,7 +185,7 @@ GenericBlock<State>::copyFromBuffer(size_t blockOff, core::IOBuffer &buffer,
                                     size_t bufferOff, size_t size, typename StateBlock<State>::Destination dst) const
 {
     gmacError_t ret = gmacSuccess;
-
+    trace::EnterCurrentFunction();
     switch (dst) {
     case StateBlock<State>::HOST:
         ::memcpy(StateBlock<State>::shadow_ + blockOff, buffer.addr() + bufferOff, size);
@@ -209,6 +209,7 @@ GenericBlock<State>::copyFromBuffer(size_t blockOff, core::IOBuffer &buffer,
         break;
     }
 
+    trace::ExitCurrentFunction();
     return ret;
 }
 
@@ -218,6 +219,8 @@ GenericBlock<State>::copyToBuffer(core::IOBuffer &buffer, size_t bufferOff,
                                   size_t blockOff, size_t size, typename StateBlock<State>::Source src) const
 {
     gmacError_t ret = gmacSuccess;
+
+    trace::EnterCurrentFunction();
     switch (src) {
     case StateBlock<State>::HOST:
         ::memcpy(buffer.addr() + bufferOff, StateBlock<State>::shadow_ + blockOff, size);
@@ -233,6 +236,7 @@ GenericBlock<State>::copyToBuffer(core::IOBuffer &buffer, size_t bufferOff,
         break;
     }
 
+    trace::ExitCurrentFunction();
     return ret;
 }
 
