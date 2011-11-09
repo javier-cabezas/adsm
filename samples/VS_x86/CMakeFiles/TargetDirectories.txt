@@ -1,6 +1,0 @@
-C:/Users/igelado/code/install-32/samples/VS_x86/CMakeFiles/ALL_BUILD.dir
-C:/Users/igelado/code/install-32/samples/VS_x86/CMakeFiles/ZERO_CHECK.dir
-C:/Users/igelado/code/install-32/samples/VS_x86/CMakeFiles/clVecAdd.dir
-C:/Users/igelado/code/install-32/samples/VS_x86/CMakeFiles/clVecAdd_cplusplus.dir
-C:/Users/igelado/code/install-32/samples/VS_x86/CMakeFiles/eclThreadVecAdd.dir
-C:/Users/igelado/code/install-32/samples/VS_x86/CMakeFiles/eclVecAdd.dir
