@@ -32,6 +32,10 @@ source_group(${current_GROUP} FILES
     NBody/NBody.cpp
     eclCompressCommon.cl
     eclMatrixMulKernel.cl
+    eclBinomialOptionKernel.cl
+    eclBinarySearchKernel.cl
+    eclBitonicSortKernel.cl
+    eclBlackScholesKernel.cl
     c/eclBarr.cpp
     c/eclFile.cpp
     c/eclFileVecAdd.cpp
@@ -48,9 +52,13 @@ source_group(${current_GROUP} FILES
     c/eclThreadVecAdd.cpp
     c/eclThreadStencil.cpp
     c/eclVecAdd.cpp
-	c/eclThreadVecAdd_eclMemcpy.cpp
+    c/eclThreadVecAdd_eclMemcpy.cpp
     c/NBody_GMAC/NBody.h
     c/NBody_GMAC/NBody.cpp
+    c/eclBinarySearch.cpp
+    c/eclBinomialOption.cpp
+    c/eclBlackScholes.cpp
+    c/eclBitonicSort.cpp
     cpp/eclColumnMajor.cpp
     cpp/eclCompress.cpp
     cpp/eclCompressSend.cpp
@@ -61,6 +69,7 @@ source_group(${current_GROUP} FILES
     cpp/eclRandomAccess.cpp
     cpp/eclVecAdd_cplusplus.cpp
     cpp/eclFileVecAdd_cplusplus.cpp
+   # cpp/eclBinarySearch.cpp
 )
 
 # Plain OpenCL tests
@@ -72,6 +81,18 @@ target_link_libraries(oclVecAdd ${opencl_LIB} ${thread_LIB})
 
 add_executable(eclBarr ${common_SRC} c/eclBarr.cpp)
 target_link_libraries(eclBarr gmac-hpe)
+
+add_executable(eclBinarySearch ${common_SRC} c/eclBinarySearch.cpp eclBinarySearchKernel.cl)
+target_link_libraries(eclBinarySearch gmac-hpe)
+
+add_executable(eclBinomialOption ${common_SRC} c/eclBinomialOption.cpp eclBinomialOptionKernel.cl)
+target_link_libraries(eclBinomialOption gmac-hpe)
+
+add_executable(eclBitonicSort ${common_SRC} c/eclBitonicSort.cpp eclBitonicSortKernel.cl)
+target_link_libraries(eclBitonicSort gmac-hpe)
+
+add_executable(eclBlackScholes ${common_SRC} c/eclBlackScholes.cpp eclBlackScholesKernel.cl)
+target_link_libraries(eclBlackScholes gmac-hpe)
 
 add_executable(eclFile ${common_SRC} c/eclFile.cpp)
 target_link_libraries(eclFile gmac-hpe)
@@ -132,6 +153,9 @@ target_link_libraries(eclCompressSend_cpp gmac-hpe)
 
 add_executable(eclVecAdd_cpp ${common_SRC} cpp/eclVecAdd.cpp)
 target_link_libraries(eclVecAdd_cpp gmac-hpe)
+
+#add_executable(eclBinarySearch_cpp ${common_SRC} #cpp/eclBinarySearch.cpp eclBinarySearchKernel.cl)
+#target_link_libraries(eclBinarySearch_cpp gmac-hpe)
 
 add_executable(eclPartialVecAdd_cpp ${common_SRC} cpp/eclPartialVecAdd.cpp)
 target_link_libraries(eclPartialVecAdd_cpp gmac-hpe)
