@@ -4,7 +4,7 @@
 #include <ctime>
 #include <cassert>
 
-#include "gmac/cl.h"
+#include <gmac/cl.h>
 
 #include "utils.h"
 
@@ -68,13 +68,9 @@ int main(int argc, char *argv[])
     for(unsigned i = 0; i < vecSize; i++) {
         a[i] = 1.f * rand() / RAND_MAX;
         b[i] = 1.f * rand() / RAND_MAX;
-    }
-    
-    for(unsigned i = 0; i < vecSize; i++) {
         sum += a[i] + b[i];
     }
     
-
     // Call the kernel    
     size_t global_size = vecSize;
 

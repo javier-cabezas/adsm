@@ -75,7 +75,7 @@ GMAC_API cl_int malloc(const CommandQueue &queue, void **addr, ::size_t count)
  */
 GMAC_API cl_int free(const CommandQueue &queue, void *addr)
 {
-    return ::clFree(context(), addr);
+    return ::clFree(queue(), addr);
 }
 
 
@@ -116,6 +116,7 @@ public:
      *
      * \param code String with the source code
      * \param error A pointer to the variable to store CL_SUCCESS on success, an error code otherwise
+	 */
     VECTOR_CLASS<cl::Program> buildProgram(STRING_CLASS code, cl_int *error);
 
     /**
@@ -123,6 +124,7 @@ public:
      *
      * \param code String with the path of the file that contains the source code
      * \param error A pointer to the variable to store CL_SUCCESS on success, an error code otherwise
+	 */
     VECTOR_CLASS<cl::Program> buildProgramFromFile(STRING_CLASS file_name, cl_int *error);
 
     /**
