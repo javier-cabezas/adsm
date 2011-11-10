@@ -69,7 +69,10 @@ source_group(${current_GROUP} FILES
     cpp/eclRandomAccess.cpp
     cpp/eclVecAdd_cplusplus.cpp
     cpp/eclFileVecAdd_cplusplus.cpp
-   # cpp/eclBinarySearch.cpp
+    cpp/eclBinarySearch.cpp
+  #  cpp/eclBinomialOption.cpp
+    cpp/eclBitonicSort.cpp
+    cpp/eclBlackScholes.cpp
 )
 
 # Plain OpenCL tests
@@ -154,8 +157,17 @@ target_link_libraries(eclCompressSend_cpp gmac-hpe)
 add_executable(eclVecAdd_cpp ${common_SRC} cpp/eclVecAdd.cpp)
 target_link_libraries(eclVecAdd_cpp gmac-hpe)
 
-#add_executable(eclBinarySearch_cpp ${common_SRC} #cpp/eclBinarySearch.cpp eclBinarySearchKernel.cl)
-#target_link_libraries(eclBinarySearch_cpp gmac-hpe)
+add_executable(eclBinarySearch_cpp ${common_SRC} cpp/eclBinarySearch.cpp eclBinarySearchKernel.cl)
+target_link_libraries(eclBinarySearch_cpp gmac-hpe)
+
+#add_executable(eclBinomialOption_cpp ${common_SRC} cpp/eclBinomialOption.cpp eclBinomialOptionKernel.cl)
+#target_link_libraries(eclBinomialOption_cpp gmac-hpe)
+
+add_executable(eclBitonicSort_cpp ${common_SRC} cpp/eclBitonicSort.cpp eclBitonicSortKernel.cl)
+target_link_libraries(eclBitonicSort_cpp gmac-hpe)
+
+add_executable(eclBlackScholes_cpp ${common_SRC} cpp/eclBlackScholes.cpp eclBlackScholesKernel.cl)
+target_link_libraries(eclBlackScholes_cpp gmac-hpe)
 
 add_executable(eclPartialVecAdd_cpp ${common_SRC} cpp/eclPartialVecAdd.cpp)
 target_link_libraries(eclPartialVecAdd_cpp gmac-hpe)
