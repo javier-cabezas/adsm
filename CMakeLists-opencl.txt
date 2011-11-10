@@ -28,12 +28,4 @@ if(USE_OPENCL)
     set(DOXYGEN_EXCLUDE_PATTERN "*/cuda/*")
     set(DOXYGEN_EXCLUDE_SYMBOLS "*::cuda::*")
 
-    if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-        install(FILES ${CMAKE_SOURCE_DIR}/doc/latex/user_manual.pdf
-	            DESTINATION doc COMPONENT documentation)
-
-        install(DIRECTORY ${CMAKE_SOURCE_DIR}/samples
-                DESTINATION . COMPONENT samples PATTERN ".hg" EXCLUDE)
-    endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-
 endif(USE_OPENCL)
