@@ -291,4 +291,5 @@ if(MAKE_TOOLS)
     add_subdirectory(tools)
 endif(MAKE_TOOLS)
 
-include(CMakeLists-install.txt)
+include("CMakeLists-opencl-install.txt" OPTIONAL)
+include("CMakeLists-install.txt")
