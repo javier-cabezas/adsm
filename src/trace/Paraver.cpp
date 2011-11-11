@@ -19,7 +19,8 @@ void FiniApiTracer()
 Paraver::Paraver() :
     baseName_(std::string(util::params::ParamTrace)),
     fileName_(baseName_ + ".trace"),
-    trace_(fileName_.c_str(), 1, trace::GetThreadId())
+    trace_(fileName_.c_str(), 1, trace::GetThreadId()),
+    enabled_(true)
 {
     FunctionEvent_ = paraver::Factory<paraver::EventName>::create("Function");
 
@@ -37,6 +38,7 @@ Paraver::Paraver() :
 
 Paraver::~Paraver()
 {
+    enabled_ = false;
     trace_.write(timeMark());
 
     paraver::TraceReader reader(fileName_.c_str());
@@ -53,6 +55,7 @@ Paraver::~Paraver()
 
 void Paraver::startThread(uint64_t t, THREAD_T tid, const char *name)
 {
+    if(enabled_ == false) return;
     trace_.addThread(1, tid);
 }
 
@@ -62,6 +65,7 @@ void Paraver::endThread(uint64_t t, THREAD_T tid)
 
 void Paraver::enterFunction(uint64_t t, THREAD_T tid, const char *name)
 {
+    if(enabled_ == false) return;
     int32_t id = 0;
     mutex_.lock();
     FunctionMap::const_iterator i = functions_.find(std::string(name));
@@ -77,12 +81,14 @@ void Paraver::enterFunction(uint64_t t, THREAD_T tid, const char *name)
 
 void Paraver::exitFunction(uint64_t t, THREAD_T tid, const char *name)
 {
+    if(enabled_ == false) return;
     trace_.pushEvent(t, 1, tid, *FunctionEvent_, 0);
 }
 
 #ifdef USE_TRACE_LOCKS
 void Paraver::requestLock(uint64_t t, THREAD_T tid, const char *name)
 {
+    if(enabled_ == false) return;
     int32_t id = 0;
     mutex_.lock();
     LockMap::const_iterator i = locksRequest_.find(std::string(name));
@@ -98,6 +104,7 @@ void Paraver::requestLock(uint64_t t, THREAD_T tid, const char *name)
 
 void Paraver::acquireLockExclusive(uint64_t t, THREAD_T tid, const char *name)
 {
+    if(enabled_ == false) return;
     int32_t id = 0;
     trace_.pushEvent(t, 1, tid, *LockEventRequest_, 0);
     mutex_.lock();
@@ -114,6 +121,7 @@ void Paraver::acquireLockExclusive(uint64_t t, THREAD_T tid, const char *name)
 
 void Paraver::acquireLockShared(uint64_t t, THREAD_T tid, const char *name)
 {
+    if(enabled_ == false) return;
     int32_t id = 0;
     trace_.pushEvent(t, 1, tid, *LockEventRequest_, 0);
     mutex_.lock();
@@ -130,6 +138,7 @@ void Paraver::acquireLockShared(uint64_t t, THREAD_T tid, const char *name)
 
 void Paraver::exitLock(uint64_t t, THREAD_T tid, const char *name)
 {
+    if(enabled_ == false) return;
     mutex_.lock();
     LockMap::const_iterator i = locksExclusive_.find(std::string(name));
     if(i == locksExclusive_.end()) {
@@ -143,11 +152,13 @@ void Paraver::exitLock(uint64_t t, THREAD_T tid, const char *name)
 
 void Paraver::setThreadState(uint64_t t, THREAD_T tid, const State state)
 {
+    if(enabled_ == false) return;
     trace_.pushState(t, 1, tid, *states_[state]);
 }
 
 void Paraver::dataCommunication(uint64_t t, THREAD_T src, THREAD_T dst, uint64_t delta, size_t size)
 {
+    if(enabled_ == false) return;
     trace_.pushCommunication(t, 1, src, t + delta, 1, dst, size);
 }
 
