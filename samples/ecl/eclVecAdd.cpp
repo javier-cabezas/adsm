@@ -19,16 +19,21 @@ __kernel void vecAdd(__global float *c, __global float *a, __global float *b)\
 int main(int argc, char *argv[])
 {
 	float *a, *b, *c;
+	ecl_error ret;
 
-    assert(eclCompileSource(kernel) == eclSuccess);
+    ret = eclCompileSource(kernel);
+	assert(ret == eclSuccess);
 
 	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
 
     // Alloc & init input data
-    assert(eclMalloc((void **)&a, vecSize * sizeof(float)) == eclSuccess);
-    assert(eclMalloc((void **)&b, vecSize * sizeof(float)) == eclSuccess);
+    ret = eclMalloc((void **)&a, vecSize * sizeof(float));
+	assert(ret == eclSuccess);
+    ret = eclMalloc((void **)&b, vecSize * sizeof(float));
+	assert(ret == eclSuccess);
     // Alloc output data
-    assert(eclMalloc((void **)&c, vecSize * sizeof(float)) == eclSuccess);
+    ret = eclMalloc((void **)&c, vecSize * sizeof(float));
+	assert(ret == eclSuccess);
 
     for(unsigned i = 0; i < vecSize; i++) {
         a[i] = 1.f * rand() / RAND_MAX;
@@ -38,11 +43,16 @@ int main(int argc, char *argv[])
     // Call the kernel
     size_t globalSize = vecSize;
     ecl_kernel kernel;
-    assert(eclGetKernel("vecAdd", &kernel) == eclSuccess);
-    assert(eclSetKernelArgPtr(kernel, 0, c) == eclSuccess);
-    assert(eclSetKernelArgPtr(kernel, 1, a) == eclSuccess);
-    assert(eclSetKernelArgPtr(kernel, 2, b) == eclSuccess);
-    assert(eclCallNDRange(kernel, 1, NULL, &globalSize, NULL) == eclSuccess);
+    ret = eclGetKernel("vecAdd", &kernel);
+	assert(ret == eclSuccess);
+    ret = eclSetKernelArgPtr(kernel, 0, c);
+	assert(ret == eclSuccess);
+    ret = eclSetKernelArgPtr(kernel, 1, a);
+	assert(ret == eclSuccess);
+    ret = eclSetKernelArgPtr(kernel, 2, b);
+	assert(ret == eclSuccess);
+    ret = eclCallNDRange(kernel, 1, NULL, &globalSize, NULL);
+	assert(ret == eclSuccess);
 
     // Check the result in the CPU
     float error = 0.f;

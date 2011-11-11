@@ -75,7 +75,8 @@ int main(int argc, char *argv[])
     thread_t *nThread;
     unsigned n = 0;
 
-    assert(eclCompileSource(kernel) == eclSuccess);
+    ecl_error ret = eclCompileSource(kernel);
+	assert(ret == eclSuccess);
 
     vecSize = vecSize / nIter;
     if(vecSize % nIter) vecSize++;
