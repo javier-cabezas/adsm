@@ -171,7 +171,7 @@ Mode *Process::createMode(int acc)
     TRACE(LOCAL,"Creatintg Execution Mode on Acc#%d", usedAcc);
 
     // Initialize the global shared memory for the context
-    Mode *mode = dynamic_cast<Mode *>(accs_[usedAcc]->createMode(*this, *new AddressSpace("", *this)));
+    Mode *mode = dynamic_cast<Mode *>(accs_[usedAcc]->createMode(*this, *new AddressSpace("AddressSpace", *this)));
     modes_.insert(mode);
     unlock();
 

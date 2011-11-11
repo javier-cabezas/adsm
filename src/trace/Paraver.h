@@ -51,6 +51,7 @@ protected:
     std::string baseName_, fileName_;
     paraver::TraceWriter trace_;
 
+    bool enabled_;
     paraver::Lock mutex_;
 
     typedef std::map<std::string, int32_t > FunctionMap;
