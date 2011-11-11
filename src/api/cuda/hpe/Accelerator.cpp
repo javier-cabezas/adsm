@@ -30,7 +30,9 @@ Accelerator::Accelerator(int n, CUdevice device) :
 #endif
     , ctx_(NULL)
 #endif
-
+#if not defined(USE_CUDA_SET_CONTEXT)
+    , contextLock_("ContextLock")
+#endif
 {
 #if CUDA_VERSION > 3010
     size_t size = 0;
@@ -75,8 +77,14 @@ Accelerator::Accelerator(int n, CUdevice device) :
     CFATAL(ret == CUDA_SUCCESS);
 #endif
 
+#if defined(USE_CUDA_SET_CONTEXT)
     ret = cuCtxSetCurrent(NULL);
+#else
+    CUcontext tmp;
+    ret = cuCtxPopCurrent(&tmp);
+#endif
     CFATAL(ret == CUDA_SUCCESS, "Error setting up a new context %d", ret);
+
 #else
 #endif
 

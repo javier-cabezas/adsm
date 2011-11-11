@@ -62,10 +62,10 @@ public:
 
 typedef CUstream Stream;
 class Accelerator;
-class GMAC_LOCAL AcceleratorLock : protected gmac::util::Lock {
+class GMAC_LOCAL AcceleratorLock : protected gmac::util::SpinLock {
     friend class Accelerator;
 public:
-    AcceleratorLock() : gmac::util::Lock("Accelerator") {}
+    AcceleratorLock(const char *name) : gmac::util::SpinLock(name) {}
 };
 
 class GMAC_LOCAL AlignmentMap : public std::map<CUdeviceptr, CUdeviceptr>, public gmac::util::RWLock {
@@ -110,6 +110,10 @@ protected:
 
 #if defined(USE_TRACE)
     CUevent start_, end_;
+#endif
+
+#if not defined(USE_CUDA_SET_CONTEXT)
+    AcceleratorLock contextLock_;
 #endif
 
     void pushContext() const;
