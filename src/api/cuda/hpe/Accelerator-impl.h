@@ -88,9 +88,19 @@ void Accelerator::pushContext() const
 #ifdef USE_MULTI_CONTEXT
     CUcontext *ctx = reinterpret_cast<CUcontext *>(Ctx_.get());
     ASSERTION(ctx != NULL);
+#if defined(USE_CUDA_SET_CONTEXT)
     ret = cuCtxSetCurrent(*ctx);
 #else
+    contextLock_.lock();
+    ret = cuCtxPushCurrent(*ctx);
+#endif
+#else
+#if defined(USE_CUDA_SET_CONTEXT)
     ret = cuCtxSetCurrent(ctx_);
+#else
+    contextLock_.lock();
+    ret = cuCtxPushCurrent(ctx_);
+#endif
 #endif
     CFATAL(ret == CUDA_SUCCESS, "Error pushing CUcontext: %d", ret);
 }
@@ -98,6 +108,12 @@ void Accelerator::pushContext() const
 inline
 void Accelerator::popContext() const
 {
+#if not defined(USE_CUDA_SET_CONTEXT)
+    CUcontext tmp;
+    CUresult ret = cuCtxPopCurrent(&tmp);
+    CFATAL(ret == CUDA_SUCCESS, "Error pushing CUcontext: %d", ret);
+    contextLock_.unlock();
+#endif
 }
 
 #ifndef USE_MULTI_CONTEXT
