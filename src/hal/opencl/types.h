@@ -5,9 +5,12 @@
 
 #include "hal/types-detail.h"
 
+#include "ptr.h"
+
 namespace __impl { namespace hal { namespace opencl {
 
 class device;
+class platform;
 
 class coherence_domain;
 class context_t;
@@ -18,7 +21,11 @@ class variable_t;
 class code_repository;
 class _event_t;
 class event_t;
+class event_list;
 class buffer_t;
+
+typedef __impl::hal::_ptr_t<_opencl_ptr_t,
+                            context_t> ptr_t;
 
 typedef hal::detail::backend_traits<cl_context,
                                     cl_command_queue,
@@ -34,9 +41,14 @@ typedef hal::detail::implementation_traits<coherence_domain,
                                            variable_t,
                                            code_repository,
                                            event_t,
-                                           buffer_t> implementation_traits;
+                                           event_list,
+                                           buffer_t,
+                                           ptr_t> implementation_traits;
 
 gmacError_t error(cl_int err);
+gmacError_t compile_embedded_code(std::list<device *> devices);
+gmacError_t compile_code(platform &plat, const std::string &code, const std::string &flags);
+gmacError_t compile_binary(platform &plat, const std::string &code, const std::string &flags);
 
 }}}
 

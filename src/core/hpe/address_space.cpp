@@ -302,24 +302,19 @@ address_space::is_integrated() const
 kernel *
 address_space::get_kernel(gmac_kernel_id_t k)
 {
-    kernel *ker = NULL;
+    kernel *ret = NULL;
     map_kernel::const_iterator i;
     i = kernels_.find(k);
     if (i != kernels_.end()) {
-        ker = i->second;
+        ret = i->second;
+    } else {
+        const hal::kernel_t *kernelHal = ctx_.get_code_repository().get_kernel(k);
+        if (kernelHal != NULL) {
+            ret = new kernel(*kernelHal);
+            kernels_.insert(map_kernel::value_type(k, ret));
+        }
     }
-    return ker;
-}
-
-void
-address_space::register_kernel(gmac_kernel_id_t k, const hal::kernel_t &ker)
-{
-    TRACE(LOCAL,"CTX: %p Registering kernel %s: %p", this, ker.get_name().c_str(), k);
-    map_kernel::iterator i;
-    i = kernels_.find(k);
-    ASSERTION(i == kernels_.end());
-    kernel *kernelNew = new kernel(ker);
-    kernels_[k] = kernelNew;
+    return ret;
 }
 
 #if 0

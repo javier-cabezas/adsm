@@ -121,14 +121,6 @@ public:
     bool has_direct_copy(const core::address_space &aspace) const;
 
     /**
-     * Registers a new kernel that can be executed by the owner thread of the mode
-     *
-     * \param k A key that identifies the kernel object
-     * \param ker A const reference to the kernel to be registered
-     */
-    void register_kernel(gmac_kernel_id_t k, const hal::kernel_t &ker);
-
-    /**
      * Returns a kernel identified by k
      *
      * \param k A key that identifies the kernel object
@@ -136,8 +128,10 @@ public:
     kernel *get_kernel(gmac_kernel_id_t k);
 
 #ifdef USE_OPENCL
+#if 0
     gmacError_t acquire(hostptr_t addr);
     gmacError_t release(hostptr_t addr);
+#endif
 #endif
 
 #if 0

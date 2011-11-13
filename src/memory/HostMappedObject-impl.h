@@ -15,7 +15,9 @@ inline gmacError_t
 HostMappedObject::acquire(core::address_space_ptr current)
 {
     gmacError_t ret = gmacSuccess;
+#if 0
     ret = current->acquire(addr_);
+#endif
     return ret;
 }
 
@@ -23,7 +25,9 @@ inline gmacError_t
 HostMappedObject::release(core::address_space_ptr current)
 {
     gmacError_t ret = gmacSuccess;
+#if 0
     ret = current->release(addr_);
+#endif
     return ret;
 }
 #endif

@@ -248,7 +248,7 @@ set_target_properties(${GMAC_TARGET_NAME} PROPERTIES
     VERSION ${GMAC_VERSION} SOVERSION 1
 )
 
-include("CMakeLists-cl.txt" OPTIONAL)
+# include("CMakeLists-cl.txt" OPTIONAL)
 # set_property(TARGET ${GMAC_TARGET_NAME} PROPERTY PUBLIC_HEADER ${GMAC_HEADERS})
 message(STATUS "Compiling: ${GMAC_TARGET_NAME}")
 

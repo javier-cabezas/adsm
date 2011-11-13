@@ -6,8 +6,10 @@ namespace __impl { namespace hal { namespace detail {
 template <typename B, typename I>
 inline
 stream_t<B, I>::stream_t(typename B::stream stream, context_parent_t &context) :
+#if 0
     lockBuffer_("lock_buffer"),
     buffer_(NULL),
+#endif
     stream_(stream),
     context_(context)
 {

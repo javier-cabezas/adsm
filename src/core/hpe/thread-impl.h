@@ -158,40 +158,40 @@ thread::get_context(address_space &aspace)
 #endif
 
 inline gmacError_t
-thread::new_kernel_config(hal::kernel_t::config &config)
+thread::new_kernel_launch(hal::kernel_t::config *config, kernel::arg_list *args)
 {
-    return new_kernel_config(config, get_current_virtual_device());
+    return new_kernel_launch(config, args, get_current_virtual_device());
 }
 
 inline gmacError_t
-thread::new_kernel_config(hal::kernel_t::config &config, vdevice &dev)
+thread::new_kernel_launch(hal::kernel_t::config *config, kernel::arg_list *args, vdevice &dev)
 {
     map_config::iterator it = mapConfigs_.find(&dev);
 
     if (it == mapConfigs_.end()) {
-        hal::kernel_t::config *c = new hal::kernel_t::config(config);
-        mapConfigs_.insert(map_config::value_type(&dev, c));
+        mapConfigs_.insert(map_config::value_type(&dev, pair_launch(config, args)));
     } else {
-        *(it->second) = config;
+        it->second.first  = config;
+        it->second.second = args;
     }
 
     return gmacSuccess;
 }
 
-inline hal::kernel_t::config &
-thread::get_kernel_config()
+inline thread::pair_launch &
+thread::get_kernel_launch()
 {
-    return get_kernel_config(get_current_virtual_device());
+    return get_kernel_launch(get_current_virtual_device());
 }
 
-inline hal::kernel_t::config &
-thread::get_kernel_config(vdevice &dev)
+inline thread::pair_launch &
+thread::get_kernel_launch(vdevice &dev)
 {
     map_config::iterator it = mapConfigs_.find(&dev);
 
     ASSERTION(it != mapConfigs_.end());
 
-    return *(it->second);
+    return it->second;
 }
 
 }}}

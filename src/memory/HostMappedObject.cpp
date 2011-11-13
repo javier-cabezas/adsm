@@ -96,8 +96,11 @@ HostMappedObject::free(core::address_space_ptr aspace)
 accptr_t
 HostMappedObject::getAccPtr(core::address_space_ptr aspace) const
 {
+#if 0
     gmacError_t err;
     return aspace->get_host_pinned_mapping(addr_.get_host_addr(), err);
+#endif
+    return accptr_t(0);
 }
 
 }}

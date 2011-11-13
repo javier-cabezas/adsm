@@ -6,7 +6,6 @@
 
 #define __GMAC_ERROR(r, err) case r: error = err; if(r == CUDA_ERROR_INVALID_HANDLE) abort(); break
 
-
 namespace __impl { namespace hal {
 
 gmacError_t
@@ -184,6 +183,7 @@ _event_t::reset(bool async, type t)
     err_ = gmacSuccess;
     synced_ = false;
     state_ = None;
+
     remove_triggers();
 }
 

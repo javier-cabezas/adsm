@@ -47,7 +47,7 @@ process::process() :
 
 process::~process()
 {
-    if (thread::has_current_thread()) finiThread();
+    if (thread::has_current_thread()) finiThread(true);
 }
 
 void process::init()
@@ -77,16 +77,18 @@ void process::initThread(bool userThread, THREAD_T tidParent)
     }
 }
 
-void process::finiThread()
+void process::finiThread(bool userThread)
 {
     // TODO: remove vdevices in virtual device table
     //if (Thread::hasCurrentVirtualDevice() != false) removevdevice(Thread::getCurrentVirtualDevice());
 
-    map_thread::iterator it = mapThreads_.find(util::GetThreadId());
-    ASSERTION(it != mapThreads_.end(), "Thread not registered");
-    mapThreads_.erase(it);
+    if (userThread) {
+        map_thread::iterator it = mapThreads_.find(util::GetThreadId());
+        ASSERTION(it != mapThreads_.end(), "Thread not registered");
+        mapThreads_.erase(it);
 
-    delete &TLS::get_current_thread();
+        delete &TLS::get_current_thread();
+    }
 }
 
 }}}

@@ -5,21 +5,35 @@
 
 namespace __impl { namespace hal { namespace opencl {
 
+cl_device_id *
+platform::get_cl_device_array()
+{
+    cl_device_id *deviceIds = new cl_device_id[devices_.size()];
+
+    unsigned i = 0;
+    for (std::list<device *>::iterator it  = devices_.begin();
+            it != devices_.end();
+            it++) {
+        deviceIds[i++] = (*it)->openclDeviceId_;
+    }
+    return deviceIds;
+}
+
+
 device::device(platform &p,
                cl_device_id openclDeviceId,
-               coherence_domain &coherenceDomain,
-               cl_context context) :
+               coherence_domain &coherenceDomain) :
     Parent(coherenceDomain),
     platform_(p),
     openclDeviceId_(openclDeviceId),
-    context_(context)
+    context_(p.get_context())
 {
     // Memory size
     {
         cl_int ret = CL_SUCCESS;
         cl_ulong val = 0;
 
-        TRACE(GLOBAL, "Creating OPENCL accelerator");
+        TRACE(GLOBAL, "Creating OpenCL accelerator");
         ret = clGetDeviceInfo(openclDeviceId_, CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(val), &val, NULL);
         CFATAL(ret == CL_SUCCESS , "Unable to get attribute %d", ret);
 
@@ -35,19 +49,22 @@ device::device(platform &p,
     {
         cl_bool val = CL_FALSE;
         cl_int ret = clGetDeviceInfo(openclDeviceId_, CL_DEVICE_HOST_UNIFIED_MEMORY,
-                sizeof(val), NULL, NULL);
+                sizeof(val), &val, NULL);
         ASSERTION(ret == CL_SUCCESS, "Error querying device for unified memory");
         integrated_ = (val == CL_TRUE);
     }
+
+    p.add_device(*this);
 }
 
 context_t *
-device::create_context(const SetSiblings &siblings)
+device::create_context(const SetSiblings &siblings, gmacError_t &err)
 {
-    cl_int res;
-    cl_context ctx;
+    context_t *ret = NULL;
 
-    cl_device *devices = platform_.get_cl_device_array();
+#if 0
+    cl_device_id *devices = platform_.get_cl_device_array();
+    unsigned ndevices = platform_.get_ndevices();
 
     cl_context_properties prop[] = {
         CL_CONTEXT_PLATFORM,
@@ -55,8 +72,10 @@ device::create_context(const SetSiblings &siblings)
         0
     };
 
-    ctx = clCreateContext(prop, siblings.size(), clDevices, NULL, NULL, &ret);
-    ASSERTION(ret == CL_SUCCESS);
+    //ctx = clCreateContext(prop, ndevices, devices, NULL, NULL, &res);
+#endif
+
+    ret = new context_t(platform_.get_context(), *this);
 
 #if 0
     // Checks
@@ -79,7 +98,13 @@ device::create_context(const SetSiblings &siblings)
 
         return new context_t(ctx, *this);
     }
+
+    if (devices != NULL) {
+        delete []devices;
+    }
 #endif
+
+    return ret;
 }
 
 gmacError_t
@@ -112,114 +137,32 @@ device::destroy_stream(stream_t &stream)
     return error(ret);
 }
 
-#if 0
-event_t
-device::copy(accptr_t dst, hostptr_t src, size_t count, stream_t &stream)
+size_t
+device::get_total_memory() const
 {
-    event_t event(stream);
-
-    cl_int err = clEnqueueWriteBuffer(stream(), dst.get(), CL_TRUE, dst.offset(), count, src, 0, NULL, &event());
-    ASSERTION(err == CL_SUCCESS);
-
-    return event;
+    FATAL("Not implemented");
+    return 0;
 }
 
-event_t
-device::copy(hostptr_t dst, accptr_t src, size_t count, stream_t &stream)
+size_t
+device::get_free_memory() const
 {
-    event_t event(stream);
-
-    cl_int err = clEnqueueReadBuffer(stream(), src.get(), CL_TRUE, src.offset(), count, dst, 0, NULL, &event());
-    ASSERTION(err == CL_SUCCESS);
-
-    return event;
+    FATAL("Not implemented");
+    return 0;
 }
 
-event_t
-device::copy(accptr_t dst, accptr_t src, size_t count, stream_t &stream)
-{
-    event_t event(stream);
-
-    cl_int err = clEnqueueCopyBuffer(stream(),
-                                     src.get(), dst.get(),
-                                     src.offset(), dst.offset(),
-                                     count, 0, NULL, &event());
-    ASSERTION(err == CL_SUCCESS);
-
-    err = clWaitForEvents(1, &event());
-    ASSERTION(err == CL_SUCCESS);
-
-    return event;
-}
-
-async_event_t
-device::copy_async(accptr_t dst, hostptr_t src, size_t count, stream_t &stream)
-{
-    async_event_t event(stream);
-
-    cl_int err = clEnqueueWriteBuffer(stream(), dst.get(), CL_FALSE, dst.offset(), count, src, 0, NULL, &event());
-    ASSERTION(err == CL_SUCCESS);
-
-    return event;
-}
-
-async_event_t
-device::copy_async(hostptr_t dst, accptr_t src, size_t count, stream_t &stream)
-{
-    async_event_t event(stream);
-
-    cl_int err = clEnqueueReadBuffer(stream(), src.get(), CL_FALSE, src.offset(), count, dst, 0, NULL, &event());
-    ASSERTION(err == CL_SUCCESS);
-
-    return event;
-}
-
-async_event_t
-device::copy_async(accptr_t dst, accptr_t src, size_t count, stream_t &stream)
-{
-    async_event_t event(stream);
-
-    cl_int err = clEnqueueCopyBuffer(stream(),
-                                     src.get(), dst.get(),
-                                     src.offset(), dst.offset(),
-                                     count, 0, NULL, &event());
-    ASSERTION(err == CL_SUCCESS);
-
-    return event;
-}
-
-gmacError_t
-device::sync(async_event_t &event)
-{
-    cl_int res;
-
-    res = clWaitForEvents(1, &event());
-
-    return opencl::error(res);
-}
-
-gmacError_t
-device::sync(stream_t &stream)
-{
-    cl_int res;
-
-    res = clFinish(stream());
-
-    return opencl::error(res);
-}
-#endif
 bool
-device::has_direct_copy(const Parent &/*_dev*/) const
+device::has_direct_copy(const Parent &_dev) const
 {
-#if 0
     const device &dev = reinterpret_cast<const device &>(_dev);
+#if 0
     int canAccess;
     CUresult ret = cuDeviceCanAccessPeer(&canAccess, cudaDevice_, dev.cudaDevice_);
     ASSERTION(ret == CUDA_SUCCESS, "Error querying devices");
 
     return canAccess == 1;
 #endif
-    return false;
+    return &get_platform() == &dev.get_platform();
 }
 
 

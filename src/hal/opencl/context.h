@@ -17,177 +17,75 @@ namespace opencl {
 class context_t;
 
 class GMAC_LOCAL buffer_t :
-    public hal::detail::buffer_t<device, backend_traits, implementation_traits> {
-    typedef hal::detail::buffer_t<device, backend_traits, implementation_traits> Parent;
+    public hal::detail::buffer_t<implementation_traits> {
+    typedef hal::detail::buffer_t<implementation_traits> Parent;
 
     hostptr_t addr_;
 
 public:
-    buffer_t(hostptr_t addr, context_t &context);
+    buffer_t(hostptr_t addr, size_t size, context_t &context);
 
     hostptr_t get_addr();
-    accptr_t get_device_addr();
+    ptr_t get_device_addr();
 };
 
 class code_repository;
 
-typedef hal::detail::list_event<device, backend_traits, implementation_traits> list_event_detail;
+typedef hal::detail::list_event<implementation_traits> list_event_detail;
 
 class GMAC_LOCAL list_event :
     public list_event_detail {
     typedef list_event_detail Parent;
+    friend class context_t;
+    friend class kernel_t;
 
-public:
-    gmacError_t sync();
-
+protected:
     void set_synced();
 
     cl_event *get_event_array();
+public:
+    gmacError_t sync();
 
     size_t size() const;
 };
-
-class GMAC_LOCAL queue_event :
-    std::queue<_event_t *>,
-    gmac::util::mutex {
-
-    typedef std::queue<_event_t *> Parent;
-
-public:
-    queue_event() :
-        gmac::util::mutex("list_event")
-    {
-    }
-
-    _event_t *pop()
-    {
-        _event_t *ret = NULL;
-
-        lock();
-        if (size() > 0) {
-            ret = Parent::front();
-            Parent::pop();
-        }
-        unlock();
-
-        return ret;
-    }
-
-    void push(_event_t &event)
-    {
-        lock();
-        Parent::push(&event);
-        unlock();
-    }
-};
-
-template <typename T>
-class GMAC_LOCAL map_pool :
-    std::map<size_t, std::queue<T *> >,
-    gmac::util::mutex {
-
-    typedef std::queue<T *> queue_subset;
-    typedef std::map<size_t, queue_subset> Parent;
-
-public:
-    map_pool() :
-        gmac::util::mutex("map_pool")
-    {}
-
-    T *pop(size_t size)
-    {
-        T *ret = NULL;
-
-        lock();
-        typename Parent::iterator it;
-        it = Parent::find(size);
-        if (it != Parent::end()) {
-            queue_subset &queue = it->second;
-            if (queue.size() > 0) {
-                ret = queue.front();
-                queue.pop();
-            }
-        }
-        unlock();
-
-        return ret;
-    }
-
-    void push(T *v, size_t size = 0)
-    {
-        lock();
-        typename Parent::iterator it;
-        it = Parent::find(size);
-        if (it != Parent::end()) {
-            queue_subset &queue = it->second;
-            queue.push(v);
-        } else {
-            Parent::insert(typename Parent::value_type(size, queue_subset()));
-        }
-        unlock();
-    }
-};
-
-
 
 class GMAC_LOCAL context_t :
     public hal::detail::context_t<device, backend_traits, implementation_traits>,
     util::unique<context_t, GmacAddressSpaceId> {
     typedef hal::detail::context_t<device, backend_traits, implementation_traits> Parent;
 
+    friend class buffer_t;
     friend class stream_t;
     friend class _event_common_t;
     friend class event_t;
     friend class event_deleter;
-
-    queue_event queueEvents_;
+    friend class detail::stream_t<backend_traits, implementation_traits>;
 
     _event_t *get_new_event(bool async, _event_t::type t);
     void dispose_event(_event_t &event);
 
+    buffer_t *alloc_buffer(size_t size, GmacProtection hint, gmacError_t &err);
+    gmacError_t free_buffer(buffer_t &buffer);
+
+    event_t copy_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
+    event_t copy_backend(ptr_t dst, device_input &input, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
+    event_t copy_backend(device_output &output, const ptr_t src, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
+    event_t memset_backend(ptr_t dst, int c, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
+
+    event_t copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
+    event_t copy_async_backend(ptr_t dst, device_input &input, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
+    event_t copy_async_backend(device_output &output, const ptr_t src, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
+    event_t memset_async_backend(ptr_t dst, int c, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
+
 public:
     context_t(cl_context ctx, device &device);
 
-    accptr_t alloc(size_t count, gmacError_t &err);
-    //hostptr_t alloc_host_pinned(hostptr_t &ptr, size_t count, GmacProtection hint, gmacError_t &err);
-    buffer_t *alloc_buffer(size_t count, GmacProtection hint, gmacError_t &err);
-    gmacError_t free(accptr_t acc);
-    //gmacError_t free_host_pinned(hostptr_t ptr);
-    gmacError_t free_buffer(buffer_t &buffer);
+    ptr_t alloc(size_t size, gmacError_t &err);
+    ptr_t alloc_host_pinned(size_t size, GmacProtection hint, gmacError_t &err);
+    gmacError_t free(ptr_t acc);
+    gmacError_t free_host_pinned(ptr_t ptr);
 
-    event_t copy(accptr_t dst, hostptr_t src, size_t count, stream_t &stream, list_event_detail &dependencies, gmacError_t &err);
-    event_t copy(accptr_t dst, hostptr_t src, size_t count, stream_t &stream, event_t event, gmacError_t &err);
-    event_t copy(accptr_t dst, hostptr_t src, size_t count, stream_t &stream, gmacError_t &err);
-
-    event_t copy(hostptr_t dst, accptr_t src, size_t count, stream_t &stream, list_event_detail &dependencies, gmacError_t &err);
-    event_t copy(hostptr_t dst, accptr_t src, size_t count, stream_t &stream, event_t event, gmacError_t &err);
-    event_t copy(hostptr_t dst, accptr_t src, size_t count, stream_t &stream, gmacError_t &err);
-
-    event_t copy(accptr_t dst, accptr_t src, size_t count, stream_t &stream, list_event_detail &dependencies, gmacError_t &err);
-    event_t copy(accptr_t dst, accptr_t src, size_t count, stream_t &stream, event_t event, gmacError_t &err);
-    event_t copy(accptr_t dst, accptr_t src, size_t count, stream_t &stream, gmacError_t &err);
-
-    event_t copy_async(accptr_t dst, buffer_t src, size_t off, size_t count, stream_t &stream, list_event_detail &dependencies, gmacError_t &err);
-    event_t copy_async(accptr_t dst, buffer_t src, size_t off, size_t count, stream_t &stream, event_t event, gmacError_t &err);
-    event_t copy_async(accptr_t dst, buffer_t src, size_t off, size_t count, stream_t &stream, gmacError_t &err);
-
-    event_t copy_async(buffer_t dst, size_t off, accptr_t src, size_t count, stream_t &stream, list_event_detail &dependencies, gmacError_t &err);
-    event_t copy_async(buffer_t dst, size_t off, accptr_t src, size_t count, stream_t &stream, event_t event, gmacError_t &err);
-    event_t copy_async(buffer_t dst, size_t off, accptr_t src, size_t count, stream_t &stream, gmacError_t &err);
-
-    event_t copy_async(accptr_t dst, accptr_t src, size_t count, stream_t &stream, list_event_detail &dependencies, gmacError_t &err);
-    event_t copy_async(accptr_t dst, accptr_t src, size_t count, stream_t &stream, event_t event, gmacError_t &err);
-    event_t copy_async(accptr_t dst, accptr_t src, size_t count, stream_t &stream, gmacError_t &err);
-
-    event_t memset(accptr_t dst, int c, size_t count, stream_t &stream, list_event_detail &dependencies, gmacError_t &err);
-    event_t memset(accptr_t dst, int c, size_t count, stream_t &stream, event_t event, gmacError_t &err);
-    event_t memset(accptr_t dst, int c, size_t count, stream_t &stream, gmacError_t &err);
-
-    event_t memset_async(accptr_t dst, int c, size_t count, stream_t &stream, list_event_detail &dependencies, gmacError_t &err);
-    event_t memset_async(accptr_t dst, int c, size_t count, stream_t &stream, event_t event, gmacError_t &err);
-    event_t memset_async(accptr_t dst, int c, size_t count, stream_t &stream, gmacError_t &err);
-
-    accptr_t get_device_addr_from_pinned(hostptr_t addr);
+    ptr_t get_device_addr_from_pinned(hostptr_t addr);
 
     const code_repository &get_code_repository();
 };

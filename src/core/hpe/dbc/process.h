@@ -48,7 +48,7 @@ protected:
 public:
     process();
     void initThread(bool userThread, THREAD_T parent);
-    void finiThread();
+    void finiThread(bool userThread);
 #if 0
 #define ACC_AUTO_BIND -1 
     __impl::core::hpe::Mode *createMode(int acc =ACC_AUTO_BIND);

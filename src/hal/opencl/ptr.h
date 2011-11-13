@@ -31,8 +31,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_CONFIG_OPENCL_COMMON_H_
-#define GMAC_CONFIG_OPENCL_COMMON_H_
+#ifndef GMAC_HAL_OPENCL_H_
+#define GMAC_HAL_OPENCL_H_
 
 #if defined(__APPLE__)
 #   include <OpenCL/cl.h>
@@ -43,87 +43,82 @@ WITH THE SOFTWARE.  */
 #include <cassert>
 #include <cstdlib>
 
-#include "config/ptr.h"
+#include "hal/ptr.h"
 
-typedef cl_command_queue stream_t;
-typedef cl_event event;
+namespace __impl { namespace hal {
 
-#if 0
 class _opencl_ptr_t {
 private:
-    cl_mem base_;
-    size_t offset_;
+    cl_mem ptr_;
+    off_t off_;
 
 public:
-    typedef cl_mem base_type;
+    typedef cl_mem backend_type;
 
-    inline explicit _opencl_ptr_t(cl_mem base) :
-        base_(base),
-        offset_(0)
+    inline explicit _opencl_ptr_t(cl_mem mem) :
+        ptr_(mem),
+        off_(0)
     {
     }
 
     inline _opencl_ptr_t(const _opencl_ptr_t &ptr) :
-        base_(ptr.base_),
-        offset_(ptr.offset_)
+        ptr_(ptr.ptr_),
+        off_(ptr.off_)
     {
     }
 
     inline _opencl_ptr_t &operator=(const _opencl_ptr_t &ptr)
     {
         if (this != &ptr) {
-            base_   = ptr.base_;
-            offset_ = ptr.offset_;
+            ptr_ = ptr.ptr_;
+            off_ = ptr.off_;
         }
         return *this;
     }
 
     inline bool operator==(const _opencl_ptr_t &ptr) const
     {
-        return base_ == ptr.base_ && offset_ == ptr.offset_;
+        return ptr_ == ptr.ptr_ && off_ == ptr.off_;
     }
 
     inline bool operator==(long i) const
     {
-        return base_ == cl_mem(i);
+        return ptr_ == cl_mem(i);
     }
 
     inline bool operator!=(const _opencl_ptr_t &ptr) const
     {
-        return base_ != ptr.base_ || offset_ != ptr.offset_;
+        return ptr_ != ptr.ptr_ || off_ != ptr.off_;
     }
 
     inline bool operator!=(long i) const
     {
-        return base_ != cl_mem(i);
+        return ptr_ != cl_mem(i);
     }
 
     inline bool operator<(const _opencl_ptr_t &ptr) const
     {
-        return base_ < ptr.base_ || (base_ == ptr.base_ && offset_ < ptr.offset_);
+        return ptr_ < ptr.ptr_ || (ptr_ == ptr.ptr_ && off_ < ptr.off_);
     }
 
     template <typename T>
     inline _opencl_ptr_t &operator+=(const T &off)
     {
-        offset_ += off;
+        off_ += off;
         return *this;
     }
 
     inline cl_mem get() const
     {
-        return base_;
+        return ptr_;
     }
 
     inline size_t offset() const
     {
-        return offset_;
+        return off_;
     }
 };
 
-typedef _common_ptr_t<_opencl_ptr_t> accptr_t;
-#endif
-
-typedef const char * gmac_kernel_id_t;
+}}
 
 #endif

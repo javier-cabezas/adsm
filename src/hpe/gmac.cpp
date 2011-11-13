@@ -381,7 +381,7 @@ gmacLaunch(__impl::core::hpe::kernel::launch &launch)
     smart_ptr<address_space>::shared aspace = dev.get_address_space();
     Manager &manager = getManager();
     TRACE(GLOBAL, "Flush the memory used in the kernel");
-    const std::list<__impl::memory::ObjectInfo> &objects = launch.get_objects();
+    const std::list<__impl::memory::ObjectInfo> &objects = launch.get_arg_list().get_objects();
     // If the launch object does not contain objects, assume all the objects
     // in the mode are released
     ret = manager.releaseObjects(aspace, objects);
@@ -407,14 +407,14 @@ gmacLaunch(__impl::core::hpe::kernel::launch &launch)
 
 extern "C"
 GMAC_API gmacError_t APICALL
-gmacLaunch(gmac_kernel_id_t k, __impl::hal::kernel_t::config &config)
+gmacLaunch(gmac_kernel_id_t k, __impl::hal::kernel_t::config &config, __impl::core::hpe::kernel::arg_list &args)
 {
     enterGmac();
     gmac::trace::EnterCurrentFunction();
     vdevice &dev = thread::get_current_thread().get_current_virtual_device();
     kernel::launch *launch = NULL;
     gmacError_t ret;
-    launch = dev.launch(k, config, ret);
+    launch = dev.launch(k, config, args, ret);
 
     if(ret == gmacSuccess) {
         ret = gmacLaunch(*launch);
@@ -437,7 +437,7 @@ gmacThreadSynchronize(kernel::launch &launch)
         vdevice &dev = thread::get_current_thread().get_current_virtual_device();
         dev.wait(launch);
         TRACE(GLOBAL, "Memory Sync");
-        ret = getManager().acquireObjects(dev.get_address_space(), launch.get_objects());
+        ret = getManager().acquireObjects(dev.get_address_space(), launch.get_arg_list().get_objects());
     }
     return ret;
 }

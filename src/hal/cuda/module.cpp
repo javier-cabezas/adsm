@@ -41,7 +41,6 @@ module_descriptor::module_descriptor(const void *fatBin) :
     fatBin_(fatBin)
 {
     TRACE(LOCAL, "Creating module descriptor: %p", fatBin_);
-    ASSERTION(this != NULL);
     ModuleDescriptors_.push_back(this);
 }
 

@@ -11,15 +11,34 @@ kernel_t::kernel_t(cl_kernel func, const std::string &name) :
 
 inline 
 kernel_t::launch &
-kernel_t::launch_config(Parent::config &conf, stream_t &stream)
+kernel_t::launch_config(Parent::config &conf, Parent::arg_list &args, stream_t &stream)
 {
-    return *(new launch(*this, conf, stream));
+    return *(new launch(*this, (kernel_t::config &) conf,
+                               (kernel_t::arg_list &) args, stream));
 }
 
 inline
-kernel_t::launch::launch(kernel_t &parent, Parent::config &conf, stream_t &stream) :
-    hal::detail::kernel_t<device, backend_traits, implementation_traits>::launch(parent, dynamic_cast<config &>(conf), stream)
+kernel_t::launch::launch(kernel_t &parent, config &conf, arg_list &args, stream_t &stream) :
+    hal::detail::kernel_t<backend_traits, implementation_traits>::launch(parent, conf, args, stream)
 {
+}
+
+inline
+unsigned
+kernel_t::arg_list::get_nargs() const
+{
+    return nArgs_;
+}
+
+inline
+gmacError_t
+kernel_t::arg_list::set_arg(kernel_t &k, const void *arg, size_t size, unsigned index)
+{
+    cl_int res;
+    res = clSetKernelArg(k(), index, size, arg);
+    nArgs_++;
+
+    return error(res);
 }
 
 inline
@@ -96,22 +115,20 @@ kernel_t::launch::execute(unsigned nevents, const cl_event *events, gmacError_t 
     return ret;
 }
 
-
-
 inline
-kernel_t::config::config(unsigned ndims, const size_t *global, const size_t *group) :
-    hal::detail::kernel_t<device, backend_traits, implementation_traits>::config(ndims),
-    nArgs_(0),
+kernel_t::config::config(unsigned ndims, const size_t *offset, const size_t *global, const size_t *group) :
+    hal::detail::kernel_t<backend_traits, implementation_traits>::config(ndims),
+    dimsOffset_(offset),
     dimsGlobal_(global),
     dimsGroup_(group)
 {
 }
 
 inline
-unsigned
-kernel_t::config::get_nargs() const
+const size_t *
+kernel_t::config::get_dims_offset() const
 {
-    return nArgs_;
+    return dimsOffset_;
 }
 
 inline
@@ -126,20 +143,6 @@ const size_t *
 kernel_t::config::get_dims_group() const
 {
     return dimsGroup_;
-}
-
-inline
-gmacError_t
-kernel_t::config::set_arg(const void *arg, size_t size, unsigned index)
-{
-    gmacError_t ret = gmacSuccess;
-
-    params_[index] = arg;
-    if (index >= nArgs_) {
-        nArgs_ = index + 1;
-    }
-
-    return ret;
 }
 
 }}}

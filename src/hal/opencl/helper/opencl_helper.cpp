@@ -1,7 +1,7 @@
 #include "util/Logger.h"
 #include "util/UniquePtr.h"
 
-#include "opencl_util.h"
+#include "opencl_helper.h"
 
 #if defined(_MSC_VER)
 #define sscanf(...) sscanf_s(__VA_ARGS__)
@@ -26,7 +26,7 @@ get_platform_string(int string, cl_platform_id id)
 }
 
 std::string
-getDeviceString(int string, cl_device_id id)
+get_device_string(int string, cl_device_id id)
 {
     size_t len;
     cl_int err = clGetDeviceInfo(id, string, 0, NULL, &len);

@@ -25,7 +25,7 @@ init_platform()
     return ret;
 }
 
-opencl::map_context_repository Modules_("map_context_repository");
+opencl::map_platform_repository Modules_("map_platform_repository");
 
 std::list<opencl::device *>
 init_devices()
@@ -51,7 +51,6 @@ init_devices()
     CFATAL(ret == CL_SUCCESS);
     MESSAGE("%d OpenCL platforms found", platformSize);
 
-    unsigned n = 0;
     for (unsigned i = 0; i < platformSize; i++) {
         MESSAGE("Platform [%u/%u]: %s", i + 1, platformSize, opencl::helper::get_platform_name(platforms[i]).c_str());
         cl_uint deviceSize = 0;
@@ -59,26 +58,34 @@ init_devices()
                              0, NULL, &deviceSize);
         ASSERTION(ret == CL_SUCCESS);
 	    if(deviceSize == 0) continue;
-        cl_device_id *devices = new cl_device_id[deviceSize];
+        cl_device_id *deviceIds = new cl_device_id[deviceSize];
         ret = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_GPU,
-                             deviceSize, devices, NULL);
+                             deviceSize, deviceIds, NULL);
         ASSERTION(ret == CL_SUCCESS);
         MESSAGE("... found %u OpenCL devices", deviceSize, i);
 
         opencl::helper::opencl_version clVersion = opencl::helper::get_opencl_version(platforms[i]);
 
         cl_context ctx;
+        opencl::platform *plat;
 
         if (deviceSize > 0) {
             cl_context_properties prop[] = {
                 CL_CONTEXT_PLATFORM, (cl_context_properties)platforms[i], 0 };
 
-            ctx = clCreateContext(prop, deviceSize, devices, NULL, NULL, &ret);
+            ctx = clCreateContext(prop, deviceSize, deviceIds, NULL, NULL, &ret);
             CFATAL(ret == CL_SUCCESS, "Unable to create OpenCL context %d", ret);
+
+            TRACE(GLOBAL, "cl_context %p for platform: %s", ctx, opencl::helper::get_platform_name(platforms[i]).c_str());
+
+            printf("cl_context %p for platform: %s\n", ctx, opencl::helper::get_platform_name(platforms[i]).c_str());
+
+            plat = new opencl::platform(platforms[i], ctx);
         }
 
+
         for (unsigned j = 0; j < deviceSize; j++) {
-            MESSAGE("Device [%u/%u]: %s", j + 1, deviceSize, opencl::helper::get_device_name(devices[j]).c_str());
+            MESSAGE("Device [%u/%u]: %s", j + 1, deviceSize, opencl::helper::get_device_name(deviceIds[j]).c_str());
 
             // Let's assume that this is not important; TODO: actually deal with this case
             //CFATAL(util::getDeviceVendor(devices[j]) == util::getPlatformVendor(platforms[i]), "Not handled case");
@@ -86,15 +93,15 @@ init_devices()
 
             switch (opencl::helper::get_platform(platforms[i])) {
                 case opencl::helper::PLATFORM_AMD:
-                    if (opencl::helper::is_device_amd_fusion(devices[j])) {
-                        device = new opencl::device(platforms[i], devices[j], *new opencl::coherence_domain());
+                    if (opencl::helper::is_device_amd_fusion(deviceIds[j])) {
+                        device = new opencl::device(*plat, deviceIds[j], *new opencl::coherence_domain());
                     } else {
-                        device = new opencl::device(platforms[i], devices[j], *new opencl::coherence_domain());
+                        device = new opencl::device(*plat, deviceIds[j], *new opencl::coherence_domain());
                     }
                     break;
                 case opencl::helper::PLATFORM_APPLE:
                 case opencl::helper::PLATFORM_NVIDIA:
-                    device = new opencl::device(platforms[i], devices[j], *new opencl::coherence_domain());
+                    device = new opencl::device(*plat, deviceIds[j], *new opencl::coherence_domain());
                     break;
                 case opencl::helper::PLATFORM_INTEL:
                 case opencl::helper::PLATFORM_UNKNOWN:
@@ -106,7 +113,7 @@ init_devices()
             ret = clReleaseContext(ctx);
             CFATAL(ret == CL_SUCCESS, "Unable to release OpenCL context after accelerator initialization");
         }
-        delete[] devices;
+        delete[] deviceIds;
     }
     delete[] platforms;
     initialized = true;
@@ -118,9 +125,32 @@ init_devices()
 
 }}
 
-namespace __impl { namespace hal { namespace cuda { 
+namespace __impl { namespace hal { namespace opencl { 
 
-gmacError_t error(CUresult err)
+gmacError_t
+compile_embedded_code(std::list<opencl::device *> devices)
+{
+    return gmacErrorFeatureNotSupported;
+}
+
+gmacError_t compile_code(platform &plat, const std::string &code, const std::string &flags)
+{
+    /* module_descriptor *descriptor = */new module_descriptor(code, flags);
+
+    gmacError_t ret;
+    code_repository repository = module_descriptor::create_modules(plat, ret);
+
+    Modules_.insert(map_platform_repository::value_type(&plat, repository));
+
+    return ret;
+}
+
+gmacError_t compile_binary(platform &plat, const std::string &code, const std::string &flags)
+{
+    return gmacErrorFeatureNotSupported;
+}
+
+gmacError_t error(cl_int err)
 {
     gmacError_t error = gmacSuccess;
     switch(err) {
@@ -155,477 +185,31 @@ context_t::dispose_event(_event_t &event)
     queueEvents_.push(event);
 }
 
-context_t::context_t(CUcontext ctx, device &dev) :
+context_t::context_t(cl_context ctx, device &dev) :
     Parent(ctx, dev)
 {
     TRACE(LOCAL, "Creating context: %p", (*this)());
-}
-
-accptr_t
-context_t::alloc(size_t count, gmacError_t &err)
-{
-    CUdeviceptr devPtr = 0;
-    CUresult res = cuMemAlloc(&devPtr, count);
-
-    err = error(res);
-
-    return accptr_t(devPtr);
-}
-
-buffer_t *
-context_t::alloc_buffer(size_t count, GmacProtection hint, gmacError_t &err)
-{
-    // TODO: add a parater to specify accesibility of the buffer from the device
-    unsigned flags = CU_MEMHOSTALLOC_PORTABLE | CU_MEMHOSTALLOC_DEVICEMAP;
-    if (hint == GMAC_PROT_WRITE) {
-        flags += CU_MEMHOSTALLOC_WRITECOMBINED;
-    }
-    void *addr;
-    CUresult res = cuMemHostAlloc(&addr, count, flags);
-    err = error(res);
-
-    return new buffer_t(hostptr_t(addr), *this);
-}
-
-gmacError_t
-context_t::free(accptr_t acc)
-{
-    CUresult ret = cuMemFree(acc.get());
-
-    return error(ret);
-}
-
-gmacError_t
-context_t::free_buffer(buffer_t &buffer)
-{
-    CUresult ret = cuMemFreeHost(buffer.get_addr());
-
-    return error(ret);
-}
-
-event_t 
-context_t::copy(accptr_t dst, hostptr_t src, size_t count, stream_t &stream, list_event_detail &_dependencies, gmacError_t &err)
-{
-    event_t ret;
-    list_event &dependencies = reinterpret_cast<list_event &>(_dependencies);
-    err = dependencies.sync();
-
-    if (err == gmacSuccess) {
-        ret = copy(dst, src, count, stream, err);
-    }
-
-    return ret;
-}
-
-event_t 
-context_t::copy(accptr_t dst, hostptr_t src, size_t count, stream_t &stream, event_t event, gmacError_t &err)
-{
-    event_t ret;
-
-    err = event.sync();
-
-    if (err == gmacSuccess) {
-        ret = copy(dst, src, count, stream, err);
-    }
-
-    return ret;
-}
-
-event_t 
-context_t::copy(accptr_t dst, hostptr_t src, size_t count, stream_t &stream, gmacError_t &err)
-{
-    TRACE(LOCAL, "H (%p) -> D copy ("FMT_SIZE" bytes) on stream: %p", src, count, stream());
-    event_t ret(false, _event_t::Transfer, *this);
-
-    CUresult res;
-
-    ret.begin(stream);
-    res = cuMemcpyHtoD(dst.get(), src, count);
-    ret.end();
-
-    err = error(res);
-    if (err != gmacSuccess) {
-        ret.reset();
-    } else {
-        stream.set_last_event(ret);
-    }
-
-    return ret;
-}
-
-event_t 
-context_t::copy(hostptr_t dst, accptr_t src, size_t count, stream_t &stream, list_event_detail &_dependencies, gmacError_t &err)
-{
-    event_t ret;
-    list_event &dependencies = reinterpret_cast<list_event &>(_dependencies);
-    err = dependencies.sync();
-
-    if (err == gmacSuccess) {
-        ret = copy(dst, src, count, stream, err);
-    }
-
-    return ret;
-}
-
-event_t 
-context_t::copy(hostptr_t dst, accptr_t src, size_t count, stream_t &stream, event_t event, gmacError_t &err)
-{
-    event_t ret;
-
-    err = event.sync();
-
-    if (err == gmacSuccess) {
-        ret = copy(dst, src, count, stream, err);
-    }
-
-    return ret;
-}
-
-event_t 
-context_t::copy(hostptr_t dst, accptr_t src, size_t count, stream_t &stream, gmacError_t &err)
-{
-    TRACE(LOCAL, "D -> H (%p) copy ("FMT_SIZE" bytes) on stream: %p", dst, count, stream());
-    event_t ret(false, _event_t::Transfer, *this);
-
-    CUresult res;
-
-    ret.begin(stream);
-    res = cuMemcpyDtoH(dst, src.get(), count);
-    ret.end();
-
-    err = error(res);
-    if (err != gmacSuccess) {
-        ret.reset();
-    } else {
-        stream.set_last_event(ret);
-    }
-
-    return ret;
-}
-
-event_t 
-context_t::copy(accptr_t dst, accptr_t src, size_t count, stream_t &stream, list_event_detail &_dependencies, gmacError_t &err)
-{
-    event_t ret;
-    list_event &dependencies = reinterpret_cast<list_event &>(_dependencies);
-    err = dependencies.sync();
-
-    if (err == gmacSuccess) {
-        ret = copy(dst, src, count, stream, err);
-    }
-
-    return ret;
-}
-
-event_t 
-context_t::copy(accptr_t dst, accptr_t src, size_t count, stream_t &stream, event_t event, gmacError_t &err)
-{
-    event_t ret;
-
-    err = event.sync();
-
-    if (err == gmacSuccess) {
-        ret = copy(dst, src, count, stream, err);
-    }
-
-    return ret;
-}
-
-event_t 
-context_t::copy(accptr_t dst, accptr_t src, size_t count, stream_t &stream, gmacError_t &err)
-{
-    TRACE(LOCAL, "D -> D copy ("FMT_SIZE" bytes) on stream: %p", count, stream());
-    event_t ret(false, _event_t::Transfer, *this);
-
-    CUresult res;
-
-    ret.begin(stream);
-    res = cuMemcpyDtoD(dst.get(), src.get(), count);
-    ret.end();
-
-    err = error(res);
-    if (err != gmacSuccess) {
-        ret.reset();
-    } else {
-        stream.set_last_event(ret);
-    }
-
-    return ret;
-}
-
-event_t 
-context_t::copy_async(accptr_t dst, buffer_t src, size_t off, size_t count, stream_t &stream, list_event_detail &_dependencies, gmacError_t &err)
-{
-    event_t ret;
-    list_event &dependencies = reinterpret_cast<list_event &>(_dependencies);
-    err = dependencies.sync();
-
-    if (err == gmacSuccess) {
-        ret = copy_async(dst, src, off, count, stream, err);
-    }
-
-    return ret;
-}
-
-event_t 
-context_t::copy_async(accptr_t dst, buffer_t src, size_t off, size_t count, stream_t &stream, event_t event, gmacError_t &err)
-{
-    event_t ret;
-
-    err = event.sync();
-
-    if (err == gmacSuccess) {
-        ret = copy_async(dst, src, off, count, stream, err);
-    }
-
-    return ret;
-}
-
-event_t 
-context_t::copy_async(accptr_t dst, buffer_t src, size_t off, size_t count, stream_t &stream, gmacError_t &err)
-{
-    TRACE(LOCAL, "H (%p) -> D copy_async ("FMT_SIZE" bytes) on stream: %p", src.get_addr() + off, count, stream());
-    event_t ret(true, _event_t::Transfer, *this);
-
-    CUresult res;
-
-    ret.begin(stream);
-    res = cuMemcpyHtoDAsync(dst.get(), src.get_addr() + off, count, stream());
-    ret.end();
-
-    err = error(res);
-    if (err != gmacSuccess) {
-        ret.reset();
-    } else {
-        stream.set_last_event(ret);
-    }
-
-    return ret;
-}
-
-event_t 
-context_t::copy_async(buffer_t dst, size_t off, accptr_t src, size_t count, stream_t &stream, list_event_detail &_dependencies, gmacError_t &err)
-{
-    event_t ret;
-    list_event &dependencies = reinterpret_cast<list_event &>(_dependencies);
-    err = dependencies.sync();
-
-    if (err == gmacSuccess) {
-        ret = copy_async(dst, off, src, count, stream, err);
-    }
-
-    return ret;
-}
-
-event_t 
-context_t::copy_async(buffer_t dst, size_t off, accptr_t src, size_t count, stream_t &stream, event_t event, gmacError_t &err)
-{
-    event_t ret;
-
-    err = event.sync();
-
-    if (err == gmacSuccess) {
-        ret = copy_async(dst, off, src, count, stream, err);
-    }
-
-    return ret;
-}
-
-event_t 
-context_t::copy_async(buffer_t dst, size_t off, accptr_t src, size_t count, stream_t &stream, gmacError_t &err)
-{
-    TRACE(LOCAL, "D -> H (%p) copy_async ("FMT_SIZE" bytes) on stream: %p", dst.get_addr(), count, stream());
-    event_t ret(true, _event_t::Transfer, *this);
-
-    CUresult res;
-
-    ret.begin(stream);
-    res = cuMemcpyDtoHAsync(dst.get_addr() + off, src.get(), count, stream());
-    ret.end();
-
-    err = error(res);
-    if (err != gmacSuccess) {
-        ret.reset();
-    } else {
-        stream.set_last_event(ret);
-    }
-
-    return ret;
-}
-
-event_t 
-context_t::copy_async(accptr_t dst, accptr_t src, size_t count, stream_t &stream, list_event_detail &_dependencies, gmacError_t &err)
-{
-    event_t ret;
-    list_event &dependencies = reinterpret_cast<list_event &>(_dependencies);
-    err = dependencies.sync();
-
-    if (err == gmacSuccess) {
-        ret = copy_async(dst, src, count, stream, err);
-    }
-
-    return ret;
-}
-
-event_t 
-context_t::copy_async(accptr_t dst, accptr_t src, size_t count, stream_t &stream, event_t event, gmacError_t &err)
-{
-    event_t ret;
-
-    err = event.sync();
-
-    if (err == gmacSuccess) {
-        ret = copy_async(dst, src, count, stream, err);
-    }
-
-    return ret;
-}
-
-event_t
-context_t::copy_async(accptr_t dst, accptr_t src, size_t count, stream_t &stream, gmacError_t &err)
-{
-    return copy_async(0, NULL, dst, src, count, stream, err);
-}
-
-event_t 
-context_t::copy_async(unsigned nevents, cl_event *events, accptr_t dst, accptr_t src, size_t count, stream_t &stream, gmacError_t &err)
-{
-    TRACE(LOCAL, "D -> D copy_async ("FMT_SIZE" bytes) on stream: %p", count, stream());
-    event_t ret(true, _event_t::Transfer, *this);
-
-    cl_int res;
-
-    ret.begin(stream);
-    res = clEnqueueCopyBuffer(stream(), src.get(),    dst.get(),
-                                        src.offset(), dst.offset(), count,
-                                        nevents, events,
-                                        &ret());
-    ret.end();
-
-    err = error(res);
-    if (err != gmacSuccess) {
-        ret.reset();
-    } else {
-        stream.set_last_event(ret);
-    }
-
-    return ret;
-}
-
-event_t 
-context_t::memset(accptr_t dst, int c, size_t count, stream_t &stream, list_event_detail &_dependencies, gmacError_t &err)
-{
-    event_t ret;
-    list_event &dependencies = reinterpret_cast<list_event &>(_dependencies);
-    err = dependencies.sync();
-
-    if (err == gmacSuccess) {
-        ret = memset(dst, c, count, stream, err);
-    }
-
-    return ret;
-}
-
-event_t 
-context_t::memset(accptr_t dst, int c, size_t count, stream_t &stream, event_t event, gmacError_t &err)
-{
-    event_t ret;
-
-    err = event.sync();
-
-    if (err == gmacSuccess) {
-        ret = memset(dst, c, count, stream, err);
-    }
-
-    return ret;
-}
-
-event_t 
-context_t::memset(accptr_t dst, int c, size_t count, stream_t &stream, gmacError_t &err)
-{
-    TRACE(LOCAL, "memset ("FMT_SIZE" bytes) on stream: %p", count, stream());
-    event_t ret(false, _event_t::Transfer, *this);
-
-    ret.begin(stream);
-    CUresult res = cuMemsetD8(dst.get(), (unsigned char)c, count);
-    ret.end();
-
-    err = error(res);
-
-    if (err != gmacSuccess) {
-        ret.reset();
-    } else {
-        stream.set_last_event(ret);
-    }
-
-    return ret;
-}
-
-event_t 
-context_t::memset_async(accptr_t dst, int c, size_t count, stream_t &stream, list_event_detail &_dependencies, gmacError_t &err)
-{
-    event_t ret;
-    list_event &dependencies = reinterpret_cast<list_event &>(_dependencies);
-    err = dependencies.sync();
-
-    if (err == gmacSuccess) {
-        ret = memset_async(dst, c, count, stream, err);
-    }
-
-    return ret;
-}
-
-event_t 
-context_t::memset_async(accptr_t dst, int c, size_t count, stream_t &stream, event_t event, gmacError_t &err)
-{
-    event_t ret;
-
-    err = event.sync();
-
-    if (err == gmacSuccess) {
-        ret = memset_async(dst, c, count, stream, err);
-    }
-
-    return ret;
-}
-
-event_t 
-context_t::memset_async(accptr_t dst, int c, size_t count, stream_t &stream, gmacError_t &err)
-{
-    TRACE(LOCAL, "memset_async ("FMT_SIZE" bytes) on stream: %p", count, stream());
-    event_t ret(true, _event_t::Transfer, *this);
-
-    ret.begin(stream);
-    CUresult res = cuMemsetD8Async(dst.get(), (unsigned char)c, count, stream());
-    ret.end();
-
-    err = error(res);
-
-    if (err != gmacSuccess) {
-        ret.reset();
-    } else {
-        stream.set_last_event(ret);
-    }
-
-    return ret;
 }
 
 const code_repository &
 context_t::get_code_repository()
 {
     code_repository *repository;
-    map_context_repository::iterator it = Modules_.find(this);
+    platform &plat = get_device().get_platform();
+    map_platform_repository::iterator it = Modules_.find(&plat);
     if (it == Modules_.end()) {
-        repository = module_descriptor::create_modules();
-        Modules_.insert(map_context_repository::value_type(this, repository));
+        gmacError_t err;
+        code_repository tmp = module_descriptor::create_modules(plat, err);
+        ASSERTION(err == gmacSuccess);
+        repository = &Modules_.insert(map_platform_repository::value_type(&plat, tmp)).first->second;
     } else {
-        repository = it->second;
+        repository = &it->second;
     }
 
     return *repository;
 }
 
-stream_t::stream_t(CUstream stream, context_t &context) :
+stream_t::stream_t(cl_command_queue stream, context_t &context) :
     Parent(stream, context)
 {
     TRACE(LOCAL, "Creating stream: %p", (*this)());
@@ -643,25 +227,36 @@ stream_t::sync()
 void
 _event_t::reset(bool async, type t)
 {
-    isAsynchronous_ = async;
+    async_ = async;
     type_ = t;
     err_ = gmacSuccess;
     synced_ = false;
     state_ = None;
+    
+    remove_triggers();
 }
 
 _event_t::state
 _event_t::get_state()
 {
     if (state_ != End) {
-        get_stream().get_context().set();
-
-        CUresult res = cuEventQuery(eventEnd_);
-
-        if (res == CUDA_ERROR_NOT_READY) {
-            state_ = Queued;
-        } else if (res == CUDA_SUCCESS) {
-            state_ = End;
+        cl_int status;
+        cl_int res = clGetEventInfo(event_,
+                                    CL_EVENT_COMMAND_EXECUTION_STATUS,
+                                    sizeof(cl_int),
+                                    &status, NULL);
+        if (res == CL_SUCCESS) {
+            if (status == CL_QUEUED) {
+                state_ = Queued;
+            } else if (status == CL_SUBMITTED) {
+                state_ = Submit;
+            } else if (status == CL_RUNNING) {
+                state_ = Start;
+            } else if (status == CL_COMPLETE) {
+                state_ = End;
+            } else {
+                FATAL("Unhandled value");
+            }
         }
     }
 

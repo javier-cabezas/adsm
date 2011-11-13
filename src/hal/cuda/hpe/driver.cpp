@@ -24,6 +24,7 @@ using __impl::hal::cuda::kernel_descriptor;
 using __impl::hal::cuda::module_descriptor;
 using __impl::hal::cuda::kernel_t;
 
+using __impl::core::hpe::kernel;
 using __impl::core::hpe::process;
 using __impl::core::hpe::resource_manager;
 using __impl::core::hpe::thread;
@@ -112,7 +113,8 @@ GMAC_API cudaError_t APICALL cudaConfigureCall(dim3 gridDim, dim3 blockDim,
 {
 	enterGmac();
     kernel_t::config *config = new kernel_t::config(gridDim, blockDim, sharedMem, tokens);
-    thread::get_current_thread().new_kernel_config(*config);
+    kernel::arg_list *args = new kernel::arg_list;
+    thread::get_current_thread().new_kernel_launch(config, args);
 	exitGmac();
 	return cudaSuccess;
 }
@@ -121,22 +123,22 @@ GMAC_API cudaError_t APICALL
 cudaSetupArgument(const void *arg, size_t count, size_t offset)
 {
 	enterGmac();
-    kernel_t::config &config = thread::get_current_thread().get_kernel_config();
-    config.set_arg(arg, count, config.get_nargs());
+    thread::pair_launch &launch = thread::get_current_thread().get_kernel_launch();
+    launch.second->push_arg(arg, count);
 	//mode.argument(arg, count, (off_t)offset);
 	exitGmac();
 	return cudaSuccess;
 }
 
 GMAC_API gmacError_t APICALL
-gmacLaunch(const char *k, __impl::hal::kernel_t::config &config);
+gmacLaunch(const char *k, __impl::hal::kernel_t::config &config, kernel::arg_list &args);
                                                     
 GMAC_API cudaError_t APICALL
 cudaLaunch(const char *k)
 {
-    kernel_t::config &config = thread::get_current_thread().get_kernel_config();
+    thread::pair_launch &conf = thread::get_current_thread().get_kernel_launch();
 
-	gmacError_t ret = gmacLaunch(k, config);
+	gmacError_t ret = gmacLaunch(k, *conf.first, *conf.second);
     assert(ret == gmacSuccess);
 	return cudaSuccess;
 }

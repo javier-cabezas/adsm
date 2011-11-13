@@ -11,15 +11,34 @@ kernel_t::kernel_t(CUfunction func, const std::string &name) :
 
 inline 
 kernel_t::launch &
-kernel_t::launch_config(Parent::config &conf, stream_t &stream)
+kernel_t::launch_config(Parent::config &conf, Parent::arg_list &args, stream_t &stream)
 {
-    return *(new launch(*this, conf, stream));
+    return *(new launch(*this, (kernel_t::config &) conf,
+                               (kernel_t::arg_list &) args, stream));
 }
 
 inline
-kernel_t::launch::launch(kernel_t &parent, Parent::config &conf, stream_t &stream) :
-    hal::detail::kernel_t<backend_traits, implementation_traits>::launch(parent, dynamic_cast<config &>(conf), stream)
+kernel_t::launch::launch(kernel_t &parent, config &conf, arg_list &args, stream_t &stream) :
+    hal::detail::kernel_t<backend_traits, implementation_traits>::launch(parent, conf, args, stream)
 {
+}
+
+inline
+unsigned
+kernel_t::arg_list::get_nargs() const
+{
+    return nArgs_;
+}
+
+inline
+gmacError_t
+kernel_t::arg_list::push_arg(const void *arg, size_t size)
+{
+    gmacError_t ret = gmacSuccess;
+
+    params_[nArgs_++] = arg;
+
+    return ret;
 }
 
 inline
@@ -74,7 +93,7 @@ kernel_t::launch::execute(gmacError_t &err)
                                          dimsGroup.z,
                                          get_config().memShared_,
                                          get_stream()(),
-                                         (void **) get_config().params_,
+                                         (void **) get_arg_list().params_,
                                          NULL);
     ret.end();
     err = error(res);
@@ -91,18 +110,10 @@ kernel_t::launch::execute(gmacError_t &err)
 inline
 kernel_t::config::config(dim3 global, dim3 group, size_t shared, cudaStream_t tokens) :
     hal::detail::kernel_t<backend_traits, implementation_traits>::config(3),
-    nArgs_(0),
     dimsGlobal_(global),
     dimsGroup_(group),
     memShared_(shared)
 {
-}
-
-inline
-unsigned
-kernel_t::config::get_nargs() const
-{
-    return nArgs_;
 }
 
 inline
@@ -117,20 +128,6 @@ const dim3 &
 kernel_t::config::get_dims_group() const
 {
     return dimsGroup_;
-}
-
-inline
-gmacError_t
-kernel_t::config::set_arg(const void *arg, size_t size, unsigned index)
-{
-    gmacError_t ret = gmacSuccess;
-
-    params_[index] = arg;
-    if (index >= nArgs_) {
-        nArgs_ = index + 1;
-    }
-
-    return ret;
 }
 
 }}}

@@ -45,7 +45,12 @@ namespace __impl { namespace hal {
     typedef hal::opencl::event_t event_t;
 
     typedef hal::opencl::buffer_t buffer_t;
+
+    typedef hal::opencl::ptr_t ptr_t;
 }}
+
+typedef __impl::hal::opencl::ptr_t accptr_t;
+
 #endif
 
 namespace __impl { namespace hal {

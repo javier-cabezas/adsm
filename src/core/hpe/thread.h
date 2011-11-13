@@ -35,9 +35,10 @@ WITH THE SOFTWARE.  */
 #define GMAC_CORE_HPE_THREAD_H_
 
 #include "core/thread.h"
+#include "hal/types.h"
 #include "util/Private.h"
 
-#include "hal/types.h"
+#include "kernel.h"
 
 namespace __impl { namespace core { namespace hpe {
 
@@ -66,12 +67,14 @@ class GMAC_LOCAL thread :
     friend class process;
     friend class resource_manager;
 
+public:
+    typedef std::pair<hal::kernel_t::config *, kernel::arg_list *> pair_launch;
 private:
     process &process_;
 
     typedef std::map<GmacVirtualDeviceId, vdevice *> map_vdevice;
     //typedef std::map<address_space *, context *> map_context;
-    typedef std::map<vdevice *, hal::kernel_t::config *> map_config;
+    typedef std::map<vdevice *, pair_launch> map_config;
 
     vdevice *currentVirtualDevice_;
 
@@ -98,10 +101,10 @@ public:
     //gmacError_t set_context(address_space &aspace, context *context);
 
     // Kernel configuration
-    gmacError_t new_kernel_config(hal::kernel_t::config &config);
-    gmacError_t new_kernel_config(hal::kernel_t::config &config, vdevice &dev);
-    hal::kernel_t::config &get_kernel_config();
-    hal::kernel_t::config &get_kernel_config(vdevice &dev);
+    gmacError_t new_kernel_launch(hal::kernel_t::config *config, kernel::arg_list *args);
+    gmacError_t new_kernel_launch(hal::kernel_t::config *config, kernel::arg_list *args, vdevice &dev);
+    pair_launch &get_kernel_launch();
+    pair_launch &get_kernel_launch(vdevice &dev);
 
     static thread &get_current_thread();
 };

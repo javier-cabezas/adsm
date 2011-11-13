@@ -10,40 +10,91 @@
 namespace __impl { namespace hal { namespace opencl {
 
 class GMAC_LOCAL kernel_t :
-    public hal::detail::kernel_t<device, backend_traits, implementation_traits> {
+    public hal::detail::kernel_t<backend_traits, implementation_traits> {
 
-    typedef hal::detail::kernel_t<device, backend_traits, implementation_traits> Parent;
+    typedef hal::detail::kernel_t<backend_traits, implementation_traits> Parent;
     
 public:
     class launch;
 
     class GMAC_LOCAL config :
-        public hal::detail::kernel_t<device, backend_traits, implementation_traits>::config {
+        public hal::detail::kernel_t<backend_traits, implementation_traits>::config {
         friend class launch;
 
-        unsigned nArgs_;
-
+        const size_t *dimsOffset_;
         const size_t *dimsGlobal_;
         const size_t *dimsGroup_;
-
-        const void *params_[256];
     public:
-        config(unsigned ndims, const size_t *global, const size_t *group);
+        config() {}
+        config(unsigned ndims, const size_t *offset, const size_t *global, const size_t *group);
 
-        unsigned get_nargs() const;
+        const size_t *get_dims_offset() const;
         const size_t *get_dims_global() const;
         const size_t *get_dims_group() const;
 
-        gmacError_t set_arg(const void *arg, size_t size, unsigned index);
-        gmacError_t register_kernel();
+    };
+
+    class GMAC_LOCAL arg_list :
+        public hal::detail::kernel_t<backend_traits, implementation_traits>::arg_list {
+        friend class launch;
+
+        unsigned nArgs_;
+        //const void *params_[256];
+
+        typedef std::pair<cl_mem, unsigned> cl_mem_ref;
+        typedef std::map<hostptr_t, cl_mem_ref> map_subbuffer;
+        class map_global_subbuffer :
+            protected std::map<cl_context, map_subbuffer>,
+            protected gmac::util::spinlock {
+        public:
+            typedef std::map<cl_context, map_subbuffer> Parent;
+            typedef Parent::iterator iterator;
+            map_global_subbuffer() :
+                gmac::util::spinlock("map_global_subbuffer")
+            {
+            }
+
+            iterator
+            find_context(cl_context context)
+            {  
+                lock();
+                Parent::iterator itGlobalMap = this->find(context);
+                if (itGlobalMap == this->end()) {
+                    this->insert(Parent::value_type(context, map_subbuffer()));
+                    itGlobalMap = this->find(context);
+                }
+                unlock();
+                return itGlobalMap;
+            }
+        };
+
+        typedef std::pair<cl_context, map_subbuffer::iterator> cache_entry;
+        typedef std::map<hostptr_t, cache_entry> cache_subbuffer;
+
+        static map_global_subbuffer mapSubBuffer_;
+
+        cache_subbuffer cacheSubBuffer_;
+
+    public:
+        arg_list() :
+            nArgs_(0)
+        {
+        }
+
+        unsigned get_nargs() const;
+        gmacError_t set_arg(kernel_t &k, const void *arg, size_t size, unsigned index);
+        cl_mem get_subbuffer(cl_context context, hostptr_t host, ptr_t dev, size_t size);
     };
 
     class GMAC_LOCAL launch :
-        public hal::detail::kernel_t<device, backend_traits, implementation_traits>::launch {
-
+        public hal::detail::kernel_t<backend_traits, implementation_traits>::launch {
+ 
         event_t execute(unsigned nevents, const cl_event *events, gmacError_t &err);
+
+        unsigned nArgs_;
+        const void *params_[256];
     public:
-        launch(kernel_t &parent, Parent::config &conf, stream_t &stream);
+        launch(kernel_t &parent, config &conf, arg_list &args, stream_t &stream);
 
         event_t execute(list_event_detail &dependencies, gmacError_t &err);
         event_t execute(event_t event, gmacError_t &err);
@@ -52,7 +103,7 @@ public:
 
     kernel_t(cl_kernel func, const std::string &name);
 
-    launch &launch_config(Parent::config &conf, stream_t &stream);
+    launch &launch_config(Parent::config &config, Parent::arg_list &args, stream_t &stream);
 };
 
 }}}

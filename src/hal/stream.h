@@ -73,12 +73,12 @@ class GMAC_LOCAL stream_t {
     friend class I::context;
 
 private:
+#if 0
     typedef map_pool<typename I::buffer> map_buffer;
 
     local_mutex lockBuffer_;
 
     typename I::buffer *buffer_;
-#if 0
     map_buffer mapBuffersIn_;
     map_buffer mapBuffersOut_;
 #endif
@@ -102,6 +102,7 @@ public:
     virtual state query() = 0;
     virtual gmacError_t sync() = 0;
 
+#if 0
     typename I::buffer &
     get_buffer(size_t size)
     {
@@ -137,6 +138,7 @@ public:
 #endif
         lockBuffer_.unlock();
     }
+#endif
 };
 
 }

@@ -119,10 +119,10 @@ public:
      * Returns the size of the allocation represented by the given pointer
      * \param mode Execution mode where the memory was allocated
      * \param addr Memory address of the allocation
-     * \param size A reference to a variable to store the size of the allocation
-     * \return Error code
+     * \param err A reference to a variable to store the error value
+     * \return The size of the allocation
      */
-    gmacError_t getAllocSize(core::address_space_ptr aspace, hostptr_t addr, size_t &size) const;
+    size_t getAllocSize(core::address_space_ptr aspace, hostptr_t addr, gmacError_t &err) const;
 
     /**
      * Allocate private shared memory.

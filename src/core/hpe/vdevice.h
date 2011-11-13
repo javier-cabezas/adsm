@@ -178,11 +178,11 @@ public:
     /**
      * Creates a KernelLaunch object that can be executed by the mode
      * \param k Handler of the kernel to be launched
-     * \param config Configuration of the kernel execution
      * \param err gmacSucces on succes, an error code otherwise
      * \return Reference to the KernelLaunch object
      */
-    kernel::launch *launch(gmac_kernel_id_t k, hal::kernel_t::config &conf, gmacError_t &err);
+    kernel::launch *launch(gmac_kernel_id_t k, hal::kernel_t::config &conf,
+                                               hal::kernel_t::arg_list &args, gmacError_t &err);
 
     /**
      * Executes a kernel using a KernelLaunch object
