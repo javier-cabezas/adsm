@@ -124,11 +124,9 @@ public:
 
     virtual typename I::ptr alloc(size_t size, gmacError_t &err) = 0;
     virtual typename I::ptr alloc_host_pinned(size_t size, GmacProtection hint, gmacError_t &err) = 0;
-    //virtual typename I::buffer *alloc_buffer(size_t count, GmacProtection hint, gmacError_t &err) = 0;
 
     virtual gmacError_t free(typename I::ptr acc) = 0;
     virtual gmacError_t free_host_pinned(typename I::ptr ptr) = 0;
-    //virtual gmacError_t free_buffer(typename I::buffer &buffer) = 0;
 
     typename I::event copy(typename I::ptr dst, const typename I::ptr src, size_t count, typename I::stream &stream, list_event<I> &dependencies, gmacError_t &err);
     typename I::event copy(typename I::ptr dst, const typename I::ptr src, size_t count, typename I::stream &stream, typename I::event event, gmacError_t &err);

@@ -117,7 +117,7 @@ public:
     /**
      * Unregisters a thread from the process
      */
-    TESTABLE void finiThread();
+    TESTABLE void finiThread(bool userThread);
 
     /**
      * Waits for pending operations before a kernel call (needed for distributed objects)

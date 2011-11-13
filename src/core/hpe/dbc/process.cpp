@@ -22,9 +22,9 @@ process::initThread(bool userThread, THREAD_T parent)
 }
 
 void
-process::finiThread()
+process::finiThread(bool userThread)
 {
-   __impl::core::hpe::process::finiThread();
+   __impl::core::hpe::process::finiThread(userThread);
 }
 
 #if 0

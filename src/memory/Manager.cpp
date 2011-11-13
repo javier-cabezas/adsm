@@ -225,11 +225,12 @@ gmacError_t Manager::free(core::address_space_ptr aspace, hostptr_t addr)
     return ret;
 }
 
-gmacError_t
-Manager::getAllocSize(core::address_space_ptr aspace, const hostptr_t addr, size_t &size) const
+size_t
+Manager::getAllocSize(core::address_space_ptr aspace, const hostptr_t addr, gmacError_t &err) const
 {
-    gmacError_t ret = gmacSuccess;
+    size_t ret;
     trace::EnterCurrentFunction();
+    err = gmacSuccess;
 
     memory::map_object &map = aspace->get_object_map();
 
@@ -237,12 +238,12 @@ Manager::getAllocSize(core::address_space_ptr aspace, const hostptr_t addr, size
     if (obj == NULL) {
         HostMappedObject *hostMappedObject = HostMappedObject::get(addr);
         if (hostMappedObject != NULL) {
-            size = hostMappedObject->size();
+            ret = hostMappedObject->size();
         } else {
-            ret = gmacErrorInvalidValue;
+            err = gmacErrorInvalidValue;
         }
     } else {
-        size = obj->size();
+        ret = obj->size();
         obj->decRef();
     }
     trace::ExitCurrentFunction();

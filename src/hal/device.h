@@ -26,7 +26,7 @@ protected:
     bool integrated_;
 
 public:
-    virtual typename I::context *create_context(const SetSiblings &siblings = None) = 0;
+    virtual typename I::context *create_context(const SetSiblings &siblings, gmacError_t &err) = 0;
     virtual gmacError_t destroy_context(typename I::context &context) = 0;
 
     virtual typename I::stream *create_stream(typename I::context &context) = 0;

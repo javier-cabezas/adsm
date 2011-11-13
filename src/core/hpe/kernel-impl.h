@@ -6,14 +6,33 @@
 namespace __impl { namespace core { namespace hpe {
 
 inline
+const kernel::arg_list::list_object_info &
+kernel::arg_list::get_objects() const
+{
+    return usedObjects_;
+}
+
+inline
+void
+kernel::arg_list::add_object(hostptr_t ptr, /* unsigned index, */GmacProtection prot)
+{
+    TRACE(LOCAL, "Adding object to argument list");
+    // NOTE:
+    // Path used by OpenCL, since KernelLaunch objects can be reused
+    usedObjects_.push_back(memory::ObjectInfo(ptr, prot));
+}
+
+inline
 kernel::kernel(const hal::kernel_t &parent) :
     hal::kernel_t(parent)
 {
 }
 
 inline
-kernel::launch::launch(kernel &parent, hal::kernel_t::config &config, vdevice &dev, hal::stream_t &stream, gmacError_t &ret) :
-    hal::kernel_t::launch::launch(parent, config, stream),
+kernel::launch::launch(kernel &parent, vdevice &dev, hal::kernel_t::config &conf,
+                                                     hal::kernel_t::arg_list &args, 
+                                                     hal::stream_t &stream, gmacError_t &ret) :
+    hal::kernel_t::launch::launch(parent, conf, args, stream),
     dev_(dev)
 {
     ret = gmacSuccess;
@@ -34,13 +53,6 @@ kernel::launch::get_virtual_device() const
 }
 
 inline
-const kernel::launch::list_object_info &
-kernel::launch::get_objects() const
-{
-    return usedObjects_;
-}
-
-inline
 hal::event_t
 kernel::launch::get_event()
 {
@@ -48,12 +60,19 @@ kernel::launch::get_event()
 }
 
 inline
+const kernel::arg_list &
+kernel::launch::get_arg_list()
+{
+    return reinterpret_cast<const kernel::arg_list &>(Parent::get_arg_list());
+}
+
+inline
 kernel::launch *
-kernel::launch_config(hal::kernel_t::config &config, vdevice &dev, hal::stream_t &stream, gmacError_t &err)
+kernel::launch_config(vdevice &dev, hal::kernel_t::config &conf, hal::kernel_t::arg_list &args, hal::stream_t &stream, gmacError_t &err)
 {
     launch *ret = NULL;
 
-    ret = new launch(*this, config, dev, stream, err);
+    ret = new launch(*this, dev, conf, args, stream, err);
 
     return ret;
 }
@@ -93,24 +112,6 @@ KernelLaunch::getKernelId() const
 }
 #endif
 
-
-inline
-void
-KernelLaunch::addObject(hostptr_t ptr, unsigned index, GmacProtection prot)
-{
-    // NOTE:
-    // Path used by OpenCL, since KernelLaunch objects can be reused
-    std::map<unsigned, std::list<memory::ObjectInfo>::iterator>::iterator itMap = paramToParamPtr_.find(index);
-    if (itMap == paramToParamPtr_.end()) {
-        usedObjects_.push_back(memory::ObjectInfo(ptr, prot));
-        std::list<memory::ObjectInfo>::iterator iter = --(usedObjects_.end());
-        paramToParamPtr_.insert(std::map<unsigned, std::list<memory::ObjectInfo>::iterator>::value_type(index, iter));
-    } else {
-        std::list<memory::ObjectInfo>::iterator iter = itMap->second;
-        (*iter).first = ptr;
-        (*iter).second = prot;
-    }
-}
 
 inline
 const std::list<memory::ObjectInfo> &

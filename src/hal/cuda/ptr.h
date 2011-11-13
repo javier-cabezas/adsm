@@ -94,13 +94,11 @@ public:
     }
 
     template <typename T>
-    inline const _cuda_ptr_t operator+=(const T &off)
+    inline _cuda_ptr_t &operator+=(const T &off)
     {
         ptr_ = CUdeviceptr(((char *) ptr_) + off);
         return *this;
     }
-
-    //inline operator void *() const { return (void *)(ptr_); }
 
     inline CUdeviceptr get() const
     {

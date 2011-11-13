@@ -53,8 +53,8 @@ list_event::size() const
 }
 
 inline
-buffer_t::buffer_t(hostptr_t addr, context_t &context) :
-    Parent(context),
+buffer_t::buffer_t(hostptr_t addr, size_t size, context_t &context) :
+    Parent(size, context),
     addr_(addr)
 {
 }
@@ -67,19 +67,19 @@ buffer_t::get_addr()
 }
 
 inline
-accptr_t
+ptr_t
 buffer_t::get_device_addr()
 {
     return get_context().get_device_addr_from_pinned(addr_);
 }
 
 inline
-accptr_t
+ptr_t
 context_t::get_device_addr_from_pinned(hostptr_t addr)
 {
     FATAL("NOT SUPPORTED IN OPENCL");
 
-    return accptr_t(0);
+    return ptr_t();
 }
 
 }}} /* GMAC_HAL_OPENCL_CONTEXT_IMPL_H_ */

@@ -145,8 +145,10 @@ public:
 	code_repository(const vector_module_descriptor & dVector);
 	~code_repository();
 
+#if 0
     template <typename T>
     void register_kernels(T &t) const;
+#endif
 
     const kernel_t *get_kernel(gmac_kernel_id_t key) const;
     const kernel_t *get_kernel(const std::string &name) const;

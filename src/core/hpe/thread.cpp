@@ -5,7 +5,8 @@ namespace __impl { namespace core { namespace hpe {
 thread::~thread()
 {
     for (map_config::iterator it = mapConfigs_.begin(); it != mapConfigs_.end(); it++) {
-        delete it->second;
+        delete it->second.first;
+        delete it->second.second;
     }
 
 #if 0

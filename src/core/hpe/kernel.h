@@ -43,35 +43,26 @@ namespace __impl { namespace core { namespace hpe {
 class vdevice;
 
 class GMAC_LOCAL kernel :
-    hal::kernel_t {
+    public hal::kernel_t {
 
 public: 
-    class GMAC_LOCAL launch :
-        public hal::kernel_t::launch {
+    class GMAC_LOCAL arg_list :
+        public hal::kernel_t::arg_list {
         friend class kernel;
-
-        vdevice &dev_;
-        hal::event_t event_;
-
+        typedef hal::kernel_t::arg_list Parent;
+#if 0
         std::map<unsigned, std::list<memory::ObjectInfo>::iterator > paramToParamPtr_;
+#endif
         std::list<memory::ObjectInfo> usedObjects_;
 
-        launch(kernel &parent, hal::kernel_t::config &config, vdevice &dev, hal::stream_t &stream, gmacError_t &ret);
-
     public:
-        gmacError_t wait();
-
-        vdevice &get_virtual_device();
-        const vdevice &get_virtual_device() const;
-
         /**
          * Adds a new object to the kernel launch
          *
          * \param ptr Address of the object to be added
-         * \param index Index of the ptr in the parameter list
          * \param prot Access type of the object in the GPU
          */
-        void add_object(hostptr_t ptr, unsigned index, GmacProtection prot);
+        void add_object(hostptr_t ptr, /* unsigned index, */GmacProtection prot);
 
         typedef std::list<memory::ObjectInfo> list_object_info;
         /**
@@ -80,15 +71,39 @@ public:
          * \param ptr Address of the object to be added
          */
         const list_object_info &get_objects() const;
-
-        hal::event_t get_event();
     };
+
+    class GMAC_LOCAL launch :
+        public hal::kernel_t::launch {
+        friend class kernel;
+
+        typedef hal::kernel_t::launch Parent;
+
+        vdevice &dev_;
+        hal::event_t event_;
+
+        launch(kernel &parent, vdevice &dev, hal::kernel_t::config &conf,
+                                             hal::kernel_t::arg_list &args, 
+                                             hal::stream_t &stream, gmacError_t &ret);
+
+    public:
+        gmacError_t wait();
+
+        vdevice &get_virtual_device();
+        const vdevice &get_virtual_device() const;
+ 
+        hal::event_t get_event();
+
+        const arg_list &get_arg_list();
+    };
+
+    typedef hal::kernel_t::config config;
 
     kernel(const hal::kernel_t &parent);
 
     const std::string &get_name() const { return hal::kernel_t::get_name(); }
 
-    launch *launch_config(hal::kernel_t::config &config, vdevice &dev, hal::stream_t &stream, gmacError_t &err);
+    launch *launch_config(vdevice &dev, hal::kernel_t::config &conf, hal::kernel_t::arg_list &args, hal::stream_t &stream, gmacError_t &err);
 };
 
 }}}

@@ -53,10 +53,13 @@ kernel_t<B, I>::config::get_ndims() const
 template <typename B, typename I>
 inline
 kernel_t<B, I>::launch::launch(typename I::kernel &kernel,
-                                  typename I::kernel::config &conf,
-                                  typename I::stream &stream) :
+                               typename I::kernel::config &config,
+                               typename I::kernel::arg_list &args, 
+                               typename I::stream &stream) :
+
     kernel_(kernel),
-    config_(conf),
+    config_(config),
+    args_(args),
     stream_(stream)
 {
 }
@@ -92,6 +95,16 @@ kernel_t<B, I>::launch::get_config() const
 {
     return config_;
 }
+
+template <typename B, typename I>
+inline
+const typename I::kernel::arg_list &
+kernel_t<B, I>::launch::get_arg_list() const
+{
+    return args_;
+}
+
+
 
 } // namespace detail
 

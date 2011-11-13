@@ -25,7 +25,6 @@ class event_t;
 class event_list;
 class buffer_t;
 
-
 typedef __impl::hal::_ptr_t<_cuda_ptr_t,
                             context_t> ptr_t;
 

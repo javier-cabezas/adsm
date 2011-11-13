@@ -29,12 +29,13 @@ vdevice::~vdevice()
 }
 
 kernel::launch *
-vdevice::launch(gmac_kernel_id_t id, hal::kernel_t::config &config, gmacError_t &err)
+vdevice::launch(gmac_kernel_id_t id, hal::kernel_t::config &conf,
+                                     hal::kernel_t::arg_list &args, gmacError_t &err)
 {
     kernel::launch *ret = NULL;
     kernel *k = get_address_space()->get_kernel(id);
     if (k != NULL) {
-        ret = k->launch_config(config, *this, streamLaunch_, err);
+        ret = k->launch_config(*this, conf, args, streamLaunch_, err);
     } else {
         err = gmacErrorInvalidValue;
     }
@@ -47,7 +48,7 @@ vdevice::execute(kernel::launch &launch, gmacError_t &err)
     hal::event_t ret;
     err = gmacSuccess;
 
-    if (launch.get_objects().size() == 0) {
+    if (launch.get_arg_list().get_objects().size() == 0) {
         hal::event_t event = aspace_->streamToAccelerator_.get_last_event();
         ret = launch.execute(event, err);
     } else {

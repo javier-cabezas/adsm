@@ -21,7 +21,7 @@ device::device(CUdevice cudaDevice, coherence_domain &coherenceDomain) :
 }
 
 context_t *
-device::create_context(const SetSiblings &siblings)
+device::create_context(const SetSiblings &siblings, gmacError_t &err)
 {
     CUcontext ctx, tmp;
     unsigned int flags = 0;
@@ -30,17 +30,19 @@ device::create_context(const SetSiblings &siblings)
 #else
     TRACE(LOCAL,"Host mapped memory not supported by the HW");
 #endif
-    CUresult ret = cuCtxCreate(&ctx, flags, cudaDevice_);
-    if(ret != CUDA_SUCCESS)
-        FATAL("Unable to create CUDA context %d", ret);
-    ret = cuCtxPopCurrent(&tmp);
-    ASSERTION(ret == CUDA_SUCCESS);
+    CUresult res = cuCtxCreate(&ctx, flags, cudaDevice_);
+    if(res != CUDA_SUCCESS)
+        FATAL("Unable to create CUDA context %d", res);
+    res = cuCtxPopCurrent(&tmp);
+    ASSERTION(res == CUDA_SUCCESS);
 
 #ifdef USE_PEER_ACCESS
     for (SetSiblings::iterator it = siblings.begin(); it != siblings.end(); it++) {
         
     }
 #endif
+
+    err = error(res);
 
     return new context_t(ctx, *this);
 }

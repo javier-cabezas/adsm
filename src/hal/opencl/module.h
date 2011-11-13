@@ -54,32 +54,30 @@ namespace __impl { namespace hal { namespace opencl {
 
 typedef util::descriptor<gmac_kernel_id_t> kernel_descriptor;
 
-class code_repository;
-typedef util::stl::locked_map<context_t *, code_repository *> map_context_repository;
+typedef util::stl::locked_map<platform *, code_repository> map_platform_repository;
 
 class GMAC_LOCAL module_descriptor {
-	friend class code_repository;
+	friend class module;
 
 protected:
     typedef std::vector<module_descriptor *> vector_module_descriptor;
     static vector_module_descriptor ModuleDescriptors_;
-	const void *fatBin_;
 
-    typedef std::vector<kernel_descriptor>   vector_kernel;
-
-    vector_kernel kernels_;
+    std::string code_;
+    std::string flags_;
 
 public:
-    module_descriptor(const void * fatBin);
+    module_descriptor(const std::string &code, const std::string &flags);
 
-    void add(kernel_descriptor   &k);
+    const std::string &get_code() const;
+    const std::string &get_compilation_flags() const;
 
-    static code_repository *create_modules();
+    static code_repository create_modules(platform &plat, gmacError_t &err);
 };
 
 typedef std::vector<module_descriptor *> vector_module_descriptor;
 
-class GMAC_LOCAL code_repository :
+class GMAC_LOCAL module :
     public hal::detail::code_repository<device, backend_traits, implementation_traits> {
 protected:
     typedef std::map<gmac_kernel_id_t, kernel_t *> map_kernel;
@@ -89,18 +87,56 @@ protected:
     map_kernel_name kernelsByName_;
 
 public:
-	code_repository(const vector_module_descriptor & dVector);
-	~code_repository();
+	module(const module_descriptor &descriptor, platform &plat, gmacError_t &err);
+	~module();
 
-    template <typename T>
-    void register_kernels(T &t) const;
-
-    const kernel_t *kernel(gmac_kernel_id_t key) const;
-    const kernel_t *kernelByName(const std::string &name) const;
+    const kernel_t *get_kernel(gmac_kernel_id_t key) const;
+    const kernel_t *get_kernel(const std::string &name) const;
 };
+
+class GMAC_LOCAL code_repository :
+    std::list<module *> {
+    friend class module_descriptor;
+
+    typedef std::list<module *> Parent;
+
+    void insert(module *m)
+    {
+        push_back(m);
+    }
+
+public:
+    const kernel_t *get_kernel(gmac_kernel_id_t key) const
+    {
+        const kernel_t *ret = NULL;
+        for (Parent::const_iterator it  = Parent::begin();
+                                    it != Parent::end();
+                                    it++) {
+            ret = (*it)->get_kernel(key);
+            if (ret != NULL) break;
+        }
+
+        return ret;
+    }
+
+    const kernel_t *get_kernel(const std::string &name) const
+    {
+        const kernel_t *ret = NULL;
+        for (Parent::const_iterator it  = Parent::begin();
+                                    it != Parent::end();
+                                    it++) {
+            ret = (*it)->get_kernel(name);
+            if (ret != NULL) break;
+        }
+
+        return ret;
+    }
+};
+
+
 
 }}}
 
-//#include "module-impl.h"
+#include "module-impl.h"
 
 #endif

@@ -41,6 +41,8 @@ class GMAC_LOCAL list_event :
 
 public:
     gmacError_t sync();
+
+    size_t size() const;
 };
 
 class GMAC_LOCAL context_t :
@@ -70,7 +72,6 @@ class GMAC_LOCAL context_t :
     event_t copy_async_backend(ptr_t dst, device_input &input, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
     event_t copy_async_backend(device_output &output, const ptr_t src, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
     event_t memset_async_backend(ptr_t dst, int c, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
-
 public:
     context_t(CUcontext ctx, device &device);
 
@@ -78,40 +79,6 @@ public:
     ptr_t alloc_host_pinned(size_t size, GmacProtection hint, gmacError_t &err);
     gmacError_t free(ptr_t acc);
     gmacError_t free_host_pinned(ptr_t ptr);
-
-#if 0
-    event_t copy(ptr_t dst, ptr_t src, size_t count, stream_t &stream, list_event_detail &dependencies, gmacError_t &err);
-    event_t copy(ptr_t dst, ptr_t src, size_t count, stream_t &stream, event_t event, gmacError_t &err);
-    event_t copy(ptr_t dst, ptr_t src, size_t count, stream_t &stream, gmacError_t &err);
-
-    event_t copy(ptr_t dst, device_input &input, size_t count, stream_t &stream, list_event_detail &dependencies, gmacError_t &err);
-    event_t copy(ptr_t dst, device_input &input, size_t count, stream_t &stream, event_t event, gmacError_t &err);
-    event_t copy(ptr_t dst, device_input &input, size_t count, stream_t &stream, gmacError_t &err);
-
-    event_t copy(device_output &output, ptr_t src, size_t count, stream_t &stream, list_event_detail &dependencies, gmacError_t &err);
-    event_t copy(device_output &output, ptr_t src, size_t count, stream_t &stream, event_t event, gmacError_t &err);
-    event_t copy(device_output &output, ptr_t src, size_t count, stream_t &stream, gmacError_t &err);
-
-    event_t copy_async(ptr_t dst, const ptr_t src, size_t count, stream_t &stream, list_event_detail &dependencies, gmacError_t &err);
-    event_t copy_async(ptr_t dst, const ptr_t src, size_t count, stream_t &stream, event_t event, gmacError_t &err);
-    event_t copy_async(ptr_t dst, const ptr_t src, size_t count, stream_t &stream, gmacError_t &err);
-
-    event_t copy_async(ptr_t dst, device_input &input, size_t count, stream_t &stream, list_event_detail &dependencies, gmacError_t &err);
-    event_t copy_async(ptr_t dst, device_input &input, size_t count, stream_t &stream, event_t event, gmacError_t &err);
-    event_t copy_async(ptr_t dst, device_input &input, size_t count, stream_t &stream, gmacError_t &err);
-
-    event_t copy_async(device_output &output, ptr_t src, size_t count, stream_t &stream, list_event_detail &dependencies, gmacError_t &err);
-    event_t copy_async(device_output &output, ptr_t src, size_t count, stream_t &stream, event_t event, gmacError_t &err);
-    event_t copy_async(device_output &output, ptr_t src, size_t count, stream_t &stream, gmacError_t &err);
- 
-    event_t memset(ptr_t dst, int c, size_t count, stream_t &stream, list_event_detail &dependencies, gmacError_t &err);
-    event_t memset(ptr_t dst, int c, size_t count, stream_t &stream, event_t event, gmacError_t &err);
-    event_t memset(ptr_t dst, int c, size_t count, stream_t &stream, gmacError_t &err);
-
-    event_t memset_async(ptr_t dst, int c, size_t count, stream_t &stream, list_event_detail &dependencies, gmacError_t &err);
-    event_t memset_async(ptr_t dst, int c, size_t count, stream_t &stream, event_t event, gmacError_t &err);
-    event_t memset_async(ptr_t dst, int c, size_t count, stream_t &stream, gmacError_t &err);
-#endif
 
     ptr_t get_device_addr_from_pinned(hostptr_t addr);
 

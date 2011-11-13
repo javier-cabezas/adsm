@@ -113,6 +113,7 @@ code_repository::texture(cuda_texture_t key) const
     return &t->second;
 }
 
+#if 0
 template <typename T>
 void
 code_repository::register_kernels(T &t) const
@@ -122,6 +123,7 @@ code_repository::register_kernels(T &t) const
         t.register_kernel(k->first, *k->second);
     }
 }
+#endif
 
 }}}
 

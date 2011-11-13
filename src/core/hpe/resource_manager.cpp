@@ -89,7 +89,8 @@ resource_manager::create_address_space(unsigned accId, gmacError_t &err)
 
     // Lets use a different context per address space for now
     address_space_resources resources;
-    resources.context_ = device.create_context();
+    resources.context_ = device.create_context(hal::device::None, err);
+    ASSERTION(err == gmacSuccess);
 
     resources.streamLaunch_        = device.create_stream(*resources.context_);
     resources.streamToAccelerator_ = device.create_stream(*resources.context_);
@@ -106,8 +107,6 @@ resource_manager::create_address_space(unsigned accId, gmacError_t &err)
     address_space_ptr ptrAspace(aspace);
     aspaceMap_.insert(map_aspace::value_type(aspace->get_id(), ptrAspace));
     aspaceResourcesMap_.insert(map_aspace_resources::value_type(aspace, resources));
-
-    resources.context_->get_code_repository().register_kernels(*aspace);
 
     return ptrAspace;
 }

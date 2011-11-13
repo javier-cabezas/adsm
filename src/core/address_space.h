@@ -99,8 +99,10 @@ public:
     virtual bool has_direct_copy(const address_space &aspace) const = 0;
 
 #ifdef USE_OPENCL
+#if 0
     virtual gmacError_t acquire(hostptr_t addr) = 0;
     virtual gmacError_t release(hostptr_t addr) = 0;
+#endif
 #endif
 #if 0
     virtual void notify_pending_changes() = 0;

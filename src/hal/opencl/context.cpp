@@ -2,26 +2,23 @@
 
 #include "device.h"
 
-namespace __impl { namespace hal { namespace cuda {
+namespace __impl { namespace hal { namespace opencl {
 
 event_t 
 context_t::copy_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
-    list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
+    cl_event *events = NULL;
+    unsigned nevents = 0;
 
-    if (dependencies != NULL) {
-        err = dependencies->sync();
-
-        if (err != gmacSuccess) {
-            return event_t();
-        }
+    if (_dependencies != NULL) {
+        list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
+        nevents = dependencies->size();
+        events  = dependencies->get_event_array();
     }
 
     event_t ret(false, _event_t::Transfer, *this);
 
-    CUresult res;
-
-    set();
+    cl_int res;
 
     ret.begin(stream);
     if (dst.is_device_ptr() &&
@@ -29,13 +26,21 @@ context_t::copy_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stre
         TRACE(LOCAL, "D -> D copy ("FMT_SIZE" bytes) on stream: %p", count, stream());
 
         if (dst.get_context()->get_device().has_direct_copy(src.get_context()->get_device())) {
-            res = cuMemcpyDtoD(dst.get_device_addr(), src.get_device_addr(), count);
+            res = clEnqueueCopyBuffer(stream(), dst.get_device_addr(), src.get_device_addr(),
+                                                dst.get_offset(),      src.get_offset(), count,
+                                                nevents, events, &ret());
         } else {
             hostptr_t host = get_memory(count);
 
-            res = cuMemcpyDtoH(host, src.get_device_addr(), count);
-            if (res == CUDA_SUCCESS) {
-                res = cuMemcpyHtoD(src.get_device_addr(), host, count);
+            res = clEnqueueReadBuffer(stream(), src.get_device_addr(), CL_FALSE,
+                                                src.get_offset(), count,
+                                                host,
+                                                nevents, events, &ret());
+            if (res == CL_SUCCESS) {
+                res = clEnqueueWriteBuffer(stream(), dst.get_device_addr(), CL_TRUE,
+                                                     dst.get_offset(), count,
+                                                     host,
+                                                     nevents, events, &ret());
             }
 
             put_memory(host, count);
@@ -44,22 +49,27 @@ context_t::copy_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stre
                src.is_host_ptr()) {
         TRACE(LOCAL, "H (%p) -> D copy ("FMT_SIZE" bytes) on stream: %p", src.get_host_addr(), count, stream());
 
-        res = cuMemcpyHtoD(dst.get_device_addr(), src.get_host_addr(), count);
+        res = clEnqueueWriteBuffer(stream(), dst.get_device_addr(), CL_TRUE,
+                                             dst.get_offset(), count,
+                                             src.get_host_addr(),
+                                             nevents, events, &ret());
     } else if (dst.is_host_ptr() &&
                src.is_device_ptr()) {
         TRACE(LOCAL, "D -> H (%p) copy ("FMT_SIZE" bytes) on stream: %p", dst.get_host_addr(), count, stream());
 
-        res = cuMemcpyDtoH(dst.get_host_addr(), src.get_device_addr(), count);
+        res = clEnqueueReadBuffer(stream(), src.get_device_addr(), CL_TRUE,
+                                            src.get_offset(), count,
+                                            src.get_host_addr(),
+                                            nevents, events, &ret());
     } else if (dst.is_host_ptr() &&
                src.is_host_ptr()) {
         TRACE(LOCAL, "H (%p) -> H (%p) copy ("FMT_SIZE" bytes) on stream: %p", src.get_host_addr(), dst.get_host_addr(), count, stream());
 
-        res = CUDA_SUCCESS;
+        res = CL_SUCCESS;
         memcpy(dst.get_host_addr(), src.get_host_addr(), count);
     } else {
         FATAL("Unhandled case");
     }
-    ret.end();
 
     err = error(res);
     if (err != gmacSuccess) {
@@ -68,20 +78,23 @@ context_t::copy_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stre
         stream.set_last_event(ret);
     }
 
+    if (nevents > 0) {
+        delete []events;
+    }
+
     return ret;
 }
 
 event_t
 context_t::copy_backend(ptr_t dst, device_input &input, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
-    list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
+    cl_event *events = NULL;
+    unsigned nevents = 0;
 
-    if (dependencies != NULL) {
-        err = dependencies->sync();
-
-        if (err != gmacSuccess) {
-            return event_t();
-        }
+    if (_dependencies != NULL) {
+        list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
+        nevents = dependencies->size();
+        events  = dependencies->get_event_array();
     }
 
     TRACE(LOCAL, "IO -> D copy ("FMT_SIZE" bytes) on stream: %p", count, stream());
@@ -92,19 +105,23 @@ context_t::copy_backend(ptr_t dst, device_input &input, size_t count, stream_t &
     bool ok = input.read(host, count);
 
     if (ok) {
-        CUresult res;
-
-        set();
+        cl_int res;
 
         ret.begin(stream);
-        res = cuMemcpyHtoD(dst.get_device_addr(), host, count);
-        ret.end();
+        res = clEnqueueWriteBuffer(stream(), dst.get_device_addr(), CL_TRUE,
+                                             dst.get_offset(), count,
+                                             host,
+                                             nevents, events, &ret());
 
         err = error(res);
         if (err != gmacSuccess) {
             ret.reset();
         } else {
             stream.set_last_event(ret);
+        }
+
+        if (nevents > 0) {
+            delete []events;
         }
     }
 
@@ -116,14 +133,13 @@ context_t::copy_backend(ptr_t dst, device_input &input, size_t count, stream_t &
 event_t
 context_t::copy_backend(device_output &output, const ptr_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
-    list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
+    cl_event *events = NULL;
+    unsigned nevents = 0;
 
-    if (dependencies != NULL) {
-        err = dependencies->sync();
-
-        if (err != gmacSuccess) {
-            return event_t();
-        }
+    if (_dependencies != NULL) {
+        list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
+        nevents = dependencies->size();
+        events  = dependencies->get_event_array();
     }
 
     TRACE(LOCAL, "D -> IO copy ("FMT_SIZE" bytes) on stream: %p", count, stream());
@@ -131,13 +147,15 @@ context_t::copy_backend(device_output &output, const ptr_t src, size_t count, st
 
     hostptr_t host = get_memory(count);
 
-    CUresult res;
-
-    set();
+    cl_int res;
 
     ret.begin(stream);
-    res = cuMemcpyDtoH(host, src.get_device_addr(), count);
-    ret.end();
+
+    res = clEnqueueReadBuffer(stream(), src.get_device_addr(), CL_TRUE,
+                                        src.get_offset(), count,
+                                        host,
+                                        nevents, events, &ret());
+
 
     bool ok = output.write(host, count);
 
@@ -155,27 +173,28 @@ context_t::copy_backend(device_output &output, const ptr_t src, size_t count, st
 
     put_memory(host, count);
 
+    if (nevents > 0) {
+        delete []events;
+    }
+
     return ret;
 }
 
 event_t 
 context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
-    list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
+    cl_event *events = NULL;
+    unsigned nevents = 0;
 
-    if (dependencies != NULL) {
-        err = dependencies->sync();
-
-        if (err != gmacSuccess) {
-            return event_t();
-        }
+    if (_dependencies != NULL) {
+        list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
+        nevents = dependencies->size();
+        events  = dependencies->get_event_array();
     }
 
     event_t ret(true, _event_t::Transfer, *this);
 
-    CUresult res;
-
-    set();
+    cl_int res;
 
     ret.begin(stream);
     if (dst.is_device_ptr() &&
@@ -186,24 +205,25 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
                      count, stream());
 
         if (dst.get_context()->get_device().has_direct_copy(src.get_context()->get_device())) {
-            res = cuMemcpyDtoDAsync(dst.get_device_addr(), src.get_device_addr(), count, stream());
+            res = clEnqueueCopyBuffer(stream(), dst.get_device_addr(), src.get_device_addr(),
+                                                dst.get_offset(),      src.get_offset(), count,
+                                                nevents, events, &ret());
         } else {
-            event_t last = stream.get_last_event();
-            if (last.is_valid()) {
-                last.sync();
-            }
-
-            //buffer_t &buffer = stream.get_buffer(count);
             hostptr_t mem = get_memory(count);
 
-            res = cuMemcpyDtoHAsync(mem, src.get_device_addr(), count, stream());
-            if (res == CUDA_SUCCESS) {
-                // TODO, check if an explicit synchronization is required
-                res = cuMemcpyHtoDAsync(src.get_device_addr(), mem, count, stream());
+            res = clEnqueueReadBuffer(stream(), src.get_device_addr(), CL_FALSE,
+                                                src.get_offset(), count,
+                                                mem,
+                                                nevents, events, &ret());
+            if (res == CL_SUCCESS) {
+                res = clEnqueueWriteBuffer(stream(), dst.get_device_addr(), CL_FALSE,
+                                                     dst.get_offset(), count,
+                                                     mem,
+                                                     nevents, events, &ret());
             }
 
-            if (res == CUDA_SUCCESS) {
-                //ret.add_trigger(do_member(stream_t::put_buffer, &stream, buffer));
+            if (res == CL_SUCCESS) {
+                ret.add_trigger(do_member(context_t::put_memory, this, mem, count));
             }
         }
     } else if (dst.is_device_ptr() &&
@@ -221,9 +241,12 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
 
         //memcpy(buffer.get_addr(), src.get_host_addr(), count);
 
-        res = cuMemcpyHtoDAsync(dst.get_device_addr(), src.get_host_addr(), count, stream());
+        res = clEnqueueWriteBuffer(stream(), dst.get_device_addr(), CL_FALSE,
+                                             dst.get_offset(), count,
+                                             src.get_host_addr(),
+                                             nevents, events, &ret());
 
-        if (res == CUDA_SUCCESS) {
+        if (res == CL_SUCCESS) {
             // Release buffer after asynchronous copy
             //ret.add_trigger(do_member(stream_t::put_buffer, &stream, buffer));
         }
@@ -240,7 +263,10 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
 
         //buffer_t &buffer = stream.get_buffer(count);
 
-        res = cuMemcpyDtoHAsync(dst.get_host_addr(), src.get_device_addr(), count, stream());
+        res = clEnqueueReadBuffer(stream(), dst.get_device_addr(), CL_FALSE,
+                                            dst.get_offset(), count,
+                                            src.get_host_addr(),
+                                            nevents, events, &ret());
 
         // Perform memcpy after asynchronous copy
         //ret.add_trigger(util::do_func(memcpy, buffer.get_addr(), src.get_host_addr(), count));
@@ -253,11 +279,9 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
                      dst.get_host_addr(),
                      count, stream());
 
-        res = CUDA_SUCCESS;
+        res = CL_SUCCESS;
         memcpy(dst.get_host_addr(), src.get_host_addr(), count);
     }
-
-    ret.end();
 
     err = error(res);
     if (err != gmacSuccess) {
@@ -266,20 +290,23 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
         stream.set_last_event(ret);
     }
 
+    if (nevents > 0) {
+        delete []events;
+    }
+
     return ret;
 }
 
 event_t
 context_t::copy_async_backend(ptr_t dst, device_input &input, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
-    list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
+    cl_event *events = NULL;
+    unsigned nevents = 0;
 
-    if (dependencies != NULL) {
-        err = dependencies->sync();
-
-        if (err != gmacSuccess) {
-            return event_t();
-        }
+    if (_dependencies != NULL) {
+        list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
+        nevents = dependencies->size();
+        events  = dependencies->get_event_array();
     }
 
     TRACE(LOCAL, "IO -> D async copy ("FMT_SIZE" bytes) on stream: %p", count, stream());
@@ -291,20 +318,25 @@ context_t::copy_async_backend(ptr_t dst, device_input &input, size_t count, stre
     bool ok = input.read(mem, count);
 
     if (ok) {
-        CUresult res;
-
-        set();
+        cl_int res;
 
         ret.begin(stream);
-        res = cuMemcpyHtoDAsync(dst.get_device_addr(), mem, count, stream());
-        ret.end();
+        res = clEnqueueWriteBuffer(stream(), dst.get_device_addr(), CL_FALSE,
+                                             dst.get_offset(), count,
+                                             mem,
+                                             nevents, events, &ret());
 
         err = error(res);
         if (err != gmacSuccess) {
             ret.reset();
         } else {
             stream.set_last_event(ret);
+            ret.add_trigger(do_member(context_t::put_memory, this, mem, count));
             //ret.add_trigger(do_member(stream_t::put_buffer, &stream, buffer));
+        }
+
+        if (nevents > 0) {
+            delete []events;
         }
     }
 
@@ -314,14 +346,13 @@ context_t::copy_async_backend(ptr_t dst, device_input &input, size_t count, stre
 event_t
 context_t::copy_async_backend(device_output &output, const ptr_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
-    list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
+    cl_event *events = NULL;
+    unsigned nevents = 0;
 
-    if (dependencies != NULL) {
-        err = dependencies->sync();
-
-        if (err != gmacSuccess) {
-            return event_t();
-        }
+    if (_dependencies != NULL) {
+        list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
+        nevents = dependencies->size();
+        events  = dependencies->get_event_array();
     }
 
     TRACE(LOCAL, "D -> IO async copy ("FMT_SIZE" bytes) on stream: %p", count, stream());
@@ -329,13 +360,13 @@ context_t::copy_async_backend(device_output &output, const ptr_t src, size_t cou
 
     hostptr_t host = get_memory(count);
 
-    CUresult res;
-
-    set();
+    cl_int res;
 
     ret.begin(stream);
-    res = cuMemcpyDtoHAsync(host, src.get_device_addr(), count, stream());
-    ret.end();
+    res = clEnqueueReadBuffer(stream(), src.get_device_addr(), CL_TRUE,
+                                        src.get_offset(), count,
+                                        host,
+                                        nevents, events, &ret());
 
     bool ok = output.write(host, count);
 
@@ -353,12 +384,19 @@ context_t::copy_async_backend(device_output &output, const ptr_t src, size_t cou
 
     put_memory(host, count);
 
+    if (nevents > 0) {
+        delete []events;
+    }
+
     return ret;
 }
 
 event_t 
 context_t::memset_backend(ptr_t dst, int c, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
+    FATAL("memset not implemented yet");
+    return event_t();
+#if 0
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
 
     if (dependencies != NULL) {
@@ -387,11 +425,15 @@ context_t::memset_backend(ptr_t dst, int c, size_t count, stream_t &stream, list
     }
 
     return ret;
+#endif
 }
 
 event_t 
 context_t::memset_async_backend(ptr_t dst, int c, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
+    FATAL("memset_async not implemented yet");
+    return event_t();
+#if 0
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
 
     if (dependencies != NULL) {
@@ -420,83 +462,84 @@ context_t::memset_async_backend(ptr_t dst, int c, size_t count, stream_t &stream
     }
 
     return ret;
+#endif
 }
 
 ptr_t
-context_t::alloc(size_t count, gmacError_t &err)
+context_t::alloc(size_t size, gmacError_t &err)
 {
-    set();
+    cl_mem devPtr;
+    cl_int res;
 
-    CUdeviceptr devPtr = 0;
-    CUresult res = cuMemAlloc(&devPtr, count);
+    devPtr = clCreateBuffer((*this)(), CL_MEM_READ_WRITE, size, NULL, &res);
 
-    err = cuda::error(res);
+    err = error(res);
 
     return ptr_t(devPtr, this);
 }
 
+
 ptr_t
 context_t::alloc_host_pinned(size_t size, GmacProtection hint, gmacError_t &err)
 {
-    set();
+    FATAL("Not supported");
 
-    // TODO: add a parater to specify accesibility of the buffer from the device
-    unsigned flags = CU_MEMHOSTALLOC_PORTABLE | CU_MEMHOSTALLOC_DEVICEMAP;
+    return ptr_t();
+#if 0
+    cl_mem devPtr;
+    hostptr_t hostPtr;
+    cl_int res;
+
+    unsigned flags = CL_MEM_ALLOC_HOST_PTR;
     if (hint == GMAC_PROT_WRITE) {
-        flags += CU_MEMHOSTALLOC_WRITECOMBINED;
+        flags |= CL_MEM_READ_ONLY;
+    } else {
+        flags |= CL_MEM_READ_WRITE;
     }
-    void *addr;
-    CUresult res = cuMemHostAlloc(&addr, size, flags);
-    err = cuda::error(res);
+    devPtr = clCreateBuffer((*this)(), flags, size, NULL, &res);
 
-    return ptr_t(hostptr_t(addr));
+    if (res == CL_SUCCESS) {
+            res = clEnqueueMapBuffer(
+                                     devPtr, CL_TRUE, CL_MAP_READ | CL_MAP_WRITE,
+                                     );
+    }
+
+    err = error(res);
+
+    return ptr_t(devPtr, this);
+#endif
 }
 
 buffer_t *
 context_t::alloc_buffer(size_t size, GmacProtection hint, gmacError_t &err)
 {
-    set();
+    FATAL("Not supported");
 
-    // TODO: add a parater to specify accesibility of the buffer from the device
-    unsigned flags = CU_MEMHOSTALLOC_PORTABLE | CU_MEMHOSTALLOC_DEVICEMAP;
-    if (hint == GMAC_PROT_WRITE) {
-        flags += CU_MEMHOSTALLOC_WRITECOMBINED;
-    }
-    void *addr;
-    CUresult res = cuMemHostAlloc(&addr, size, flags);
-    err = cuda::error(res);
-
-    return new buffer_t(hostptr_t(addr), size, *this);
+    return NULL;
 }
 
 gmacError_t
-context_t::free(ptr_t acc)
+context_t::free(ptr_t ptr)
 {
-    set();
+    cl_int res = clReleaseMemObject(ptr.get_device_addr());
 
-    CUresult ret = cuMemFree(acc.get_device_addr());
-
-    return cuda::error(ret);
+    return error(res);
 }
 
 gmacError_t
 context_t::free_buffer(buffer_t &buffer)
 {
-    set();
+    FATAL("Not supported yet");
 
-    CUresult ret = cuMemFreeHost(buffer.get_addr());
-
-    return cuda::error(ret);
+    return gmacErrorFeatureNotSupported;
 }
 
 gmacError_t
 context_t::free_host_pinned(ptr_t ptr)
 {
-    set();
+    FATAL("Not supported yet");
 
-    CUresult ret = cuMemFreeHost(ptr.get_host_addr());
-
-    return cuda::error(ret);
+    return gmacErrorFeatureNotSupported;
 }
 
 }}}

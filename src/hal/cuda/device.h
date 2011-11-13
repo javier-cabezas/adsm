@@ -27,7 +27,7 @@ protected:
 public:
     device(CUdevice cudaDevice, coherence_domain &coherenceDomain);
 
-    context_t *create_context(const SetSiblings &siblings = None);
+    context_t *create_context(const SetSiblings &siblings, gmacError_t &err);
     gmacError_t destroy_context(context_t &context);
 
     stream_t *create_stream(context_t &context);
