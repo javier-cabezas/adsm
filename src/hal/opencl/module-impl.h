@@ -6,9 +6,14 @@ namespace __impl { namespace hal { namespace opencl {
 inline const kernel_t *
 module::get_kernel(gmac_kernel_id_t key) const
 {
+    printf("looking for kernel %s %zd\n", key, kernels_.size());
     map_kernel::const_iterator k;
     k = kernels_.find(key);
-    if(k == kernels_.end()) return NULL;
+    if(k == kernels_.end()) {
+        printf("not found\n");
+        return NULL;
+    }
+    printf("found!\n");
     return k->second;
 }
 

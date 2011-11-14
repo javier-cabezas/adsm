@@ -104,7 +104,13 @@ kernel_t<B, I>::launch::get_arg_list() const
     return args_;
 }
 
-
+template <typename B, typename I>
+inline
+typename I::event
+kernel_t<B, I>::launch::get_event()
+{
+    return event_;
+}
 
 } // namespace detail
 

@@ -4,6 +4,21 @@
 
 namespace __impl { namespace hal { namespace opencl {
 
+_event_t *
+context_t::get_new_event(bool async,_event_t::type t)
+{
+    _event_t *ret = queueEvents_.pop();
+    if (ret == NULL) {
+        ret = new _event_t(async, t, *this);
+        TRACE(LOCAL, "Allocating new event %p\n", ret);
+    } else {
+        ret->reset(async, t);
+        TRACE(LOCAL, "Reusing event %p\n", ret);
+    }
+
+    return ret;
+}
+
 event_t 
 context_t::copy_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
@@ -59,7 +74,7 @@ context_t::copy_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stre
 
         res = clEnqueueReadBuffer(stream(), src.get_device_addr(), CL_TRUE,
                                             src.get_offset(), count,
-                                            src.get_host_addr(),
+                                            dst.get_host_addr(),
                                             nevents, events, &ret());
     } else if (dst.is_host_ptr() &&
                src.is_host_ptr()) {

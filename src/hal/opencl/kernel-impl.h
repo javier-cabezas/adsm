@@ -110,7 +110,11 @@ kernel_t::launch::execute(unsigned nevents, const cl_event *events, gmacError_t 
 
     if (err != gmacSuccess) {
         ret.reset();
+    } else {
+        get_stream().set_last_event(ret);
     }
+
+    event_ = ret;
 
     return ret;
 }

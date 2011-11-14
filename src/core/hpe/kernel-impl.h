@@ -53,13 +53,6 @@ kernel::launch::get_virtual_device() const
 }
 
 inline
-hal::event_t
-kernel::launch::get_event()
-{
-    return event_;
-}
-
-inline
 const kernel::arg_list &
 kernel::launch::get_arg_list()
 {

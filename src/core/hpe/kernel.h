@@ -80,7 +80,6 @@ public:
         typedef hal::kernel_t::launch Parent;
 
         vdevice &dev_;
-        hal::event_t event_;
 
         launch(kernel &parent, vdevice &dev, hal::kernel_t::config &conf,
                                              hal::kernel_t::arg_list &args, 
@@ -92,8 +91,6 @@ public:
         vdevice &get_virtual_device();
         const vdevice &get_virtual_device() const;
  
-        hal::event_t get_event();
-
         const arg_list &get_arg_list();
     };
 

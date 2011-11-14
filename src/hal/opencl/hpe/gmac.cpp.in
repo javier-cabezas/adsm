@@ -30,10 +30,8 @@ static vdevice &get_current_vdevice()
 
 struct GMAC_LOCAL launch_config {
     gmac_kernel_id_t key;
-    union {
-        kernel::arg_list *args;
-        kernel::launch *launch;
-    };
+    kernel::arg_list *args;
+    kernel::launch *launch;
 };
 
 gmacError_t APICALL
@@ -55,12 +53,14 @@ gmacError_t APICALL
 }
 
 gmacError_t APICALL
-@OPENCL_API_PREFIX@ReleaseKernel(@OPENCL_API_PREFIX@_kernel kernel)
+@OPENCL_API_PREFIX@ReleaseKernel(@OPENCL_API_PREFIX@_kernel k)
 {
     enterGmac();
-    if (kernel.impl_ != NULL) {
-        delete (((kernel_t::arg_list *) kernel.impl_)) ;
-        delete ((kernel::launch *) kernel.impl_);
+    if (k.impl_ != NULL) {
+        launch_config *conf = reinterpret_cast<launch_config *>(k.impl_);
+        delete conf->args;
+        delete conf->launch;
+        delete conf;
     }
     gmacError_t ret = gmacSuccess;
     thread::set_last_error(ret);
@@ -164,6 +164,7 @@ gmacError_t APICALL
         ret = __impl::memory::getManager().acquireObjects(dev.get_address_space(),
                                                           args->get_objects());
 #endif
+        conf->launch = launch;
     }
     thread::set_last_error(ret);
     exitGmac();
@@ -174,7 +175,8 @@ gmacError_t APICALL
 gmacError_t APICALL @OPENCL_API_PREFIX@GetKernelError(@OPENCL_API_PREFIX@_kernel kernel)
 {
     enterGmac();
-    gmacError_t ret = gmacThreadSynchronize(*(kernel::launch *)kernel.impl_);
+    launch_config *conf = reinterpret_cast<launch_config *>(kernel.impl_);
+    gmacError_t ret = gmacThreadSynchronize(*conf->launch);
     thread::set_last_error(ret);
     exitGmac();
     return ret;

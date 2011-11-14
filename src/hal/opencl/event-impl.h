@@ -42,6 +42,7 @@ _event_t::sync()
         TRACE(LOCAL, "Waiting for event: %p", event_);
         cl_int res = clWaitForEvents(1, &event_);
         if (res == CL_SUCCESS) {
+#ifdef USE_TRACE
             cl_ulong queued;
             cl_ulong submit;
             cl_ulong start;
@@ -75,6 +76,7 @@ _event_t::sync()
             timeSubmit_ = timeBase_ + (submit - queued) / 1000;
             timeStart_  = timeBase_ + (start - queued) / 1000;
             timeEnd_    = timeBase_ + (end - queued) / 1000;
+#endif
         }
         synced_ = true;
         ret = error(res);
@@ -90,6 +92,7 @@ void
 _event_t::set_synced()
 {
     if (synced_ == false) {
+#ifdef USE_TRACE
         cl_ulong queued;
         cl_ulong submit;
         cl_ulong start;
@@ -124,6 +127,7 @@ _event_t::set_synced()
         timeSubmit_ = timeBase_ + (submit - queued) / 1000;
         timeStart_  = timeBase_ + (start - queued) / 1000;
         timeEnd_    = timeBase_ + (end - queued) / 1000;
+#endif
 
         synced_ = true;
     }
