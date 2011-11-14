@@ -120,20 +120,38 @@ typedef unsigned GmacAddressSpaceId;
 typedef unsigned GmacVirtualDeviceId;
 #else
 typedef struct _GmacAddressSpaceId {
-    unsigned val;
 #ifdef __cplusplus
-    _GmacAddressSpaceId() : val(unsigned(-1)) {}
-    _GmacAddressSpaceId(unsigned v) : val(v) {}
+private:
+    unsigned long val_;
+public:
+    _GmacAddressSpaceId() : val_(unsigned(-1)) {}
+    _GmacAddressSpaceId(unsigned val) : val_(val) {}
+
+    unsigned long print() const
+    {
+        return val_;
+    }
+#else
+    unsigned val;
 #endif
 } GmacAddressSpaceId;
 
-#define FMT_ASPACE "%u"
+#define FMT_ASPACE "%lu"
 
 typedef struct _GmacVirtualDeviceId {
-    unsigned val;
 #ifdef __cplusplus
-    _GmacVirtualDeviceId() : val(unsigned(-1)) {}
-    _GmacVirtualDeviceId(unsigned v) : val(v) {}
+private:
+    unsigned long val_;
+public:
+    _GmacVirtualDeviceId() : val_((unsigned long)-1) {}
+    _GmacVirtualDeviceId(unsigned long val) : val_(val) {}
+
+    unsigned long print() const
+    {
+        return val_;
+    }
+#else
+    unsigned long val;
 #endif
 } GmacVirtualDeviceId;
 
@@ -168,37 +186,37 @@ typedef struct {
 static inline
 bool operator==(const GmacAddressSpaceId &id1, const GmacAddressSpaceId &id2)
 {
-    return id1.val == id2.val;
+    return id1.print() == id2.print();
 }
 
 static inline
 bool operator!=(const GmacAddressSpaceId &id1, const GmacAddressSpaceId &id2)
 {
-    return id1.val != id2.val;
+    return id1.print() != id2.print();
 }
 
 static inline
 bool operator<(const GmacAddressSpaceId &id1, const GmacAddressSpaceId &id2)
 {
-    return id1.val < id2.val;
+    return id1.print() < id2.print();
 }
 
 static inline
 bool operator==(const GmacVirtualDeviceId &id1, const GmacVirtualDeviceId &id2)
 {
-    return id1.val == id2.val;
+    return id1.print() == id2.print();
 }
 
 static inline
 bool operator<(const GmacVirtualDeviceId &id1, const GmacVirtualDeviceId &id2)
 {
-    return id1.val < id2.val;
+    return id1.print() < id2.print();
 }
 
 struct aspace_less {
     bool operator()(const GmacAddressSpaceId &id1, const GmacAddressSpaceId &id2) const
     {  
-        return id1.val < id2.val;
+        return id1.print() < id2.print();
     }
 };
 

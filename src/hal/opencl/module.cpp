@@ -100,7 +100,7 @@ module::module(const module_descriptor &descriptor, platform &plat, gmacError_t 
                 ASSERTION(res == CL_SUCCESS);
                 name[size] = '\0';
 
-                printf("Registering kernel %s\n", name);
+                TRACE(LOCAL, "Registering kernel %s", name);
                 kernels_.insert(map_kernel::value_type(name, new kernel_t(kernels[i], std::string(name))));
             }
         }

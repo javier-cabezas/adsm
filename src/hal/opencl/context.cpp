@@ -10,10 +10,10 @@ context_t::get_new_event(bool async,_event_t::type t)
     _event_t *ret = queueEvents_.pop();
     if (ret == NULL) {
         ret = new _event_t(async, t, *this);
-        TRACE(LOCAL, "Allocating new event %p\n", ret);
+        TRACE(LOCAL, "Allocating new event %p", ret);
     } else {
         ret->reset(async, t);
-        TRACE(LOCAL, "Reusing event %p\n", ret);
+        TRACE(LOCAL, "Reusing event %p", ret);
     }
 
     return ret;
@@ -38,7 +38,7 @@ context_t::copy_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stre
     ret.begin(stream);
     if (dst.is_device_ptr() &&
         src.is_device_ptr()) {
-        TRACE(LOCAL, "D -> D copy ("FMT_SIZE" bytes) on stream: %p", count, stream());
+        TRACE(LOCAL, "D -> D copy ("FMT_SIZE" bytes) on stream: "FMT_ID, count, stream.get_print_id());
 
         if (dst.get_context()->get_device().has_direct_copy(src.get_context()->get_device())) {
             res = clEnqueueCopyBuffer(stream(), dst.get_device_addr(), src.get_device_addr(),
@@ -62,7 +62,7 @@ context_t::copy_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stre
         }
     } else if (dst.is_device_ptr() &&
                src.is_host_ptr()) {
-        TRACE(LOCAL, "H (%p) -> D copy ("FMT_SIZE" bytes) on stream: %p", src.get_host_addr(), count, stream());
+        TRACE(LOCAL, "H (%p) -> D copy ("FMT_SIZE" bytes) on stream: "FMT_ID, src.get_host_addr(), count, stream.get_print_id());
 
         res = clEnqueueWriteBuffer(stream(), dst.get_device_addr(), CL_TRUE,
                                              dst.get_offset(), count,
@@ -70,7 +70,7 @@ context_t::copy_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stre
                                              nevents, events, &ret());
     } else if (dst.is_host_ptr() &&
                src.is_device_ptr()) {
-        TRACE(LOCAL, "D -> H (%p) copy ("FMT_SIZE" bytes) on stream: %p", dst.get_host_addr(), count, stream());
+        TRACE(LOCAL, "D -> H (%p) copy ("FMT_SIZE" bytes) on stream: "FMT_ID, dst.get_host_addr(), count, stream.get_print_id());
 
         res = clEnqueueReadBuffer(stream(), src.get_device_addr(), CL_TRUE,
                                             src.get_offset(), count,
@@ -78,7 +78,7 @@ context_t::copy_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stre
                                             nevents, events, &ret());
     } else if (dst.is_host_ptr() &&
                src.is_host_ptr()) {
-        TRACE(LOCAL, "H (%p) -> H (%p) copy ("FMT_SIZE" bytes) on stream: %p", src.get_host_addr(), dst.get_host_addr(), count, stream());
+        TRACE(LOCAL, "H (%p) -> H (%p) copy ("FMT_SIZE" bytes) on stream: "FMT_ID, src.get_host_addr(), dst.get_host_addr(), count, stream.get_print_id());
 
         res = CL_SUCCESS;
         memcpy(dst.get_host_addr(), src.get_host_addr(), count);
@@ -112,7 +112,7 @@ context_t::copy_backend(ptr_t dst, device_input &input, size_t count, stream_t &
         events  = dependencies->get_event_array();
     }
 
-    TRACE(LOCAL, "IO -> D copy ("FMT_SIZE" bytes) on stream: %p", count, stream());
+    TRACE(LOCAL, "IO -> D copy ("FMT_SIZE" bytes) on stream: "FMT_ID, count, stream.get_print_id());
     event_t ret(false, _event_t::Transfer, *this);
 
     hostptr_t host = get_memory(count);
@@ -157,7 +157,7 @@ context_t::copy_backend(device_output &output, const ptr_t src, size_t count, st
         events  = dependencies->get_event_array();
     }
 
-    TRACE(LOCAL, "D -> IO copy ("FMT_SIZE" bytes) on stream: %p", count, stream());
+    TRACE(LOCAL, "D -> IO copy ("FMT_SIZE" bytes) on stream: "FMT_ID, count, stream.get_print_id());
     event_t ret(false, _event_t::Transfer, *this);
 
     hostptr_t host = get_memory(count);
@@ -214,10 +214,10 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
     ret.begin(stream);
     if (dst.is_device_ptr() &&
         src.is_device_ptr()) {
-        TRACE(LOCAL, "D (%p) -> D (%p) async copy ("FMT_SIZE" bytes) on stream: %p",
+        TRACE(LOCAL, "D (%p) -> D (%p) async copy ("FMT_SIZE" bytes) on stream: "FMT_ID,
                      src.get_device_addr(),
                      dst.get_device_addr(),
-                     count, stream());
+                     count, stream.get_print_id());
 
         if (dst.get_context()->get_device().has_direct_copy(src.get_context()->get_device())) {
             res = clEnqueueCopyBuffer(stream(), dst.get_device_addr(), src.get_device_addr(),
@@ -243,10 +243,10 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
         }
     } else if (dst.is_device_ptr() &&
                src.is_host_ptr()) {
-        TRACE(LOCAL, "H (%p) -> D (%p) async copy ("FMT_SIZE" bytes) on stream: %p",
+        TRACE(LOCAL, "H (%p) -> D (%p) async copy ("FMT_SIZE" bytes) on stream: "FMT_ID,
                      src.get_host_addr(),
                      dst.get_device_addr(),
-                     count, stream());
+                     count, stream.get_print_id());
         //event_t last = stream.get_last_event();
         //if (last.is_valid()) {
         //    last.sync();
@@ -267,10 +267,10 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
         }
     } else if (dst.is_host_ptr() &&
                src.is_device_ptr()) {
-        TRACE(LOCAL, "D (%p) -> H (%p) async copy ("FMT_SIZE" bytes) on stream: %p",
+        TRACE(LOCAL, "D (%p) -> H (%p) async copy ("FMT_SIZE" bytes) on stream: "FMT_ID,
                      src.get_device_addr(),
                      dst.get_host_addr(),
-                     count, stream());
+                     count, stream.get_print_id());
         event_t last = stream.get_last_event();
         if (last.is_valid()) {
             last.sync();
@@ -289,10 +289,10 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
         //ret.add_trigger(util::do_member(stream_t::put_buffer, &stream, buffer));
     } else if (dst.is_host_ptr() &&
                src.is_host_ptr()) {
-        TRACE(LOCAL, "H (%p) -> H (%p) copy ("FMT_SIZE" bytes) on stream: %p",
+        TRACE(LOCAL, "H (%p) -> H (%p) copy ("FMT_SIZE" bytes) on stream: "FMT_ID,
                      src.get_host_addr(),
                      dst.get_host_addr(),
-                     count, stream());
+                     count, stream.get_print_id());
 
         res = CL_SUCCESS;
         memcpy(dst.get_host_addr(), src.get_host_addr(), count);
@@ -324,7 +324,7 @@ context_t::copy_async_backend(ptr_t dst, device_input &input, size_t count, stre
         events  = dependencies->get_event_array();
     }
 
-    TRACE(LOCAL, "IO -> D async copy ("FMT_SIZE" bytes) on stream: %p", count, stream());
+    TRACE(LOCAL, "IO -> D async copy ("FMT_SIZE" bytes) on stream: "FMT_ID, count, stream.get_print_id());
     event_t ret(true, _event_t::Transfer, *this);
 
     //buffer_t &buffer = stream.get_buffer(count);
@@ -370,7 +370,7 @@ context_t::copy_async_backend(device_output &output, const ptr_t src, size_t cou
         events  = dependencies->get_event_array();
     }
 
-    TRACE(LOCAL, "D -> IO async copy ("FMT_SIZE" bytes) on stream: %p", count, stream());
+    TRACE(LOCAL, "D -> IO async copy ("FMT_SIZE" bytes) on stream: "FMT_ID, count, stream.get_print_id());
     event_t ret(false, _event_t::Transfer, *this);
 
     hostptr_t host = get_memory(count);

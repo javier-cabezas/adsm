@@ -65,8 +65,8 @@ static void *gmac_pthread(void *arg)
 
     // Modes and Contexts already destroyed in Process destructor
     proc.finiThread(externCall == true);
+    TRACE(GLOBAL, "Destroying POSIX thread");
     free(gthread);
-    printf("Exit POSIX thread\n");
     gmac::trace::SetThreadState(gmac::trace::Idle);
     exitGmac();
     return ret;
@@ -84,7 +84,6 @@ int pthread_create(pthread_t *__restrict newthread,
         thread::get_current_thread();
     }
     TRACE(GLOBAL, "New POSIX thread");
-    printf("New POSIX thread\n");
     gmac_thread_t *gthread = (gmac_thread_t *)malloc(sizeof(gmac_thread_t));
     gthread->start_routine = start_routine;
     gthread->arg = arg;

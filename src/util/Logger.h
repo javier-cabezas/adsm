@@ -70,8 +70,6 @@ inline static const char *__extract_file_name(const char *file) {
     return guess;
 }
 
-#define GLOBAL "GMAC"
-
 #if defined(__GNUC__) && !defined(__APPLE__)
 #include <cxxabi.h>
 
@@ -84,7 +82,8 @@ get_class_name(const char *mangled);
 #define get_name_logger(n) n
 #endif
 
-#define LOCAL get_name_logger(typeid(*this).name())
+#define GLOBAL "GMAC"
+#define LOCAL  get_name_logger(typeid(*this).name())
 
 #if defined(DEBUG)
 #   if defined(__GNUC__)
