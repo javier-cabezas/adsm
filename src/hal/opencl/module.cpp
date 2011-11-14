@@ -82,6 +82,30 @@ module::module(const module_descriptor &descriptor, platform &plat, gmacError_t 
 
     res = clBuildProgram(program, ndevices, deviceIds, descriptor.get_compilation_flags().c_str(), NULL, NULL);
 
+    if (res == CL_SUCCESS) {
+        cl_uint nkernels;
+        res = clCreateKernelsInProgram(program, 0, NULL, &nkernels);
+
+        if (res == CL_SUCCESS) {
+            cl_kernel *kernels = new cl_kernel[nkernels];
+            res = clCreateKernelsInProgram(program, nkernels, kernels, NULL);
+            ASSERTION(res == CL_SUCCESS);
+
+            for (cl_uint i = 0; i < nkernels; i++) {
+                size_t size;
+                res = clGetKernelInfo(kernels[i], CL_KERNEL_FUNCTION_NAME, 0, NULL, &size);
+                ASSERTION(res == CL_SUCCESS);
+                char *name = new char[size + 1];
+                res = clGetKernelInfo(kernels[i], CL_KERNEL_FUNCTION_NAME, size, name, NULL);
+                ASSERTION(res == CL_SUCCESS);
+                name[size] = '\0';
+
+                printf("Registering kernel %s\n", name);
+                kernels_.insert(map_kernel::value_type(name, new kernel_t(kernels[i], std::string(name))));
+            }
+        }
+    }
+
     err = error(res);
     delete []deviceIds;
 }

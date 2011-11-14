@@ -80,7 +80,7 @@ typedef std::vector<module_descriptor *> vector_module_descriptor;
 class GMAC_LOCAL module :
     public hal::detail::code_repository<device, backend_traits, implementation_traits> {
 protected:
-    typedef std::map<gmac_kernel_id_t, kernel_t *> map_kernel;
+    typedef std::map<std::string, kernel_t *> map_kernel;
     typedef std::map<std::string, kernel_t *> map_kernel_name;
 
     map_kernel kernels_;

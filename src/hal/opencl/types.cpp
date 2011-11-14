@@ -69,20 +69,17 @@ init_devices()
         cl_context ctx;
         opencl::platform *plat;
 
-        if (deviceSize > 0) {
-            cl_context_properties prop[] = {
-                CL_CONTEXT_PLATFORM, (cl_context_properties)platforms[i], 0 };
+        cl_context_properties prop[] = {
+            CL_CONTEXT_PLATFORM, (cl_context_properties)platforms[i], 0 };
 
-            ctx = clCreateContext(prop, deviceSize, deviceIds, NULL, NULL, &ret);
-            CFATAL(ret == CL_SUCCESS, "Unable to create OpenCL context %d", ret);
+        ctx = clCreateContext(prop, deviceSize, deviceIds, NULL, NULL, &ret);
+        CFATAL(ret == CL_SUCCESS, "Unable to create OpenCL context %d", ret);
 
-            TRACE(GLOBAL, "cl_context %p for platform: %s", ctx, opencl::helper::get_platform_name(platforms[i]).c_str());
+        TRACE(GLOBAL, "cl_context %p for platform: %s", ctx, opencl::helper::get_platform_name(platforms[i]).c_str());
 
-            printf("cl_context %p for platform: %s\n", ctx, opencl::helper::get_platform_name(platforms[i]).c_str());
+        printf("cl_context %p for platform: %s\n", ctx, opencl::helper::get_platform_name(platforms[i]).c_str());
 
-            plat = new opencl::platform(platforms[i], ctx);
-        }
-
+        plat = new opencl::platform(platforms[i], ctx);
 
         for (unsigned j = 0; j < deviceSize; j++) {
             MESSAGE("Device [%u/%u]: %s", j + 1, deviceSize, opencl::helper::get_device_name(deviceIds[j]).c_str());
@@ -108,10 +105,6 @@ init_devices()
                     FATAL("Platform not supported\n");
             }
             devices.push_back(device);
-        }
-        if (deviceSize > 0) {
-            ret = clReleaseContext(ctx);
-            CFATAL(ret == CL_SUCCESS, "Unable to release OpenCL context after accelerator initialization");
         }
         delete[] deviceIds;
     }
@@ -164,19 +157,6 @@ gmacError_t error(cl_int err)
         default: error = gmacErrorUnknown;
     }
     return error;
-}
-
-_event_t *
-context_t::get_new_event(bool async,_event_t::type t)
-{
-    _event_t *ret = queueEvents_.pop();
-    if (ret == NULL) {
-        ret = new _event_t(async, t, *this);
-    } else {
-        ret->reset(async, t);
-    }
-
-    return ret;
 }
 
 void

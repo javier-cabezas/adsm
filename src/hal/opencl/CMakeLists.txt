@@ -8,12 +8,16 @@ set(hal_opencl_SRC
     context.cpp
     device.h
     device.cpp
+    event.h
+    event-impl.h
     kernel.h
     kernel-impl.h
     kernel.cpp
     module.h
     module-impl.h
     module.cpp
+    stream.h
+    stream-impl.h
     types.h
     types-impl.h
     types.cpp
