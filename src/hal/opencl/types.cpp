@@ -77,8 +77,6 @@ init_devices()
 
         TRACE(GLOBAL, "cl_context %p for platform: %s", ctx, opencl::helper::get_platform_name(platforms[i]).c_str());
 
-        printf("cl_context %p for platform: %s\n", ctx, opencl::helper::get_platform_name(platforms[i]).c_str());
-
         plat = new opencl::platform(platforms[i], ctx);
 
         for (unsigned j = 0; j < deviceSize; j++) {

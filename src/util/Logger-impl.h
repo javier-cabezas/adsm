@@ -53,7 +53,9 @@ void Logger::__Trace(const char *name, const char *funcName, const char *fileNam
     va_list list;
     va_start(list, fmt);
 
-    if (__impl::util::params::ParamDebugUseFinalClass) {
+    if (std::string(name).compare(std::string(GLOBAL)) == 0) {
+        Log(name, "TRACE", newFmt.str().c_str(), list);
+    } else if (__impl::util::params::ParamDebugUseFinalClass) {
         Log(name, "TRACE", newFmt.str().c_str(), list);
     } else {
         Log(funcName, "TRACE", newFmt.str().c_str(), list);

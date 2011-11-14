@@ -38,8 +38,30 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace util {
 
-template <typename T, typename R = unsigned>
-class unique {
+template <typename T>
+class GMAC_LOCAL printer {
+
+public:
+    virtual T print() const = 0;
+};
+
+class GMAC_LOCAL default_id :
+    printer<unsigned long> {
+    unsigned long val_;
+
+public:
+    default_id(unsigned long val) : val_(val) {}
+
+    typedef unsigned long _print_type;
+
+    unsigned long print() const
+    {
+        return val_;
+    }
+};
+
+template <typename T, typename R = default_id>
+class GMAC_LOCAL unique {
     static Atomic Count_;
 
 private:
@@ -49,24 +71,15 @@ public:
     unique();
 
     R get_id() const;
-};
-
-template <typename T, typename R = unsigned>
-class unique_debug {
-#ifdef DEBUG
-    static Atomic Count_;
-
-private:
-    R id_;
-
-public:
-    unique_debug();
-
-    R get_debug_id() const;
-#endif
+    unsigned long get_print_id() const
+    {
+        return id_.print();
+    }
 };
 
 }}
+
+#define FMT_ID "%lu"
 
 #include "unique-impl.h"
 

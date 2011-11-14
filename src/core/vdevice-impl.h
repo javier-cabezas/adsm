@@ -13,14 +13,14 @@ vdevice::vdevice() :
     util::Reference("vdevice")
 {
     TRACE(LOCAL,"Creating Execution vdevice %p", this);
-    trace::StartThread(THREAD_T(get_id().val), "GPU");
-    SetThreadState(THREAD_T(get_id().val), trace::Idle);
+    trace::StartThread(THREAD_T(get_print_id()), "GPU");
+    SetThreadState(THREAD_T(get_print_id()), trace::Idle);
 }
 
 inline
 vdevice::~vdevice()
 {
-    trace::EndThread(THREAD_T(get_id().val));
+    trace::EndThread(THREAD_T(get_print_id()));
     TRACE(LOCAL,"Destroying Execution vdevice %p", this);
 }
 

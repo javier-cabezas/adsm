@@ -5,8 +5,6 @@
 
 #include "hal/types-detail.h"
 
-#include "util/unique.h"
-
 namespace __impl { namespace hal { namespace opencl {
 
 class GMAC_LOCAL stream_t :

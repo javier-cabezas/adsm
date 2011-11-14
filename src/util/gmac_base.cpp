@@ -3,7 +3,7 @@
 namespace __impl { namespace util {
 
 #ifdef DEBUG
-Debug Debug::debug_;
+debug debug::debug_;
 #endif
 
 }}

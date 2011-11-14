@@ -142,7 +142,7 @@ resource_manager::create_virtual_device(GmacAddressSpaceId id, gmacError_t &err)
     if (it != aspaceMap_.end()) {
         address_space_ptr aspace = it->second;
 
-        TRACE(LOCAL,"Creatintg Execution vdevice on aspace#"FMT_ASPACE, aspace->get_id().val);
+        TRACE(LOCAL,"Creatintg Execution vdevice on aspace#"FMT_ID, aspace->get_print_id());
 
         // Initialize the global shared memory for the context
         ret = new vdevice(proc_, aspace, aspace->streamLaunch_);

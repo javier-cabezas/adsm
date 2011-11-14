@@ -7,7 +7,7 @@
 
 #include "hal/types-detail.h"
 
-#include "util/unique.h"
+#include "util/gmac_base.h"
 #include "util/lock.h"
 
 namespace __impl { namespace hal {
@@ -51,7 +51,7 @@ public:
 
 class GMAC_LOCAL context_t :
     public hal::detail::context_t<device, backend_traits, implementation_traits>,
-    util::unique<context_t, GmacAddressSpaceId> {
+    util::gmac_base<context_t, GmacAddressSpaceId> {
     typedef hal::detail::context_t<device, backend_traits, implementation_traits> Parent;
 
     friend class buffer_t;

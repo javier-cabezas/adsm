@@ -42,23 +42,23 @@ WITH THE SOFTWARE.  */
 namespace __impl { namespace util {
 
 template <typename T>
-class MemoryDebug {
+class GMAC_LOCAL debug_memory {
 private:
     static Atomic Alloc_;
     static Atomic Free_;
 
 public:
-    MemoryDebug()
+    debug_memory()
     {
         unsigned(AtomicInc(Alloc_));
     }
 
-    virtual ~MemoryDebug()
+    virtual ~debug_memory()
     {
         unsigned(AtomicInc(Free_));
     }
 
-    static void reportDebugInfo()
+    static void report_debug_info()
     {
         printf("Alloc: %u\n", unsigned(Alloc_));
         printf("Free: %u\n", unsigned(Free_));
@@ -66,22 +66,22 @@ public:
 };
 
 template <typename T>
-Atomic MemoryDebug<T>::Alloc_ = 0;
+Atomic debug_memory<T>::Alloc_ = 0;
 
 template <typename T>
-Atomic MemoryDebug<T>::Free_ = 0;
+Atomic debug_memory<T>::Free_ = 0;
 
-class Named {
+class GMAC_LOCAL named {
 private:
     std::string name_;
 
 public:
-    Named(const std::string &name) :
+    named(const std::string &name) :
         name_(name)
     {
     }
 
-    const std::string &getName() const
+    const std::string &get_name() const
     {
         return name_;
     }
@@ -91,14 +91,14 @@ typedef void (*report_fn)();
 
 #ifdef DEBUG
 
-class Debug :
+class GMAC_LOCAL debug :
     public gmac::util::mutex {
-    static Debug debug_;
+    static debug debug_;
 
     typedef std::map<std::string, report_fn> MapTypes;
     MapTypes mapTypes_;
 
-    void registerType_(const std::string &name, report_fn fn)
+    void register_type_(const std::string &name, report_fn fn)
     {
         lock();
         mapTypes_.insert(std::map<std::string, report_fn>::value_type(name, fn));
@@ -116,19 +116,19 @@ class Debug :
         }
     }
 public:
-    Debug() :
-        gmac::util::mutex("Debug")
+    debug() :
+        gmac::util::mutex("debug")
     {
     }
 
-    ~Debug()
+    ~debug()
     {
         dumpInfo_();
     }
 
-    static void registerType(const std::string &name, report_fn fn)
+    static void register_type(const std::string &name, report_fn fn)
     {
-        debug_.registerType_(name, fn);
+        debug_.register_type_(name, fn);
     }
 
     static void dumpInfo()
@@ -140,26 +140,26 @@ public:
 
 #endif
 
-template <typename T>
-class gmac_base
+template <typename T, typename R = default_id>
+class GMAC_LOCAL gmac_base
 #ifdef DEBUG
     :
-    public unique_debug<T>,
-    public MemoryDebug<T>,
-    public Named
+    public unique<T, R>,
+    public debug_memory<T>,
+    public named
 #endif
 {
 #ifdef DEBUG
 private:
-    static std::string getTypeName()
+    static std::string get_type_name()
     {
         return std::string(get_name_logger(typeid(T).name()));
     }
 
-    static std::string getTmpName(unsigned id)
+    static std::string get_tmp_name(const R &id)
     {
         std::stringstream ss;
-        ss << std::string(getTypeName()) << "_" << id;
+        ss << std::string(get_type_name()) << "_" << id.print();
         return ss.str();
     }
 
@@ -167,22 +167,22 @@ private:
 
 public:
     gmac_base() :
-        unique_debug<T>(),
-        Named(getTmpName(unique_debug<T>::get_debug_id()))
+        unique<T, R>(),
+        named(get_tmp_name(unique<T, R>::get_id()))
     {
-        if (AtomicInc(registered) == 1) {
-            Debug::registerType(getTypeName(), &reportDebugInfo);
+        if (AtomicTestAndSet(registered, 0, 1) == true) {
+            debug::register_type(get_type_name(), &report_debug_info);
         }
     }
 
     static void
-    reportDebugInfo()
+    report_debug_info()
     {
-        MemoryDebug<T>::reportDebugInfo();
+        debug_memory<T>::report_debug_info();
     }
 
     gmac_base(const std::string &name) :
-        Named(name)
+        named(name)
     {
     }
 
@@ -193,8 +193,8 @@ public:
 };
 
 #ifdef DEBUG
-template <typename T>
-Atomic gmac_base<T>::registered = 0;
+template <typename T, typename R>
+Atomic gmac_base<T, R>::registered = 0;
 #endif
 
 }}

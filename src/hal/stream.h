@@ -3,6 +3,7 @@
 
 #include <queue>
 
+#include "util/gmac_base.h"
 #include "util/lock.h"
 #include "util/Logger.h"
 
@@ -68,7 +69,8 @@ public:
 };
 
 template <typename B, typename I>
-class GMAC_LOCAL stream_t {
+class GMAC_LOCAL stream_t :
+    public util::gmac_base<stream_t<B, I> > {
     typedef typename I::context context_parent_t;
     friend class I::context;
 
@@ -115,7 +117,7 @@ public:
             buffer = get_context().alloc_buffer(size, GMAC_PROT_READ, err);
             ASSERTION(err == gmacSuccess);
         } else {
-            printf("Reusing input buffer\n");
+            TRACE(LOCAL, "Reusing input buffer");
         }
 #endif
         lockBuffer_.lock();
