@@ -8,6 +8,19 @@ namespace __impl { namespace util {
 template <typename T, typename R>
 Atomic unique<T, R>::Count_ = 0;
 
+inline
+default_id::default_id(unsigned long val) :
+    val_(val)
+{
+}
+
+inline
+unsigned long
+default_id::print() const
+{
+    return val_;
+}
+
 template <typename T, typename R>
 inline
 unique<T, R>::unique() :
@@ -21,6 +34,14 @@ R
 unique<T, R>::get_id() const
 {
     return id_;
+}
+
+template <typename T, typename R>
+inline
+unsigned long
+unique<T, R>::get_print_id() const
+{
+    return id_.print();
 }
 
 }}
