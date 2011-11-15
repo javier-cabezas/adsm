@@ -8,18 +8,11 @@ Bug Fixes
 ---------
  - Fixed bad calling convention on Windows when running 32-bit GMAC on 64-bit Windows
  - Fixed leak that prevented OpenCL contexts and command queues to be released
+ - Added workaround to avoid errors when using the C++ Warpper header file from Khronos
 
 Known Issues
 ------------
  - Only one GMAC version (32-bit or 64-bit) can be installed
- - The OpenCL C++ header file distributed by Khronos has a syntax error that prevents compiling GMAC/CL C++ Applications.
- To solve this issue, the following modification has to be made to CL/cl.hpp
-
-749c749
-<           values[i]= (char *)malloc( sizeof(char)*binary_sizes[i]);
----
->           values[i]= (char *)::malloc( sizeof(char)*binary_sizes[i]);
- 
  - On Windows, if the samples are compiled, the user needs to remove by hand the GMAC directory before reinstalling
 
 
