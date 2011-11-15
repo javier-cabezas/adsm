@@ -1,7 +1,11 @@
 #ifndef GMAC_HAL_OPENCL_TYPES_H_
 #define GMAC_HAL_OPENCL_TYPES_H_
 
+#ifdef __APPLE__
+#include <OpenCL/cl.h>
+#else
 #include <CL/cl.h>
+#endif
 
 #include "hal/types-detail.h"
 

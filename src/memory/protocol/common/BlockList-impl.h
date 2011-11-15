@@ -10,7 +10,7 @@ namespace __impl { namespace memory { namespace protocol {
 
 
 inline BlockList::BlockList() :
-    spinlock("BlockList")
+    gmac::util::spinlock("BlockList")
 {}
 
 inline BlockList::~BlockList()

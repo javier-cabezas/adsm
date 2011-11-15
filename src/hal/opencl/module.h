@@ -34,7 +34,11 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_HAL_OPENCL_MODULE_H_
 #define GMAC_HAL_OPENCL_MODULE_H_
 
+#ifdef __APPLE__
+#include <OpenCL/cl.h>
+#else
 #include <CL/cl.h>
+#endif
 
 #include <list>
 #include <map>
