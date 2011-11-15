@@ -23,6 +23,8 @@ private:
     typename I::context &context_;
     size_t size_;
 
+    typename I::event event_;
+
 protected:
     buffer_t(size_t size, typename I::context &context);
 
@@ -34,6 +36,16 @@ public:
     typename I::context &get_context();
     const typename I::context &get_context() const;
     size_t get_size() const;
+
+    gmacError_t wait()
+    {
+        gmacError_t ret = gmacSuccess;
+        if (event_.is_valid()) {
+            ret = event_.sync();
+        }
+
+        return ret;
+    }
 };
 
 template <typename I>
@@ -75,31 +87,37 @@ template <typename D, typename B, typename I>
 class GMAC_LOCAL context_t {
 private:
     typedef map_pool<void> map_memory;
+    typedef map_pool<typename I::buffer> map_buffer;
 
 protected:
-    map_memory mapMemory_;
-
-    queue_event<I> queueEvents_;
-
     typename B::context context_;
     D &device_;
 
-    hostptr_t get_memory(size_t size)
-    {
-        hostptr_t mem = (hostptr_t) mapMemory_.pop(size);
+    static const unsigned MaxBuffersIn_  = 3;
+    static const unsigned MaxBuffersOut_ = 3;
 
-        if (mem == NULL) {
-            mem = (hostptr_t) malloc(size);
-        }
+    unsigned nBuffersIn_;
+    unsigned nBuffersOut_;
 
-        return mem;
-    }
+    map_memory mapMemory_;
 
-    void put_memory(void *ptr, size_t size)
-    {
-        mapMemory_.push(ptr, size);
-    }
+    map_buffer mapFreeBuffersIn_;
+    map_buffer mapFreeBuffersOut_;
+
+    map_buffer mapUsedBuffersIn_;
+    map_buffer mapUsedBuffersOut_;
+
+    queue_event<I> queueEvents_;
+
+    hostptr_t get_memory(size_t size);
+    void put_memory(void *ptr, size_t size);
+
+    typename I::buffer &get_input_buffer(size_t size);
+    void put_input_buffer(typename I::buffer &buffer);
  
+    typename I::buffer &get_output_buffer(size_t size);
+    void put_output_buffer(typename I::buffer &buffer);
+
     virtual typename I::buffer *alloc_buffer(size_t size, GmacProtection hint, gmacError_t &err) = 0;
     virtual gmacError_t free_buffer(typename I::buffer &buffer) = 0;
 

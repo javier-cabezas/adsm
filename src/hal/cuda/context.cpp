@@ -188,18 +188,12 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
         if (dst.get_context()->get_device().has_direct_copy(src.get_context()->get_device())) {
             res = cuMemcpyDtoDAsync(dst.get_device_addr(), src.get_device_addr(), count, stream());
         } else {
-            event_t last = stream.get_last_event();
-            if (last.is_valid()) {
-                last.sync();
-            }
+            buffer_t &buffer = get_input_buffer(count);
 
-            //buffer_t &buffer = stream.get_buffer(count);
-            hostptr_t mem = get_memory(count);
-
-            res = cuMemcpyDtoHAsync(mem, src.get_device_addr(), count, stream());
+            res = cuMemcpyDtoHAsync(buffer.get_addr(), src.get_device_addr(), count, stream());
             if (res == CUDA_SUCCESS) {
                 // TODO, check if an explicit synchronization is required
-                res = cuMemcpyHtoDAsync(src.get_device_addr(), mem, count, stream());
+                res = cuMemcpyHtoDAsync(src.get_device_addr(), buffer.get_addr(), count, stream());
             }
 
             if (res == CUDA_SUCCESS) {
@@ -212,14 +206,9 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
                      src.get_host_addr(),
                      dst.get_device_addr(),
                      count, stream());
-        //event_t last = stream.get_last_event();
-        //if (last.is_valid()) {
-        //    last.sync();
-        //}
+        buffer_t &buffer = get_output_buffer(count);
 
-        //buffer_t &buffer = stream.get_buffer(count);
-
-        //memcpy(buffer.get_addr(), src.get_host_addr(), count);
+        memcpy(buffer.get_addr(), src.get_host_addr(), count);
 
         res = cuMemcpyHtoDAsync(dst.get_device_addr(), src.get_host_addr(), count, stream());
 
@@ -238,12 +227,12 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
             last.sync();
         }
 
-        //buffer_t &buffer = stream.get_buffer(count);
+        buffer_t &buffer = get_input_buffer(count);
 
         res = cuMemcpyDtoHAsync(dst.get_host_addr(), src.get_device_addr(), count, stream());
 
         // Perform memcpy after asynchronous copy
-        //ret.add_trigger(util::do_func(memcpy, buffer.get_addr(), src.get_host_addr(), count));
+        ret.add_trigger(util::do_func(memcpy, buffer.get_addr(), src.get_host_addr(), count));
         // Release buffer after memcpy
         //ret.add_trigger(util::do_member(stream_t::put_buffer, &stream, buffer));
     } else if (dst.is_host_ptr() &&
@@ -465,6 +454,8 @@ context_t::alloc_buffer(size_t size, GmacProtection hint, gmacError_t &err)
     void *addr;
     CUresult res = cuMemHostAlloc(&addr, size, flags);
     err = cuda::error(res);
+
+    TRACE(LOCAL, "Created buffer: %p ("FMT_SIZE")", addr, size);
 
     return new buffer_t(hostptr_t(addr), size, *this);
 }

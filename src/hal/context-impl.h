@@ -76,10 +76,32 @@ queue_event<I>::push(typename I::event::event_type &event)
 }
 
 template <typename D, typename B, typename I>
+hostptr_t
+context_t<D, B, I>::get_memory(size_t size)
+{
+    hostptr_t mem = (hostptr_t) mapMemory_.pop(size);
+
+    if (mem == NULL) {
+        mem = (hostptr_t) malloc(size);
+    }
+
+    return mem;
+}
+
+template <typename D, typename B, typename I>
+inline void
+context_t<D, B, I>::put_memory(void *ptr, size_t size)
+{
+    mapMemory_.push(ptr, size);
+}
+
+template <typename D, typename B, typename I>
 inline
 context_t<D, B, I>::context_t(typename B::context context, D &dev) :
     context_(context),
-    device_(dev)
+    device_(dev),
+    nBuffersIn_(0),
+    nBuffersOut_(0)
 {
 }
 
@@ -306,6 +328,58 @@ typename I::event
 context_t<D, B, I>::memset_async(typename I::ptr dst, int c, size_t count, typename I::stream &stream, gmacError_t &err)
 {
     return memset_async_backend(dst, c, count, stream, NULL, err);
+}
+
+template <typename D, typename B, typename I>
+typename I::buffer &
+context_t<D, B, I>::get_input_buffer(size_t size)
+{
+    typename I::buffer *buffer = mapFreeBuffersIn_.pop(size);
+
+    if (buffer == NULL) {
+        if (nBuffersIn_ < MaxBuffersIn_) {
+            gmacError_t err;
+
+            buffer = alloc_buffer(size, GMAC_PROT_READ, err);
+            ASSERTION(err == gmacSuccess);
+            nBuffersIn_++;
+        } else {
+            buffer = mapUsedBuffersIn_.pop(size);
+            buffer->wait();
+        }
+    } else {
+        TRACE(LOCAL, "Reusing input buffer");
+    }
+
+    mapUsedBuffersIn_.push(buffer, buffer->get_size());
+
+    return *buffer;
+}
+
+template <typename D, typename B, typename I>
+typename I::buffer &
+context_t<D, B, I>::get_output_buffer(size_t size)
+{
+    typename I::buffer *buffer = mapFreeBuffersOut_.pop(size);
+
+    if (buffer == NULL) {
+        if (nBuffersOut_ < MaxBuffersOut_) {
+            gmacError_t err;
+
+            buffer = alloc_buffer(size, GMAC_PROT_WRITE, err);
+            ASSERTION(err == gmacSuccess);
+            nBuffersOut_++;
+        } else {
+            buffer = mapUsedBuffersOut_.pop(size);
+            buffer->wait();
+        }
+    } else {
+        TRACE(LOCAL, "Reusing output buffer");
+    }
+
+    mapUsedBuffersOut_.push(buffer, buffer->get_size());
+
+    return *buffer;
 }
 
 } // namespace detail

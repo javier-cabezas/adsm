@@ -8,11 +8,18 @@ set(hal_cuda_SRC
     context.h
     context-impl.h
     context.cpp
+    event.h
+    event-impl.h
+    event.cpp
+    kernel.h
+    kernel-impl.h
     module.h
     module-impl.h
     module.cpp
+    ptr.h
+    stream.h
+    stream-impl.h
     types.h
-    types-impl.h
     types.cpp
 )
 

@@ -50,14 +50,9 @@ class GMAC_LOCAL default_id :
     unsigned long val_;
 
 public:
-    default_id(unsigned long val) : val_(val) {}
+    default_id(unsigned long val);
 
-    typedef unsigned long _print_type;
-
-    unsigned long print() const
-    {
-        return val_;
-    }
+    unsigned long print() const;
 };
 
 template <typename T, typename R = default_id>
@@ -71,10 +66,7 @@ public:
     unique();
 
     R get_id() const;
-    unsigned long get_print_id() const
-    {
-        return id_.print();
-    }
+    unsigned long get_print_id() const;
 };
 
 }}

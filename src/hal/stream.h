@@ -31,7 +31,7 @@ public:
 
         lock();
         typename Parent::iterator it;
-        it = Parent::find(size);
+        it = Parent::lower_bound(size);
         if (it != Parent::end()) {
             queue_subset &queue = it->second;
             if (queue.size() > 0) {
@@ -44,7 +44,7 @@ public:
         return ret;
     }
 
-    void push(T *v, size_t size = 0)
+    void push(T *v, size_t size)
     {
         lock();
         typename Parent::iterator it;
@@ -53,7 +53,9 @@ public:
             queue_subset &queue = it->second;
             queue.push(v);
         } else {
-            Parent::insert(typename Parent::value_type(size, queue_subset()));
+            queue_subset queue;
+            queue.push(v);
+            Parent::insert(typename Parent::value_type(size, queue));
         }
         unlock();
     }
@@ -79,8 +81,8 @@ private:
     typedef map_pool<typename I::buffer> map_buffer;
 
     local_mutex lockBuffer_;
-
     typename I::buffer *buffer_;
+
     map_buffer mapBuffersIn_;
     map_buffer mapBuffersOut_;
 #endif
@@ -104,43 +106,6 @@ public:
     virtual state query() = 0;
     virtual gmacError_t sync() = 0;
 
-#if 0
-    typename I::buffer &
-    get_buffer(size_t size)
-    {
-#if 0
-        typename I::buffer *buffer = mapBuffersIn_.pop(size);
-
-        if (buffer == NULL) {
-            gmacError_t err;
-
-            buffer = get_context().alloc_buffer(size, GMAC_PROT_READ, err);
-            ASSERTION(err == gmacSuccess);
-        } else {
-            TRACE(LOCAL, "Reusing input buffer");
-        }
-#endif
-        lockBuffer_.lock();
-
-        if (buffer_ == NULL) {
-            gmacError_t err;
-
-            buffer_ = get_context().alloc_buffer(size, GMAC_PROT_READ, err);
-            ASSERTION(err == gmacSuccess);
-        }
-
-        return *buffer_;
-    }
-
-    inline
-    void put_buffer(typename I::buffer &buffer)
-    {
-#if 0
-        mapBuffersIn_.push(&buffer);
-#endif
-        lockBuffer_.unlock();
-    }
-#endif
 };
 
 }
