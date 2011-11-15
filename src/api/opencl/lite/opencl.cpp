@@ -109,7 +109,7 @@ extern "C" {
 
 static void openclInit();
 
-cl_context SYMBOL(clCreateContext)(
+cl_context STD_SYMBOL(clCreateContext)(
         const cl_context_properties *properties,
         cl_uint num_devices,
         const cl_device_id *devices,
@@ -128,7 +128,7 @@ cl_context SYMBOL(clCreateContext)(
     return ret;
 }
 
-cl_context SYMBOL(clCreateContextFromType)(
+cl_context STD_SYMBOL(clCreateContextFromType)(
         const cl_context_properties *properties,
         cl_device_type device_type,
         void (CL_CALLBACK *pfn_notify)(const char *, const void *, size_t, void *),
@@ -159,7 +159,7 @@ cl_context SYMBOL(clCreateContextFromType)(
     return ret;
 }
 
-cl_int SYMBOL(clRetainContext)(cl_context context)
+cl_int STD_SYMBOL(clRetainContext)(cl_context context)
 {
     if(__opencl_clRetainContext == NULL) openclInit();
     cl_int ret = __opencl_clRetainContext(context);
@@ -170,7 +170,7 @@ cl_int SYMBOL(clRetainContext)(cl_context context)
     return ret;
 }
 
-cl_int SYMBOL(clReleaseContext)(cl_context context)
+cl_int STD_SYMBOL(clReleaseContext)(cl_context context)
 {
     if(__opencl_clReleaseContext == NULL) openclInit();
     cl_int ret = __opencl_clReleaseContext(context);
@@ -186,7 +186,7 @@ cl_int SYMBOL(clReleaseContext)(cl_context context)
     return ret;
 }
 
-cl_command_queue SYMBOL(clCreateCommandQueue)(
+cl_command_queue STD_SYMBOL(clCreateCommandQueue)(
         cl_context context,
         cl_device_id device,
         cl_command_queue_properties properties,
@@ -204,7 +204,7 @@ cl_command_queue SYMBOL(clCreateCommandQueue)(
     return ret;
 }
 
-cl_int SYMBOL(clRetainCommandQueue)(cl_command_queue command_queue)
+cl_int STD_SYMBOL(clRetainCommandQueue)(cl_command_queue command_queue)
 {
     if(__opencl_clRetainCommandQueue == NULL) openclInit();
     cl_int ret = __opencl_clRetainCommandQueue(command_queue);
@@ -212,7 +212,7 @@ cl_int SYMBOL(clRetainCommandQueue)(cl_command_queue command_queue)
     return ret;
 }
 
-cl_int SYMBOL(clReleaseCommandQueue)(cl_command_queue command_queue)
+cl_int STD_SYMBOL(clReleaseCommandQueue)(cl_command_queue command_queue)
 {
     if(__opencl_clReleaseCommandQueue == NULL) openclInit();
     cl_context context;
@@ -278,7 +278,7 @@ static cl_int releaseMemoryObjects(cl_command_queue command_queue)
 }
 
 
-cl_int SYMBOL(clEnqueueNDRangeKernel)(
+cl_int STD_SYMBOL(clEnqueueNDRangeKernel)(
     cl_command_queue command_queue,
     cl_kernel kernel,
     cl_uint work_dim,
@@ -309,7 +309,7 @@ do_exit:
     return ret;
 }
 
-cl_int SYMBOL(clEnqueueTask)(
+cl_int STD_SYMBOL(clEnqueueTask)(
     cl_command_queue command_queue,
     cl_kernel kernel,
     cl_uint num_events_in_wait_list,
@@ -335,7 +335,7 @@ do_exit:
     return ret;
 }
 
-cl_int SYMBOL(clEnqueueNativeKernel)(
+cl_int STD_SYMBOL(clEnqueueNativeKernel)(
     cl_command_queue command_queue,
     void (*user_func)(void *),
     void *args,
@@ -366,7 +366,7 @@ do_exit:
     return ret;
 }
 
-cl_int SYMBOL(clFinish)(cl_command_queue command_queue)
+cl_int STD_SYMBOL(clFinish)(cl_command_queue command_queue)
 {
     if(__opencl_clFinish == NULL) openclInit();
     cl_int ret = __opencl_clFinish(command_queue);
@@ -458,7 +458,10 @@ cl_mem APICALL clGetBuffer(cl_context context, const void *ptr)
     accptr_t ret = accptr_t(0);
     enterGmac();
     Mode *mode = Process_->getMode(context);
-    if(mode != NULL) ret = Manager_->translate(*mode, hostptr_t(ptr));
+    if(mode != NULL) {
+		ret = Manager_->translate(*mode, hostptr_t(ptr));
+		mode->decRef();
+	}
     exitGmac();
     return ret.get();
 }

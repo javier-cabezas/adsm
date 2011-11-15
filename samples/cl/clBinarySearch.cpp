@@ -60,24 +60,24 @@ int main(int argc, char *argv[])
     kernel = clCreateKernel(program, "binarySearch", &error_code);
     assert(error_code == CL_SUCCESS);
 
-    // Alloc data
-     error_code = clMalloc(command_queue, (void **)&input, vecSize * sizeof(cl_uint));
-	 assert(error_code == CL_SUCCESS);
-     error_code = clMalloc(command_queue, (void **)&output, sizeof(cl_uint4));
-	 assert(error_code == CL_SUCCESS);
+    /* Alloc data */
+    error_code = clMalloc(command_queue, (void **)&input, vecSize * sizeof(cl_uint));
+	assert(error_code == CL_SUCCESS);
+    error_code = clMalloc(command_queue, (void **)&output, sizeof(cl_uint4));
+	assert(error_code == CL_SUCCESS);
 
-    // random initialisation of input
+    /* Random initialisation of input */
     cl_uint max = vecSize * 20;
     input[0] = 0;
     for(cl_uint i = 1; i < vecSize; i++)
         input[i] = input[i-1] + (cl_uint) (max * rand()/(float)RAND_MAX);
   
-    // Print the input data
+    /* Print the input data */
     printf("Sorted data: ");
     for(cl_uint i = 0; i < vecSize; i++)
         printf("%d ", input[i]);
  
-    // Call the kernel
+    /* Call the kernel */
     size_t globalThreads[1];
     size_t localThreads[1];
     localThreads[0] = 256;
@@ -148,16 +148,27 @@ int main(int argc, char *argv[])
     printf("\n l = %d, u = %d, isfound = %d, fm = %d\n", globalLowerBound, globalUpperBound, isElementFound, findMe);
 
     cl_int verified = binarySearchCPUReference(input, output, findMe, vecSize);
-    /* compare the results and see if they match */
+    /* Compare the results and see if they match */
     if(verified) {
         printf("Passed!\n");
     } else {
         printf("Failed\n");
     }
 
+	/* Release memory */
     error_code = clFree(command_queue, input);
 	assert(error_code == CL_SUCCESS);
     error_code = clFree(command_queue, output);
+	assert(error_code == CL_SUCCESS);
+
+	/* Release OpenCL resources */
+	error_code = clReleaseKernel(kernel);
+	assert(error_code == CL_SUCCESS);
+	error_code = clReleaseProgram(program);
+	assert(error_code == CL_SUCCESS);
+	error_code = clReleaseCommandQueue(command_queue);
+	assert(error_code == CL_SUCCESS);
+	error_code = clReleaseContext(context);
 	assert(error_code == CL_SUCCESS);
 
     return 0;

@@ -21,6 +21,11 @@ template<typename State>
 inline
 GenericBlock<State>::~GenericBlock()
 {
+	/* Decrement the usage count for the owners */
+	ModeMap::iterator i;
+	for(i = owners_.begin(); i != owners_.end(); i++) {
+		i->first->decRef();
+	}
 }
 
 template<typename State>

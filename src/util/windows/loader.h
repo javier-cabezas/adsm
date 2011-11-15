@@ -47,6 +47,7 @@ WITH THE SOFTWARE.  */
 	symbol##_t symbol = NULL
 
 #define SYMBOL(name) __gmac_##name
+#define STD_SYMBOL(name) __stdcall __gmac_##name
 
 #define LOAD_SYM(symbol, name)	\
 	__impl::loader::LoadSymbol((PVOID *)&symbol, SYMBOL(name), #name)

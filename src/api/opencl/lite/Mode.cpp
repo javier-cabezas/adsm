@@ -26,7 +26,7 @@ Mode::Mode(cl_context ctx, cl_uint numDevices, const cl_device_id *devices) :
 
 Mode::~Mode()
 {
-    // If process is not valid, OpenCL might have been unloaded
+	// If process is not valid, OpenCL might have been unloaded
     StreamMap::const_iterator i;
     cl_int ret = CL_SUCCESS;
     for(i = streams_.begin(); i != streams_.end(); i++) {

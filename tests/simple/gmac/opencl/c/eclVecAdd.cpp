@@ -26,18 +26,23 @@ int main(int argc, char *argv[])
 {
     float *a, *b, *c;
     gmactime_t s, t, S, T;
+	ecl_error ret = eclSuccess;
 
     setParam<unsigned>(&vecSize, vecSizeStr, vecSizeDefault);
     fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
 
     getTime(&s);
-    assert(eclCompileSource(kernel) == eclSuccess);
+    ret = eclCompileSource(kernel);
+	assert(ret == eclSuccess);
 
     // Alloc & init input data
-    assert(eclMalloc((void **)&a, vecSize * sizeof(float)) == eclSuccess);
-    assert(eclMalloc((void **)&b, vecSize * sizeof(float)) == eclSuccess);
+    ret = eclMalloc((void **)&a, vecSize * sizeof(float));
+	assert(ret == eclSuccess);
+    ret = eclMalloc((void **)&b, vecSize * sizeof(float));
+	assert(ret == eclSuccess);
     // Alloc output data
-    assert(eclMalloc((void **)&c, vecSize * sizeof(float)) == eclSuccess);
+    ret = eclMalloc((void **)&c, vecSize * sizeof(float));
+	assert(ret == eclSuccess);
     getTime(&t);
     printTime(&s, &t, "Alloc: ", "\n");
 
@@ -58,14 +63,21 @@ int main(int argc, char *argv[])
     ecl_kernel kernel;
     size_t globalSize = vecSize;
 
-    assert(eclGetKernel("vecAdd", &kernel) == eclSuccess);
-    assert(eclSetKernelArgPtr(kernel, 0, c) == eclSuccess);
-    assert(eclSetKernelArgPtr(kernel, 1, a) == eclSuccess);
-    assert(eclSetKernelArgPtr(kernel, 2, b) == eclSuccess);
-    assert(eclSetKernelArg(kernel, 3, sizeof(vecSize), &vecSize) == eclSuccess);
-    assert(eclCallNDRange(kernel, 1, NULL, &globalSize, NULL) == eclSuccess);
+    ret = eclGetKernel("vecAdd", &kernel);
+	assert(ret == eclSuccess);
+    ret = eclSetKernelArgPtr(kernel, 0, c);
+	assert(ret == eclSuccess);
+    ret = eclSetKernelArgPtr(kernel, 1, a);
+	assert(ret == eclSuccess);
+    ret = eclSetKernelArgPtr(kernel, 2, b);
+	assert(ret == eclSuccess);
+    ret = eclSetKernelArg(kernel, 3, sizeof(vecSize), &vecSize);
+	assert(ret == eclSuccess);
+    ret = eclCallNDRange(kernel, 1, NULL, &globalSize, NULL);
+	assert(ret == eclSuccess);
 
-    assert(eclGetKernelError(kernel) == eclSuccess);
+    ret = eclGetKernelError(kernel);
+	assert(ret == eclSuccess);
 
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");
@@ -81,11 +93,15 @@ int main(int argc, char *argv[])
     fprintf(stderr, "Error: %f\n", fabsf(sum - check));
     printTime(&S, &T, "Total: ", "\n");
 
-    eclReleaseKernel(kernel);
+    ret = eclReleaseKernel(kernel);
+	assert(ret == eclSuccess);
 
-    eclFree(a);
-    eclFree(b);
-    eclFree(c);
+    ret = eclFree(a);
+	assert(ret == eclSuccess);
+    ret = eclFree(b);
+	assert(ret == eclSuccess);
+    ret = eclFree(c);
+	assert(ret == eclSuccess);
 
    return sum != check;
 }
