@@ -61,9 +61,18 @@ namespace cl {
  *  \param count Size (in bytes) of the data to be allocated
  *  \return OpenCL error code
  */
-GMAC_API cl_int malloc(const CommandQueue &queue, void **addr, ::size_t count)
+inline cl_int malloc(const CommandQueue &queue, void **addr, ::size_t count)
 {
     return ::clMalloc(queue(), addr, count);
+}
+
+/**
+ * Wrapper to malloc in the root namespace; this is added to workaround the
+ * error currently present in the Khronos C++ wrapper header file
+ */
+inline void *malloc(::size_t size)
+{
+    return ::malloc(size);
 }
 
 
@@ -73,7 +82,7 @@ GMAC_API cl_int malloc(const CommandQueue &queue, void **addr, ::size_t count)
  *  \param addr Host memory address
  *  \return OpenCL error code
  */
-GMAC_API cl_int free(const CommandQueue &queue, void *addr)
+inline cl_int free(const CommandQueue &queue, void *addr)
 {
     return ::clFree(queue(), addr);
 }
@@ -86,7 +95,7 @@ GMAC_API cl_int free(const CommandQueue &queue, void *addr)
  *  \return OpenCL error code
  */
 template <typename T>
-GMAC_API cl_mem getBuffer(const Context &context, const T *addr)
+inline cl_mem getBuffer(const Context &context, const T *addr)
 {
     return ::clGetBuffer(context(), addr);
 }
