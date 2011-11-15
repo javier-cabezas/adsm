@@ -47,6 +47,7 @@ WITH THE SOFTWARE.  */
 		FATAL("Unable to locate "#name);
 
 #define SYMBOL(name) name
+#define STD_SYMBOL(name) name
 
 typedef void * library_t;
 #define USE_LIBRARY(name) dlopen("lib"name".so", RTLD_NOW)

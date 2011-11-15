@@ -157,7 +157,18 @@ int main(int argc, char *argv[])
 
     free(verificationInput);
     verificationInput = NULL;
-    assert(clFree(command_queue, input) == CL_SUCCESS);
+    error_code = clFree(command_queue, input);
+	assert(error_code == CL_SUCCESS);
+
+	/* Release OpenCL resources */
+	error_code = clReleaseKernel(kernel);
+	assert(error_code == CL_SUCCESS);
+	error_code = clReleaseProgram(program);
+	assert(error_code == CL_SUCCESS);
+	error_code = clReleaseCommandQueue(command_queue);
+	assert(error_code == CL_SUCCESS);
+	error_code = clReleaseContext(context);
+	assert(error_code == CL_SUCCESS);
 
     return 0;
 }

@@ -276,9 +276,22 @@ int main(int argc, char *argv[])
     free(hostCallPrice);
     hostCallPrice = NULL;
 	
-	clFree(command_queue, devicePutPrice);
-    clFree(command_queue, deviceCallPrice);
-    clFree(command_queue, randArray);
+	error_code = clFree(command_queue, devicePutPrice);
+	assert(error_code == CL_SUCCESS);
+    error_code = clFree(command_queue, deviceCallPrice);
+	assert(error_code == CL_SUCCESS);
+    error_code = clFree(command_queue, randArray);
+	assert(error_code == CL_SUCCESS);
+
+	/* Release OpenCL resources */
+	error_code = clReleaseKernel(kernel);
+	assert(error_code == CL_SUCCESS);
+	error_code = clReleaseProgram(program);
+	assert(error_code == CL_SUCCESS);
+	error_code = clReleaseCommandQueue(command_queue);
+	assert(error_code == CL_SUCCESS);
+	error_code = clReleaseContext(context);
+	assert(error_code == CL_SUCCESS);
 
     free(maxWorkItemSizes);
     maxWorkItemSizes = NULL;

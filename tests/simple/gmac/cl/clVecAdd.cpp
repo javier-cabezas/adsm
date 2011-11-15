@@ -4,11 +4,9 @@
 #include <ctime>
 #include <cassert>
 
-#include "gmac/cl.h"
+#include <gmac/cl.h>
 
 #include "utils.h"
-#include "debug.h"
-
 
 const char *vecSizeStr = "GMAC_VECSIZE";
 const unsigned vecSizeDefault = 1 * 1024 * 1024;
@@ -37,9 +35,7 @@ int main(int argc, char *argv[])
     cl_program program;
     cl_kernel kernel;
 	float *a, *b, *c;
-	gmactime_t s, t;
 
-	setParam<unsigned>(&vecSize, vecSizeStr, vecSizeDefault);
 	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
 
     error_code = clGetPlatformIDs(1, &platform, NULL);
@@ -57,7 +53,7 @@ int main(int argc, char *argv[])
     kernel = clCreateKernel(program, "vecAdd", &error_code);
     assert(error_code == CL_SUCCESS);
 
-    getTime(&s);
+   
     // Alloc & init input data
     error_code = clMalloc(command_queue, (void **)&a, vecSize * sizeof(float));
 	assert(error_code == CL_SUCCESS);
@@ -66,25 +62,16 @@ int main(int argc, char *argv[])
     // Alloc output data
     error_code = clMalloc(command_queue, (void **)&c, vecSize * sizeof(float));
 	assert(error_code == CL_SUCCESS);
-    getTime(&t);
-    printTime(&s, &t, "Alloc: ", "\n");
-
-
+    
     float sum = 0.f;
-
-    getTime(&s);
-    valueInit(a, 1.f, vecSize);
-    valueInit(b, 1.f, vecSize);
-    getTime(&t);
-    printTime(&s, &t, "Init: ", "\n");
-
+   
     for(unsigned i = 0; i < vecSize; i++) {
+        a[i] = 1.f * rand() / RAND_MAX;
+        b[i] = 1.f * rand() / RAND_MAX;
         sum += a[i] + b[i];
     }
     
-
-    // Call the kernel
-    getTime(&s);
+    // Call the kernel    
     size_t global_size = vecSize;
 
     cl_mem c_device = clGetBuffer(context, c);
@@ -103,20 +90,14 @@ int main(int argc, char *argv[])
 	assert(error_code == CL_SUCCESS);
     error_code = clFinish(command_queue);
 	assert(error_code == CL_SUCCESS);
-
-    getTime(&t);
-    printTime(&s, &t, "Run: ", "\n");
-
-
-    getTime(&s);
+    
     float error = 0.f;
     float check = 0.f;
     for(unsigned i = 0; i < vecSize; i++) {
         error += c[i] - (a[i] + b[i]);
         check += c[i];
     }
-    getTime(&t);
-    printTime(&s, &t, "Check: ", "\n");
+    
     fprintf(stderr, "Error: %f\n", error);
 
     if (sum != check) {
@@ -124,8 +105,15 @@ int main(int argc, char *argv[])
         abort();
     }
 
+	/* Clean up resources */
     clFree(command_queue, a);
     clFree(command_queue, b);
     clFree(command_queue, c);
+
+	clReleaseKernel(kernel);
+	clReleaseProgram(program);
+	clReleaseCommandQueue(command_queue);
+	clReleaseContext(context);
+	
     return 0;
 }

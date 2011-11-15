@@ -105,8 +105,15 @@ int main(int argc, char *argv[])
         abort();
     }
 
+	/* Clean up resources */
     clFree(command_queue, a);
     clFree(command_queue, b);
     clFree(command_queue, c);
+
+	clReleaseKernel(kernel);
+	clReleaseProgram(program);
+	clReleaseCommandQueue(command_queue);
+	clReleaseContext(context);
+	
     return 0;
 }
