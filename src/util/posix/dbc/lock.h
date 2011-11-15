@@ -46,8 +46,8 @@ WITH THE SOFTWARE.  */
 namespace __dbc { namespace util {
 
 #if defined(__APPLE__)
-class lock;
-typedef lock spinlock;
+class mutex;
+typedef mutex spinlock;
 #else
 class GMAC_API spinlock :
     public __impl::util::spinlock,

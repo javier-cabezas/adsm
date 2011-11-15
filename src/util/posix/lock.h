@@ -48,8 +48,8 @@ WITH THE SOFTWARE.  */
 namespace __impl { namespace util {
 
 #if defined(__APPLE__)
-class lock;
-typedef lock spinlock;
+class mutex;
+typedef mutex spinlock;
 #else
 class GMAC_API spinlock : public __impl::util::lock__ {
     DBC_FORCE_TEST(spinlock)

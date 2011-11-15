@@ -70,7 +70,7 @@ inline
 THREAD_T
 thread::get_debug_tid()
 {
-    if (TLS::CurrentThread_.get() == NULL) return 1;
+    if (TLS::CurrentThread_.get() == NULL) return THREAD_T(1);
     return TLS::get_current_thread().debugTID_;
 }
 #endif
