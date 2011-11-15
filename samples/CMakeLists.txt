@@ -45,6 +45,41 @@ add_executable(eclThreadVecAdd
 )
 target_link_libraries(eclThreadVecAdd ${GMAC_HPE})
 
+add_executable(eclBinarySearch
+    ${CMAKE_SOURCE_DIR}/ecl/eclBinarySearch.cpp 
+    ${CMAKE_SOURCE_DIR}/ecl/eclBinarySearchKernel.cl
+)
+target_link_libraries(eclBinarySearch ${GMAC_HPE})
+
+add_executable(eclBinarySearch_cplusplus
+    ${CMAKE_SOURCE_DIR}/ecl/eclBinarySearch_cplusplus.cpp 
+    ${CMAKE_SOURCE_DIR}/ecl/eclBinarySearchKernel.cl
+)
+target_link_libraries(eclBinarySearch_cplusplus ${GMAC_HPE})
+
+add_executable(eclBitonicSort
+    ${CMAKE_SOURCE_DIR}/ecl/eclBitonicSort.cpp 
+    ${CMAKE_SOURCE_DIR}/ecl/eclBitonicSortKernel.cl
+)
+target_link_libraries(eclBitonicSort ${GMAC_HPE})
+
+add_executable(eclBitonicSort_cplusplus
+    ${CMAKE_SOURCE_DIR}/ecl/eclBitonicSort_cplusplus.cpp 
+    ${CMAKE_SOURCE_DIR}/ecl/eclBitonicSortKernel.cl
+)
+target_link_libraries(eclBitonicSort_cplusplus ${GMAC_HPE})
+
+add_executable(eclBlackScholes
+    ${CMAKE_SOURCE_DIR}/ecl/eclBlackScholes.cpp 
+    ${CMAKE_SOURCE_DIR}/ecl/eclBlackScholesKernel.cl
+)
+target_link_libraries(eclBlackScholes ${GMAC_HPE})
+
+#add_executable(eclBlackScholes_cplusplus
+#    ${CMAKE_SOURCE_DIR}/ecl/eclBlackScholes_cplusplus.cpp 
+#    ${CMAKE_SOURCE_DIR}/ecl/eclBlackScholesKernel.cl
+#)
+#target_link_libraries(eclBlackScholes_cplusplus ${GMAC_HPE})
 
 add_executable(clVecAdd
     ${CMAKE_SOURCE_DIR}/cl/clVecAdd.cpp
@@ -55,3 +90,21 @@ add_executable(clVecAdd_cplusplus
     ${CMAKE_SOURCE_DIR}/cl/clVecAdd_cplusplus.cpp
 )
 target_link_libraries(clVecAdd_cplusplus ${GMAC_CL} ${OPENCL})
+
+add_executable(clBinarySearch
+    ${CMAKE_SOURCE_DIR}/cl/clBinarySearch.cpp 
+    ${CMAKE_SOURCE_DIR}/cl/clBinarySearchKernel.cl
+)
+target_link_libraries(clBinarySearch ${GMAC_CL} ${OPENCL})
+
+add_executable(clBitonicSort
+    ${CMAKE_SOURCE_DIR}/cl/clBitonicSort.cpp 
+    ${CMAKE_SOURCE_DIR}/cl/clBitonicSortKernel.cl
+)
+target_link_libraries(clBitonicSort ${GMAC_CL} ${OPENCL})
+
+add_executable(clBlackScholes
+    ${CMAKE_SOURCE_DIR}/cl/clBlackScholes.cpp 
+    ${CMAKE_SOURCE_DIR}/cl/clBlackScholesKernel.cl
+)
+target_link_libraries(clBlackScholes ${GMAC_CL} ${OPENCL})
