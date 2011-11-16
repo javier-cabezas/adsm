@@ -7,9 +7,6 @@
 #include "memory/object.h"
 #include "memory/map_object.h"
 
-using __impl::util::params::ParamAutoSync;
-
-
 namespace __impl { namespace memory {
 
 ListAddr AllAddresses;

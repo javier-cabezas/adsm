@@ -95,6 +95,9 @@ public:
     void print() const;
 };
 
+}}
+
+namespace config {
 namespace params {
 typedef struct GMAC_LOCAL {
     __impl::util::__Parameter *(*ctor)(void);
@@ -106,7 +109,6 @@ extern ParameterCtor ParamCtorList[];
 #define PARAM(v, t, d, ...)  extern t v;
 
 #include "util/Parameter-def.h"
-}
 
 }}
 

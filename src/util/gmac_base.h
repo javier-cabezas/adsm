@@ -107,7 +107,7 @@ class GMAC_LOCAL debug :
 
     void dumpInfo_()
     {
-        if (params::ParamDebugPrintDebugInfo == true) {
+        if (config::params::DebugPrintDebugInfo == true) {
             MapTypes::const_iterator it;
             for (it = mapTypes_.begin(); it != mapTypes_.end(); it++) {
                 printf("DEBUG INFORMATION FOR CLASS: %s\n", it->first.c_str());

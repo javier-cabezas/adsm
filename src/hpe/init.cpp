@@ -46,8 +46,8 @@ void initGmac(void)
     mpiInit();
 #endif
 
-    TRACE(GLOBAL, "Using %s memory manager", __impl::util::params::ParamProtocol);
-    TRACE(GLOBAL, "Using %s memory allocator", __impl::util::params::ParamAllocator);
+    TRACE(GLOBAL, "Using %s memory manager", config::params::Protocol);
+    TRACE(GLOBAL, "Using %s memory allocator", config::params::Allocator);
 
     // Set the entry and exit points for Manager
     __impl::memory::Handler::setEntry(enterGmac);

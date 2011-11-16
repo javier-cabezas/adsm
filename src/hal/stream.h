@@ -1,6 +1,7 @@
 #ifndef GMAC_HAL_TYPES_STREAM_H_
 #define GMAC_HAL_TYPES_STREAM_H_
 
+#include <algorithm>
 #include <queue>
 
 #include "util/gmac_base.h"
@@ -13,10 +14,10 @@ namespace detail {
 
 template <typename T>
 class GMAC_LOCAL map_pool :
-    std::map<size_t, std::queue<T *> >,
+    std::map<size_t, std::list<T *> >,
     gmac::util::mutex {
 
-    typedef std::queue<T *> queue_subset;
+    typedef std::list<T *> queue_subset;
     typedef std::map<size_t, queue_subset> Parent;
 
 public:
@@ -36,7 +37,29 @@ public:
             queue_subset &queue = it->second;
             if (queue.size() > 0) {
                 ret = queue.front();
-                queue.pop();
+                queue.pop_front();
+            }
+        }
+        unlock();
+
+        return ret;
+    }
+
+    bool remove(T *val, size_t size)
+    {
+        bool ret = false;
+
+        lock();
+        typename Parent::iterator it;
+        it = Parent::lower_bound(size);
+        if (it != Parent::end()) {
+            queue_subset &queue = it->second;
+
+            typename queue_subset::iterator it2;
+            it2 = std::find(queue.begin(), queue.end(), val);
+            if (it2 != queue.end()) {
+                queue.erase(it2);
+                ret = true;
             }
         }
         unlock();
@@ -51,10 +74,10 @@ public:
         it = Parent::find(size);
         if (it != Parent::end()) {
             queue_subset &queue = it->second;
-            queue.push(v);
+            queue.push_back(v);
         } else {
             queue_subset queue;
-            queue.push(v);
+            queue.push_back(v);
             Parent::insert(typename Parent::value_type(size, queue));
         }
         unlock();

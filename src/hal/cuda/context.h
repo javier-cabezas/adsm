@@ -60,7 +60,7 @@ class GMAC_LOCAL context_t :
     _event_t *get_new_event(bool async, _event_t::type t);
     void dispose_event(_event_t &event);
 
-    buffer_t *alloc_buffer(size_t size, GmacProtection hint, gmacError_t &err);
+    buffer_t *alloc_buffer(size_t size, GmacProtection hint, stream_t &stream, gmacError_t &err);
     gmacError_t free_buffer(buffer_t &buffer);
 
     event_t copy_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);

@@ -53,9 +53,10 @@ list_event::size() const
 }
 
 inline
-buffer_t::buffer_t(hostptr_t addr, size_t size, context_t &context) :
+buffer_t::buffer_t(hostptr_t addr, cl_mem devPtr, size_t size, context_t &context) :
     Parent(size, context),
-    addr_(addr)
+    addr_(addr),
+    devPtr_(devPtr)
 {
 }
 
@@ -70,7 +71,7 @@ inline
 ptr_t
 buffer_t::get_device_addr()
 {
-    return get_context().get_device_addr_from_pinned(addr_);
+    return ptr_t(devPtr_, &get_context());
 }
 
 inline

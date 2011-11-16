@@ -90,14 +90,14 @@ get_class_name(const char *mangled);
 #	    define TRACE(name, fmt, ...) __impl::util::Logger::__Trace(name, \
                                                                    __PRETTY_FUNCTION__, \
                                                                    __extract_file_name(__FILE__), __LINE__, \
-                                                                   __impl::util::params::ParamDebugUseRealTID? __impl::util::GetThreadId(): __impl::core::thread::get_debug_tid(), \
+                                                                   ::config::params::DebugUseRealTID? __impl::util::GetThreadId(): __impl::core::thread::get_debug_tid(), \
                                                                    fmt, \
                                                                    ##__VA_ARGS__)
 #   elif defined(_MSC_VER)
 #	    define TRACE(name, fmt, ...) __impl::util::Logger::__Trace(name, \
                                                                    __FUNCTION__, \
                                                                    __extract_file_name(__FILE__), __LINE__, \
-                                                                   __impl::util::params::ParamDebugUseRealTID? __impl::util::GetThreadId(): __impl::core::thread::get_debug_tid(), \
+                                                                   ::config::params::DebugUseRealTID? __impl::util::GetThreadId(): __impl::core::thread::get_debug_tid(), \
                                                                    fmt, \
                                                                    ##__VA_ARGS__)
 #   endif
@@ -120,13 +120,13 @@ void dummy_assertion(bool /*b*/, ...)
 
 #ifdef DEBUG
 #define MESSAGE(fmt, ...) do {                                        \
-                            if (__impl::util::params::ParamVerbose) { \
+                            if (::config::params::Verbose) { \
                                 __impl::util::Logger::__Message("<GMAC> "fmt"\n", ##__VA_ARGS__); \
                                 TRACE(GLOBAL, fmt, ##__VA_ARGS__);    \
                             }                                         \
                           } while (0)
 #else
-#define MESSAGE(fmt, ...) { if (__impl::util::params::ParamVerbose) __impl::util::Logger::__Message("<GMAC> "fmt"\n", ##__VA_ARGS__); }
+#define MESSAGE(fmt, ...) { if (::config::params::Verbose) __impl::util::Logger::__Message("<GMAC> "fmt"\n", ##__VA_ARGS__); }
 #endif
 
 #define WARNING(fmt, ...) __impl::util::Logger::__Warning("("FMT_TID")" fmt, __impl::util::GetThreadId(), ##__VA_ARGS__)

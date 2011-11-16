@@ -33,9 +33,9 @@ long_t SubBlockMask_;
 //CONSTRUCTOR(init);
 void Init()
 {
-    BlockSize_     = util::params::ParamBlockSize;
+    BlockSize_     = config::params::BlockSize;
 #if defined(USE_VM) || defined(USE_SUBBLOCK_TRACKING)
-    SubBlockSize_  = util::params::ParamSubBlockSize;
+    SubBlockSize_  = config::params::SubBlockSize;
     SubBlocks_     = BlockSize_/SubBlockSize_;
     BlockShift_    = (unsigned) log2(BlockSize_);
     SubBlockShift_ = (unsigned) log2(SubBlockSize_);
@@ -52,10 +52,10 @@ Protocol *ProtocolInit(unsigned flags)
 {
     TRACE(GLOBAL, "Initializing Memory Protocol");
     Protocol *ret = NULL;
-    if(strcasecmp(util::params::ParamProtocol, "Rolling") == 0 ||
-       strcasecmp(util::params::ParamProtocol, "Lazy") == 0) {
+    if(strcasecmp(config::params::Protocol, "Rolling") == 0 ||
+       strcasecmp(config::params::Protocol, "Lazy") == 0) {
         bool eager;
-        if(strcasecmp(util::params::ParamProtocol, "Rolling") == 0) {
+        if(strcasecmp(config::params::Protocol, "Rolling") == 0) {
             eager = true;
         } else {
             eager = false;
@@ -69,7 +69,7 @@ Protocol *ProtocolInit(unsigned flags)
         }
     }
 #ifdef USE_VM
-    else if(strcasecmp(util::params::ParamProtocol, "Gather") == 0) {
+    else if(strcasecmp(config::params::Protocol, "Gather") == 0) {
         if(0 != (flags & 0x1)) {
             ret = new gmac::memory::protocol::Lazy<
                 memory::BlockGroup<protocol::lazy::BlockState> >(eager);

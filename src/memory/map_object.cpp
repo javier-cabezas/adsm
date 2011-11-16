@@ -16,7 +16,7 @@ std::string map_object::StatsDir_ = "";
 void
 map_object::statsInit()
 {
-    if (__impl::util::params::ParamStats) {
+    if (config::params::Stats) {
         PROCESS_T pid = __impl::util::GetProcessId();
 
         std::stringstream ss(std::stringstream::out);
@@ -118,7 +118,7 @@ bool map_object::removeObject(object &obj)
     bool ret = (i != end());
     if(ret == true) {
 #if defined(DEBUG)
-        if (__impl::util::params::ParamStats) {
+        if (config::params::Stats) {
             unsigned dump = AtomicInc(StatDumps_);
             std::stringstream ss(std::stringstream::out);
             ss << dump << "-" << "remove";
@@ -171,7 +171,7 @@ gmacError_t map_object::releaseObjects()
 {
     lockWrite();
 #ifdef DEBUG
-    if (__impl::util::params::ParamStats) {
+    if (config::params::Stats) {
         unsigned dump = AtomicInc(StatDumps_);
         std::stringstream ss(std::stringstream::out);
         ss << dump << "-" << "release";

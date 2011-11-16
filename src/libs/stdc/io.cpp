@@ -18,7 +18,6 @@
 using namespace __impl::core;
 using namespace __impl::memory;
 using namespace __impl::util;
-using __impl::util::params::ParamBlockSize;
 
 SYM(size_t, __libc_fread, void *, size_t, size_t, FILE *);
 SYM(size_t, __libc_fwrite, const void *, size_t, size_t, FILE *);
@@ -111,47 +110,7 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
 
     manager.from_io_device(aspaceDst, hostptr_t(buf), op, size * nmemb);
     ssize_t ret = op.get_result();
-#if 0
-    gmacError_t err;
-    size_t n = size * nmemb;
-    size_t ret = 0;
 
-    size_t off = 0;
-    size_t bufferSize = ParamBlockSize > size ? ParamBlockSize : size;
-    io_buffer *buffer1 = aspaceDst->create_io_buffer(bufferSize, GMAC_PROT_READ);
-    io_buffer *buffer2 = NULL;
-    if (n > buffer1->size()) {
-        buffer2 = aspaceDst->create_io_buffer(bufferSize, GMAC_PROT_READ);
-    }
-
-    io_buffer *active  = buffer1;
-    io_buffer *passive = buffer2;
-
-    size_t left = n;
-    while (left != 0) {
-        err = active->wait();
-        ASSERTION(err == gmacSuccess);
-        size_t bytes = left < active->size()? left: active->size();
-        size_t elems = __libc_fread(active->addr(), size, bytes/size, stream);
-        if(elems == 0) break;
-		ret += elems;
-        err = manager.fromIOBuffer(aspaceDst, (uint8_t *)buf + off, *active, 0, size * elems);
-        ASSERTION(err == gmacSuccess);
-
-        left -= size * elems;
-        off  += size * elems;
-        TRACE(GLOBAL, FMT_SIZE" of "FMT_SIZE" bytes read", elems * size, nmemb * size);
-        io_buffer *tmp = active;
-        active = passive;
-        passive = tmp;
-    }
-    err = passive->wait();
-    ASSERTION(err == gmacSuccess);
-    aspaceDst->destroy_io_buffer(*buffer1);
-    if (buffer2 != NULL) {
-        aspaceDst->destroy_io_buffer(*buffer2);
-    }
-#endif
 	gmac::trace::SetThreadState(gmac::trace::Running);
 	exitGmac();
 
@@ -182,60 +141,7 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
 
     manager.to_io_device(op, aspaceSrc, hostptr_t(buf), size * nmemb);
     ssize_t ret = op.get_result();
-#if 0
-    gmacError_t err;
-    size_t n = size * nmemb;
-    size_t ret = 0;
 
-    size_t off = 0;
-    size_t bufferSize = ParamBlockSize > size ? ParamBlockSize : size;
-    io_buffer *buffer1 = aspaceSrc->create_io_buffer(bufferSize, GMAC_PROT_READ);
-    io_buffer *buffer2 = NULL;
-    if (n > buffer1->size()) {
-        buffer2 = aspaceSrc->create_io_buffer(bufferSize, GMAC_PROT_READ);
-    }
-
-    io_buffer *active  = buffer1;
-    io_buffer *passive = buffer2;
-
-    size_t left = n;
-
-    size_t bytesActive = left < active->size()? left : active->size();
-    err = manager.toIOBuffer(aspaceSrc, *active, 0, hostptr_t(buf) + off, bytesActive);
-    ASSERTION(err == gmacSuccess);
-    size_t bytesPassive = 0;
-
-    do {
-        left -= bytesActive;
-        off  += bytesActive;
-
-        if (left > 0) {
-            bytesPassive = left < passive->size()? left : passive->size();
-            err = manager.toIOBuffer(aspaceSrc, *passive, 0, hostptr_t(buf) + off, bytesPassive);
-            ASSERTION(err == gmacSuccess);
-        }
-        err = active->wait();
-        ASSERTION(err == gmacSuccess);
-
-        size_t elems = __libc_fwrite(active->addr(), size, bytesActive/size, stream);
-        if(elems == 0) break;
-        TRACE(GLOBAL, FMT_SIZE" of "FMT_SIZE" bytes written", elems * size, nmemb * size);
-        ret += elems;
-
-        size_t bytesTmp = bytesActive;
-        bytesActive = bytesPassive;
-        bytesPassive = bytesTmp;
-        
-        io_buffer *tmp = active;
-        active = passive;
-        passive = tmp;
-    } while (left != 0);
-    ASSERTION(err == gmacSuccess);
-    aspaceSrc->destroy_io_buffer(*buffer1);
-    if (buffer2 != NULL) {
-        aspaceSrc->destroy_io_buffer(*buffer2);
-    }
-#endif
 	gmac::trace::SetThreadState(gmac::trace::Running);
 	exitGmac();
 

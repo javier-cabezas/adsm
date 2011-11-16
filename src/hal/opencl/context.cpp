@@ -224,21 +224,17 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
                                                 dst.get_offset(),      src.get_offset(), count,
                                                 nevents, events, &ret());
         } else {
-            hostptr_t mem = get_memory(count);
+            buffer_t *buffer = get_input_buffer(count, stream, ret);
 
             res = clEnqueueReadBuffer(stream(), src.get_device_addr(), CL_FALSE,
                                                 src.get_offset(), count,
-                                                mem,
+                                                buffer->get_addr(),
                                                 nevents, events, &ret());
             if (res == CL_SUCCESS) {
                 res = clEnqueueWriteBuffer(stream(), dst.get_device_addr(), CL_FALSE,
                                                      dst.get_offset(), count,
-                                                     mem,
+                                                     buffer->get_addr(),
                                                      nevents, events, &ret());
-            }
-
-            if (res == CL_SUCCESS) {
-                ret.add_trigger(do_member(context_t::put_memory, this, mem, count));
             }
         }
     } else if (dst.is_device_ptr() &&
@@ -252,13 +248,13 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
         //    last.sync();
         //}
 
-        //buffer_t &buffer = stream.get_buffer(count);
+        buffer_t *buffer = get_output_buffer(count, stream, ret);
 
-        //memcpy(buffer.get_addr(), src.get_host_addr(), count);
+        memcpy(buffer->get_addr(), src.get_host_addr(), count);
 
         res = clEnqueueWriteBuffer(stream(), dst.get_device_addr(), CL_FALSE,
                                              dst.get_offset(), count,
-                                             src.get_host_addr(),
+                                             buffer->get_addr(),
                                              nevents, events, &ret());
 
         if (res == CL_SUCCESS) {
@@ -276,15 +272,15 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
             last.sync();
         }
 
-        //buffer_t &buffer = stream.get_buffer(count);
+        buffer_t *buffer = get_input_buffer(count, stream, ret);
 
         res = clEnqueueReadBuffer(stream(), dst.get_device_addr(), CL_FALSE,
                                             dst.get_offset(), count,
-                                            src.get_host_addr(),
+                                            buffer->get_addr(),
                                             nevents, events, &ret());
 
         // Perform memcpy after asynchronous copy
-        //ret.add_trigger(util::do_func(memcpy, buffer.get_addr(), src.get_host_addr(), count));
+        ret.add_trigger(util::do_func(memcpy, buffer->get_addr(), src.get_host_addr(), count));
         // Release buffer after memcpy
         //ret.add_trigger(util::do_member(stream_t::put_buffer, &stream, buffer));
     } else if (dst.is_host_ptr() &&
@@ -526,11 +522,45 @@ context_t::alloc_host_pinned(size_t size, GmacProtection hint, gmacError_t &err)
 }
 
 buffer_t *
-context_t::alloc_buffer(size_t size, GmacProtection hint, gmacError_t &err)
+context_t::alloc_buffer(size_t size, GmacProtection hint, stream_t &stream, gmacError_t &err)
 {
-    FATAL("Not supported");
+    cl_int res;
+    hostptr_t hostPtr = 0;
 
-    return NULL;
+    // TODO: add a parater to specify accesibility of the buffer from the device
+    cl_mem_flags flags = CL_MEM_ALLOC_HOST_PTR;
+    if (hint == GMAC_PROT_WRITE) {
+        flags |= CL_MEM_READ_ONLY;
+    } else if (hint == GMAC_PROT_READ) {
+        flags |= CL_MEM_WRITE_ONLY;
+    } else {
+        flags |= CL_MEM_READ_WRITE;
+    }
+
+    cl_mem devPtr = clCreateBuffer((*this)(), flags, size, NULL, &res);
+
+    if (res == CL_SUCCESS) {
+        cl_map_flags mapFlags = 0;
+
+        if (hint == GMAC_PROT_WRITE) {
+            mapFlags |= CL_MAP_WRITE;
+        } else if (hint == GMAC_PROT_READ) {
+            mapFlags |= CL_MAP_READ;
+        } else {
+            mapFlags |= CL_MAP_READ | CL_MAP_WRITE;
+        }
+
+        hostPtr = (hostptr_t) clEnqueueMapBuffer(stream(), devPtr, CL_TRUE, mapFlags, 0, size, 0, NULL, NULL, &res);
+    }
+
+    buffer_t *ret = NULL;
+    if (res == CL_SUCCESS) {
+        ret = new buffer_t(hostptr_t(hostPtr), devPtr, size, *this);
+    }
+
+    err = error(res);
+
+    return ret;
 }
 
 gmacError_t
