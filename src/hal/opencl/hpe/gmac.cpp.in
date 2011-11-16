@@ -21,8 +21,6 @@ namespace @OPENCL_API_PREFIX@ {
 const config config::null = config();
 }
 
-using __impl::util::params::ParamAutoSync;
-
 static vdevice &get_current_vdevice()
 {
     return thread::get_current_thread().get_current_virtual_device();

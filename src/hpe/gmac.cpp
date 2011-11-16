@@ -59,8 +59,8 @@ using namespace __impl::core::hpe;
 using namespace __impl::memory;
 using namespace __impl::util;
 
-using __impl::util::params::ParamBlockSize;
-using __impl::util::params::ParamAutoSync;
+using config::params::BlockSize;
+using config::params::AutoSync;
 
 static inline
 __impl::core::hpe::resource_manager &
@@ -305,7 +305,7 @@ gmacMalloc(void **cpuPtr, size_t count)
     }
     enterGmac();
     gmac::trace::EnterCurrentFunction();
-    if(hasAllocator() && count < (ParamBlockSize / 2)) {
+    if(hasAllocator() && count < (BlockSize / 2)) {
         *cpuPtr = getAllocator().alloc(thread::get_current_thread().get_current_virtual_device().get_address_space(), count, hostptr_t(RETURN_ADDRESS));
     }
     else {
@@ -391,7 +391,7 @@ gmacLaunch(__impl::core::hpe::kernel::launch &launch)
     /* __impl::hal::async_event_t *event = */
         dev.execute(launch, ret);
 
-    if (ParamAutoSync == true) {
+    if (AutoSync == true) {
         TRACE(GLOBAL, "Waiting for Kernel to complete");
         // TODO: wait for the event instead for the device
         dev.wait();
@@ -433,7 +433,7 @@ gmacError_t GMAC_LOCAL
 gmacThreadSynchronize(kernel::launch &launch)
 {
     gmacError_t ret = gmacSuccess;
-    if(ParamAutoSync == false) {
+    if(AutoSync == false) {
         vdevice &dev = thread::get_current_thread().get_current_virtual_device();
         dev.wait(launch);
         TRACE(GLOBAL, "Memory Sync");
@@ -450,7 +450,7 @@ gmacThreadSynchronize()
     gmac::trace::EnterCurrentFunction();
 
     gmacError_t ret = gmacSuccess;
-    if (ParamAutoSync == false) {
+    if (AutoSync == false) {
         vdevice &dev = thread::get_current_thread().get_current_virtual_device();
         smart_ptr<address_space>::shared aspace = dev.get_address_space();
         dev.wait();

@@ -35,7 +35,7 @@ void Logger::__Trace(const char *name, const char *funcName, const char *fileNam
     std::stringstream newFmt;
     newFmt << std::string("(") << tid << std::string(") ") << "[" << funcName << "] ";
 
-    if (__impl::util::params::ParamDebugPrintFile) {
+    if (config::params::DebugPrintFile) {
         newFmt << "{" << fileName << ":" << lineNumber << "} ";
     }
 
@@ -55,7 +55,7 @@ void Logger::__Trace(const char *name, const char *funcName, const char *fileNam
 
     if (std::string(name).compare(std::string(GLOBAL)) == 0) {
         Log(name, "TRACE", newFmt.str().c_str(), list);
-    } else if (__impl::util::params::ParamDebugUseFinalClass) {
+    } else if (config::params::DebugUseFinalClass) {
         Log(name, "TRACE", newFmt.str().c_str(), list);
     } else {
         Log(funcName, "TRACE", newFmt.str().c_str(), list);

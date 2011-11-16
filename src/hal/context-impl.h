@@ -331,19 +331,22 @@ context_t<D, B, I>::memset_async(typename I::ptr dst, int c, size_t count, typen
 }
 
 template <typename D, typename B, typename I>
-typename I::buffer &
-context_t<D, B, I>::get_input_buffer(size_t size)
+typename I::buffer *
+context_t<D, B, I>::get_input_buffer(size_t size, typename I::stream &stream, typename I::event event)
 {
     typename I::buffer *buffer = mapFreeBuffersIn_.pop(size);
 
     if (buffer == NULL) {
+        nBuffersIn_.lock();
         if (nBuffersIn_ < MaxBuffersIn_) {
-            gmacError_t err;
-
-            buffer = alloc_buffer(size, GMAC_PROT_READ, err);
-            ASSERTION(err == gmacSuccess);
             nBuffersIn_++;
+            nBuffersIn_.unlock();
+
+            gmacError_t err;
+            buffer = alloc_buffer(size, GMAC_PROT_READ, stream, err);
+            ASSERTION(err == gmacSuccess);
         } else {
+            nBuffersIn_.unlock();
             buffer = mapUsedBuffersIn_.pop(size);
             buffer->wait();
         }
@@ -351,14 +354,16 @@ context_t<D, B, I>::get_input_buffer(size_t size)
         TRACE(LOCAL, "Reusing input buffer");
     }
 
+    buffer->set_event(event);
+
     mapUsedBuffersIn_.push(buffer, buffer->get_size());
 
-    return *buffer;
+    return buffer;
 }
 
 template <typename D, typename B, typename I>
-typename I::buffer &
-context_t<D, B, I>::get_output_buffer(size_t size)
+typename I::buffer *
+context_t<D, B, I>::get_output_buffer(size_t size, typename I::stream &stream, typename I::event event)
 {
     typename I::buffer *buffer = mapFreeBuffersOut_.pop(size);
 
@@ -366,7 +371,7 @@ context_t<D, B, I>::get_output_buffer(size_t size)
         if (nBuffersOut_ < MaxBuffersOut_) {
             gmacError_t err;
 
-            buffer = alloc_buffer(size, GMAC_PROT_WRITE, err);
+            buffer = alloc_buffer(size, GMAC_PROT_WRITE, stream, err);
             ASSERTION(err == gmacSuccess);
             nBuffersOut_++;
         } else {
@@ -377,10 +382,30 @@ context_t<D, B, I>::get_output_buffer(size_t size)
         TRACE(LOCAL, "Reusing output buffer");
     }
 
+    buffer->set_event(event);
+
     mapUsedBuffersOut_.push(buffer, buffer->get_size());
 
-    return *buffer;
+    return buffer;
 }
+
+template <typename D, typename B, typename I>
+void
+context_t<D, B, I>::put_input_buffer(typename I::buffer &buffer)
+{
+    mapUsedBuffersIn_.remove(&buffer, buffer.get_size());
+    mapFreeBuffersIn_.push(&buffer, buffer.get_size());
+}
+
+template <typename D, typename B, typename I>
+void
+context_t<D, B, I>::put_output_buffer(typename I::buffer &buffer)
+{
+    mapUsedBuffersOut_.remove(&buffer, buffer.get_size());
+    mapFreeBuffersOut_.push(&buffer, buffer.get_size());
+}
+
+
 
 } // namespace detail
 

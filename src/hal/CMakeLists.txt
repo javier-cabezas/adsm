@@ -11,6 +11,9 @@ set(hal_SRC
     event-impl.h
     kernel.h
     kernel-impl.h
+    ptr.h
+    stream.h
+    stream-impl.h
     types.h
     types-detail.h
     types-impl.h

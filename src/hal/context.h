@@ -5,6 +5,7 @@
 #include <queue>
 
 #include "util/lock.h"
+#include "util/locked_counter.h"
 #include "util/Logger.h"
 
 namespace __impl { namespace hal {
@@ -36,6 +37,11 @@ public:
     typename I::context &get_context();
     const typename I::context &get_context() const;
     size_t get_size() const;
+
+    void set_event(typename I::event event)
+    {
+        event_ = event;
+    }
 
     gmacError_t wait()
     {
@@ -91,13 +97,14 @@ private:
 
 protected:
     typename B::context context_;
+    typedef util::locked_counter<unsigned, gmac::util::spinlock> buffer_counter;
     D &device_;
 
-    static const unsigned MaxBuffersIn_  = 3;
-    static const unsigned MaxBuffersOut_ = 3;
+    static const unsigned &MaxBuffersIn_;
+    static const unsigned &MaxBuffersOut_;
 
-    unsigned nBuffersIn_;
-    unsigned nBuffersOut_;
+    buffer_counter nBuffersIn_;
+    buffer_counter nBuffersOut_;
 
     map_memory mapMemory_;
 
@@ -112,13 +119,13 @@ protected:
     hostptr_t get_memory(size_t size);
     void put_memory(void *ptr, size_t size);
 
-    typename I::buffer &get_input_buffer(size_t size);
+    typename I::buffer *get_input_buffer(size_t size, typename I::stream &stream, typename I::event event);
     void put_input_buffer(typename I::buffer &buffer);
  
-    typename I::buffer &get_output_buffer(size_t size);
+    typename I::buffer *get_output_buffer(size_t size, typename I::stream &stream, typename I::event event);
     void put_output_buffer(typename I::buffer &buffer);
 
-    virtual typename I::buffer *alloc_buffer(size_t size, GmacProtection hint, gmacError_t &err) = 0;
+    virtual typename I::buffer *alloc_buffer(size_t size, GmacProtection hint, typename I::stream &stream, gmacError_t &err) = 0;
     virtual gmacError_t free_buffer(typename I::buffer &buffer) = 0;
 
     context_t(typename B::context context, D &device);
@@ -180,6 +187,12 @@ public:
 
     virtual const typename I::code_repository &get_code_repository() = 0;
 };
+
+template <typename D, typename B, typename I>
+const unsigned &context_t<D, B, I>::MaxBuffersIn_  = config::params::HALInputBuffersPerContext;
+
+template <typename D, typename B, typename I>
+const unsigned &context_t<D, B, I>::MaxBuffersOut_ = config::params::HALOutputBuffersPerContext;
 
 }
 

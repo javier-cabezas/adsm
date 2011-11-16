@@ -220,7 +220,7 @@ LazyBase::addDirty(lazy::Block &block)
         unlock();
         return;
     } else {
-        if (block.getCacheWriteFaults() >= __impl::util::params::ParamRollThreshold) {
+        if (block.getCacheWriteFaults() >= config::params::RollThreshold) {
             block.resetCacheWriteFaults();
             TRACE(LOCAL, "Increasing dirty block cache limit -> %u", limit_ + 1);
             limit_++;
