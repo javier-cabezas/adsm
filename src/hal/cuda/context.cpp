@@ -188,7 +188,7 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
         if (dst.get_context()->get_device().has_direct_copy(src.get_context()->get_device())) {
             res = cuMemcpyDtoDAsync(dst.get_device_addr(), src.get_device_addr(), count, stream());
         } else {
-            buffer_t *buffer = get_input_buffer(count, ret);
+            buffer_t *buffer = get_input_buffer(count, stream, ret);
 
             res = cuMemcpyDtoHAsync(buffer->get_addr(), src.get_device_addr(), count, stream());
             if (res == CUDA_SUCCESS) {
@@ -202,7 +202,7 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
                      src.get_host_addr(),
                      dst.get_device_addr(),
                      count, stream.get_print_id());
-        buffer_t *buffer = get_output_buffer(count, ret);
+        buffer_t *buffer = get_output_buffer(count, stream, ret);
 
         memcpy(buffer->get_addr(), src.get_host_addr(), count);
 
@@ -218,7 +218,7 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
             last.sync();
         }
 
-        buffer_t *buffer = get_input_buffer(count, ret);
+        buffer_t *buffer = get_input_buffer(count, stream, ret);
 
         res = cuMemcpyDtoHAsync(dst.get_host_addr(), src.get_device_addr(), count, stream());
 
