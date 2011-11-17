@@ -82,7 +82,7 @@ object_state<State>::object_state(protocol_interface &protocol,
 
     // Allocate memory (if necessary)
     if(hostAddr == NULL) {
-        addr_ = Memory::map(NULL, size, GMAC_PROT_READWRITE);
+        addr_ = memory_ops::map(NULL, size, GMAC_PROT_READWRITE);
         if (addr_ == NULL) {
             err = gmacErrorMemoryAllocation;
             return;
@@ -90,7 +90,7 @@ object_state<State>::object_state(protocol_interface &protocol,
     }
 
     // Create a shadow mapping for the host memory
-    shadow_ = Memory::shadow(addr_, size_);
+    shadow_ = memory_ops::shadow(addr_, size_);
     if (shadow_ == NULL) {
         err = gmacErrorMemoryAllocation;
         return;
@@ -132,8 +132,8 @@ object_state<State>::~object_state()
     }
 #endif
     if (ownerShortcut_ != NULL) ownerShortcut_->unmap(addr_, size_);
-    if (shadow_ != NULL) Memory::unshadow(shadow_, size_);
-    if (addr_ != NULL && hasUserMemory_ == false) Memory::unmap(addr_, size_);
+    if (shadow_ != NULL) memory_ops::unshadow(shadow_, size_);
+    if (addr_ != NULL && hasUserMemory_ == false) memory_ops::unmap(addr_, size_);
     TRACE(LOCAL, "Destroying BlockGroup @ %p", addr_);
 }
 

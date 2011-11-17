@@ -573,13 +573,13 @@ BlockState::unprotect()
             if (size == 0) start = i;
             size++;
         } else if (size > 0) {
-            ret = Memory::protect(getSubBlockAddr(start), SubBlockSize_ * size, GMAC_PROT_READWRITE);
+            ret = memory_ops::protect(getSubBlockAddr(start), SubBlockSize_ * size, GMAC_PROT_READWRITE);
             if (ret < 0) break;
             size = 0;
         }
     }
     if (size > 0) {
-        ret = Memory::protect(getSubBlockAddr(start), SubBlockSize_ * size, GMAC_PROT_READWRITE);
+        ret = memory_ops::protect(getSubBlockAddr(start), SubBlockSize_ * size, GMAC_PROT_READWRITE);
     }
     return ret;
 }
@@ -589,11 +589,11 @@ BlockState::protect(GmacProtection prot)
 {
     int ret = 0;
 #if 1
-    ret = Memory::protect(block().addr(), block().size(), prot);
+    ret = memory_ops::protect(block().addr(), block().size(), prot);
 #else
     for (unsigned i = 0; i < subBlockState_.size(); i++) {
         if (subBlockState_[i] == lazy::Dirty) {
-            ret = Memory::protect(getSubBlockAddr(i), SubBlockSize_, prot);
+            ret = memory_ops::protect(getSubBlockAddr(i), SubBlockSize_, prot);
             if (ret < 0) break;
         }
     }
@@ -775,14 +775,14 @@ inline
 int
 BlockState::protect(GmacProtection prot)
 {
-    return Memory::protect(block().addr(), block().size(), prot);
+    return memory_ops::protect(block().addr(), block().size(), prot);
 }
 
 inline
 int
 BlockState::unprotect()
 {
-    return Memory::protect(block().addr(), block().size(), GMAC_PROT_READWRITE);
+    return memory_ops::protect(block().addr(), block().size(), GMAC_PROT_READWRITE);
 }
 
 inline

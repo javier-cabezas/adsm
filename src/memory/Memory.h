@@ -53,7 +53,7 @@ extern long_t SubBlockMask_;
 
 #endif
 
-class GMAC_LOCAL Memory {
+class GMAC_LOCAL memory_ops {
 public:
     static int protect(hostptr_t addr, size_t count, GmacProtection prot);
     static hostptr_t map(hostptr_t addr, size_t count, GmacProtection prot = GMAC_PROT_NONE);

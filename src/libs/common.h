@@ -44,8 +44,8 @@ namespace __impl {
         process &getProcess() GMAC_LOCAL;
     }
     namespace memory {
-        class Allocator;
-        Allocator &getAllocator() GMAC_LOCAL;
+        class allocator_interface;
+        allocator_interface &getAllocator() GMAC_LOCAL;
         bool hasAllocator() GMAC_LOCAL;
 
         class manager;
