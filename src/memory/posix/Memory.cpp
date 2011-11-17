@@ -19,7 +19,7 @@ int ProtBits[] = {
 
 static FileMap Files;
 
-int Memory::protect(hostptr_t addr, size_t count, GmacProtection prot)
+int memory_ops::protect(hostptr_t addr, size_t count, GmacProtection prot)
 {
     trace::EnterCurrentFunction();
     TRACE(GLOBAL, "Setting memory permisions to %d @ %p - %p", prot, addr, addr + count);
@@ -29,7 +29,7 @@ int Memory::protect(hostptr_t addr, size_t count, GmacProtection prot)
     return 0;
 }
 
-hostptr_t Memory::map(hostptr_t addr, size_t count, GmacProtection prot)
+hostptr_t memory_ops::map(hostptr_t addr, size_t count, GmacProtection prot)
 {
     trace::EnterCurrentFunction();
     hostptr_t cpuAddr = NULL;
@@ -74,7 +74,7 @@ hostptr_t Memory::map(hostptr_t addr, size_t count, GmacProtection prot)
     return cpuAddr;
 }
 
-hostptr_t Memory::shadow(hostptr_t addr, size_t count)
+hostptr_t memory_ops::shadow(hostptr_t addr, size_t count)
 {
     trace::EnterCurrentFunction();
     TRACE(GLOBAL, "Getting shadow mapping for %p (%zd bytes)", addr, count);
@@ -93,14 +93,14 @@ hostptr_t Memory::shadow(hostptr_t addr, size_t count)
     return ret;
 } 
 
-void Memory::unshadow(hostptr_t addr, size_t count)
+void memory_ops::unshadow(hostptr_t addr, size_t count)
 {
     trace::EnterCurrentFunction();
     ::munmap(addr, count);
     trace::ExitCurrentFunction();
 }
 
-void Memory::unmap(hostptr_t addr, size_t count)
+void memory_ops::unmap(hostptr_t addr, size_t count)
 {
     trace::EnterCurrentFunction();
     FileMapEntry entry = Files.find(addr);

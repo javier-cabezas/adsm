@@ -26,7 +26,7 @@ Lazy<T>::createObject(size_t size, hostptr_t cpuPtr,
         ret->decRef();
         return NULL;
     }
-    Memory::protect(ret->addr(), ret->size(), prot);
+    memory_ops::protect(ret->addr(), ret->size(), prot);
 
     return ret;
 }

@@ -11,10 +11,10 @@ TEST(MemoryTest, MemoryShadowing) {
     int *addr_ = NULL;
     int *shadow_ = NULL;
 
-    addr_ = (int *)Memory::map(NULL, Size_ * sizeof(int), GMAC_PROT_READWRITE);
+    addr_ = (int *)memory_ops::map(NULL, Size_ * sizeof(int), GMAC_PROT_READWRITE);
     ASSERT_TRUE(addr_ != NULL);
 
-    shadow_ = (int *)Memory::shadow(hostptr_t(addr_), Size_ * sizeof(int));
+    shadow_ = (int *)memory_ops::shadow(hostptr_t(addr_), Size_ * sizeof(int));
     ASSERT_TRUE(shadow_ != NULL);
     ASSERT_TRUE(addr_ != shadow_);
 
@@ -29,7 +29,7 @@ TEST(MemoryTest, MemoryShadowing) {
         ASSERT_TRUE(addr_[n + 1] == n + 1);
     }
 
-    Memory::unshadow(hostptr_t(shadow_), Size_ * sizeof(int));
-    Memory::unmap(hostptr_t(addr_), Size_ * sizeof(int));
+    memory_ops::unshadow(hostptr_t(shadow_), Size_ * sizeof(int));
+    memory_ops::unmap(hostptr_t(addr_), Size_ * sizeof(int));
 }
 

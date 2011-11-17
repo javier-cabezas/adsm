@@ -77,7 +77,7 @@ gmacError_t GatherBase::signal_read(block &b, hostptr_t addr)
 
     if(block.state() == HostOnly) {
         WARNING("Signal on HostOnly block - Changing protection and continuing");
-        Memory::protect(block.addr(), block.size(), GMAC_PROT_READWRITE);
+        memory_ops::protect(block.addr(), block.size(), GMAC_PROT_READWRITE);
         goto exit_func;
     }
 
@@ -87,7 +87,7 @@ gmacError_t GatherBase::signal_read(block &b, hostptr_t addr)
 
     ret = block.toHost();
     if(ret != gmacSuccess) goto exit_func;
-    Memory::protect(block.addr(), block.size(), GMAC_PROT_READ);
+    memory_ops::protect(block.addr(), block.size(), GMAC_PROT_READ);
     block.state(ReadOnly);
 
 exit_func:
@@ -117,7 +117,7 @@ gmacError_t GatherBase::signal_write(block &b, hostptr_t addr)
 
                 block.setBlockDirty();
             }
-            Memory::protect(start, count, GMAC_PROT_READWRITE);
+            memory_ops::protect(start, count, GMAC_PROT_READWRITE);
             goto exit_func; // Somebody already fixed it
         case Invalid:          
             ret = block.toHost();
@@ -133,7 +133,7 @@ gmacError_t GatherBase::signal_write(block &b, hostptr_t addr)
 
                 block.setBlockDirty();
             }
-			Memory::protect(start, count, GMAC_PROT_READWRITE);
+			memory_ops::protect(start, count, GMAC_PROT_READWRITE);
             break;
         case HostOnly:
             WARNING("Signal on HostOnly block - Changing protection and continuing");
@@ -149,7 +149,7 @@ gmacError_t GatherBase::signal_write(block &b, hostptr_t addr)
 
                 block.setBlockDirty();
             }
-			Memory::protect(start, count, GMAC_PROT_READWRITE);
+			memory_ops::protect(start, count, GMAC_PROT_READWRITE);
             break;
     }
     block.state(Dirty);
@@ -174,7 +174,7 @@ gmacError_t GatherBase::acquire(block &b)
     switch(block.state()) {
         case Invalid:
         case ReadOnly:
-			if(Memory::protect(block.addr(), block.size(), GMAC_PROT_NONE) < 0)
+			if(memory_ops::protect(block.addr(), block.size(), GMAC_PROT_NONE) < 0)
                 FATAL("Unable to set memory permissions");
             break;
         case Dirty:
@@ -197,11 +197,11 @@ gmacError_t GatherBase::acquireWithBitmap(block &b)
         case Invalid:
         case ReadOnly:
             if (acceleratorBitmap.isAnyInRange(block.acceleratorAddr(block.addr()), block.size(), vm::BITMAP_SET_ACC)) {
-                if(Memory::protect(block.addr(), block.size(), GMAC_PROT_NONE) < 0)
+                if(memory_ops::protect(block.addr(), block.size(), GMAC_PROT_NONE) < 0)
                     FATAL("Unable to set memory permissions");
                 block.state(Invalid);
             } else {
-                if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READ) < 0)
+                if(memory_ops::protect(block.addr(), block.size(), GMAC_PROT_READ) < 0)
                     FATAL("Unable to set memory permissions");
                 block.state(ReadOnly);
             }
@@ -240,7 +240,7 @@ gmacError_t GatherBase::unmapFromAccelerator(block &b)
             ret = block.toHost();
             if(ret != gmacSuccess) break;
     }
-    if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READWRITE) < 0)
+    if(memory_ops::protect(block.addr(), block.size(), GMAC_PROT_READWRITE) < 0)
         FATAL("Unable to set memory permissions");
     block.state(HostOnly);
     dbl_.remove(block);
@@ -308,7 +308,7 @@ gmacError_t GatherBase::release(block &b)
             } else {
                 ret = block.toAccelerator();
                 if(ret != gmacSuccess) break;
-                if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READ) < 0)
+                if(memory_ops::protect(block.addr(), block.size(), GMAC_PROT_READ) < 0)
                     FATAL("Unable to set memory permissions");
                 block.state(ReadOnly);
             }
@@ -335,7 +335,7 @@ gmacError_t GatherBase::toHost(block &b)
     switch(block.state()) {
         case Invalid:
             TRACE(LOCAL,"Invalid block");
-			if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READ) < 0)
+			if(memory_ops::protect(block.addr(), block.size(), GMAC_PROT_READ) < 0)
                 FATAL("Unable to set memory permissions");
             ret = block.toHost();
             if(ret != gmacSuccess) break;
@@ -364,7 +364,7 @@ gmacError_t GatherBase::toAccelerator(block &b)
             TRACE(LOCAL,"Dirty block");
             ret = block.toAccelerator();
             if(ret != gmacSuccess) break;
-            if(Memory::protect(block.addr(), block.size(), GMAC_PROT_READ) < 0)
+            if(memory_ops::protect(block.addr(), block.size(), GMAC_PROT_READ) < 0)
                 FATAL("Unable to set memory permissions");
             block.state(ReadOnly);
             break;

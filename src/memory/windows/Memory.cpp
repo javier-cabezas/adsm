@@ -14,7 +14,7 @@ static DWORD ProtBits[] = {
 
 static FileMap Files;
 
-int Memory::protect(hostptr_t addr, size_t count, GmacProtection prot)
+int memory_ops::protect(hostptr_t addr, size_t count, GmacProtection prot)
 {
     TRACE(GLOBAL, "Setting memory permisions to %d @ %p - %p", prot, addr, addr + count);
 	DWORD old = 0;
@@ -23,7 +23,7 @@ int Memory::protect(hostptr_t addr, size_t count, GmacProtection prot)
     return 0;
 }
 
-hostptr_t Memory::map(hostptr_t addr, size_t count, GmacProtection prot)
+hostptr_t memory_ops::map(hostptr_t addr, size_t count, GmacProtection prot)
 {
     hostptr_t cpuAddr = NULL;
 
@@ -47,7 +47,7 @@ hostptr_t Memory::map(hostptr_t addr, size_t count, GmacProtection prot)
     return cpuAddr;
 }
 
-hostptr_t Memory::shadow(hostptr_t addr, size_t count)
+hostptr_t memory_ops::shadow(hostptr_t addr, size_t count)
 {
 	TRACE(GLOBAL, "Getting shadow mapping for %p ("FMT_SIZE" bytes)", addr, count);
 	FileMapEntry entry = Files.find(addr);
@@ -57,14 +57,14 @@ hostptr_t Memory::shadow(hostptr_t addr, size_t count)
 	return ret;
 }
 
-void Memory::unshadow(hostptr_t addr, size_t /*count*/)
+void memory_ops::unshadow(hostptr_t addr, size_t /*count*/)
 {
 	BOOL ret = UnmapViewOfFile(addr);
 	ASSERTION(ret == TRUE);
 }
 
 
-void Memory::unmap(hostptr_t addr, size_t /*count*/)
+void memory_ops::unmap(hostptr_t addr, size_t /*count*/)
 {
 	FileMapEntry entry = Files.find(addr);
 	if(Files.remove(addr) == false) return;

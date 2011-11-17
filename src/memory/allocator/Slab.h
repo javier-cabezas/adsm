@@ -47,7 +47,7 @@ namespace memory { namespace allocator {
 /**
  * Simple slab allocator
  */
-class GMAC_LOCAL Slab : public memory::Allocator {
+class GMAC_LOCAL Slab : public memory::allocator_interface {
 protected:
     class GMAC_LOCAL AddressMap : public std::map<hostptr_t, Cache *>, gmac::util::lock_rw {
     protected:

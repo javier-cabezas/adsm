@@ -43,18 +43,8 @@ WITH THE SOFTWARE.  */
 namespace __impl { namespace memory {
 
 //! Class that allocates small chunks of shared memory
-class GMAC_LOCAL Allocator :
-	public __impl::util::Singleton<Allocator> {
-protected:
-    /**
-     * Default constructor
-     */
-    Allocator();
-    /**
-     * Default destructor
-     */
-    virtual ~Allocator();
-
+class GMAC_LOCAL allocator_interface :
+	public __impl::util::Singleton<allocator_interface> {
 public:
     /**
      *  Alloc shared memory
@@ -78,7 +68,7 @@ public:
 
 #if defined(USE_DBC)
 namespace __dbc { namespace memory {
-typedef __impl::memory::Allocator Allocator;
+typedef __impl::memory::allocator_interface allocator_interface;
 }}
 #endif
 

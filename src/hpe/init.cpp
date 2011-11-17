@@ -26,7 +26,7 @@
 
 static gmac::core::hpe::process *Process_ = NULL;
 static gmac::memory::manager *Manager_ = NULL;
-static __impl::memory::Allocator *Allocator_ = NULL;
+static __impl::memory::allocator_interface *Allocator_ = NULL;
 
 #if 0
 extern void CUDA(gmac::core::hpe::Process &);
@@ -101,7 +101,7 @@ namespace __impl {
     namespace memory {
         manager &getManager() { return *Manager_; }
         bool hasAllocator() { return Allocator_ != NULL; }
-        Allocator &getAllocator() { return *Allocator_; }
+        allocator_interface &getAllocator() { return *Allocator_; }
     }
 }
 
