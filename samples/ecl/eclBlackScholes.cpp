@@ -136,7 +136,7 @@ int main(int argc, char *argv[])
 	assert(ret == eclSuccess);
     ret = eclSetKernelArgPtr(kernel, 3, devicePutPrice);
 	assert(ret == eclSuccess);
-    ret = eclCallNDRange(kernel, 1, NULL, globalThreads, localThreads);
+    ret = eclCallNDRange(kernel, 2, NULL, globalThreads, localThreads);
 	assert(ret == eclSuccess);
 
     printf("deviceCallPrice£º\n");

@@ -35,45 +35,26 @@ void swapIfFirstIsGreater(cl_uint *a, cl_uint *b)
 }
 
 /*
-* sorts the input array (in place) using the bitonic sort algorithm
+* sorts the input array (in place) using the bubble sort algorithm
 * sorts in increasing order if sortIncreasing is CL_TRUE
 * else sorts in decreasing order
 * length specifies the length of the array
 */
 void
-bitonicSortCPUReference(
+bubbleSortCPUReference(
     cl_uint *input,
     const cl_uint length,
     const cl_bool sortIncreasing)
-{
-    const cl_uint halfLength = length/2;
-
-    cl_uint i;
-    for(i = 2; i <= length; i *= 2) {
-        cl_uint j;
-        for(j = i; j > 1; j /= 2) {
-            cl_bool increasing = sortIncreasing;
-            const cl_uint half_j = j/2;
-
-            cl_uint k;
-            for(k = 0; k < length; k += j) {
-                const cl_uint k_plus_half_j = k + half_j;
-                cl_uint l;
-
-                if(i < length) {
-                    if(((k == i) || ((k % i) == 0)) && (k != halfLength))
-                        increasing = !increasing;
-                }
-
-                for(l = k; l < k_plus_half_j; ++l) {
-                    if(increasing)
-                        swapIfFirstIsGreater(&input[l], &input[l + half_j]);
-                    else
-                        swapIfFirstIsGreater(&input[l + half_j], &input[l]);
-                }
-            }
-        }
-    }
+{ 
+	cl_uint i, j;
+	for(i = length-1; i > 0; i--) {
+		for(j = 0; j < i; j++) {
+			if(sortIncreasing)
+				swapIfFirstIsGreater(&input[j], &input[j + 1]);
+			else
+				swapIfFirstIsGreater(&input[j + 1], &input[j]);
+		}
+	}
 }
 
 int main(int argc, char *argv[])
@@ -162,7 +143,7 @@ int main(int argc, char *argv[])
     }
 
     getTime(&s);
-    bitonicSortCPUReference(verificationInput, length, sortDescending);
+    bubbleSortCPUReference(verificationInput, length, sortDescending);
     if(memcmp(input, verificationInput, length*sizeof(cl_uint)) == 0) {
         printf("\nPassed!\n");
     } else {

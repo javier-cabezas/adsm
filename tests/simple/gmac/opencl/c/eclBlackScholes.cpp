@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
     assert(eclSetKernelArg(kernel, 1, sizeof(width), &width) == eclSuccess);
     assert(eclSetKernelArgPtr(kernel, 2, deviceCallPrice) == eclSuccess);
     assert(eclSetKernelArgPtr(kernel, 3, devicePutPrice) == eclSuccess);
-    assert(eclCallNDRange(kernel, 1, NULL, globalThreads, localThreads) == eclSuccess);
+    assert(eclCallNDRange(kernel, 2, NULL, globalThreads, localThreads) == eclSuccess);
 
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");
