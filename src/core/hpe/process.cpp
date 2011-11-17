@@ -5,8 +5,6 @@
 #include "core/hpe/process.h"
 #include "core/hpe/thread.h"
 
-#include "memory/Manager.h"
-#include "memory/object.h"
 #include "trace/Tracer.h"
 
 namespace __impl { namespace core { namespace hpe {

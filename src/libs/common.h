@@ -48,8 +48,8 @@ namespace __impl {
         Allocator &getAllocator() GMAC_LOCAL;
         bool hasAllocator() GMAC_LOCAL;
 
-        class Manager;
-        Manager &getManager() GMAC_LOCAL;
+        class manager;
+        manager &getManager() GMAC_LOCAL;
     }
 }
 

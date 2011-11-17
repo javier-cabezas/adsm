@@ -11,7 +11,7 @@
 #include "core/vdevice.h"
 
 #include "libs/common.h"
-#include "memory/Manager.h"
+#include "memory/manager.h"
 #include "util/loader.h"
 
 #include "posix.h"
@@ -101,7 +101,7 @@ ssize_t SYMBOL(read)(int fd, void *buf, size_t count)
         return __libc_read(fd, buf, count);
 
     enterGmac();
-    Manager &manager = getManager();
+    manager &manager = getManager();
     address_space_ptr aspaceDst = manager.owner(hostptr_t(buf));
 
     if(aspaceDst == NULL) {
@@ -132,7 +132,7 @@ ssize_t SYMBOL(write)(int fd, const void *buf, size_t count)
         return __libc_write(fd, buf, count);
 
 	enterGmac();
-    Manager &manager = getManager();
+    manager &manager = getManager();
     address_space_ptr aspaceSrc = manager.owner(hostptr_t(buf));
 
     if(aspaceSrc == NULL) {

@@ -52,6 +52,8 @@ namespace core {
 
 namespace memory {
 
+class Block;
+
 /**
  * Base abstraction of the memory allocations managed by GMAC. Objects are
  * divided into blocks, which are the unit of coherence
@@ -68,15 +70,18 @@ protected:
     std::map<protocol::common::Statistic, unsigned> dumps_;
 #endif
 
+    /** Memory coherence protocol used by the object */
+    Protocol &protocol_;
+
     /// Object host memory address
     hostptr_t addr_;
 
     /// Object size in bytes
     size_t size_;
 
-    typedef std::map<hostptr_t, Block *> BlockMap;
+    typedef std::vector<block_ptr> vector_block;
     /// Collection of blocks forming the object
-    BlockMap blocks_;
+    vector_block blocks_;
 
     /// Tells whether the object has been released or not
     bool released_;
@@ -88,7 +93,7 @@ protected:
      * \param blockOffset Returns the block offset of the object offset
      * \return Constant iterator pointing to the block
      */
-    BlockMap::const_iterator firstBlock(size_t objectOffset, size_t &blockOffset) const;
+    vector_block::const_iterator get_block(size_t objectOffset, size_t *blockOffset = NULL) const;
 
     /** Execute a coherence operation on all the blocks of the object
      *
@@ -97,10 +102,10 @@ protected:
      * \sa __impl::memory::Block::toHost
      * \sa __impl::memory::Block::toAccelerator
      */
-    gmacError_t coherenceOp(gmacError_t (Protocol::*op)(Block &));
+    gmacError_t coherenceOp(gmacError_t (Protocol::*op)(block_ptr));
 
     template <typename T>
-    gmacError_t coherenceOp(gmacError_t (Protocol::*op)(Block &, T &), T &param);
+    gmacError_t coherenceOp(gmacError_t (Protocol::*op)(block_ptr, T &), T &param);
 
 #if 0
     /**
@@ -130,15 +135,16 @@ protected:
      * \sa __impl::memory::Block::dump
      */
     template <typename T, typename S>
-    gmacError_t forEachBlock(gmacError_t (Block::*f)(T &, S), T &t, S s);
+    gmacError_t forEachBlock(gmacError_t (Protocol::*f)(block_ptr, T &, S), T &t, S s);
 
     /**
      * Default constructor
      *
+     * \param protocol Protocol used by the object
      * \param addr Host memory address where the object begins
      * \param size Size (in bytes) of the memory object
      */
-    object(hostptr_t addr, size_t size);
+    object(Protocol &protocol, hostptr_t addr, size_t size);
 
     //! Default destructor
     virtual ~object();
@@ -148,6 +154,13 @@ public:
     unsigned getId() const;
     unsigned getDumps(protocol::common::Statistic stat);
 #endif
+
+
+    /**
+     * Get the protocol that is managing the block
+     * \return Memory protocol
+     */
+    Protocol &getProtocol();
 
     /**
      * Get the starting host memory address of the object
@@ -287,7 +300,7 @@ public:
      * \param addr Host memory address causing the fault
      * \return Error code
      */
-    TESTABLE gmacError_t signalRead(hostptr_t addr);
+    TESTABLE gmacError_t signal_read(hostptr_t addr);
 
     /**
      * Signal handler for faults caused due to memory writes
@@ -295,7 +308,7 @@ public:
      * \param addr Host memory address causing the fault
      * \return Error code
      */
-    TESTABLE gmacError_t signalWrite(hostptr_t addr);
+    TESTABLE gmacError_t signal_write(hostptr_t addr);
 
 #if 0
     /**

@@ -4,8 +4,8 @@
 
 namespace __dbc { namespace memory {
 
-Block::Block(__impl::memory::Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t size) :
-    __impl::memory::Block(protocol, addr, shadow, size)
+Block::Block(hostptr_t addr, hostptr_t shadow, size_t size) :
+    __impl::memory::Block(addr, shadow, size)
 {
     // PRECONDITIONS
     REQUIRES(size > 0);
@@ -31,7 +31,6 @@ Block::memoryOp(__impl::memory::Protocol::MemoryOp op, __impl::core::io_buffer &
     
     return ret;
 }
-#endif
 
 gmacError_t
 Block::memset(int v, size_t size, size_t blockOffset)
@@ -45,6 +44,7 @@ Block::memset(int v, size_t size, size_t blockOffset)
     
     return ret;
 }
+#endif
 
 
 }}

@@ -1,6 +1,3 @@
-#include "memory/Manager.h"
-#include "memory/object.h"
-
 #include "core/hpe/address_space.h"
 #include "core/hpe/kernel.h"
 #include "core/hpe/process.h"

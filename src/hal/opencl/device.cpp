@@ -52,6 +52,11 @@ device::device(platform &p,
                 sizeof(val), &val, NULL);
         ASSERTION(ret == CL_SUCCESS, "Error querying device for unified memory");
         integrated_ = (val == CL_TRUE);
+        if (integrated_) {
+        	TRACE(GLOBAL, "Device uses host memory");
+        } else {
+        	TRACE(GLOBAL, "Device does NOT use host memory");
+        }
     }
 
     p.add_device(*this);

@@ -131,7 +131,7 @@ BlockTreeInfo::increment(unsigned subBlock)
 
 inline
 void
-BlockTreeInfo::signalWrite(const hostptr_t addr)
+BlockTreeInfo::signal_write(const hostptr_t addr)
 {
     long_t currentSubBlock = GetSubBlockIndex(block_.addr(), addr);
 
@@ -190,7 +190,7 @@ StrideInfo::reset()
 }
 
 inline void
-StrideInfo::signalWrite(hostptr_t addr)
+StrideInfo::signal_write(hostptr_t addr)
 {
     if (stridedFaults_ == 0) {
         stridedFaults_ = 1;
@@ -481,7 +481,7 @@ BlockState::read(const hostptr_t addr)
 inline void
 BlockState::writeStride(const hostptr_t addr)
 {
-    strideInfo_.signalWrite(addr);
+    strideInfo_.signal_write(addr);
     if (strideInfo_.isStrided()) {
         for (hostptr_t cur = strideInfo_.getFirstAddr(); cur >= block().addr() &&
                 cur < (block().addr() + block().size());
@@ -495,7 +495,7 @@ BlockState::writeStride(const hostptr_t addr)
 inline void
 BlockState::writeTree(const hostptr_t addr)
 {
-    treeInfo_.signalWrite(addr);
+    treeInfo_.signal_write(addr);
     BlockTreeInfo::Pair info = treeInfo_.getUnprotectInfo();
 
     for (unsigned i = info.first; i < info.first + info.second; i++) {

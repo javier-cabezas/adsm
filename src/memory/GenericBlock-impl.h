@@ -9,13 +9,12 @@ namespace __impl { namespace memory {
 
 template<typename State>
 inline
-GenericBlock<State>::GenericBlock(Protocol &protocol,
-                                  BlockGroup<State> &parent,
+GenericBlock<State>::GenericBlock(BlockGroup<State> &parent,
                                   hostptr_t hostAddr,
                                   hostptr_t shadowAddr,
                                   size_t size,
                                   typename State::ProtocolState init) :
-    gmac::memory::Block(protocol, hostAddr, shadowAddr, size),
+    gmac::memory::Block(hostAddr, shadowAddr, size),
     State(init),
     parent_(parent)
 {

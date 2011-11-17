@@ -482,7 +482,7 @@ GMAC_API cudaError_t APICALL cudaMemcpy2DToArray(struct cudaArray *dst, size_t w
 	ASSERTION(kind == cudaMemcpyHostToDevice);
 	enterGmac();
 	cudaError_t ret = cudaSuccess;
-    __impl::memory::Manager &manager = __impl::memory::getManager();
+    __impl::memory::manager &manager = __impl::memory::getManager();
     __impl::util::smart_ptr<__impl::core::address_space>::shared aspace = manager.owner(hostptr_t(src));
     if(aspace == NULL) {
 #if CUDA_VERSION >= 3020

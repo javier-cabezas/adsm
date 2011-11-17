@@ -2,7 +2,7 @@
 #include <cerrno>
 
 #include "memory/Handler.h"
-#include "memory/Manager.h"
+#include "memory/manager.h"
 #include "trace/Tracer.h"
 
 #include "core/process.h"
@@ -19,7 +19,7 @@ int Handler::Signum_ = SIGBUS;
 #endif
 
 static core::process *Process_ = NULL;
-static Manager *Manager_ = NULL;
+static manager *Manager_ = NULL;
 
 static void segvHandler(int s, siginfo_t *info, void *ctx)
 {
@@ -42,8 +42,8 @@ static void segvHandler(int s, siginfo_t *info, void *ctx)
 	bool resolved = false;
     util::smart_ptr<core::address_space>::shared aspace = Manager_->owner(addr);
     if(aspace != NULL) {
-	    if(!writeAccess) resolved = Manager_->signalRead(aspace, addr);
-    	else             resolved = Manager_->signalWrite(aspace, addr);
+	    if(!writeAccess) resolved = Manager_->signal_read(aspace, addr);
+    	else             resolved = Manager_->signal_write(aspace, addr);
     }
 
 	if(resolved == false) {
@@ -89,7 +89,7 @@ void Handler::setProcess(core::process &proc)
     Process_ = &proc;
 }
 
-void Handler::setManager(Manager &manager)
+void Handler::setManager(manager &manager)
 {
     Manager_ = &manager;
 }

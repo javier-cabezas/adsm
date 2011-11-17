@@ -49,7 +49,7 @@ DistributedObject<State>::DistributedObject(Protocol &protocol, core::Mode &owne
     while(size > 0) {
         size_t blockSize = (size > BlockSize_) ? BlockSize_ : size;
         mark += blockSize;
-        blocks_.insert(BlockMap::value_type(mark,
+        blocks_.insert(vector_block::value_type(mark,
                        new DistributedBlock<State>(protocol, addr_ + offset,
                                                    shadow_ + offset, blockSize, init)));
         size -= blockSize;
@@ -80,7 +80,7 @@ DistributedObject<State>::acceleratorAddr(core::Mode &current, const hostptr_t a
 {
     accptr_t ret = accptr_t(0);
     lockRead();
-    BlockMap::const_iterator i = blocks_.upper_bound(addr);
+    vector_block::const_iterator i = blocks_.upper_bound(addr);
     if(i != blocks_.end()) {
         ret = i->second->acceleratorAddr(current, addr);
     }
@@ -93,7 +93,7 @@ inline core::Mode &
 DistributedObject<State>::owner(core::Mode &current, const hostptr_t addr) const
 {
     lockRead();
-    BlockMap::const_iterator i = blocks_.upper_bound(addr);
+    vector_block::const_iterator i = blocks_.upper_bound(addr);
     ASSERTION(i != blocks_.end());
     core::Mode &ret = i->second->owner(current);
     unlock();
@@ -126,7 +126,7 @@ DistributedObject<State>::addOwner(core::Mode &mode)
     } else {
         it->second.push_back(&mode);
     }
-    BlockMap::iterator i;
+    vector_block::iterator i;
     for(i = blocks_.begin(); i != blocks_.end(); i++) {
         ptroff_t offset = ptroff_t(i->second->addr() - addr_);
         DistributedBlock<State> &block = dynamic_cast<DistributedBlock<State> &>(*i->second);
@@ -162,7 +162,7 @@ DistributedObject<State>::removeOwner(core::Mode &mode)
 
     ASSERTION(ownerFound == true);
 
-    BlockMap::iterator j;
+    vector_block::iterator j;
     for(j = blocks_.begin(); j != blocks_.end(); j++) {
         DistributedBlock<State> &block = dynamic_cast<DistributedBlock<State> &>(*j->second);
         block.removeOwner(mode);

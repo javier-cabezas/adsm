@@ -105,7 +105,7 @@ protected:
 public:
     StrideInfo(lazy::Block &block);
 
-    void signalWrite(hostptr_t addr);
+    void signal_write(hostptr_t addr);
 
     unsigned getStridedFaults() const;
     bool isStrided() const;
@@ -132,7 +132,7 @@ public:
     BlockTreeInfo(lazy::Block &block);
     ~BlockTreeInfo();
 
-    void signalWrite(const hostptr_t addr);
+    void signal_write(const hostptr_t addr);
     Pair getUnprotectInfo();
 
     void reset();

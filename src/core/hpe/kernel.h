@@ -36,7 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include "hal/types.h"
 
-#include "memory/Manager.h"
+#include "memory/manager.h"
 
 namespace __impl { namespace core { namespace hpe {
 

@@ -48,6 +48,7 @@ namespace __impl {
 namespace memory {
 
 class Block;
+typedef __impl::util::smart_ptr<Block>::shared block_ptr;
 class object;
 
 /**
@@ -88,7 +89,7 @@ public:
      * \warning This method assumes that the block is not modified during its
      * execution
      */
-    virtual bool needUpdate(const Block &block) const = 0;
+    virtual bool needUpdate(const block_ptr block) const = 0;
 
     /**
      * Signal handler for faults caused due to memory reads
@@ -99,7 +100,7 @@ public:
      * \warning This method assumes that the block is not modified during its
      * execution
      */
-    virtual gmacError_t signalRead(Block &block, hostptr_t addr) = 0;
+    virtual gmacError_t signal_read(block_ptr block, hostptr_t addr) = 0;
 
     /**
      * Signal handler for faults caused due to memory writes
@@ -110,7 +111,7 @@ public:
      * \warning This method assumes that the block is not modified during its
      * execution
      */
-    virtual gmacError_t signalWrite(Block &block, hostptr_t addr) = 0;
+    virtual gmacError_t signal_write(block_ptr block, hostptr_t addr) = 0;
 
     /** Acquires the ownership of a memory block for the CPU
      *
@@ -119,9 +120,9 @@ public:
      * \warning This method assumes that the block is not modified during its
      * execution
      */
-    virtual gmacError_t acquire(Block &block, GmacProtection &prot) = 0;
+    virtual gmacError_t acquire(block_ptr block, GmacProtection &prot) = 0;
 #ifdef USE_VM
-    virtual gmacError_t acquireWithBitmap(Block &block) = 0;
+    virtual gmacError_t acquireWithBitmap(block_ptr block) = 0;
 #endif
 
     /**
@@ -142,7 +143,7 @@ public:
      * \warning This method assumes that the block is not modified during its
      * execution
      */
-    virtual gmacError_t release(Block &block) = 0;
+    virtual gmacError_t release(block_ptr block) = 0;
 
     /**
      * Removes a block from the coherence domain.
@@ -156,7 +157,7 @@ public:
      * \warning This method assumes that the block is not modified during its
      * execution
      */
-    virtual gmacError_t unmapFromAccelerator(Block &block) = 0;
+    virtual gmacError_t unmapFromAccelerator(block_ptr block) = 0;
 
     /**
      * Adds a block to the coherence domain.
@@ -168,7 +169,7 @@ public:
      * \warning This method assumes that the block is not modified during its
      * execution
      */
-    virtual gmacError_t mapToAccelerator(Block &block) = 0;
+    virtual gmacError_t mapToAccelerator(block_ptr block) = 0;
 
     /**
      * Deletes all references to the block within the protocol
@@ -180,7 +181,7 @@ public:
      * \warning This method assumes that the block is not modified during its
      * execution
      */
-    virtual gmacError_t deleteBlock(Block &block) = 0;
+    virtual gmacError_t deleteBlock(block_ptr block) = 0;
 
     /**
      * Ensures that the host memory of a block contains an updated copy of the
@@ -191,7 +192,7 @@ public:
      * \warning This method assumes that the block is not modified during its
      * execution
      */
-    virtual gmacError_t toHost(Block &block) = 0;
+    virtual gmacError_t toHost(block_ptr block) = 0;
 
 #if 0
     /**
@@ -203,7 +204,7 @@ public:
      * \warning This method assumes that the block is not modified during its
      * execution
      */
-    virtual gmacError_t toAccelerator(Block &block) = 0;
+    virtual gmacError_t toAccelerator(block_ptr block) = 0;
 #endif
 
     /**
@@ -218,7 +219,7 @@ public:
      * \warning This method assumes that the block is not modified during its
      * execution
      */
-    virtual hal::event_t memset(const Block &block, size_t blockOffset, int v, size_t size,
+    virtual hal::event_t memset(block_ptr block, size_t blockOffset, int v, size_t size,
                                 gmacError_t &err) = 0;
 
     virtual gmacError_t flushDirty() = 0;
@@ -233,38 +234,38 @@ public:
      * \param srcOffset Offset within the source block
      * \param count Size (in bytes) of the memory transfer
      */
-    virtual hal::event_t copyBlockToBlock(Block &dst, size_t dstOffset,
-                                          Block &src, size_t srcOffset,
+    virtual hal::event_t copyBlockToBlock(block_ptr dst, size_t dstOffset,
+    		                              block_ptr src, size_t srcOffset,
                                           size_t count, gmacError_t &err) = 0;
 
-    virtual hal::event_t copyToBlock(Block    &dst, size_t dstOffset,
+    virtual hal::event_t copyToBlock(block_ptr dst, size_t dstOffset,
                                      hostptr_t src,
                                      size_t count, gmacError_t &err) = 0;
 
     virtual hal::event_t copyFromBlock(hostptr_t dst,
-                                       Block    &src, size_t srcOffset,
+    		                           block_ptr src, size_t srcOffset,
                                        size_t count, gmacError_t &err) = 0;
 
     virtual hal::event_t to_io_device(hal::device_output &output,
-                                      Block &src, size_t srcffset,
+    		                          block_ptr src, size_t srcffset,
                                       size_t count, gmacError_t &err) = 0;
 
-    virtual hal::event_t from_io_device(Block &dst, size_t dstOffset,
+    virtual hal::event_t from_io_device(block_ptr dst, size_t dstOffset,
                                         hal::device_input &input,
                                         size_t count, gmacError_t &err) = 0;
 
 
 
-    virtual gmacError_t dump(Block &block, std::ostream &out, protocol::common::Statistic stat) = 0;
+    virtual gmacError_t dump(block_ptr block, std::ostream &out, protocol::common::Statistic stat) = 0;
 
-    typedef gmacError_t (Protocol::*CoherenceOp)(Block &);
+    typedef gmacError_t (Protocol::*CoherenceOp)(block_ptr);
 
-    typedef hal::event_t (Protocol::*CopyOp1To)(Block &, size_t, const hostptr_t, size_t, gmacError_t &);
-    typedef hal::event_t (Protocol::*CopyOp1From)(hostptr_t, Block &, size_t, size_t, gmacError_t &);
-    typedef hal::event_t (Protocol::*CopyOp2)(Block &, size_t, Block &, size_t, size_t, gmacError_t &);
+    typedef hal::event_t (Protocol::*CopyOp1To)(block_ptr, size_t, const hostptr_t, size_t, gmacError_t &);
+    typedef hal::event_t (Protocol::*CopyOp1From)(hostptr_t, block_ptr, size_t, size_t, gmacError_t &);
+    typedef hal::event_t (Protocol::*CopyOp2)(block_ptr, size_t, block_ptr, size_t, size_t, gmacError_t &);
 
-    typedef hal::event_t (Protocol::*DeviceOpTo)(hal::device_output &, Block &, size_t, size_t, gmacError_t &);
-    typedef hal::event_t (Protocol::*DeviceOpFrom)(Block &, size_t, hal::device_input &, size_t, gmacError_t &);
+    typedef hal::event_t (Protocol::*DeviceOpTo)(hal::device_output &, block_ptr, size_t, size_t, gmacError_t &);
+    typedef hal::event_t (Protocol::*DeviceOpFrom)(block_ptr, size_t, hal::device_input &, size_t, gmacError_t &);
 };
 
 typedef std::list<object *> ListObject;

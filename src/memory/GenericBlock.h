@@ -74,14 +74,12 @@ public:
     /**
      * Default construcutor
      *
-     * \param protocol Memory coherence protocol used by the block
      * \param hostAddr Host memory address for applications to accesss the block
      * \param shadowAddr Shadow host memory mapping that is always read/write
      * \param size Size (in bytes) of the memory block
      * \param init Initial block state
      */
-    GenericBlock(Protocol &protocol,
-                 BlockGroup<State> &parent,
+    GenericBlock(BlockGroup<State> &parent,
                  hostptr_t hostAddr,
                  hostptr_t shadowAddr,
                  size_t size,
@@ -126,6 +124,11 @@ public:
     {
         return toHost(0, size_);
     }
+
+    BlockGroup<State> &get_parent()
+	{
+    	return parent_;
+	}
 
 #if 0
     gmacError_t copyToBuffer(core::io_buffer &buffer, size_t bufferOff,

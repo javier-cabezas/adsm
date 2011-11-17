@@ -49,14 +49,14 @@ BlockGroup<State>::repopulateBlocks(core::address_space &aspace)
 {
     // Repopulate the block-set
     ptroff_t offset = 0;
-    for (BlockMap::iterator i = blocks_.begin(); i != blocks_.end(); i++) {
-        GenericBlock<State> &oldBlock = *dynamic_cast<GenericBlock<State> *>(i->second);
+    for (vector_block::iterator i = blocks_.begin(); i != blocks_.end(); i++) {
+        GenericBlock<State> &oldBlock = *dynamic_cast<GenericBlock<State> *>(*i);
         GenericBlock<State> *newBlock = new GenericBlock<State>(oldBlock.getProtocol(),
                                                                 addr_   + offset,
                                                                 shadow_ + offset,
                                                                 oldBlock.size(), oldBlock.getState());
 
-        i->second = newBlock;
+        *i = newBlock;
 
         offset += ptroff_t(oldBlock.size());
 
@@ -73,7 +73,7 @@ BlockGroup<State>::BlockGroup(Protocol &protocol,
                               size_t size,
                               typename State::ProtocolState init,
                               gmacError_t &err) :
-    object(hostAddr, size),
+    object(protocol, hostAddr, size),
     shadow_(NULL),
     hasUserMemory_(hostAddr != NULL),
     deviceAddr_(0)
@@ -101,9 +101,9 @@ BlockGroup<State>::BlockGroup(Protocol &protocol,
     while(size > 0) {
         size_t blockSize = (size > BlockSize_) ? BlockSize_ : size;
         mark += blockSize;
-        blocks_.insert(BlockMap::value_type(mark,
-                       new GenericBlock<State>(protocol, *this, addr_ + offset,
-                                               shadow_ + offset, blockSize, init)));
+        block_ptr block(new GenericBlock<State>(*this, addr_ + offset,
+                                                shadow_ + offset, blockSize, init));
+        blocks_.push_back(block);
         size -= blockSize;
         offset += ptroff_t(blockSize);
 		TRACE(LOCAL, "Creating BlockGroup @ %p : shadow @ %p ("FMT_SIZE" bytes) ", addr_, shadow_, blockSize);
@@ -276,10 +276,6 @@ BlockGroup<State>::removeOwner(util::smart_ptr<core::address_space>::shared owne
 #endif
 
     // Clean-up
-    BlockMap::iterator i;
-    for(i = blocks_.begin(); i != blocks_.end(); i++) {
-        i->second->decRef();
-    }
     blocks_.clear();
 
     ownerShortcut_.reset();
@@ -309,7 +305,7 @@ BlockGroup<State>::removeOwner(util::smart_ptr<core::address_space>::shared owne
         acceleratorAddr_.clear();
 
         // Clean-up
-        BlockMap::iterator i;
+        vector_block::iterator i;
         for(i = blocks_.begin(); i != blocks_.end(); i++) {
             i->second->decRef();
         }
@@ -335,7 +331,7 @@ BlockGroup<State>::removeOwner(util::smart_ptr<core::address_space>::shared owne
         ASSERTION(ownerFound == true);
 
 #if 0
-        for (BlockMap::iterator j = blocks_.begin(); j != blocks_.end(); j++) {
+        for (vector_block::iterator j = blocks_.begin(); j != blocks_.end(); j++) {
             GenericBlock<State> &block = dynamic_cast<GenericBlock<State> &>(*j->second);
             block.removeOwner(aspace);
         }

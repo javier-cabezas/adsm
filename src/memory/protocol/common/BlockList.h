@@ -55,11 +55,11 @@ namespace protocol {
 
 //! FIFO list of blocks
 class GMAC_LOCAL BlockList :
-    protected std::list<Block *>,
+    protected std::list<block_ptr>,
     public gmac::util::spinlock {
 // We need a locked list becase execution modes might be shared among different threads
 protected:
-    typedef std::list<Block *> Parent;
+    typedef std::list<block_ptr> Parent;
 
 public:
     /// Default constructor
@@ -84,19 +84,19 @@ public:
      *
      * \param block Block to be addded to the end of list
      */
-    void push(Block &block);
+    void push(block_ptr block);
 
     /** Return the first Block in the list
      *
      * \return Block from extracted from the begining of the list
      */
-    Block &front();
+    block_ptr front();
 
     /** Remove a block from the list
      *
      * \param block Block to be removed from the list
      */
-    void remove(Block &block);
+    void remove(block_ptr block);
 };
 
 }}}

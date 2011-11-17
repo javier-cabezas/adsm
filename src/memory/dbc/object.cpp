@@ -55,26 +55,26 @@ object::blockEnd(size_t offset) const
 }
 
 gmacError_t
-object::signalRead(hostptr_t addr)
+object::signal_read(hostptr_t addr)
 {
     // PRECONDITIONS
     REQUIRES(addr >= addr_);
     REQUIRES(addr  < addr_ + size_);
     // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::memory::object::signalRead(addr);
+    gmacError_t ret = __impl::memory::object::signal_read(addr);
     // POSTCONDITIONS
     
     return ret;
 }
 
 gmacError_t
-object::signalWrite(hostptr_t addr)
+object::signal_write(hostptr_t addr)
 {
     // PRECONDITIONS
     REQUIRES(addr >= addr_);
     REQUIRES(addr  < addr_ + size_);
     // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::memory::object::signalWrite(addr);
+    gmacError_t ret = __impl::memory::object::signal_write(addr);
     // POSTCONDITIONS
     
     return ret;

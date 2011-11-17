@@ -32,29 +32,27 @@ inline size_t BlockList::size() const
     return ret;
 }
 
-inline void BlockList::push(Block &block)
+inline void BlockList::push(block_ptr block)
 {
-    block.incRef();
     lock();
-    Parent::push_back(&block);
+    Parent::push_back(block);
     unlock();
 }
 
-inline Block &BlockList::front()
+inline block_ptr BlockList::front()
 {
     ASSERTION(Parent::empty() == false);
     lock();
-    Block *ret = Parent::front();
+    block_ptr ret = Parent::front();
     unlock();
-    ASSERTION(ret != NULL);
-    ret->decRef();
-    return *ret;
+    ASSERTION(ret);
+    return ret;
 }
 
-inline void BlockList::remove(Block &block)
+inline void BlockList::remove(block_ptr block)
 {
     lock();
-    Parent::remove(&block);
+    Parent::remove(block);
     unlock();
     return;
 }

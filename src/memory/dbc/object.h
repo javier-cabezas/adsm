@@ -50,8 +50,8 @@ public:
     ssize_t blockBase(size_t offset) const;
     size_t blockEnd(size_t offset) const;
 
-	gmacError_t signalRead(hostptr_t addr);
-    gmacError_t signalWrite(hostptr_t addr);
+	gmacError_t signal_read(hostptr_t addr);
+    gmacError_t signal_write(hostptr_t addr);
 
 #if 0
     gmacError_t copyToBuffer(__impl::core::io_buffer &buffer, size_t size, 

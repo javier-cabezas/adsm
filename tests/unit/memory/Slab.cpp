@@ -13,14 +13,14 @@ using namespace gmac::memory;
 class SlabTest : public testing::Test {
 public:
     static Process *Process_;
-    static Manager *Manager_;
+    static manager *Manager_;
     
     static void SetUpTestCase();
     static void TearDownTestCase();
 };
 
 Process *SlabTest::Process_ = NULL;
-Manager *SlabTest::Manager_ = NULL;
+manager *SlabTest::Manager_ = NULL;
 
 extern void OpenCL(Process &);
 extern void CUDA(Process &);
@@ -35,7 +35,7 @@ void SlabTest::SetUpTestCase()
 #if defined(USE_OPENCL)
     OpenCL(*Process_);
 #endif
-    Manager_ = new Manager(*Process_);
+    Manager_ = new manager(*Process_);
     ASSERT_TRUE(Manager_ != NULL);
 }
 

@@ -60,7 +60,7 @@ HostMappedObject::HostMappedObject(core::address_space_ptr aspace, size_t size) 
 
 HostMappedObject::~HostMappedObject()
 {
-    if(addr_ != NULL) free(owner_);
+    if(addr_) free(owner_);
     TRACE(LOCAL, "Destroying Host Mapped Object @ %p", addr_.get_host_addr());
 }
 
@@ -69,7 +69,7 @@ HostMappedObject::get_device_addr(core::address_space_ptr current, const hostptr
 {
     //ASSERTION(current == owner_);
     accptr_t ret = accptr_t(0);
-    if(addr_ != NULL) {
+    if(addr_) {
         unsigned offset = unsigned(addr - addr_.get_host_addr());
         accptr_t acceleratorAddr = getAccPtr(current);
         ret = acceleratorAddr + offset;

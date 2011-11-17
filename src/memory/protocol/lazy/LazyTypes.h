@@ -52,6 +52,7 @@ enum State {
 };
 
 typedef GenericBlock<lazy::BlockState> Block;
+typedef __impl::util::smart_ptr<Block>::shared block_ptr;
 
 }}}}
 

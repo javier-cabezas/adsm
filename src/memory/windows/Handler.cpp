@@ -12,7 +12,7 @@ namespace __impl { namespace memory {
 unsigned Handler::Count_ = 0;
 
 static core::process *Process_ = NULL;
-static Manager *Manager_ = NULL;
+static manager *Manager_ = NULL;
 
 static LONG CALLBACK segvHandler(EXCEPTION_POINTERS *ex)
 {
@@ -37,8 +37,8 @@ static LONG CALLBACK segvHandler(EXCEPTION_POINTERS *ex)
     bool resolved = false;
     core::Mode *mode = Process_->owner((const hostptr_t)addr);
     if(mode != NULL) {
-        if(!writeAccess) resolved = Manager_->signalRead(*mode, (hostptr_t)addr);
-        else             resolved = Manager_->signalWrite(*mode, (hostptr_t)addr);
+        if(!writeAccess) resolved = Manager_->signal_read(*mode, (hostptr_t)addr);
+        else             resolved = Manager_->signal_write(*mode, (hostptr_t)addr);
     }
 
     if(resolved == false) {
@@ -75,7 +75,7 @@ void Handler::setProcess(core::process &proc)
     Process_ = &proc;
 }
 
-void Handler::setManager(Manager &manager)
+void Handler::setManager(manager &manager)
 {
     Manager_ = &manager;
 }

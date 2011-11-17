@@ -71,8 +71,6 @@ protected:
 
     size_t memorySize_;
 
-    bool integrated_;
-
 public:
     device(platform &p,
            cl_device_id openclDeviceId,
