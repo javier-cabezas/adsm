@@ -37,7 +37,7 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 #include "include/gmac/types.h"
 
-#include "memory/Handler.h"
+#include "memory/handler.h"
 #include "memory/Protocol.h"
 #include "util/lock.h"
 
@@ -52,7 +52,7 @@ namespace core {
 
 namespace memory {
 class object;
-class Block;
+class block;
 
 template <typename State> class StateBlock;
 
@@ -65,7 +65,7 @@ namespace protocol {
  * release operation. Data is transferred from accelerator memory to host memory
  * lazily, whenever it is needed by the application
  */
-class GMAC_LOCAL LazyBase : public Protocol, Handler,
+class GMAC_LOCAL LazyBase : public protocol_interface, handler,
                             private gmac::util::mutex {
     DBC_FORCE_TEST(LazyBase)
 

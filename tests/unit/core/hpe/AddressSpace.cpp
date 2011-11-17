@@ -48,7 +48,7 @@ TEST_F(AddressSpaceTest, Creation) {
 TEST_F(AddressSpaceTest, Object) {
 	__impl::memory::ObjectMap &map = Mode_->getAddressSpace();
 	ASSERT_TRUE(&map != NULL);
-	__impl::memory::Protocol &proto = map.getProtocol();
+	__impl::memory::protocol_interface &proto = map.getProtocol();
 	ASSERT_TRUE(&proto != NULL);
 	Object *object = proto.createObject(*Mode_, Size_, NULL, GMAC_PROT_READ, 0);
 	ASSERT_TRUE(object != NULL);

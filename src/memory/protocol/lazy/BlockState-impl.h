@@ -36,7 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include <sstream>
 
-#include "memory/GenericBlock.h"
+#include "memory/block_state.h"
 
 #if defined(USE_SUBBLOCK_TRACKING) || defined(USE_VM)
 
@@ -50,7 +50,7 @@ WITH THE SOFTWARE.  */
 
 namespace __impl {
 namespace memory {
-namespace protocol {
+namespace protocol_interface {
 namespace lazy {
 
 inline
@@ -60,7 +60,7 @@ BlockTreeState::BlockTreeState() :
 }
 
 inline
-BlockTreeInfo::BlockTreeInfo(lazy::Block &block) :
+BlockTreeInfo::BlockTreeInfo(lazy::block &block) :
     block_(block)
 { 
     // Initialize subblock state tree (for random access patterns)
@@ -148,7 +148,7 @@ BlockTreeInfo::getUnprotectInfo()
 }
 
 inline
-StrideInfo::StrideInfo(lazy::Block &block) :
+StrideInfo::StrideInfo(lazy::block &block) :
     block_(block)
 {
     reset();
@@ -214,19 +214,19 @@ StrideInfo::signal_write(hostptr_t addr)
 }
 
 inline
-Block &
+block &
 BlockState::block()
 {
 	//return reinterpret_cast<Block &>(*this);
-	return *(Block *)this;
+	return *(block *)this;
 }
 
 inline
-const Block &
+const block &
 BlockState::block() const
 {
 	//return reinterpret_cast<const Block &>(*this);
-	return *(const Block *)this;
+	return *(const block *)this;
 }
 
 inline

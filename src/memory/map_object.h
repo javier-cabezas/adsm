@@ -55,7 +55,7 @@ namespace hpe { class AddressSpace; }
 
 namespace memory {
 class object;
-class Protocol;
+class protocol_interface;
 
 //! A map of objects that is not bound to any Mode
 class GMAC_LOCAL map_object :
@@ -69,7 +69,7 @@ protected:
 #if 0
     core::Process &parent_;
 #endif
-    Protocol &protocol_;
+    protocol_interface &protocol_;
 
     bool modifiedObjects_;
     bool releasedObjects_;
@@ -248,7 +248,7 @@ public:
      * Gets a reference to the memory protocol used by the mode
      * \return A reference to the memory protocol used by the mode
      */
-    Protocol &getProtocol();
+    protocol_interface &getProtocol();
 
 #ifdef USE_VM
     memory::vm::Bitmap &getBitmap();

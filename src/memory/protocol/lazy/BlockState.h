@@ -34,7 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_MEMORY_PROTOCOL_LAZY_BLOCKSTATE_H_
 #define GMAC_MEMORY_PROTOCOL_LAZY_BLOCKSTATE_H_
 
-#include "memory/Block.h"
+#include "memory/block.h"
 #include "util/ReusableObject.h"
 
 #include "memory/protocol/common/BlockState.h"
@@ -95,7 +95,7 @@ struct GMAC_LOCAL BlockTreeState : public util::ReusableObject<BlockTreeState> {
 
 class GMAC_LOCAL StrideInfo {
 protected:
-    lazy::Block &block_;
+    lazy::block &block_;
 
     unsigned stridedFaults_;
     long_t stride_;
@@ -103,7 +103,7 @@ protected:
     hostptr_t firstAddr_;
 
 public:
-    StrideInfo(lazy::Block &block);
+    StrideInfo(lazy::block &block);
 
     void signal_write(hostptr_t addr);
 
@@ -120,7 +120,7 @@ class GMAC_LOCAL BlockTreeInfo {
 public:
     typedef std::pair<unsigned, unsigned> Pair;
 protected:
-    lazy::Block &block_;
+    lazy::block &block_;
 
     unsigned treeStateLevels_;
     BlockTreeState *treeState_;
@@ -129,7 +129,7 @@ protected:
 
     Pair increment(unsigned subBlock);
 public:
-    BlockTreeInfo(lazy::Block &block);
+    BlockTreeInfo(lazy::block &block);
     ~BlockTreeInfo();
 
     void signal_write(const hostptr_t addr);

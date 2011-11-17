@@ -3,7 +3,7 @@
 
 #include "allocator/Slab.h"
 
-#include "memory/BlockGroup.h"
+#include "memory/object_state.h"
 
 #ifdef USE_VM
 //#include "protocol/Gather.h"
@@ -48,10 +48,10 @@ void Init()
 #endif
 }
 
-Protocol *ProtocolInit(unsigned flags)
+protocol_interface *ProtocolInit(unsigned flags)
 {
     TRACE(GLOBAL, "Initializing Memory Protocol");
-    Protocol *ret = NULL;
+    protocol_interface *ret = NULL;
     if(strcasecmp(config::params::Protocol, "Rolling") == 0 ||
        strcasecmp(config::params::Protocol, "Lazy") == 0) {
         bool eager;
@@ -62,21 +62,21 @@ Protocol *ProtocolInit(unsigned flags)
         }
         if(0 != (flags & 0x1)) {
             ret = new gmac::memory::protocol::Lazy<
-                memory::BlockGroup<protocol::lazy::BlockState> >(eager);
+                memory::object_state<protocol::lazy::BlockState> >(eager);
         } else {
             ret = new gmac::memory::protocol::Lazy<
-                memory::BlockGroup<protocol::lazy::BlockState> >(eager);
+                memory::object_state<protocol::lazy::BlockState> >(eager);
         }
     }
 #ifdef USE_VM
-    else if(strcasecmp(config::params::Protocol, "Gather") == 0) {
+    else if(strcasecmp(config::params::protocol_interface, "Gather") == 0) {
         if(0 != (flags & 0x1)) {
-            ret = new gmac::memory::protocol::Lazy<
-                memory::BlockGroup<protocol::lazy::BlockState> >(eager);
+            ret = new gmac::memory::protocol_interface::Lazy<
+                memory::object_state<protocol_interface::lazy::BlockState> >(eager);
         }
         else {
-            ret = new gmac::memory::protocol::Lazy<
-                memory::BlockGroup<protocol::lazy::BlockState> >(eager);
+            ret = new gmac::memory::protocol_interface::Lazy<
+                memory::object_state<protocol_interface::lazy::BlockState> >(eager);
         }
     }
 #endif

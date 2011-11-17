@@ -15,7 +15,7 @@ object::~object()
 {
     vector_block::iterator i;
     lockWrite();
-    gmacError_t ret = coherenceOp(&Protocol::deleteBlock);
+    gmacError_t ret = coherenceOp(&protocol_interface::deleteBlock);
     ASSERTION(ret == gmacSuccess);
     blocks_.clear();
     unlock();
@@ -36,7 +36,7 @@ object::get_block(size_t objectOffset, size_t *blockOffset) const
 }
 
 gmacError_t
-object::coherenceOp(gmacError_t (Protocol::*f)(block_ptr))
+object::coherenceOp(gmacError_t (protocol_interface::*f)(block_ptr))
 {
     gmacError_t ret = gmacSuccess;
     vector_block::const_iterator i;
@@ -96,14 +96,14 @@ object::from_io_device(size_t objOff, hal::device_input &input, size_t count)
 }
 
 #if 0
-gmacError_t object::memoryOp(Protocol::MemoryOp op,
+gmacError_t object::memoryOp(protocol_interface::MemoryOp op,
                              core::io_buffer &buffer, size_t size, size_t bufferOffset, size_t objectOffset)
 {
     gmacError_t ret = gmacSuccess;
     size_t blockOffset = 0;
     vector_block::const_iterator i = get_block(objectOffset, blockOffset);
     for(; i != blocks_.end() && size > 0; i++) {
-        Block &block = *i->second;
+        block &block = *i->second;
         size_t blockSize = block.size() - blockOffset;
         blockSize = size < blockSize? size: blockSize;
         buffer.wait();
@@ -506,7 +506,7 @@ object::dump(std::ostream &out, protocol::common::Statistic stat)
     std::ostringstream oss;
     oss << (void *) addr();
     out << oss.str() << " ";
-    gmacError_t ret = forEachBlock(&Protocol::dump, out, stat);
+    gmacError_t ret = forEachBlock(&protocol_interface::dump, out, stat);
     out << std::endl;
     unlock();
     if (dumps_.find(stat) == dumps_.end()) dumps_[stat] = 0;

@@ -9,12 +9,12 @@ namespace __impl { namespace memory {
 
 template<typename State>
 inline
-GenericBlock<State>::GenericBlock(BlockGroup<State> &parent,
+block_state<State>::block_state(object_state<State> &parent,
                                   hostptr_t hostAddr,
                                   hostptr_t shadowAddr,
                                   size_t size,
                                   typename State::ProtocolState init) :
-    gmac::memory::Block(hostAddr, shadowAddr, size),
+    gmac::memory::block(hostAddr, shadowAddr, size),
     State(init),
     parent_(parent)
 {
@@ -22,14 +22,14 @@ GenericBlock<State>::GenericBlock(BlockGroup<State> &parent,
 
 template<typename State>
 inline
-GenericBlock<State>::~GenericBlock()
+block_state<State>::~block_state()
 {
 }
 
 #if 0
 template<typename State>
 void
-GenericBlock<State>::addOwner(core::address_space &aspace, accptr_t addr)
+block_state<State>::addOwner(core::address_space &aspace, accptr_t addr)
 {
     lock();
 
@@ -64,7 +64,7 @@ GenericBlock<State>::addOwner(core::address_space &aspace, accptr_t addr)
 // TODO: return error!
 template<typename State>
 void
-GenericBlock<State>::removeOwner(core::address_space &aspace)
+block_state<State>::removeOwner(core::address_space &aspace)
 {
     lock();
 
@@ -92,7 +92,7 @@ done_addr:
 
 template<typename State>
 inline core::address_space &
-GenericBlock<State>::owner() const
+block_state<State>::owner() const
 {
     return parent_.owner();
 #if 0
@@ -116,7 +116,7 @@ GenericBlock<State>::owner() const
 
 template<typename State>
 inline accptr_t
-GenericBlock<State>::get_device_addr(const hostptr_t addr) const
+block_state<State>::get_device_addr(const hostptr_t addr) const
 {
     return parent_.get_device_addr(addr);
 #if 0
@@ -142,14 +142,14 @@ GenericBlock<State>::get_device_addr(const hostptr_t addr) const
 
 template<typename State>
 inline accptr_t
-GenericBlock<State>::get_device_addr() const
+block_state<State>::get_device_addr() const
 {
     return get_device_addr(this->addr_);
 }
 
 template<typename State>
 inline gmacError_t
-GenericBlock<State>::toHost(unsigned blockOff, size_t count)
+block_state<State>::toHost(unsigned blockOff, size_t count)
 {
     gmacError_t ret = gmacSuccess;
 
@@ -173,7 +173,7 @@ GenericBlock<State>::toHost(unsigned blockOff, size_t count)
 
 template<typename State>
 inline gmacError_t
-GenericBlock<State>::toAccelerator(unsigned blockOff, size_t count)
+block_state<State>::toAccelerator(unsigned blockOff, size_t count)
 {
     gmacError_t ret = gmacSuccess;
 
@@ -203,7 +203,7 @@ GenericBlock<State>::toAccelerator(unsigned blockOff, size_t count)
 #if 0
 template<typename State>
 inline gmacError_t
-GenericBlock<State>::copyFromBuffer(size_t blockOff, core::io_buffer &buffer,
+block_state<State>::copyFromBuffer(size_t blockOff, core::io_buffer &buffer,
                                     size_t bufferOff, size_t size, Destination dst) const
 {
     gmacError_t ret = gmacSuccess;
@@ -241,7 +241,7 @@ GenericBlock<State>::copyFromBuffer(size_t blockOff, core::io_buffer &buffer,
 
 template<typename State>
 inline gmacError_t
-GenericBlock<State>::copyToBuffer(core::io_buffer &buffer, size_t bufferOff,
+block_state<State>::copyToBuffer(core::io_buffer &buffer, size_t bufferOff,
                                   size_t blockOff, size_t size, Source src) const
 {
     gmacError_t ret = gmacSuccess;
@@ -272,7 +272,7 @@ GenericBlock<State>::copyToBuffer(core::io_buffer &buffer, size_t bufferOff,
 
 template <typename State>
 gmacError_t
-GenericBlock<State>::memset(int v, size_t size, size_t blockOffset, Destination dst) const
+block_state<State>::memset(int v, size_t size, size_t blockOffset, Destination dst) const
 {
     gmacError_t ret = gmacSuccess;
     if (dst == HOST) {

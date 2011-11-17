@@ -45,7 +45,7 @@ namespace __impl { namespace memory {
 /** Description for StateBlock. */
 template <typename State>
 class GMAC_LOCAL StateBlock :
-    public gmac::memory::Block,
+    public gmac::memory::block,
     public State {
     friend gmacError_t State::syncToAccelerator();
     friend gmacError_t State::syncToHost();
@@ -60,7 +60,7 @@ protected:
      * \param size Size (in bytes) of the memory block
      * \param init Initial protocol state for the block
      */
-    StateBlock(core::ResourceManager &resourceManager, Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t size, typename State::ProtocolState init);
+    StateBlock(core::ResourceManager &resourceManager, protocol_interface &protocol, hostptr_t addr, hostptr_t shadow, size_t size, typename State::ProtocolState init);
 
 public:
     hostptr_t getShadow() const;

@@ -56,7 +56,7 @@ protected:
 
     void modifiedObject();
 public:
-    SharedObject(Protocol &protocol, core::Mode &owner, hostptr_t addr, size_t size, typename State::ProtocolState init, gmacError_t &err);
+    SharedObject(protocol_interface &protocol_interface, core::Mode &owner, hostptr_t addr, size_t size, typename State::ProtocolState init, gmacError_t &err);
     virtual ~SharedObject();
 
     accptr_t acceleratorAddr(core::Mode &current, const hostptr_t addr) const;

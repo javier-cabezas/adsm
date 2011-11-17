@@ -52,7 +52,7 @@ namespace core {
 
 namespace memory {
 
-class Block;
+class block;
 
 /**
  * Base abstraction of the memory allocations managed by GMAC. Objects are
@@ -71,7 +71,7 @@ protected:
 #endif
 
     /** Memory coherence protocol used by the object */
-    Protocol &protocol_;
+    protocol_interface &protocol_;
 
     /// Object host memory address
     hostptr_t addr_;
@@ -102,10 +102,10 @@ protected:
      * \sa __impl::memory::Block::toHost
      * \sa __impl::memory::Block::toAccelerator
      */
-    gmacError_t coherenceOp(gmacError_t (Protocol::*op)(block_ptr));
+    gmacError_t coherenceOp(gmacError_t (protocol_interface::*op)(block_ptr));
 
     template <typename T>
-    gmacError_t coherenceOp(gmacError_t (Protocol::*op)(block_ptr, T &), T &param);
+    gmacError_t coherenceOp(gmacError_t (protocol_interface::*op)(block_ptr, T &), T &param);
 
 #if 0
     /**
@@ -122,7 +122,7 @@ protected:
      * \sa __impl::memory::Block::copyFromHost(core::io_buffer &, size_t, size_t, size_t) const
      * \sa __impl::memory::Block::copyFromAccelerator(core::io_buffer &, size_t, size_t, size_t) const
      */
-    TESTABLE gmacError_t memoryOp(Protocol::MemoryOp op,
+    TESTABLE gmacError_t memoryOp(protocol_interface::MemoryOp op,
                                   core::io_buffer &buffer, size_t size, size_t bufferOffset, size_t objectOffset);
 #endif
 
@@ -135,7 +135,7 @@ protected:
      * \sa __impl::memory::Block::dump
      */
     template <typename T, typename S>
-    gmacError_t forEachBlock(gmacError_t (Protocol::*f)(block_ptr, T &, S), T &t, S s);
+    gmacError_t forEachBlock(gmacError_t (protocol_interface::*f)(block_ptr, T &, S), T &t, S s);
 
     /**
      * Default constructor
@@ -144,7 +144,7 @@ protected:
      * \param addr Host memory address where the object begins
      * \param size Size (in bytes) of the memory object
      */
-    object(Protocol &protocol, hostptr_t addr, size_t size);
+    object(protocol_interface &protocol, hostptr_t addr, size_t size);
 
     //! Default destructor
     virtual ~object();
@@ -160,7 +160,7 @@ public:
      * Get the protocol that is managing the block
      * \return Memory protocol
      */
-    Protocol &getProtocol();
+    protocol_interface &getProtocol();
 
     /**
      * Get the starting host memory address of the object

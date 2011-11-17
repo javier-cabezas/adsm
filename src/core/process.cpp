@@ -1,12 +1,12 @@
 #include "core/process.h"
 
-#include "memory/Handler.h"
+#include "memory/handler.h"
 
 namespace __impl { namespace core {
 
 process::process()
 {
-    memory::Handler::setProcess(*this);
+    memory::handler::setProcess(*this);
 }
 
 process::~process()

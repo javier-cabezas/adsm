@@ -4,15 +4,13 @@ add_subdirectory(${OS_DIR})
 set(memory_SRC
     Allocator.h
     Allocator.cpp
-    Block.h
-    Block-impl.h
-    Block.cpp
-    BlockGroup.h
-    BlockGroup-impl.h
-    GenericBlock.h
-    GenericBlock-impl.h
-    Handler.h
-    Handler.cpp
+    block.h
+    block-impl.h
+    block.cpp
+    block_state.h
+    block_state-impl.h
+    handler.h
+    handler.cpp
     HostMappedObject.h
     HostMappedObject-impl.h
     HostMappedObject.cpp
@@ -23,6 +21,8 @@ set(memory_SRC
     object.h
     object-impl.h
     object.cpp
+    object_state.h
+    object_state-impl.h
     map_object.h
     map_object-impl.h
     map_object.cpp
@@ -55,10 +55,10 @@ set(memory_SRC
 )
 
 set(memory_DBC
-    dbc/Block.h
-    dbc/Block.cpp
-    dbc/Manager.h
-    dbc/Manager.cpp
+    dbc/block.h
+    dbc/block.cpp
+    dbc/manager.h
+    dbc/manager.cpp
     protocol/dbc/Lazy.h
     protocol/dbc/Lazy-impl.h
     protocol/dbc/LazyBase.h

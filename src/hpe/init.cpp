@@ -12,7 +12,7 @@
 #include "hal/types.h"
 
 #include "memory/Allocator.h"
-#include "memory/Handler.h"
+#include "memory/handler.h"
 #include "memory/manager.h"
 #include "memory/Memory.h"
 #include "memory/allocator/Slab.h"
@@ -50,8 +50,8 @@ void initGmac(void)
     TRACE(GLOBAL, "Using %s memory allocator", config::params::Allocator);
 
     // Set the entry and exit points for Manager
-    __impl::memory::Handler::setEntry(enterGmac);
-    __impl::memory::Handler::setExit(exitGmac);
+    __impl::memory::handler::setEntry(enterGmac);
+    __impl::memory::handler::setExit(exitGmac);
 
     isRunTimeThread_.set(&privateFalse);
     // Process is a singleton class. The only allowed instance is Proc_

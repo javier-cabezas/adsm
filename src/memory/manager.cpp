@@ -1,7 +1,7 @@
 #include "core/address_space.h"
 #include "core/process.h"
 
-#include "memory/Handler.h"
+#include "memory/handler.h"
 #include "memory/HostMappedObject.h"
 #include "memory/manager.h"
 #include "memory/object.h"
@@ -17,7 +17,7 @@ manager::manager(core::process &proc) :
 {
     TRACE(LOCAL,"Memory manager starts");
     Init();
-    Handler::setManager(*this);
+    handler::setManager(*this);
 }
 
 manager::~manager()
@@ -175,9 +175,9 @@ gmacError_t manager::globalAlloc(core::address_space_ptr aspace, hostptr_t *addr
             return ret;
         }
     }
-    Protocol *protocol = proc_.getProtocol();
-    if(protocol == NULL) return gmacErrorInvalidValue;
-    object *object = protocol->createObject(size, NULL, GMAC_PROT_NONE, 0);
+    protocol_interface *protocol_interface = proc_.getProtocol();
+    if(protocol_interface == NULL) return gmacErrorInvalidValue;
+    object *object = protocol_interface->createObject(size, NULL, GMAC_PROT_NONE, 0);
     *addr = object->addr();
     if(*addr == NULL) {
         object->decRef();

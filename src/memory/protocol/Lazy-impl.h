@@ -1,7 +1,7 @@
 #ifndef GMAC_MEMORY_PROTOCOL_LAZY_IMPL_H_
 #define GMAC_MEMORY_PROTOCOL_LAZY_IMPL_H_
 
-#include "memory/BlockGroup.h"
+#include "memory/object_state.h"
 
 namespace __impl { namespace memory { namespace protocol {
 

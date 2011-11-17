@@ -43,7 +43,7 @@ class GMAC_LOCAL SharedObject :
     DBC_TESTED(__impl::memory::SharedObject<State>)
 
 public:
-	SharedObject(__impl::memory::Protocol &protocol, __impl::core::Mode &owner, hostptr_t addr, size_t size, typename State::ProtocolState init, gmacError_t &err);
+	SharedObject(__impl::memory::protocol_interface &protocol_interface, __impl::core::Mode &owner, hostptr_t addr, size_t size, typename State::ProtocolState init, gmacError_t &err);
     virtual ~SharedObject();
 };
 

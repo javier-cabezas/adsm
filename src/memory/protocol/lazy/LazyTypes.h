@@ -36,7 +36,7 @@ WITH THE SOFTWARE.  */
 
 namespace __impl {
 namespace memory {
-template <typename State> class GenericBlock;
+template <typename State> class block_state;
 
 namespace protocol {
 
@@ -51,7 +51,7 @@ enum State {
     HostOnly = 3 /*< Data only allowed in host memory */
 };
 
-typedef GenericBlock<lazy::BlockState> Block;
+typedef block_state<lazy::BlockState> Block;
 typedef __impl::util::smart_ptr<Block>::shared block_ptr;
 
 }}}}
