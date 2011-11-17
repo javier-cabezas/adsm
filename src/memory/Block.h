@@ -43,6 +43,8 @@ WITH THE SOFTWARE.  */
 #include "util/Logger.h"
 #include "util/Reference.h"
 
+#include "util/UniquePtr.h"
+
 /** Description for __impl. */
 namespace __impl {
 
@@ -52,6 +54,10 @@ namespace core {
 }
 
 namespace memory {
+
+class Block;
+
+typedef __impl::util::smart_ptr<Block>::shared block_ptr;
 
 /** Memory block
  * A memory block is a coherence unit of shared memory objects in GMAC, which are a collection of memory blocks.  Each
@@ -63,16 +69,12 @@ namespace memory {
  * stil be accessible from the CPU.
  * Memory block methods should only be called from GMAC objects and GMAC memory coherence protocols.
  */
-class GMAC_LOCAL Block : public gmac::util::mutex,
-                         public util::Reference {
+class GMAC_LOCAL Block : public gmac::util::mutex {
     DBC_FORCE_TEST(Block)
 
     friend class object;
 
 protected:
-    /** Memory coherence protocol used by the block */
-    Protocol &protocol_;
-
     /** Block size (in bytes) */
     size_t size_;
 
@@ -85,12 +87,11 @@ protected:
     /**
      * Default construcutor
      *
-     * \param protocol Memory coherence protocol used by the block
      * \param addr Host memory address for applications to accesss the block
      * \param shadow Shadow host memory mapping that is always read/write
      * \param size Size (in bytes) of the memory block
      */
-    Block(Protocol &protocol, hostptr_t addr, hostptr_t shadow, size_t size);
+    Block(hostptr_t addr, hostptr_t shadow, size_t size);
 
     /**
      * Default destructor
@@ -117,14 +118,14 @@ protected:
      * \param addr Faulting address
      * \return Error code
      */
-    gmacError_t signalRead(hostptr_t addr);
+    gmacError_t signal_read(hostptr_t addr);
 
     /**
      * Signal handler for faults caused due to memory writes
      * \param addr Faulting address
      * \return Error code
      */
-    gmacError_t signalWrite(hostptr_t addr);
+    gmacError_t signal_write(hostptr_t addr);
 
     /**
      * Ensures that the host memory has a valid and accessible copy of the data
@@ -148,6 +149,7 @@ protected:
     virtual gmacError_t toHost(unsigned blockOff, size_t count) = 0;
 
 public:
+#if 0
     /**
      * Initializes a memory range within the block to a specific value
      * \param v Value to initialize the memory to
@@ -163,16 +165,16 @@ public:
      *  \return Error code
      */
     template <typename R>
-    R coherenceOp(R (Protocol::*op)(Block &));
+    R coherenceOp(R (Protocol::*op)(block_ptr));
     template <typename R, typename T>
-    R coherenceOp(R (Protocol::*op)(Block &, T &), T &param);
+    R coherenceOp(R (Protocol::*op)(block_ptr, T &), T &param);
 
-    static hal::event_t copy_op(Protocol::CopyOp1To op, Block &dst, size_t dstOff, const hostptr_t src, size_t count, gmacError_t &err);
-    static hal::event_t copy_op(Protocol::CopyOp1From op, hostptr_t dst, Block &src, size_t srcOff, size_t count, gmacError_t &err);
-    static hal::event_t copy_op(Protocol::CopyOp2 op, Block &dst, size_t dstOff, Block &src, size_t srcOff, size_t count, gmacError_t &err);
+    static hal::event_t copy_op(Protocol::CopyOp1To op, block_ptr dst, size_t dstOff, const hostptr_t src, size_t count, gmacError_t &err);
+    static hal::event_t copy_op(Protocol::CopyOp1From op, hostptr_t dst, block_ptr src, size_t srcOff, size_t count, gmacError_t &err);
+    static hal::event_t copy_op(Protocol::CopyOp2 op, block_ptr dst, size_t dstOff, block_ptr src, size_t srcOff, size_t count, gmacError_t &err);
 
-    static hal::event_t device_op(Protocol::DeviceOpTo op, hal::device_output &output, Block &src, size_t srcOff, size_t count, gmacError_t &err);
-    static hal::event_t device_op(Protocol::DeviceOpFrom op, Block &dst, size_t dstOff, hal::device_input &input, size_t count, gmacError_t &err);
+    static hal::event_t device_op(Protocol::DeviceOpTo op, hal::device_output &output, block_ptr src, size_t srcOff, size_t count, gmacError_t &err);
+    static hal::event_t device_op(Protocol::DeviceOpFrom op, block_ptr dst, size_t dstOff, hal::device_input &input, size_t count, gmacError_t &err);
 
 #if 0
     /**
@@ -207,7 +209,7 @@ public:
      */
     gmacError_t memcpyFromObject(const object &obj, size_t size,
                                  size_t blockOffset = 0, size_t objectOffset = 0);
-
+#endif
     /**
      * Get memory block owner
      * \return Owner of the memory block
@@ -225,12 +227,6 @@ public:
      * \return Accelerator memory address of the block
      */
     virtual accptr_t get_device_addr() const = 0;
-
-    /**
-     * Get the protocol that is managing the block
-     * \return Memory protocol
-     */
-    Protocol &getProtocol();
 
     /**
      * Dump statistics about the memory block

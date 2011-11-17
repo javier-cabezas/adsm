@@ -1,14 +1,14 @@
 #include "Cache.h"
 
 #include "core/address_space.h"
-#include "memory/Manager.h"
+#include "memory/manager.h"
 
 #include "util/Parameter.h"
 #include "util/Private.h"
 
 namespace __impl { namespace memory { namespace allocator {
 
-Arena::Arena(Manager &manager, util::smart_ptr<core::address_space>::shared aspace, size_t objSize) :
+Arena::Arena(manager &manager, util::smart_ptr<core::address_space>::shared aspace, size_t objSize) :
     ptr_(NULL),
     size_(0),
     manager_(manager),

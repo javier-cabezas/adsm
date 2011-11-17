@@ -36,7 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include "config/dbc/types.h"
 #include "config/dbc/Contract.h"
-#include "memory/Manager.h"
+#include "memory/manager.h"
 
 namespace __dbc { namespace memory {
 
@@ -44,13 +44,13 @@ namespace __dbc { namespace memory {
 
 //! Memory Managers implement a policy to move data from/to
 //! the CPU memory to/from the accelerator memory.
-class GMAC_LOCAL Manager :
-    public __impl::memory::Manager,
+class GMAC_LOCAL manager :
+    public __impl::memory::manager,
     public virtual Contract {
-    DBC_TESTED(__impl::memory::Manager)
+    DBC_TESTED(__impl::memory::manager)
 
 private:
-    typedef __impl::memory::Manager Parent;
+    typedef __impl::memory::manager Parent;
 
     typedef __impl::util::smart_ptr<__impl::core::address_space>::shared address_space_impl;
     typedef __impl::core::io_buffer io_buffer_impl;
@@ -61,12 +61,12 @@ protected:
     /**
      * Default destructor
      */
-    ~Manager();
+    ~manager();
 public:
     /**
      * Default constructor
      */
-    Manager(ProcessImpl &proc);
+    manager(ProcessImpl &proc);
 
     /**
      * Allocate private shared memory.
@@ -94,7 +94,7 @@ public:
      * \param addr Host memory address causing the memory fault
      * \return True if the Manager was able to fix the fault condition
      */
-    bool signalRead(address_space_impl aspace, hostptr_t addr);
+    bool signal_read(address_space_impl aspace, hostptr_t addr);
 
     /**
      * Notify a memory fault caused by a store operation
@@ -102,7 +102,7 @@ public:
      * \param addr Host memory address causing the memory fault
      * \return True if the Manager was able to fix the fault condition
      */
-    bool signalWrite(address_space_impl aspace, hostptr_t addr);
+    bool signal_write(address_space_impl aspace, hostptr_t addr);
 
     /**
      * Copy data from a memory object to an I/O buffer

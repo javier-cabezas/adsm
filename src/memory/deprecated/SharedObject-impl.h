@@ -36,7 +36,7 @@ SharedObject<State>::repopulateBlocks(accptr_t accPtr, core::Mode &mode)
 {
     // Repopulate the block-set
     ptroff_t offset = 0;
-    for(BlockMap::iterator i = blocks_.begin(); i != blocks_.end(); i++) {
+    for(vector_block::iterator i = blocks_.begin(); i != blocks_.end(); i++) {
         SharedBlock<State> &oldBlock = *dynamic_cast<SharedBlock<State> *>(i->second);
         SharedBlock<State> *newBlock = new SharedBlock<State>(oldBlock.getProtocol(), mode,
                                                       addr_   + offset,
@@ -91,7 +91,7 @@ SharedObject<State>::SharedObject(Protocol &protocol, core::Mode &owner,
     while(size > 0) {
         size_t blockSize = (size > BlockSize_) ? BlockSize_ : size;
         mark += blockSize;
-        blocks_.insert(BlockMap::value_type(mark,
+        blocks_.insert(vector_block::value_type(mark,
                        new SharedBlock<State>(protocol, owner, addr_ + ptroff_t(offset),
                                               shadow_ + offset, acceleratorAddr_ + offset, blockSize, init)));
         size -= blockSize;
@@ -170,7 +170,7 @@ SharedObject<State>::removeOwner(core::Mode &owner)
             owner_->unmap(addr_, size_);
         }
         // Clean-up
-        BlockMap::iterator i;
+        vector_block::iterator i;
         for(i = blocks_.begin(); i != blocks_.end(); i++) {
             i->second->decRef();
         }

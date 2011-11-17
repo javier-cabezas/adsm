@@ -71,11 +71,11 @@ protected:
     Cache &get(util::smart_ptr<core::address_space>::shared current, long_t key, size_t size);
     void cleanup(util::smart_ptr<core::address_space>::shared current);
 
-    Manager &manager_;
+    manager &manager_;
 
     virtual ~Slab();
 public:
-    Slab(Manager &manager);
+    Slab(manager &manager);
 
     virtual hostptr_t alloc(util::smart_ptr<core::address_space>::shared current, const size_t size, const hostptr_t addr);
     virtual bool free(util::smart_ptr<core::address_space>::shared current, const hostptr_t addr);

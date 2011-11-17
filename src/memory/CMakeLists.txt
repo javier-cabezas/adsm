@@ -16,9 +16,9 @@ set(memory_SRC
     HostMappedObject.h
     HostMappedObject-impl.h
     HostMappedObject.cpp
-    Manager.h
-    Manager-impl.h
-    Manager.cpp
+    manager.h
+    manager-impl.h
+    manager.cpp
     Memory.h
     object.h
     object-impl.h

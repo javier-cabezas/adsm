@@ -48,7 +48,7 @@ TEST_F(ManagerTest, Creation)
 {
     ASSERT_TRUE(Process_ != NULL);
     for(int i = 0; i < 16; i++) {
-        Manager *manager = new Manager(*Process_);
+        manager *manager = new manager(*Process_);
         ASSERT_TRUE(manager != NULL);
         manager->destroy();
     }
@@ -57,7 +57,7 @@ TEST_F(ManagerTest, Creation)
 TEST_F(ManagerTest, Alloc)
 {
     ASSERT_TRUE(Process_ != NULL);
-    Manager *manager = new Manager(*Process_);
+    manager *manager = new manager(*Process_);
     ASSERT_TRUE(manager != NULL);
     
     for(size_t size = 4096; size < Size_; size *= 2) {
@@ -73,7 +73,7 @@ TEST_F(ManagerTest, Alloc)
 TEST_F(ManagerTest, GlobalAllocReplicated)
 {
     ASSERT_TRUE(Process_ != NULL);
-    Manager *manager = new Manager(*Process_);
+    manager *manager = new manager(*Process_);
     ASSERT_TRUE(manager != NULL);
     
     for(size_t size = 4096; size < Size_; size *= 2) {
@@ -91,7 +91,7 @@ TEST_F(ManagerTest, GlobalAllocReplicated)
 TEST_F(ManagerTest, GlobalAllocCentralized)
 {
     ASSERT_TRUE(Process_ != NULL);
-    Manager *manager = new Manager(*Process_);
+    manager *manager = new manager(*Process_);
     ASSERT_TRUE(manager != NULL);
     
     for(size_t size = 4096; size < Size_; size *= 2) {
@@ -109,7 +109,7 @@ TEST_F(ManagerTest, GlobalAllocCentralized)
 TEST_F(ManagerTest, Coherence)
 {
     ASSERT_TRUE(Process_ != NULL);
-    Manager *manager = new Manager(*Process_);
+    manager *manager = new manager(*Process_);
     ASSERT_TRUE(manager != NULL);
 
     hostptr_t ptr = NULL;
@@ -152,7 +152,7 @@ TEST_F(ManagerTest, Coherence)
 TEST_F(ManagerTest, IOBufferWrite)
 {
     ASSERT_TRUE(Process_ != NULL);
-    Manager *manager = new Manager(*Process_);
+    manager *manager = new manager(*Process_);
     ASSERT_TRUE(manager != NULL);
 
     hostptr_t ptr = NULL;
@@ -183,7 +183,7 @@ TEST_F(ManagerTest, IOBufferWrite)
 TEST_F(ManagerTest, IOBufferRead)
 {
     ASSERT_TRUE(Process_ != NULL);
-    Manager *manager = new Manager(*Process_);
+    manager *manager = new manager(*Process_);
     ASSERT_TRUE(manager != NULL);
 
     hostptr_t ptr = NULL;

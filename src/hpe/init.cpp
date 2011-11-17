@@ -13,7 +13,7 @@
 
 #include "memory/Allocator.h"
 #include "memory/Handler.h"
-#include "memory/Manager.h"
+#include "memory/manager.h"
 #include "memory/Memory.h"
 #include "memory/allocator/Slab.h"
 
@@ -25,7 +25,7 @@
 #include "init.h"
 
 static gmac::core::hpe::process *Process_ = NULL;
-static gmac::memory::Manager *Manager_ = NULL;
+static gmac::memory::manager *Manager_ = NULL;
 static __impl::memory::Allocator *Allocator_ = NULL;
 
 #if 0
@@ -59,7 +59,7 @@ void initGmac(void)
     Process_ = new gmac::core::hpe::process();
 
     TRACE(GLOBAL, "Initializing memory");
-    Manager_ = new gmac::memory::Manager(*Process_);
+    Manager_ = new gmac::memory::manager(*Process_);
 #if !defined(USE_OPENCL)
     Allocator_ = new __impl::memory::allocator::Slab(*Manager_);
 #endif
@@ -99,7 +99,7 @@ namespace __impl {
     }
 
     namespace memory {
-        Manager &getManager() { return *Manager_; }
+        manager &getManager() { return *Manager_; }
         bool hasAllocator() { return Allocator_ != NULL; }
         Allocator &getAllocator() { return *Allocator_; }
     }

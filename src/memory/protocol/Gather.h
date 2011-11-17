@@ -132,9 +132,9 @@ public:
 
     bool needUpdate(const Block &block) const;
 
-    gmacError_t signalRead(Block &block, hostptr_t addr);
+    gmacError_t signal_read(Block &block, hostptr_t addr);
 
-    gmacError_t signalWrite(Block &block, hostptr_t addr);
+    gmacError_t signal_write(Block &block, hostptr_t addr);
 
     gmacError_t acquire(Block &obj);
 

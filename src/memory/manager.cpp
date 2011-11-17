@@ -3,7 +3,7 @@
 
 #include "memory/Handler.h"
 #include "memory/HostMappedObject.h"
-#include "memory/Manager.h"
+#include "memory/manager.h"
 #include "memory/object.h"
 #include "memory/map_object.h"
 
@@ -11,7 +11,7 @@ namespace __impl { namespace memory {
 
 ListAddr AllAddresses;
 
-Manager::Manager(core::process &proc) :
+manager::manager(core::process &proc) :
     proc_(proc),
     mapAllocations_("map_manager_allocations")
 {
@@ -20,12 +20,12 @@ Manager::Manager(core::process &proc) :
     Handler::setManager(*this);
 }
 
-Manager::~Manager()
+manager::~manager()
 {
 }
 
 gmacError_t
-Manager::map(core::address_space_ptr aspace, hostptr_t *addr, size_t size, int flags)
+manager::map(core::address_space_ptr aspace, hostptr_t *addr, size_t size, int flags)
 {
     FATAL("MAP NOT IMPLEMENTED YET");
     gmacError_t ret = gmacSuccess;
@@ -70,7 +70,7 @@ done:
 
 
 gmacError_t
-Manager::remap(core::address_space_ptr aspace, hostptr_t old_addr, hostptr_t *new_addr, size_t new_size, int flags)
+manager::remap(core::address_space_ptr aspace, hostptr_t old_addr, hostptr_t *new_addr, size_t new_size, int flags)
 {
     FATAL("MAP NOT IMPLEMENTED YET");
     gmacError_t ret = gmacSuccess;
@@ -82,7 +82,7 @@ Manager::remap(core::address_space_ptr aspace, hostptr_t old_addr, hostptr_t *ne
 }
 
 gmacError_t
-Manager::unmap(core::address_space_ptr aspace, hostptr_t addr, size_t size)
+manager::unmap(core::address_space_ptr aspace, hostptr_t addr, size_t size)
 {
     FATAL("UNMAP NOT IMPLEMENTED YET");
     TRACE(LOCAL, "Unmap allocation");
@@ -111,7 +111,7 @@ Manager::unmap(core::address_space_ptr aspace, hostptr_t addr, size_t size)
     return ret;
 }
 
-gmacError_t Manager::alloc(core::address_space_ptr aspace, hostptr_t *addr, size_t size)
+gmacError_t manager::alloc(core::address_space_ptr aspace, hostptr_t *addr, size_t size)
 {
     TRACE(LOCAL, "New allocation");
     trace::EnterCurrentFunction();
@@ -146,7 +146,7 @@ gmacError_t Manager::alloc(core::address_space_ptr aspace, hostptr_t *addr, size
     return gmacSuccess;
 }
 
-gmacError_t Manager::hostMappedAlloc(core::address_space_ptr aspace, hostptr_t *addr, size_t size)
+gmacError_t manager::hostMappedAlloc(core::address_space_ptr aspace, hostptr_t *addr, size_t size)
 {
     TRACE(LOCAL, "New host-mapped allocation");
     trace::EnterCurrentFunction();
@@ -162,7 +162,7 @@ gmacError_t Manager::hostMappedAlloc(core::address_space_ptr aspace, hostptr_t *
 }
 
 #if 0
-gmacError_t Manager::globalAlloc(core::address_space_ptr aspace, hostptr_t *addr, size_t size, GmacGlobalMallocType hint)
+gmacError_t manager::globalAlloc(core::address_space_ptr aspace, hostptr_t *addr, size_t size, GmacGlobalMallocType hint)
 {
     TRACE(LOCAL, "New global allocation");
     trace::EnterCurrentFunction();
@@ -191,7 +191,7 @@ gmacError_t Manager::globalAlloc(core::address_space_ptr aspace, hostptr_t *addr
 }
 #endif
 
-gmacError_t Manager::free(core::address_space_ptr aspace, hostptr_t addr)
+gmacError_t manager::free(core::address_space_ptr aspace, hostptr_t addr)
 {
     TRACE(LOCAL, "Free allocation");
     trace::EnterCurrentFunction();
@@ -223,7 +223,7 @@ gmacError_t Manager::free(core::address_space_ptr aspace, hostptr_t addr)
 }
 
 size_t
-Manager::getAllocSize(core::address_space_ptr aspace, const hostptr_t addr, gmacError_t &err) const
+manager::getAllocSize(core::address_space_ptr aspace, const hostptr_t addr, gmacError_t &err) const
 {
     size_t ret;
     trace::EnterCurrentFunction();
@@ -248,7 +248,7 @@ Manager::getAllocSize(core::address_space_ptr aspace, const hostptr_t addr, gmac
 }
 
 accptr_t
-Manager::translate(core::address_space_ptr aspace, const hostptr_t addr)
+manager::translate(core::address_space_ptr aspace, const hostptr_t addr)
 {
     trace::EnterCurrentFunction();
     memory::map_object &map = aspace->get_object_map();
@@ -270,7 +270,7 @@ Manager::translate(core::address_space_ptr aspace, const hostptr_t addr)
 }
 
 core::address_space_ptr
-Manager::owner(hostptr_t addr, size_t size)
+manager::owner(hostptr_t addr, size_t size)
 {
     core::address_space_ptr aspace;
 
@@ -284,7 +284,7 @@ Manager::owner(hostptr_t addr, size_t size)
 }
 
 gmacError_t
-Manager::acquireObjects(core::address_space_ptr aspace, const ListAddr &addrs)
+manager::acquireObjects(core::address_space_ptr aspace, const ListAddr &addrs)
 {
     trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
@@ -322,7 +322,7 @@ Manager::acquireObjects(core::address_space_ptr aspace, const ListAddr &addrs)
 }
 
 gmacError_t
-Manager::releaseObjects(core::address_space_ptr aspace, const ListAddr &addrs)
+manager::releaseObjects(core::address_space_ptr aspace, const ListAddr &addrs)
 {
     trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
@@ -373,7 +373,7 @@ Manager::releaseObjects(core::address_space_ptr aspace, const ListAddr &addrs)
 }
 
 #if 0
-gmacError_t Manager::toIOBuffer(core::address_space_ptr current, core::io_buffer &buffer, size_t bufferOff, const hostptr_t addr, size_t count)
+gmacError_t manager::toIOBuffer(core::address_space_ptr current, core::io_buffer &buffer, size_t bufferOff, const hostptr_t addr, size_t count)
 {
     if (count > (buffer.size() - bufferOff)) return gmacErrorInvalidSize;
     trace::EnterCurrentFunction();
@@ -420,7 +420,7 @@ gmacError_t Manager::toIOBuffer(core::address_space_ptr current, core::io_buffer
     return ret;
 }
 
-gmacError_t Manager::fromIOBuffer(core::address_space_ptr current, hostptr_t addr, core::io_buffer &buffer, size_t bufferOff, size_t count)
+gmacError_t manager::fromIOBuffer(core::address_space_ptr current, hostptr_t addr, core::io_buffer &buffer, size_t bufferOff, size_t count)
 {
     if (count > (buffer.size() - bufferOff)) return gmacErrorInvalidSize;
     trace::EnterCurrentFunction();
@@ -466,7 +466,7 @@ gmacError_t Manager::fromIOBuffer(core::address_space_ptr current, hostptr_t add
 #endif
 
 bool
-Manager::signalRead(core::address_space_ptr aspace, hostptr_t addr)
+manager::signal_read(core::address_space_ptr aspace, hostptr_t addr)
 {
     trace::EnterCurrentFunction();
     memory::map_object &map = aspace->get_object_map();
@@ -487,7 +487,7 @@ Manager::signalRead(core::address_space_ptr aspace, hostptr_t addr)
         return false;
     }
     TRACE(LOCAL,"Read access for object %p: %p", obj->addr(), addr);
-    gmacError_t err = obj->signalRead(addr);
+    gmacError_t err = obj->signal_read(addr);
     ASSERTION(err == gmacSuccess);
     obj->decRef();
     trace::ExitCurrentFunction();
@@ -495,7 +495,7 @@ Manager::signalRead(core::address_space_ptr aspace, hostptr_t addr)
 }
 
 bool
-Manager::signalWrite(core::address_space_ptr aspace, hostptr_t addr)
+manager::signal_write(core::address_space_ptr aspace, hostptr_t addr)
 {
     trace::EnterCurrentFunction();
     bool ret = true;
@@ -516,14 +516,14 @@ Manager::signalWrite(core::address_space_ptr aspace, hostptr_t addr)
         return false;
     }
     TRACE(LOCAL,"Write access for object %p: %p", obj->addr(), addr);
-    if(obj->signalWrite(addr) != gmacSuccess) ret = false;
+    if(obj->signal_write(addr) != gmacSuccess) ret = false;
     obj->decRef();
     trace::ExitCurrentFunction();
     return ret;
 }
 
 gmacError_t
-Manager::memset(core::address_space_ptr aspace, hostptr_t s, int c, size_t size)
+manager::memset(core::address_space_ptr aspace, hostptr_t s, int c, size_t size)
 {
     trace::EnterCurrentFunction();
     core::address_space_ptr aspaceOwner = owner(s, size);
@@ -620,7 +620,7 @@ hostMemory(hostptr_t addr, size_t size, const object *obj)
 }
 
 gmacError_t
-Manager::memcpy(core::address_space_ptr aspace, hostptr_t dst, const hostptr_t src,
+manager::memcpy(core::address_space_ptr aspace, hostptr_t dst, const hostptr_t src,
                 size_t size)
 {
     trace::EnterCurrentFunction();
@@ -707,7 +707,7 @@ Manager::memcpy(core::address_space_ptr aspace, hostptr_t dst, const hostptr_t s
 }
 
 gmacError_t
-Manager::flushDirty(core::address_space_ptr aspace)
+manager::flushDirty(core::address_space_ptr aspace)
 {
     gmacError_t ret;
     TRACE(LOCAL,"Flushing Objects");
@@ -719,7 +719,7 @@ Manager::flushDirty(core::address_space_ptr aspace)
 }
 
 gmacError_t
-Manager::from_io_device(core::address_space_ptr aspace, hostptr_t addr,
+manager::from_io_device(core::address_space_ptr aspace, hostptr_t addr,
                         hal::device_input &input, size_t count)
 {
     trace::EnterCurrentFunction();
@@ -757,7 +757,7 @@ Manager::from_io_device(core::address_space_ptr aspace, hostptr_t addr,
 }
 
 gmacError_t
-Manager::to_io_device(hal::device_output &output, core::address_space_ptr aspace, const hostptr_t addr, size_t count)
+manager::to_io_device(hal::device_output &output, core::address_space_ptr aspace, const hostptr_t addr, size_t count)
 {
     trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
@@ -795,7 +795,7 @@ Manager::to_io_device(hal::device_output &output, core::address_space_ptr aspace
 }
 
 #if 0
-gmacError_t Manager::moveTo(hostptr_t addr, core::address_space_ptr aspace)
+gmacError_t manager::moveTo(hostptr_t addr, core::address_space_ptr aspace)
 {
     object * obj = mode.getObjectWrite(addr);
     if(obj == NULL) return gmacErrorInvalidValue;

@@ -84,7 +84,7 @@ public:
     }
 
     inline
-    operator bool()
+    operator bool() const
     {
         return ctx_ != NULL || ptrHost_ != NULL;
     }

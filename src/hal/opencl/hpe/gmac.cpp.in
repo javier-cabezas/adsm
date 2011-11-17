@@ -3,7 +3,7 @@
 #include "config/common.h"
 #include "include/gmac/opencl.h"
 
-#include "memory/Manager.h"
+#include "memory/manager.h"
 
 #include "core/hpe/address_space.h"
 #include "core/hpe/thread.h"
@@ -97,7 +97,7 @@ gmacError_t APICALL
     address_space_ptr aspace = get_current_vdevice().get_address_space();
 
     ptr_t tmp = __impl::memory::getManager().translate(aspace, ptr);
-    if (tmp == NULL) {
+    if (!tmp) {
         ret = gmacErrorInvalidValue;
         thread::set_last_error(ret);
         exitGmac();

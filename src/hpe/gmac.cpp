@@ -26,7 +26,7 @@
 
 #include "hal/types.h"
 
-#include "memory/Manager.h"
+#include "memory/manager.h"
 #include "memory/Allocator.h"
 #ifdef DEBUG
 #include "memory/protocol/common/BlockState.h"
@@ -379,7 +379,7 @@ gmacLaunch(__impl::core::hpe::kernel::launch &launch)
     gmacError_t ret = gmacSuccess;
     vdevice &dev = launch.get_virtual_device();
     smart_ptr<address_space>::shared aspace = dev.get_address_space();
-    Manager &manager = getManager();
+    manager &manager = getManager();
     TRACE(GLOBAL, "Flush the memory used in the kernel");
     const std::list<__impl::memory::ObjectInfo> &objects = launch.get_arg_list().get_objects();
     // If the launch object does not contain objects, assume all the objects

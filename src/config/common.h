@@ -110,7 +110,7 @@ namespace __dbc {
     namespace util {}
     namespace memory {
         // Singleton classes need to be predeclared
-        class Manager;
+        class manager;
         namespace protocol {}
     }
     namespace trace = __impl::trace;

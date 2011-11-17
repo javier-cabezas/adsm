@@ -11,9 +11,10 @@
 
 namespace __impl { namespace memory {
 
-inline object::object(hostptr_t addr, size_t size) :
+inline object::object(Protocol &protocol, hostptr_t addr, size_t size) :
     gmac::util::lock_rw("Object"),
     util::Reference("Object"),
+    protocol_(protocol),
     addr_(addr),
     size_(size),
     released_(false)
@@ -37,6 +38,13 @@ object::getDumps(protocol::common::Statistic stat)
     return dumps_[stat];
 }
 #endif
+
+inline
+Protocol &
+object::getProtocol()
+{
+    return protocol_;
+}
 
 inline hostptr_t
 object::addr() const
@@ -81,12 +89,12 @@ object::size() const
 }
 
 template <typename T>
-gmacError_t object::coherenceOp(gmacError_t (Protocol::*op)(Block &, T &), T &param)
+gmacError_t object::coherenceOp(gmacError_t (Protocol::*op)(block_ptr, T &), T &param)
 {
     gmacError_t ret = gmacSuccess;
-    BlockMap::const_iterator i;
+    vector_block::const_iterator i;
     for(i = blocks_.begin(); i != blocks_.end(); i++) {
-        ret = i->second->coherenceOp(op, param);
+        ret = (protocol_.*op)(*i, param);
         if(ret != gmacSuccess) break;
     }
     return ret;
@@ -146,13 +154,14 @@ object::acquireWithBitmap()
 
 template <typename P1, typename P2>
 gmacError_t
-object::forEachBlock(gmacError_t (Block::*f)(P1 &, P2), P1 &p1, P2 p2)
+object::forEachBlock(gmacError_t (Protocol::*op)(block_ptr, P1 &, P2), P1 &p1, P2 p2)
 {
     lockRead();
     gmacError_t ret = gmacSuccess;
-    BlockMap::iterator i;
+    vector_block::iterator i;
     for(i = blocks_.begin(); i != blocks_.end(); i++) {
-        ret = (i->second->*f)(p1, p2);
+        //ret = ((*i)->*f)(p1, p2);
+        ret = (protocol_.*op)(*i, p1, p2);
     }
     unlock();
     return ret;

@@ -18,7 +18,7 @@ extern void CUDA(gmac::core::hpe::Process &);
 class ObjectMapTest : public testing::Test {
 protected:
     static gmac::core::hpe::Process *Process_;
-	static gmac::memory::Manager *Manager_;
+	static gmac::memory::manager *Manager_;
 	static const size_t Size_;
 	
 	static void SetUpTestCase();
@@ -26,7 +26,7 @@ protected:
 };
 
 gmac::core::hpe::Process *ObjectMapTest::Process_ = NULL;
-gmac::memory::Manager *ObjectMapTest::Manager_ = NULL;
+gmac::memory::manager *ObjectMapTest::Manager_ = NULL;
 const size_t ObjectMapTest::Size_ = 4 * 1024 * 1024;
 
 void ObjectMapTest::SetUpTestCase()
@@ -39,7 +39,7 @@ void ObjectMapTest::SetUpTestCase()
 #if defined(USE_OPENCL)
     OpenCL(*Process_);
 #endif
-    Manager_ = new gmac::memory::Manager(*Process_);
+    Manager_ = new gmac::memory::manager(*Process_);
 }
 
 void ObjectMapTest::TearDownTestCase()

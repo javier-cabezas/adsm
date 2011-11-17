@@ -48,29 +48,30 @@ protected:
     virtual ~LazyBase();
 
     typedef __impl::memory::protocol::LazyBase Parent;
-    typedef __impl::memory::Block BlockImpl;
+    typedef __impl::memory::block_ptr BlockPtrImpl;
     typedef __impl::memory::object ObjectImpl;
     typedef __impl::memory::protocol::lazy::State StateImpl;
     typedef __impl::memory::protocol::lazy::Block LazyBlockImpl;
+    typedef __impl::util::smart_ptr<LazyBlockImpl>::shared LazyBlockPtrImpl;
     typedef __impl::core::io_buffer io_buffer_impl;
 
 public:
-    gmacError_t signalRead(BlockImpl &block, hostptr_t addr);
-    gmacError_t signalWrite(BlockImpl &block, hostptr_t addr);
+    gmacError_t signal_read(BlockPtrImpl block, hostptr_t addr);
+    gmacError_t signal_write(BlockPtrImpl block, hostptr_t addr);
 
-    gmacError_t acquire(BlockImpl &obj, GmacProtection &prot);
-    gmacError_t release(BlockImpl &block);
+    gmacError_t acquire(BlockPtrImpl obj, GmacProtection &prot);
+    gmacError_t release(BlockPtrImpl block);
 
     gmacError_t releaseAll();
 
-    gmacError_t toHost(BlockImpl &block);
+    gmacError_t toHost(BlockPtrImpl block);
 
-    __impl::hal::event_t memset(const BlockImpl &block, size_t blockOffset, int v, size_t size,
+    __impl::hal::event_t memset(BlockPtrImpl block, size_t blockOffset, int v, size_t size,
                                 gmacError_t &err);
 
     gmacError_t flushDirty();
 
-    __impl::hal::event_t copyBlockToBlock(Block &d, size_t dstOffset, Block &s, size_t srcOffset, size_t count, gmacError_t &err);
+    __impl::hal::event_t copyBlockToBlock(BlockPtrImpl d, size_t dstOffset, BlockPtrImpl s, size_t srcOffset, size_t count, gmacError_t &err);
 };
 
 }}}

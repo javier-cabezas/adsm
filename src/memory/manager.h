@@ -61,9 +61,9 @@ extern ListAddr AllAddresses;
 //! Memory Manager Interface
 
 //! Memory Managers orchestate the data transfers between host and accelerator memories
-class GMAC_LOCAL Manager :
-    public __impl::util::Singleton<gmac::memory::Manager> {
-    DBC_FORCE_TEST(Manager)
+class GMAC_LOCAL manager :
+    public __impl::util::Singleton<gmac::memory::manager> {
+    DBC_FORCE_TEST(manager)
 protected:
     /** Process where the memory manager is being used */
     core::process &proc_;
@@ -85,12 +85,12 @@ protected:
     /**
      * Default destructor
      */
-    virtual ~Manager();
+    virtual ~manager();
 public:
     /**
      * Default constructor
      */
-    Manager(core::process &proc);
+    manager(core::process &proc);
 
     /**
      * Map the given host memory pointer to the accelerator memory. If the given
@@ -194,7 +194,7 @@ public:
      * \param addr Host memory address causing the memory fault
      * \return True if the Manager was able to fix the fault condition
      */
-    TESTABLE bool signalRead(core::address_space_ptr aspace, hostptr_t addr);
+    TESTABLE bool signal_read(core::address_space_ptr aspace, hostptr_t addr);
 
     /**
      * Notify a memory fault caused by a store operation
@@ -202,7 +202,7 @@ public:
      * \param addr Host memory address causing the memory fault
      * \return True if the Manager was able to fix the fault condition
      */
-    TESTABLE bool signalWrite(core::address_space_ptr aspace, hostptr_t addr);
+    TESTABLE bool signal_write(core::address_space_ptr aspace, hostptr_t addr);
 
 #if 0
     /**
@@ -262,7 +262,7 @@ public:
 
 }}
 
-#include "Manager-impl.h"
+#include "manager-impl.h"
 
 #ifdef USE_DBC
 #include "memory/dbc/Manager.h"

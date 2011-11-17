@@ -38,7 +38,7 @@ WITH THE SOFTWARE.  */
 #include <map>
 
 #include "config/common.h"
-#include "memory/Manager.h"
+#include "memory/manager.h"
 #include "util/lock.h"
 
 namespace __impl { namespace memory { namespace allocator {
@@ -57,11 +57,11 @@ protected:
 
     ObjectList objects_;
 
-    Manager &manager_;
+    manager &manager_;
     util::smart_ptr<core::address_space>::shared aspace_;
 
 public:
-    Arena(Manager &manager, util::smart_ptr<core::address_space>::shared aspace, size_t objSize);
+    Arena(manager &manager, util::smart_ptr<core::address_space>::shared aspace, size_t objSize);
     ~Arena();
 
     inline hostptr_t address() const { return ptr_; }
@@ -90,10 +90,10 @@ protected:
     typedef std::map<hostptr_t, Arena *> ArenaMap;
     ArenaMap arenas;
 
-    Manager &manager_;
+    manager &manager_;
     util::smart_ptr<core::address_space>::shared aspace_;
 public:
-    Cache(Manager &manager, util::smart_ptr<core::address_space>::shared aspace, size_t size);
+    Cache(manager &manager, util::smart_ptr<core::address_space>::shared aspace, size_t size);
     virtual ~Cache();
 
     static Cache &get(long key, size_t size);

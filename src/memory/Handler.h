@@ -44,7 +44,7 @@ namespace core { class process; }
 
 namespace memory {
 
-class Manager;
+class manager;
 
 //! Handler for Read/Write faults
 class GMAC_LOCAL Handler {
@@ -101,7 +101,7 @@ public:
 
     static void setProcess(core::process &proc);
 
-    static void setManager(Manager &manager);
+    static void setManager(manager &manager);
 };
 
 }}

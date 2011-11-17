@@ -87,7 +87,7 @@ protected:
     BlockList dbl_;
 
     /// Add a new block to the Dirty Block List
-    void addDirty(lazy::Block &block);
+    void addDirty(lazy::block_ptr block);
 
     /** Default constructor
      *
@@ -102,66 +102,66 @@ public:
     // Protocol Interface
     void deleteObject(object &obj);
 
-    bool needUpdate(const Block &block) const;
+    bool needUpdate(const block_ptr block) const;
 
-    TESTABLE gmacError_t signalRead(Block &block, hostptr_t addr);
+    TESTABLE gmacError_t signal_read(block_ptr block, hostptr_t addr);
 
-    TESTABLE gmacError_t signalWrite(Block &block, hostptr_t addr);
+    TESTABLE gmacError_t signal_write(block_ptr block, hostptr_t addr);
 
-    TESTABLE gmacError_t acquire(Block &block, GmacProtection &prot);
+    TESTABLE gmacError_t acquire(block_ptr block, GmacProtection &prot);
 
-    TESTABLE gmacError_t release(Block &block);
+    TESTABLE gmacError_t release(block_ptr block);
 
 #ifdef USE_VM
-    gmacError_t acquireWithBitmap(Block &block);
+    gmacError_t acquireWithBitmap(block_ptr block);
 #endif
 
     TESTABLE gmacError_t releaseAll();
     gmacError_t releasedAll();
 
-    gmacError_t mapToAccelerator(Block &block);
+    gmacError_t mapToAccelerator(block_ptr block);
 
-    gmacError_t unmapFromAccelerator(Block &block);
+    gmacError_t unmapFromAccelerator(block_ptr block);
 
-    gmacError_t deleteBlock(Block &block);
+    gmacError_t deleteBlock(block_ptr block);
 
-    TESTABLE gmacError_t toHost(Block &block);
+    TESTABLE gmacError_t toHost(block_ptr block);
 
 #if 0
-    gmacError_t toAccelerator(Block &block);
+    gmacError_t toAccelerator(block_ptr block);
 
-    TESTABLE gmacError_t copyToBuffer(Block &block, core::io_buffer &buffer, size_t size,
+    TESTABLE gmacError_t copyToBuffer(block_ptr block, core::io_buffer &buffer, size_t size,
                                       size_t bufferOffset, size_t blockOffset);
 
-    TESTABLE gmacError_t copyFromBuffer(Block &block, core::io_buffer &buffer, size_t size,
+    TESTABLE gmacError_t copyFromBuffer(block_ptr block, core::io_buffer &buffer, size_t size,
                                         size_t bufferOffset, size_t blockOffset);
 #endif
 
-    TESTABLE hal::event_t memset(const Block &block, size_t blockOffset, int v, size_t size,
+    TESTABLE hal::event_t memset(block_ptr block, size_t blockOffset, int v, size_t size,
                                  gmacError_t &err);
 
     TESTABLE gmacError_t flushDirty();
 
-    //bool isInAccelerator(Block &block);
-    hal::event_t copyBlockToBlock(Block &d, size_t dstOffset, Block &s, size_t srcOffset, size_t count, gmacError_t &err);
+    //bool isInAccelerator(block_ptr block);
+    hal::event_t copyBlockToBlock(block_ptr d, size_t dstOffset, block_ptr s, size_t srcOffset, size_t count, gmacError_t &err);
 
-    hal::event_t copyToBlock(Block    &dst, size_t dstOffset,
+    hal::event_t copyToBlock(block_ptr dst, size_t dstOffset,
                              hostptr_t src,
                              size_t count, gmacError_t &err);
 
     hal::event_t copyFromBlock(hostptr_t dst,
-                               Block    &src, size_t srcOffset,
+                               block_ptr src, size_t srcOffset,
                                size_t count, gmacError_t &err);
 
     hal::event_t to_io_device(hal::device_output &output,
-                              Block &src, size_t srcffset,
+                              block_ptr src, size_t srcffset,
                               size_t count, gmacError_t &err);
 
-    hal::event_t from_io_device(Block &dst, size_t dstOffset,
+    hal::event_t from_io_device(block_ptr dst, size_t dstOffset,
                                 hal::device_input &input,
                                 size_t count, gmacError_t &err);
 
-    gmacError_t dump(Block &block, std::ostream &out, common::Statistic stat);
+    gmacError_t dump(block_ptr block, std::ostream &out, common::Statistic stat);
 };
 
 }}}

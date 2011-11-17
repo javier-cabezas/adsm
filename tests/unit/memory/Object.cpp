@@ -19,7 +19,7 @@ extern void CUDA(gmac::core::hpe::Process &);
 class ObjectTest : public testing::Test {
 protected:
     static gmac::core::hpe::Process *Process_;
-    static gmac::memory::Manager *Manager_;
+    static gmac::memory::manager *Manager_;
         static const size_t Size_;
 
         static void SetUpTestCase();
@@ -28,7 +28,7 @@ protected:
 
 
 gmac::core::hpe::Process *ObjectTest::Process_ = NULL;
-gmac::memory::Manager *ObjectTest::Manager_ = NULL;
+gmac::memory::manager *ObjectTest::Manager_ = NULL;
 const size_t ObjectTest::Size_ = 4 * 1024 * 1024;
 
 void ObjectTest::SetUpTestCase()
@@ -41,7 +41,7 @@ void ObjectTest::SetUpTestCase()
 #if defined(USE_OPENCL)
     OpenCL(*Process_);
 #endif
-    Manager_ = new gmac::memory::Manager(*Process_);
+    Manager_ = new gmac::memory::manager(*Process_);
 }
 
 void ObjectTest::TearDownTestCase()

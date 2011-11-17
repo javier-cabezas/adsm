@@ -18,7 +18,7 @@ using __impl::memory::getManager;
 using __impl::core::getMode;
 using __impl::core::getProcess;
 
-using __impl::memory::Manager;
+using __impl::memory::manager;
 
 SYM(int, __MPI_Sendrecv, void *, int, MPI_Datatype, int, int, void *, int, MPI_Datatype, int, int, MPI_Comm, MPI_Status *);
 
@@ -68,7 +68,7 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
     enterGmac();
 
     Mode &mode = getMode(*dstMode);
-    Manager &manager = getManager();
+    manager &manager = getManager();
 
     gmacError_t err;
     int ret, ret2;
@@ -186,7 +186,7 @@ int __gmac_MPI_Send( void *buf, int count, MPI_Datatype datatype, int dest, int 
     enterGmac();
 
     Mode &mode = getMode(*srcMode);
-    Manager &manager = getManager();
+    manager &manager = getManager();
 
     gmacError_t err;
     int ret;
@@ -282,7 +282,7 @@ int MPI_Recv( void *buf, int count, MPI_Datatype datatype, int source, int tag, 
     enterGmac();
 
     Mode &mode = getMode(*dstMode);
-    Manager &manager = getManager();
+    manager &manager = getManager();
 
     gmacError_t err;
     int ret;

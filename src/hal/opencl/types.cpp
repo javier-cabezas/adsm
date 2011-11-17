@@ -64,7 +64,9 @@ init_devices()
         ASSERTION(ret == CL_SUCCESS);
         MESSAGE("... found %u OpenCL devices", deviceSize, i);
 
+#if 0
         opencl::helper::opencl_version clVersion = opencl::helper::get_opencl_version(platforms[i]);
+#endif
 
         cl_context ctx;
         opencl::platform *plat;

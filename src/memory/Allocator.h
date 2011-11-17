@@ -38,7 +38,7 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 
-#include "Manager.h"
+#include "manager.h"
 
 namespace __impl { namespace memory {
 

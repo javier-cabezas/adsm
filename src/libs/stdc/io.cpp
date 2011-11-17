@@ -6,7 +6,7 @@
 
 #include "libs/common.h"
 
-#include "memory/Manager.h"
+#include "memory/manager.h"
 
 #include "trace/Tracer.h"
 
@@ -96,7 +96,7 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
        (size * nmemb == 0)) return __libc_fread(buf, size, nmemb, stream);
 
     enterGmac();
-    Manager &manager = getManager();
+    manager &manager = getManager();
     smart_ptr<address_space>::shared aspaceDst = manager.owner(hostptr_t(buf));
 
     if(aspaceDst == NULL) {
@@ -127,7 +127,7 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
        (size * nmemb == 0)) return __libc_fwrite(buf, size, nmemb, stream);
 
 	enterGmac();
-    Manager &manager = getManager();
+    manager &manager = getManager();
     smart_ptr<address_space>::shared aspaceSrc = manager.owner(hostptr_t(buf));
 
     if(aspaceSrc == NULL) {

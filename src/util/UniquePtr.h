@@ -43,6 +43,13 @@ namespace __impl { namespace util {
         typedef std::mierda<T> unique;
         */
         typedef std::tr1::shared_ptr<T> shared;
+
+        template<typename T2>
+        static shared
+        static_pointer_cast(const std::tr1::shared_ptr<T2> &r)
+        {
+        	return std::tr1::static_pointer_cast<T>(r);
+        }
     };
 #if  0
     template <typename T>

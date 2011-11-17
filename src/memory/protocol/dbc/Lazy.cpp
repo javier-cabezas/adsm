@@ -1,6 +1,7 @@
 #ifdef USE_DBC
 
 #include "memory/protocol/Lazy.h"
+#include "util/UniquePtr.h"
 
 namespace __dbc { namespace memory { namespace protocol {
 
@@ -14,51 +15,58 @@ LazyBase::~LazyBase()
 }
 
 gmacError_t
-LazyBase::signalRead(BlockImpl &_block, hostptr_t addr)
+LazyBase::signal_read(BlockPtrImpl _block, hostptr_t addr)
 {
-    LazyBlockImpl &block = dynamic_cast<LazyBlockImpl &>(_block);
+	REQUIRES(_block);
+
+    LazyBlockPtrImpl block = __impl::util::smart_ptr<LazyBlockImpl>::static_pointer_cast(_block);
     //REQUIRES(block.getState() == __impl::memory::protocol::lazy::Invalid);
 
-    gmacError_t ret = Parent::signalRead(block, addr);
+    gmacError_t ret = Parent::signal_read(block, addr);
 
     return ret;
 }
 
 gmacError_t
-LazyBase::signalWrite(BlockImpl &_block, hostptr_t addr)
+LazyBase::signal_write(BlockPtrImpl _block, hostptr_t addr)
 {
-    LazyBlockImpl &block = dynamic_cast<LazyBlockImpl &>(_block);
-    gmacError_t ret = Parent::signalWrite(block, addr);
+	REQUIRES(_block);
 
-    ENSURES(block.getState() == __impl::memory::protocol::lazy::Dirty);
+	LazyBlockPtrImpl block = __impl::util::smart_ptr<LazyBlockImpl>::static_pointer_cast(_block);
+    gmacError_t ret = Parent::signal_write(block, addr);
+
+    ENSURES(block->getState() == __impl::memory::protocol::lazy::Dirty);
 
     return ret;
 }
 
 gmacError_t
-LazyBase::acquire(BlockImpl &_block, GmacProtection &prot)
+LazyBase::acquire(BlockPtrImpl _block, GmacProtection &prot)
 {
-    LazyBlockImpl &block = dynamic_cast<LazyBlockImpl &>(_block);
+	REQUIRES(_block);
 
-    REQUIRES(block.getState() == __impl::memory::protocol::lazy::ReadOnly ||
-             block.getState() == __impl::memory::protocol::lazy::Invalid);
+	LazyBlockPtrImpl block = __impl::util::smart_ptr<LazyBlockImpl>::static_pointer_cast(_block);
+
+    REQUIRES(block->getState() == __impl::memory::protocol::lazy::ReadOnly ||
+             block->getState() == __impl::memory::protocol::lazy::Invalid);
 
     gmacError_t ret = Parent::acquire(block, prot);
 
     ENSURES((prot != GMAC_PROT_READWRITE && prot != GMAC_PROT_WRITE) ||
-            block.getState() == __impl::memory::protocol::lazy::Invalid);
+            block->getState() == __impl::memory::protocol::lazy::Invalid);
 
     return ret;
 }
 
 gmacError_t
-LazyBase::release(BlockImpl &_block)
+LazyBase::release(BlockPtrImpl _block)
 {
-    LazyBlockImpl &block = dynamic_cast<LazyBlockImpl &>(_block);
+	REQUIRES(_block);
+	LazyBlockPtrImpl block = __impl::util::smart_ptr<LazyBlockImpl>::static_pointer_cast(_block);
     gmacError_t ret = Parent::release(block);
 
-    ENSURES(block.getState() == __impl::memory::protocol::lazy::ReadOnly ||
-            block.getState() == __impl::memory::protocol::lazy::Invalid);
+    ENSURES(block->getState() == __impl::memory::protocol::lazy::ReadOnly ||
+            block->getState() == __impl::memory::protocol::lazy::Invalid);
 
     return ret;
 }
@@ -74,20 +82,22 @@ LazyBase::releaseAll()
 }
 
 gmacError_t
-LazyBase::toHost(BlockImpl &_block)
+LazyBase::toHost(BlockPtrImpl _block)
 {
-    LazyBlockImpl &block = dynamic_cast<LazyBlockImpl &>(_block);
+	REQUIRES(_block);
+	LazyBlockPtrImpl block = __impl::util::smart_ptr<LazyBlockImpl>::static_pointer_cast(_block);
     gmacError_t ret = Parent::toHost(block);
 
-    ENSURES(block.getState() != __impl::memory::protocol::lazy::Invalid);
+    ENSURES(block->getState() != __impl::memory::protocol::lazy::Invalid);
 
     return ret;
 }
 
 __impl::hal::event_t
-LazyBase::memset(const BlockImpl &block, size_t blockOffset, int v, size_t size, gmacError_t &err)
+LazyBase::memset(const BlockPtrImpl block, size_t blockOffset, int v, size_t size, gmacError_t &err)
 {
-    REQUIRES(blockOffset + size <= block.size());
+	REQUIRES(block);
+    REQUIRES(blockOffset + size <= block->size());
 
     __impl::hal::event_t ret = Parent::memset(block, blockOffset, v, size, err);
 
@@ -105,21 +115,24 @@ LazyBase::flushDirty()
 }
 
 __impl::hal::event_t
-LazyBase::copyBlockToBlock(Block &d, size_t dstOffset, Block &s, size_t srcOffset, size_t count, gmacError_t &err)
+LazyBase::copyBlockToBlock(BlockPtrImpl d, size_t dstOffset, BlockPtrImpl s, size_t srcOffset, size_t count, gmacError_t &err)
 {
-    LazyBlockImpl &dst = dynamic_cast<LazyBlockImpl &>(d);
-    LazyBlockImpl &src = dynamic_cast<LazyBlockImpl &>(s);
+	REQUIRES(d);
+	REQUIRES(s);
 
-    REQUIRES(dstOffset + count <= dst.size());
-    REQUIRES(srcOffset + count <= src.size());
+    LazyBlockPtrImpl dst = __impl::util::smart_ptr<LazyBlockImpl>::static_pointer_cast(d);
+    LazyBlockPtrImpl src = __impl::util::smart_ptr<LazyBlockImpl>::static_pointer_cast(s);
 
-    StateImpl dstState = dst.getState();
-    StateImpl srcState = src.getState();
+    REQUIRES(dstOffset + count <= dst->size());
+    REQUIRES(srcOffset + count <= src->size());
+
+    StateImpl dstState = dst->getState();
+    StateImpl srcState = src->getState();
 
     __impl::hal::event_t ret = Parent::copyBlockToBlock(d, dstOffset, s, srcOffset, count, err);
 
-    ENSURES(dst.getState() == dstState);
-    ENSURES(src.getState() == srcState);
+    ENSURES(dst->getState() == dstState);
+    ENSURES(src->getState() == srcState);
 
     return ret;
 }
