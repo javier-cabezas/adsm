@@ -21,7 +21,7 @@ DistributedObject<State>::modifiedObject()
 }
 
 template<typename State>
-DistributedObject<State>::DistributedObject(Protocol &protocol, core::Mode &owner,
+DistributedObject<State>::DistributedObject(protocol_interface &protocol, core::Mode &owner,
                                             hostptr_t hostAddr, size_t size, typename State::ProtocolState init, gmacError_t &err) :
     Object(hostAddr, size)
 {

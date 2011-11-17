@@ -3,7 +3,7 @@
 
 #include "memory/BlockGroup.h"
 
-namespace __impl { namespace memory { namespace protocol {
+namespace __impl { namespace memory { namespace protocol_interface {
 
 template<typename T>
 inline Gather<T>::Gather(size_t limit) :

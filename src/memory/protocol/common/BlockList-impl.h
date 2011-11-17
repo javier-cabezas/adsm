@@ -3,7 +3,7 @@
 
 #include <algorithm>
 
-#include "memory/Block.h"
+#include "memory/block.h"
 #include "memory/vm/Model.h"
 
 namespace __impl { namespace memory { namespace protocol {

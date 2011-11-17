@@ -19,7 +19,7 @@
 #define MIN min
 #endif
 
-namespace __impl { namespace memory { namespace protocol {
+namespace __impl { namespace memory { namespace protocol_interface {
 
 
 GatherBase::GatherBase(size_t limit) :
@@ -55,7 +55,7 @@ void GatherBase::deleteObject(Object &obj)
 
 
 
-bool GatherBase::needUpdate(const Block &b) const
+bool GatherBase::needUpdate(const block &b) const
 {
     const StateBlock<State> &block = dynamic_cast<const StateBlock<State> &>(b);
     switch(block.state()) {        
@@ -69,7 +69,7 @@ bool GatherBase::needUpdate(const Block &b) const
     return false;
 }
 
-gmacError_t GatherBase::signal_read(Block &b, hostptr_t addr)
+gmacError_t GatherBase::signal_read(block &b, hostptr_t addr)
 {
     trace::EnterCurrentFunction();
 	StateBlock<State> &block = dynamic_cast<StateBlock<State> &>(b);
@@ -95,7 +95,7 @@ exit_func:
     return ret;
 }
 
-gmacError_t GatherBase::signal_write(Block &b, hostptr_t addr)
+gmacError_t GatherBase::signal_write(block &b, hostptr_t addr)
 {
     trace::EnterCurrentFunction();
     StateBlock<State> &block = dynamic_cast<StateBlock<State> &>(b);
@@ -167,7 +167,7 @@ exit_func:
     return ret;
 }
 
-gmacError_t GatherBase::acquire(Block &b)
+gmacError_t GatherBase::acquire(block &b)
 {
     gmacError_t ret = gmacSuccess;
     StateBlock<State> &block = dynamic_cast<StateBlock<State> &>(b);
@@ -186,7 +186,7 @@ gmacError_t GatherBase::acquire(Block &b)
 	return ret;
 }
 
-gmacError_t GatherBase::acquireWithBitmap(Block &b)
+gmacError_t GatherBase::acquireWithBitmap(block &b)
 {
     gmacError_t ret = gmacSuccess;
     // TODO: Get mode as parameter
@@ -215,7 +215,7 @@ gmacError_t GatherBase::acquireWithBitmap(Block &b)
 	return ret;
 }
 
-gmacError_t GatherBase::mapToAccelerator(Block &b)
+gmacError_t GatherBase::mapToAccelerator(block &b)
 {
     memory::StateBlock<State> &block = dynamic_cast<memory::StateBlock<State> &>(b);
     ASSERTION(block.state() == HostOnly);
@@ -226,7 +226,7 @@ gmacError_t GatherBase::mapToAccelerator(Block &b)
     return gmacSuccess;
 }
 
-gmacError_t GatherBase::unmapFromAccelerator(Block &b)
+gmacError_t GatherBase::unmapFromAccelerator(block &b)
 {
     memory::StateBlock<State> &block = dynamic_cast<memory::StateBlock<State> &>(b);
     TRACE(LOCAL,"Unmapping block from accelerator %p", block.addr());
@@ -247,13 +247,13 @@ gmacError_t GatherBase::unmapFromAccelerator(Block &b)
     return ret;
 }
 
-void GatherBase::addDirty(Block &block)
+void GatherBase::addDirty(block &block)
 {
     dbl_.push(block);
     if(limit_ == size_t(-1)) return;
     while(dbl_.size() > limit_) {
-        Block *b = dbl_.pop();
-        b->coherenceOp(&Protocol::release);
+        block *b = dbl_.pop();
+        b->coherenceOp(&protocol_interface::release);
     }
     return;
 }
@@ -264,15 +264,15 @@ gmacError_t GatherBase::releaseObjects()
     // let other modes to proceed
     lock(); 
     while(dbl_.empty() == false) {
-        Block *b = dbl_.pop();
-        b->coherenceOp(&Protocol::release);
+        block *b = dbl_.pop();
+        b->coherenceOp(&protocol_interface::release);
     }
     unlock();
     return gmacSuccess;
 }
 
 template<typename T>
-inline gmacError_t SharedBlock<T>::toGatherBuffer(Block &b, GatherBufferCache &buffers)
+inline gmacError_t SharedBlock<T>::toGatherBuffer(block &b, GatherBufferCache &buffers)
 {
     gmacError_t ret = gmacSuccess;
     // TODO: get mode as parameter
@@ -295,7 +295,7 @@ inline gmacError_t SharedBlock<T>::toGatherBuffer(Block &b, GatherBufferCache &b
 }
 
 
-gmacError_t GatherBase::release(Block &b)
+gmacError_t GatherBase::release(block &b)
 {
     StateBlock<State> &block = dynamic_cast<StateBlock<State> &>(b);
     TRACE(LOCAL,"Releasing block %p", block.addr());
@@ -321,13 +321,13 @@ gmacError_t GatherBase::release(Block &b)
     return ret;
 }
 
-gmacError_t GatherBase::deleteBlock(Block &block)
+gmacError_t GatherBase::deleteBlock(block &block)
 {
     dbl_.remove(dynamic_cast<StateBlock<State> &>(block));
     return gmacSuccess;
 }
 
-gmacError_t GatherBase::toHost(Block &b)
+gmacError_t GatherBase::toHost(block &b)
 {
     TRACE(LOCAL,"Sending block to host: %p", b.addr());
     gmacError_t ret = gmacSuccess;
@@ -354,7 +354,7 @@ gmacError_t GatherBase::toHost(Block &b)
     return ret;
 }
 
-gmacError_t GatherBase::toAccelerator(Block &b)
+gmacError_t GatherBase::toAccelerator(block &b)
 {
     TRACE(LOCAL,"Sending block to accelerator: %p", b.addr());
     gmacError_t ret = gmacSuccess;
@@ -381,7 +381,7 @@ gmacError_t GatherBase::toAccelerator(Block &b)
     return ret;
 }
 
-gmacError_t GatherBase::copyToBuffer(const Block &b, core::IOBuffer &buffer, size_t size,
+gmacError_t GatherBase::copyToBuffer(const block &b, core::IOBuffer &buffer, size_t size,
 							   size_t bufferOffset, size_t blockOffset) const
 {
 	gmacError_t ret = gmacSuccess;
@@ -398,7 +398,7 @@ gmacError_t GatherBase::copyToBuffer(const Block &b, core::IOBuffer &buffer, siz
 	return ret;
 }
 
-gmacError_t GatherBase::copyFromBuffer(const Block &b, core::IOBuffer &buffer, size_t size, 
+gmacError_t GatherBase::copyFromBuffer(const block &b, core::IOBuffer &buffer, size_t size, 
 							   size_t bufferOffset, size_t blockOffset) const
 {
 	gmacError_t ret = gmacSuccess;
@@ -420,7 +420,7 @@ gmacError_t GatherBase::copyFromBuffer(const Block &b, core::IOBuffer &buffer, s
 	return ret;
 }
 
-gmacError_t GatherBase::memset(const Block &b, int v, size_t size, size_t blockOffset) const
+gmacError_t GatherBase::memset(const block &b, int v, size_t size, size_t blockOffset) const
 {
     gmacError_t ret = gmacSuccess;
 	const StateBlock<State> &block = dynamic_cast<const StateBlock<State> &>(b);

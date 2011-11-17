@@ -156,7 +156,7 @@ gmacError_t LazyBase::acquireWithBitmap(block_ptr b)
 {
     /// \todo Change this to the new BlockState
     gmacError_t ret = gmacSuccess;
-    lazy::block_ptr block = util::smart_ptr<lazy::Block>::static_pointer_cast(b);
+    lazy::block_ptr block = util::smart_ptr<lazy::block>::static_pointer_cast(b);
     switch(block->getState()) {
     case lazy::Invalid:
     case lazy::ReadOnly:
@@ -340,7 +340,7 @@ gmacError_t LazyBase::toAccelerator(block_ptr b)
 {
     TRACE(LOCAL,"Sending block to accelerator: %p", b->addr());
     gmacError_t ret = gmacSuccess;
-    lazy::block_ptr block = util::smart_ptr<lazy::Block>::static_pointer_cast(b);
+    lazy::block_ptr block = util::smart_ptr<lazy::block>::static_pointer_cast(b);
     switch(block->getState()) {
     case lazy::Dirty:
         TRACE(LOCAL,"Dirty block");
@@ -370,12 +370,12 @@ gmacError_t LazyBase::copyToBuffer(block_ptr b, core::io_buffer &buffer, size_t 
     const lazy::block_ptr block = dynamic_cast<const lazy::block_ptr>(b);
     switch(block.getState()) {
     case lazy::Invalid:
-        ret = block.copyToBuffer(buffer, bufferOff, blockOff, size, lazy::Block::ACCELERATOR);
+        ret = block.copyToBuffer(buffer, bufferOff, blockOff, size, lazy::block::ACCELERATOR);
         break;
     case lazy::ReadOnly:
     case lazy::Dirty:
     case lazy::HostOnly:
-        ret = block.copyToBuffer(buffer, bufferOff, blockOff, size, lazy::Block::HOST);
+        ret = block.copyToBuffer(buffer, bufferOff, blockOff, size, lazy::block::HOST);
         break;
     }
     return ret;
@@ -388,7 +388,7 @@ gmacError_t LazyBase::copyFromBuffer(block_ptr b, core::io_buffer &buffer, size_
     lazy::block_ptr block = dynamic_cast<lazy::block_ptr>(b);
     switch(block.getState()) {
     case lazy::Invalid:
-        ret = block.copyFromBuffer(blockOff, buffer, bufferOff, size, lazy::Block::ACCELERATOR);
+        ret = block.copyFromBuffer(blockOff, buffer, bufferOff, size, lazy::block::ACCELERATOR);
         break;
     case lazy::ReadOnly:
 #ifdef USE_OPENCL
@@ -397,19 +397,19 @@ gmacError_t LazyBase::copyFromBuffer(block_ptr b, core::io_buffer &buffer, size_
         ::memcpy(block.get_shadow() + blockOff, buffer.addr() + bufferOff, size);
         ret = block.owner().copy(block.get_device_addr() + ptroff_t(blockOff),
                                  buffer, bufferOff, size);
-        ret = block.copyFromBuffer(blockOff, buffer, bufferOff, size, lazy::Block::ACCELERATOR);
+        ret = block.copyFromBuffer(blockOff, buffer, bufferOff, size, lazy::block::ACCELERATOR);
         if(ret != gmacSuccess) break;
 #else
-        ret = block.copyFromBuffer(blockOff, buffer, bufferOff, size, lazy::Block::ACCELERATOR);
+        ret = block.copyFromBuffer(blockOff, buffer, bufferOff, size, lazy::block::ACCELERATOR);
         if(ret != gmacSuccess) break;
-        ret = block.copyFromBuffer(blockOff, buffer, bufferOff, size, lazy::Block::HOST);
+        ret = block.copyFromBuffer(blockOff, buffer, bufferOff, size, lazy::block::HOST);
         if(ret != gmacSuccess) break;
 #endif
         /* block.setState(lazy::Invalid); */
         break;
     case lazy::Dirty:
     case lazy::HostOnly:
-        ret = block.copyFromBuffer(blockOff, buffer, bufferOff, size, lazy::Block::HOST);
+        ret = block.copyFromBuffer(blockOff, buffer, bufferOff, size, lazy::block::HOST);
         break;
     }
     return ret;

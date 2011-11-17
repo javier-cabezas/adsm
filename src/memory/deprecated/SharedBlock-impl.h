@@ -8,7 +8,7 @@ namespace __impl { namespace memory {
 
 template<typename State>
 inline
-SharedBlock<State>::SharedBlock(Protocol &protocol, core::Mode &owner, hostptr_t hostAddr,
+SharedBlock<State>::SharedBlock(protocol_interface &protocol, core::Mode &owner, hostptr_t hostAddr,
                                 hostptr_t shadowAddr, accptr_t acceleratorAddr, size_t size, typename State::ProtocolState init) :
         memory::StateBlock<State>(protocol, hostAddr, shadowAddr, size, init),
         owner_(owner),

@@ -54,19 +54,19 @@ namespace core {
 
 namespace memory {
 class Object;
-class Block;
+class block;
 template<typename T> class StateBlock;
 
-namespace protocol {
+namespace protocol_interface {
 
 class GMAC_LOCAL GatherBuffer : public gmac::util::Lock {
-    std::map<accptr_t, Block *> subBlockList_;
+    std::map<accptr_t, block *> subBlockList_;
 
 public:
     GatherBuffer(unsigned subBlocks);
 
-    bool addSubBlock(Block &b, unsigned index);
-    bool removeSubBlock(const Block &b, unsigned index);
+    bool addSubBlock(block &b, unsigned index);
+    bool removeSubBlock(const block &b, unsigned index);
     void toAccelerator();
 };
 
@@ -78,8 +78,8 @@ public:
 
     GatherBuffer &getActive() const;
 
-    bool addSubBlock(Block &b, unsigned index);
-    bool removeSubBlock(const Block &b, unsigned index);
+    bool addSubBlock(block &b, unsigned index);
+    bool removeSubBlock(const block &b, unsigned index);
     void release();
 };
 
@@ -90,7 +90,7 @@ public:
     release operation. Data is transferred from accelerator memory to host memory
     lazily, whenever it is needed by the application
 */
-class GMAC_LOCAL GatherBase : public Protocol, Handler, gmac::util::Lock {
+class GMAC_LOCAL GatherBase : public protocol_interface, handler, gmac::util::Lock {
 public:
     //! Protocol states
     typedef enum {
@@ -115,7 +115,7 @@ protected:
     BlockList dbl_;
 
     //! Add a new block to the Dirty Block List
-    void addDirty(Block &block);
+    void addDirty(block &block);
 
     //! Default constructor
     /*!
@@ -130,37 +130,37 @@ public:
     // Protocol Interface
         void deleteObject(Object &obj);
 
-    bool needUpdate(const Block &block) const;
+    bool needUpdate(const block &block) const;
 
-    gmacError_t signal_read(Block &block, hostptr_t addr);
+    gmacError_t signal_read(block &block, hostptr_t addr);
 
-    gmacError_t signal_write(Block &block, hostptr_t addr);
+    gmacError_t signal_write(block &block, hostptr_t addr);
 
-    gmacError_t acquire(Block &obj);
+    gmacError_t acquire(block &obj);
 
-    gmacError_t acquireWithBitmap(Block &obj);
+    gmacError_t acquireWithBitmap(block &obj);
 
     gmacError_t releaseObjects();
 
-    gmacError_t release(Block &block);
+    gmacError_t release(block &block);
 
-    gmacError_t mapToAccelerator(Block &block);
+    gmacError_t mapToAccelerator(block &block);
 
-    gmacError_t unmapFromAccelerator(Block &block);
+    gmacError_t unmapFromAccelerator(block &block);
 
-    gmacError_t deleteBlock(Block &block);
+    gmacError_t deleteBlock(block &block);
 
-        gmacError_t toHost(Block &block);
+        gmacError_t toHost(block &block);
 
-    gmacError_t toAccelerator(Block &block);
+    gmacError_t toAccelerator(block &block);
 
-        gmacError_t copyToBuffer(const Block &block, core::IOBuffer &buffer, size_t size,
+        gmacError_t copyToBuffer(const block &block, core::IOBuffer &buffer, size_t size,
                 size_t bufferOffset, size_t blockOffset) const;
 
-        gmacError_t copyFromBuffer(const Block &block, core::IOBuffer &buffer, size_t size,
+        gmacError_t copyFromBuffer(const block &block, core::IOBuffer &buffer, size_t size,
                 size_t bufferOffset, size_t blockOffset) const;
 
-    gmacError_t memset(const Block &block, int v, size_t size,
+    gmacError_t memset(const block &block, int v, size_t size,
         size_t blockOffset) const;
 };
 

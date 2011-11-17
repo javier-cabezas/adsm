@@ -41,7 +41,7 @@ WITH THE SOFTWARE.  */
 
 #include "util/gmac_base.h"
 
-#include "Block.h"
+#include "block.h"
 
 namespace __impl {
 
@@ -52,15 +52,15 @@ namespace core {
 namespace memory {
 
 template <typename State>
-class BlockGroup;
+class object_state;
 
 template <typename State>
-class GMAC_LOCAL GenericBlock :
-    public gmac::memory::Block,
+class GMAC_LOCAL block_state :
+    public gmac::memory::block,
     public State,
-    util::gmac_base<GenericBlock<State> > {
+    util::gmac_base<block_state<State> > {
 protected:
-    BlockGroup<State> &parent_;
+    object_state<State> &parent_;
 
 public:
     enum EndPoint {
@@ -79,14 +79,14 @@ public:
      * \param size Size (in bytes) of the memory block
      * \param init Initial block state
      */
-    GenericBlock(BlockGroup<State> &parent,
+    block_state(object_state<State> &parent,
                  hostptr_t hostAddr,
                  hostptr_t shadowAddr,
                  size_t size,
                  typename State::ProtocolState init);
 
     /// Default destructor
-    virtual ~GenericBlock();
+    virtual ~block_state();
 
     /**
      * Get memory block owner
@@ -125,7 +125,7 @@ public:
         return toHost(0, size_);
     }
 
-    BlockGroup<State> &get_parent()
+    object_state<State> &get_parent()
 	{
     	return parent_;
 	}
@@ -144,6 +144,6 @@ public:
 
 }}
 
-#include "GenericBlock-impl.h"
+#include "block_state-impl.h"
 
 #endif

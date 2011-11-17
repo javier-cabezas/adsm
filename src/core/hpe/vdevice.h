@@ -57,7 +57,7 @@ namespace __impl {
 namespace memory {
     class object;
     class map_object;
-    class Block;
+    class block;
 }
 
 namespace core {

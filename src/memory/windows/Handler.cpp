@@ -9,7 +9,7 @@
 
 namespace __impl { namespace memory {
 
-unsigned Handler::Count_ = 0;
+unsigned handler::Count_ = 0;
 
 static core::process *Process_ = NULL;
 static manager *Manager_ = NULL;
@@ -22,12 +22,12 @@ static LONG CALLBACK segvHandler(EXCEPTION_POINTERS *ex)
 
     if(Process_ == NULL || Manager_ == NULL) return EXCEPTION_CONTINUE_SEARCH;
 
-    Handler::Entry();
+    handler::Entry();
     trace::EnterCurrentFunction();
 
     bool writeAccess = false;
     if(ex->ExceptionRecord->ExceptionInformation[0] == 1) writeAccess = true;
-    else if(ex->ExceptionRecord->ExceptionInformation[0] != 0) { Handler::Exit(); return EXCEPTION_CONTINUE_SEARCH; }
+    else if(ex->ExceptionRecord->ExceptionInformation[0] != 0) { handler::Exit(); return EXCEPTION_CONTINUE_SEARCH; }
 
     void *addr = (void *)ex->ExceptionRecord->ExceptionInformation[1];
 
@@ -44,17 +44,17 @@ static LONG CALLBACK segvHandler(EXCEPTION_POINTERS *ex)
     if(resolved == false) {
         fprintf(stderr, "Uoops! I could not find a mapping for %p. I will abort the execution\n", addr);
         abort();
-        Handler::Exit();
+        handler::Exit();
         return EXCEPTION_CONTINUE_SEARCH;
     }
 
     trace::ExitCurrentFunction();
-    Handler::Exit();
+    handler::Exit();
 
     return EXCEPTION_CONTINUE_EXECUTION;
 }
 
-void Handler::setHandler()
+void handler::setHandler()
 {
     AddVectoredExceptionHandler(1, segvHandler);
 
@@ -62,7 +62,7 @@ void Handler::setHandler()
     TRACE(GLOBAL, "New signal handler programmed");
 }
 
-void Handler::restoreHandler()
+void handler::restoreHandler()
 {
         RemoveVectoredExceptionHandler(segvHandler);
 
@@ -70,12 +70,12 @@ void Handler::restoreHandler()
         TRACE(GLOBAL, "Old signal handler restored");
 }
 
-void Handler::setProcess(core::process &proc)
+void handler::setProcess(core::process &proc)
 {
     Process_ = &proc;
 }
 
-void Handler::setManager(manager &manager)
+void handler::setManager(manager &manager)
 {
     Manager_ = &manager;
 }

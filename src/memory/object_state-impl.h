@@ -3,12 +3,12 @@
 
 #include "core/address_space.h"
 
-#include "GenericBlock.h"
+#include "block_state.h"
 
 namespace __impl { namespace memory {
 
 template<typename State>
-inline void BlockGroup<State>::modifiedObject()
+inline void object_state<State>::modifiedObject()
 {
     ASSERTION(ownerShortcut_ != NULL);
 
@@ -45,13 +45,13 @@ mallocAccelerator(core::address_space &aspace, hostptr_t addr, size_t size, accp
 
 template<typename State>
 gmacError_t
-BlockGroup<State>::repopulateBlocks(core::address_space &aspace)
+object_state<State>::repopulateBlocks(core::address_space &aspace)
 {
     // Repopulate the block-set
     ptroff_t offset = 0;
     for (vector_block::iterator i = blocks_.begin(); i != blocks_.end(); i++) {
-        GenericBlock<State> &oldBlock = *dynamic_cast<GenericBlock<State> *>(*i);
-        GenericBlock<State> *newBlock = new GenericBlock<State>(oldBlock.getProtocol(),
+        block_state<State> &oldBlock = *dynamic_cast<block_state<State> *>(*i);
+        block_state<State> *newBlock = new block_state<State>(oldBlock.getProtocol(),
                                                                 addr_   + offset,
                                                                 shadow_ + offset,
                                                                 oldBlock.size(), oldBlock.getState());
@@ -68,7 +68,7 @@ BlockGroup<State>::repopulateBlocks(core::address_space &aspace)
 }
 
 template<typename State>
-BlockGroup<State>::BlockGroup(Protocol &protocol,
+object_state<State>::object_state(protocol_interface &protocol,
                               hostptr_t hostAddr,
                               size_t size,
                               typename State::ProtocolState init,
@@ -101,7 +101,7 @@ BlockGroup<State>::BlockGroup(Protocol &protocol,
     while(size > 0) {
         size_t blockSize = (size > BlockSize_) ? BlockSize_ : size;
         mark += blockSize;
-        block_ptr block(new GenericBlock<State>(*this, addr_ + offset,
+        block_ptr block(new block_state<State>(*this, addr_ + offset,
                                                 shadow_ + offset, blockSize, init));
         blocks_.push_back(block);
         size -= blockSize;
@@ -113,7 +113,7 @@ BlockGroup<State>::BlockGroup(Protocol &protocol,
 
 
 template<typename State>
-BlockGroup<State>::~BlockGroup()
+object_state<State>::~object_state()
 {
 #if 0
     AcceleratorMap::iterator i;
@@ -139,7 +139,7 @@ BlockGroup<State>::~BlockGroup()
 
 template<typename State>
 inline accptr_t
-BlockGroup<State>::get_device_addr(const hostptr_t addr) const
+object_state<State>::get_device_addr(const hostptr_t addr) const
 {
     return deviceAddr_ + (addr - addr_);
 #if 0
@@ -161,7 +161,7 @@ BlockGroup<State>::get_device_addr(const hostptr_t addr) const
 
 template<typename State>
 inline accptr_t
-BlockGroup<State>::get_device_addr() const
+object_state<State>::get_device_addr() const
 {
     return get_device_addr(addr_);
 #if 0
@@ -183,7 +183,7 @@ BlockGroup<State>::get_device_addr() const
 
 template<typename State>
 inline core::address_space &
-BlockGroup<State>::owner()
+object_state<State>::owner()
 {
     ASSERTION(ownerShortcut_ != NULL);
 
@@ -209,7 +209,7 @@ BlockGroup<State>::owner()
 
 template<typename State>
 inline const core::address_space &
-BlockGroup<State>::owner() const
+object_state<State>::owner() const
 {
     ASSERTION(ownerShortcut_ != NULL);
 
@@ -219,7 +219,7 @@ BlockGroup<State>::owner() const
 
 template<typename State>
 inline gmacError_t
-BlockGroup<State>::addOwner(util::smart_ptr<core::address_space>::shared owner)
+object_state<State>::addOwner(util::smart_ptr<core::address_space>::shared owner)
 {
     ASSERTION(ownerShortcut_ == NULL);
     ownerShortcut_ = owner;
@@ -261,13 +261,13 @@ BlockGroup<State>::addOwner(util::smart_ptr<core::address_space>::shared owner)
 // TODO: move checks to DBC
 template<typename State>
 inline gmacError_t
-BlockGroup<State>::removeOwner(util::smart_ptr<core::address_space>::shared owner)
+object_state<State>::removeOwner(util::smart_ptr<core::address_space>::shared owner)
 {
     ASSERTION(ownerShortcut_ == owner);
 
-    gmacError_t ret = coherenceOp(&Protocol::deleteBlock);
+    gmacError_t ret = coherenceOp(&protocol_interface::deleteBlock);
     ASSERTION(ret == gmacSuccess);
-    ret = coherenceOp(&Protocol::unmapFromAccelerator);
+    ret = coherenceOp(&protocol_interface::unmapFromAccelerator);
     ASSERTION(ret == gmacSuccess);
     ownerShortcut_->unmap(addr_, size_);
 
@@ -296,9 +296,9 @@ BlockGroup<State>::removeOwner(util::smart_ptr<core::address_space>::shared owne
     if (owners_.size() == 0) {
         ASSERTION(acceleratorAddr_.size() == 1);
 
-        gmacError_t ret = coherenceOp(&Protocol::deleteBlock);
+        gmacError_t ret = coherenceOp(&protocol_interface::deleteBlock);
         ASSERTION(ret == gmacSuccess);
-        ret = coherenceOp(&Protocol::unmapFromAccelerator);
+        ret = coherenceOp(&protocol_interface::unmapFromAccelerator);
         ASSERTION(ret == gmacSuccess);
         ownerShortcut_->unmap(addr_, size_);
 
@@ -332,7 +332,7 @@ BlockGroup<State>::removeOwner(util::smart_ptr<core::address_space>::shared owne
 
 #if 0
         for (vector_block::iterator j = blocks_.begin(); j != blocks_.end(); j++) {
-            GenericBlock<State> &block = dynamic_cast<GenericBlock<State> &>(*j->second);
+            block_state<State> &block = dynamic_cast<block_state<State> &>(*j->second);
             block.removeOwner(aspace);
         }
 #endif
@@ -354,7 +354,7 @@ BlockGroup<State>::removeOwner(util::smart_ptr<core::address_space>::shared owne
 // TODO Receive a aspace
 template<typename State>
 inline gmacError_t
-BlockGroup<State>::mapToAccelerator()
+object_state<State>::mapToAccelerator()
 {
     ASSERTION(ownerShortcut_ != NULL);
 
@@ -382,7 +382,7 @@ BlockGroup<State>::mapToAccelerator()
         // Recreate accelerator blocks
         repopulateBlocks(*ownerShortcut_);
         // Add blocks to the coherence domain
-        ret = coherenceOp(&Protocol::mapToAccelerator);
+        ret = coherenceOp(&protocol_interface::mapToAccelerator);
 
         deviceAddr_ = newDeviceAddr_;
     }
@@ -409,7 +409,7 @@ BlockGroup<State>::mapToAccelerator()
             // Recreate accelerator blocks
             repopulateBlocks(newAcceleratorAddr, *ownerShortcut_);
             // Add blocks to the coherence domain
-            ret = coherenceOp(&Protocol::mapToAccelerator);
+            ret = coherenceOp(&protocol_interface::mapToAccelerator);
         }
     } else {
         // Not supported for now
@@ -424,14 +424,14 @@ BlockGroup<State>::mapToAccelerator()
 // TODO Receive a aspace
 template <typename State>
 inline gmacError_t
-BlockGroup<State>::unmapFromAccelerator()
+object_state<State>::unmapFromAccelerator()
 {
     gmacError_t ret = gmacSuccess;
 
     if (ownerShortcut_ != NULL) {
         lockWrite();
         // Remove blocks from the coherence domain
-        ret = coherenceOp(&Protocol::unmapFromAccelerator);
+        ret = coherenceOp(&protocol_interface::unmapFromAccelerator);
 
         // Free accelerator memory
         if (ret == gmacSuccess) {
@@ -446,7 +446,7 @@ BlockGroup<State>::unmapFromAccelerator()
     // Not supported for now
     if (owners_.size() == 1) {
         // Remove blocks from the coherence domain
-        ret = coherenceOp(&Protocol::unmapFromAccelerator);
+        ret = coherenceOp(&protocol_interface::unmapFromAccelerator);
 
         // Free accelerator memory
         if (ret == gmacSuccess) {

@@ -52,7 +52,7 @@ class io_buffer;
 namespace memory {
 
 class object;
-class Protocol;
+class protocol_interface;
 
 typedef std::pair<hostptr_t, GmacProtection> ObjectInfo;
 typedef std::list<ObjectInfo> ListAddr;
@@ -265,7 +265,7 @@ public:
 #include "manager-impl.h"
 
 #ifdef USE_DBC
-#include "memory/dbc/Manager.h"
+#include "memory/dbc/manager.h"
 #endif
 
 #endif

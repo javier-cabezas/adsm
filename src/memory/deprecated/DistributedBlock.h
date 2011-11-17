@@ -66,7 +66,7 @@ public:
      * \param size Size (in bytes) of the memory block
      * \param init Initial block state
      */
-    DistributedBlock(Protocol &protocol, hostptr_t shadowAddr,
+    DistributedBlock(protocol_interface &protocol, hostptr_t shadowAddr,
                      hostptr_t hostAddr, size_t size, typename State::ProtocolState init);
 
     /// Default destructor

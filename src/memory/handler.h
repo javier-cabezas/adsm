@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,63 +31,78 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_BLOCKGROUP_H_
-#define GMAC_MEMORY_BLOCKGROUP_H_
+#ifndef GMAC_MEMORY_HANDLER_H_
+#define GMAC_MEMORY_HANDLER_H_
 
-#include "memory/object.h"
+#include <cstdlib>
 
-#include "util/gmac_base.h"
+#include "config/common.h"
 
-namespace __impl { 
+namespace __impl {
 
-namespace core {
-	class address_space;
-	class ResourceManager;
-}
+namespace core { class process; }
 
 namespace memory {
 
-template<typename State>
-class GMAC_LOCAL BlockGroup :
-    util::gmac_base<BlockGroup<State> >,
-    public memory::object {
-protected:
-    hostptr_t shadow_;
-    bool hasUserMemory_;
-#if 0
-    typedef std::map<accptr_t, std::list<core::address_space *> > AcceleratorMap;
-    typedef std::map<core::address_space *, accptr_t> aspace_map;
+class manager;
 
-    AcceleratorMap acceleratorAddr_;
-    aspace_map owners_;
-#endif
-    accptr_t deviceAddr_;
-    util::smart_ptr<core::address_space>::shared ownerShortcut_;
-
-    gmacError_t repopulateBlocks(core::address_space &aspace);
-
-    void modifiedObject();
+//! Handler for Read/Write faults
+class GMAC_LOCAL handler {
 public:
-    BlockGroup(Protocol &protocol, hostptr_t cpuAddr, size_t size, typename State::ProtocolState init, gmacError_t &err);
-    virtual ~BlockGroup();
+    typedef void (*CallBack)(void);
+private:
+    //! Activate the fault handler
+	void setHandler();
 
-    accptr_t get_device_addr(const hostptr_t addr) const;
-    accptr_t get_device_addr() const;
+    //! Deactivate the fault handler
+	void restoreHandler(void);
 
-    core::address_space &owner();
-    const core::address_space &owner() const;
+    //! Signal number to bind the handler to
+    static int Signum_;
 
-    gmacError_t addOwner(util::smart_ptr<core::address_space>::shared owner);
-    gmacError_t removeOwner(util::smart_ptr<core::address_space>::shared owner);
+    //! Number of request to activate the handler
+	static unsigned Count_;
 
-    gmacError_t mapToAccelerator();
-    gmacError_t unmapFromAccelerator();
+    //! Active handler
+	static handler *Handler_;
+	
+    static CallBack Entry_;
+    static CallBack Exit_;
+public:
 
-    static gmacError_t split(BlockGroup &group, size_t offset, size_t size);
+    //! Default constructor
+	inline handler() {
+		if(Count_ == 0) setHandler();
+		Count_++;
+	}
+
+    //! Default destructor
+	virtual inline ~handler() { 
+		if(--Count_ == 0) restoreHandler();
+	}
+
+    //! Set function to be called before executing the handler
+    static inline void setEntry(CallBack call) {
+        Entry_ = call;
+    }
+
+    static inline void Entry() {
+        if(Entry_ != NULL) Entry_();
+    }
+
+    //! Set function be bo called after executing the handler
+    static inline void setExit(CallBack call) {
+        Exit_ = call;
+    }
+
+    static inline void Exit() {
+        if(Exit_ != NULL) Exit_();
+    }
+
+    static void setProcess(core::process &proc);
+
+    static void setManager(manager &manager);
 };
 
 }}
-
-#include "BlockGroup-impl.h"
-
 #endif

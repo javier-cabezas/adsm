@@ -72,7 +72,7 @@ public:
      * \param size Size (in bytes) of the memory block
      * \param init Initial block state
      */
-    SharedBlock(Protocol &protocol, core::Mode &owner, hostptr_t hostAddr,
+    SharedBlock(protocol_interface &protocol, core::Mode &owner, hostptr_t hostAddr,
                 hostptr_t shadowAddr, accptr_t acceleratorAddr, size_t size, typename State::ProtocolState init);
 
     /// Default destructor

@@ -56,7 +56,7 @@ SharedObject<State>::repopulateBlocks(accptr_t accPtr, core::Mode &mode)
 }
 
 template<typename State>
-SharedObject<State>::SharedObject(Protocol &protocol, core::Mode &owner,
+SharedObject<State>::SharedObject(protocol_interface &protocol, core::Mode &owner,
                                   hostptr_t hostAddr, size_t size, typename State::ProtocolState init, gmacError_t &err) :
     Object(hostAddr, size),
     acceleratorAddr_(0),
@@ -163,9 +163,9 @@ SharedObject<State>::removeOwner(core::Mode &owner)
 
         TRACE(LOCAL, "Shared Object @ %p is going orphan", addr_);
         if(acceleratorAddr_ != 0) {
-            gmacError_t ret = coherenceOp(&Protocol::deleteBlock);
+            gmacError_t ret = coherenceOp(&protocol_interface::deleteBlock);
             ASSERTION(ret == gmacSuccess);
-            ret = coherenceOp(&Protocol::unmapFromAccelerator);
+            ret = coherenceOp(&protocol_interface::unmapFromAccelerator);
             ASSERTION(ret == gmacSuccess);
             owner_->unmap(addr_, size_);
         }
@@ -201,7 +201,7 @@ SharedObject<State>::mapToAccelerator()
         // Recreate accelerator blocks
         repopulateBlocks(acceleratorAddr_, *owner_);
         // Add blocks to the coherency domain
-        ret = coherenceOp(&Protocol::mapToAccelerator);
+        ret = coherenceOp(&protocol_interface::mapToAccelerator);
     }
 
     unlock();
@@ -214,7 +214,7 @@ SharedObject<State>::unmapFromAccelerator()
 {
     lockWrite();
     // Remove blocks from the coherency domain
-    gmacError_t ret = coherenceOp(&Protocol::unmapFromAccelerator);
+    gmacError_t ret = coherenceOp(&protocol_interface::unmapFromAccelerator);
     // Free accelerator memory
     if (ret == gmacSuccess)
         CFATAL(owner_->unmap(addr_, size_) == gmacSuccess, "Error unmapping object from accelerator");

@@ -43,7 +43,8 @@ WITH THE SOFTWARE.  */
 namespace __impl { namespace memory {
 
 //! Class that allocates small chunks of shared memory
-class GMAC_LOCAL Allocator : public __impl::util::Singleton<Allocator> {
+class GMAC_LOCAL Allocator :
+	public __impl::util::Singleton<Allocator> {
 protected:
     /**
      * Default constructor

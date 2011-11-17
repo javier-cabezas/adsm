@@ -1,6 +1,6 @@
 #ifdef USE_DBC
 
-#include "Manager.h"
+#include "manager.h"
 
 namespace __dbc { namespace memory {
 

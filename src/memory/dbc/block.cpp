@@ -1,11 +1,11 @@
 #ifdef USE_DBC
 
-#include "memory/Block.h"
+#include "memory/block.h"
 
 namespace __dbc { namespace memory {
 
-Block::Block(hostptr_t addr, hostptr_t shadow, size_t size) :
-    __impl::memory::Block(addr, shadow, size)
+block::block(hostptr_t addr, hostptr_t shadow, size_t size) :
+    __impl::memory::block(addr, shadow, size)
 {
     // PRECONDITIONS
     REQUIRES(size > 0);
@@ -13,33 +13,33 @@ Block::Block(hostptr_t addr, hostptr_t shadow, size_t size) :
     REQUIRES(shadow != NULL);
 }
 
-Block::~Block()
+block::~block()
 {
 }
 
 #if 0
 gmacError_t
-Block::memoryOp(__impl::memory::Protocol::MemoryOp op, __impl::core::io_buffer &buffer, size_t size, size_t bufferOffset, size_t blockOffset)
+block::memoryOp(__impl::memory::protocol_interface::MemoryOp op, __impl::core::io_buffer &buffer, size_t size, size_t bufferOffset, size_t blockOffset)
 {
     // PRECONDITIONS
     REQUIRES(size > 0);
     REQUIRES(blockOffset + size <= size_);
     REQUIRES(bufferOffset + size <= buffer.size());
     // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::memory::Block::memoryOp(op, buffer, size, bufferOffset, blockOffset);
+    gmacError_t ret = __impl::memory::block::memoryOp(op, buffer, size, bufferOffset, blockOffset);
     // POSTCONDITIONS
     
     return ret;
 }
 
 gmacError_t
-Block::memset(int v, size_t size, size_t blockOffset)
+block::memset(int v, size_t size, size_t blockOffset)
 {
     // PRECONDITIONS
     REQUIRES(size > 0);
     REQUIRES(blockOffset + size <= size_);
     // CALL IMPLEMENTATION
-    gmacError_t ret = __impl::memory::Block::memset(v, size, blockOffset);
+    gmacError_t ret = __impl::memory::block::memset(v, size, blockOffset);
     // POSTCONDITIONS
     
     return ret;

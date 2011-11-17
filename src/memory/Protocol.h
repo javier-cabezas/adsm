@@ -47,17 +47,17 @@ namespace __impl {
 
 namespace memory {
 
-class Block;
-typedef __impl::util::smart_ptr<Block>::shared block_ptr;
+class block;
+typedef __impl::util::smart_ptr<block>::shared block_ptr;
 class object;
 
 /**
  * Base class that defines the operations to be implemented by any protocol
  */
-class GMAC_LOCAL Protocol {
+class GMAC_LOCAL protocol_interface {
 public:
     /// Default destructor
-    virtual ~Protocol();
+    virtual ~protocol_interface();
 
     /** Creates a new object that will be manged by this protocol
      *
@@ -258,14 +258,14 @@ public:
 
     virtual gmacError_t dump(block_ptr block, std::ostream &out, protocol::common::Statistic stat) = 0;
 
-    typedef gmacError_t (Protocol::*CoherenceOp)(block_ptr);
+    typedef gmacError_t (protocol_interface::*CoherenceOp)(block_ptr);
 
-    typedef hal::event_t (Protocol::*CopyOp1To)(block_ptr, size_t, const hostptr_t, size_t, gmacError_t &);
-    typedef hal::event_t (Protocol::*CopyOp1From)(hostptr_t, block_ptr, size_t, size_t, gmacError_t &);
-    typedef hal::event_t (Protocol::*CopyOp2)(block_ptr, size_t, block_ptr, size_t, size_t, gmacError_t &);
+    typedef hal::event_t (protocol_interface::*CopyOp1To)(block_ptr, size_t, const hostptr_t, size_t, gmacError_t &);
+    typedef hal::event_t (protocol_interface::*CopyOp1From)(hostptr_t, block_ptr, size_t, size_t, gmacError_t &);
+    typedef hal::event_t (protocol_interface::*CopyOp2)(block_ptr, size_t, block_ptr, size_t, size_t, gmacError_t &);
 
-    typedef hal::event_t (Protocol::*DeviceOpTo)(hal::device_output &, block_ptr, size_t, size_t, gmacError_t &);
-    typedef hal::event_t (Protocol::*DeviceOpFrom)(block_ptr, size_t, hal::device_input &, size_t, gmacError_t &);
+    typedef hal::event_t (protocol_interface::*DeviceOpTo)(hal::device_output &, block_ptr, size_t, size_t, gmacError_t &);
+    typedef hal::event_t (protocol_interface::*DeviceOpFrom)(block_ptr, size_t, hal::device_input &, size_t, gmacError_t &);
 };
 
 typedef std::list<object *> ListObject;

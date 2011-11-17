@@ -1,7 +1,7 @@
 #include <csignal>
 #include <cerrno>
 
-#include "memory/Handler.h"
+#include "memory/handler.h"
 #include "memory/manager.h"
 #include "trace/Tracer.h"
 
@@ -10,12 +10,12 @@
 namespace __impl { namespace memory {
 
 struct sigaction defaultAction;
-unsigned Handler::Count_ = 0;
+unsigned handler::Count_ = 0;
 
 #if defined(LINUX)
-int Handler::Signum_ = SIGSEGV;
+int handler::Signum_ = SIGSEGV;
 #elif defined(DARWIN)
-int Handler::Signum_ = SIGBUS;
+int handler::Signum_ = SIGBUS;
 #endif
 
 static core::process *Process_ = NULL;
@@ -25,7 +25,7 @@ static void segvHandler(int s, siginfo_t *info, void *ctx)
 {
     if(Process_ == NULL || Manager_ == NULL) return defaultAction.sa_sigaction(s, info, ctx);
        
-    Handler::Entry();
+    handler::Entry();
     trace::EnterCurrentFunction();
 	mcontext_t *mCtx = &((ucontext_t *)ctx)->uc_mcontext;
 
@@ -56,11 +56,11 @@ static void segvHandler(int s, siginfo_t *info, void *ctx)
 	}
 
     trace::ExitCurrentFunction();
-    Handler::Exit();
+    handler::Exit();
 }
 
 
-void Handler::setHandler() 
+void handler::setHandler() 
 {
 	struct sigaction segvAction;
 	memset(&segvAction, 0, sizeof(segvAction));
@@ -75,7 +75,7 @@ void Handler::setHandler()
 	TRACE(GLOBAL, "New signal handler programmed");
 }
 
-void Handler::restoreHandler()
+void handler::restoreHandler()
 {
 	if(sigaction(Signum_, &defaultAction, NULL) < 0)
 		FATAL("sigaction: %s", strerror(errno));
@@ -84,12 +84,12 @@ void Handler::restoreHandler()
 	TRACE(GLOBAL, "Old signal handler restored");
 }
 
-void Handler::setProcess(core::process &proc)
+void handler::setProcess(core::process &proc)
 {
     Process_ = &proc;
 }
 
-void Handler::setManager(manager &manager)
+void handler::setManager(manager &manager)
 {
     Manager_ = &manager;
 }

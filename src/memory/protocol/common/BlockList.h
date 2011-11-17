@@ -49,7 +49,7 @@ namespace core {
 }
 
 namespace memory {
-class Block;
+class block;
 
 namespace protocol {
 

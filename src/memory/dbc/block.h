@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2010 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,78 +31,30 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_HANDLER_H_
-#define GMAC_MEMORY_HANDLER_H_
+#ifndef GMAC_MEMORY_DBC_BLOCK_H_
+#define GMAC_MEMORY_DBC_BLOCK_H_
 
-#include <cstdlib>
+namespace __dbc { namespace memory {
 
-#include "config/common.h"
+class GMAC_LOCAL block :
+    public __impl::memory::block,
+    public virtual Contract {
+    DBC_TESTED(__impl::memory::block)
 
-namespace __impl {
-
-namespace core { class process; }
-
-namespace memory {
-
-class manager;
-
-//! Handler for Read/Write faults
-class GMAC_LOCAL Handler {
-public:
-    typedef void (*CallBack)(void);
-private:
-    //! Activate the fault handler
-	void setHandler();
-
-    //! Deactivate the fault handler
-	void restoreHandler(void);
-
-    //! Signal number to bind the handler to
-    static int Signum_;
-
-    //! Number of request to activate the handler
-	static unsigned Count_;
-
-    //! Active handler
-	static Handler *Handler_;
-	
-    static CallBack Entry_;
-    static CallBack Exit_;
+protected:
+	block(hostptr_t addr, hostptr_t shadow, size_t size);
+    virtual ~block();
 public:
 
-    //! Default constructor
-	inline Handler() {
-		if(Count_ == 0) setHandler();
-		Count_++;
-	}
+#if 0
+	gmacError_t memoryOp(__impl::memory::protocol_interface::MemoryOp op, __impl::core::io_buffer &buffer, size_t size, size_t bufferOffset, size_t blockOffset);
 
-    //! Default destructor
-	virtual inline ~Handler() { 
-		if(--Count_ == 0) restoreHandler();
-	}
-
-    //! Set function to be called before executing the handler
-    static inline void setEntry(CallBack call) {
-        Entry_ = call;
-    }
-
-    static inline void Entry() {
-        if(Entry_ != NULL) Entry_();
-    }
-
-    //! Set function be bo called after executing the handler
-    static inline void setExit(CallBack call) {
-        Exit_ = call;
-    }
-
-    static inline void Exit() {
-        if(Exit_ != NULL) Exit_();
-    }
-
-    static void setProcess(core::process &proc);
-
-    static void setManager(manager &manager);
+    gmacError_t memset(int v, size_t size, size_t blockOffset = 0);
+#endif
 };
 
 }}
-#endif
+
+#endif /* BLOCK_H */
+
+/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

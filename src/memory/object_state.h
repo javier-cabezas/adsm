@@ -31,30 +31,63 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_DBC_BLOCK_H_
-#define GMAC_MEMORY_DBC_BLOCK_H_
+#ifndef GMAC_MEMORY_BLOCKGROUP_H_
+#define GMAC_MEMORY_BLOCKGROUP_H_
 
-namespace __dbc { namespace memory {
+#include "memory/object.h"
 
-class GMAC_LOCAL Block :
-    public __impl::memory::Block,
-    public virtual Contract {
-    DBC_TESTED(__impl::memory::Block)
+#include "util/gmac_base.h"
 
+namespace __impl { 
+
+namespace core {
+	class address_space;
+	class ResourceManager;
+}
+
+namespace memory {
+
+template<typename State>
+class GMAC_LOCAL object_state :
+    util::gmac_base<object_state<State> >,
+    public memory::object {
 protected:
-	Block(hostptr_t addr, hostptr_t shadow, size_t size);
-    virtual ~Block();
-public:
-
+    hostptr_t shadow_;
+    bool hasUserMemory_;
 #if 0
-	gmacError_t memoryOp(__impl::memory::Protocol::MemoryOp op, __impl::core::io_buffer &buffer, size_t size, size_t bufferOffset, size_t blockOffset);
+    typedef std::map<accptr_t, std::list<core::address_space *> > AcceleratorMap;
+    typedef std::map<core::address_space *, accptr_t> aspace_map;
 
-    gmacError_t memset(int v, size_t size, size_t blockOffset = 0);
+    AcceleratorMap acceleratorAddr_;
+    aspace_map owners_;
 #endif
+    accptr_t deviceAddr_;
+    util::smart_ptr<core::address_space>::shared ownerShortcut_;
+
+    gmacError_t repopulateBlocks(core::address_space &aspace);
+
+    void modifiedObject();
+public:
+    object_state(protocol_interface &protocol, hostptr_t cpuAddr, size_t size, typename State::ProtocolState init, gmacError_t &err);
+    virtual ~object_state();
+
+    accptr_t get_device_addr(const hostptr_t addr) const;
+    accptr_t get_device_addr() const;
+
+    core::address_space &owner();
+    const core::address_space &owner() const;
+
+    gmacError_t addOwner(util::smart_ptr<core::address_space>::shared owner);
+    gmacError_t removeOwner(util::smart_ptr<core::address_space>::shared owner);
+
+    gmacError_t mapToAccelerator();
+    gmacError_t unmapFromAccelerator();
+
+    static gmacError_t split(object_state &group, size_t offset, size_t size);
 };
 
 }}
 
-#endif /* BLOCK_H */
+#include "object_state-impl.h"
 
-/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */
+#endif

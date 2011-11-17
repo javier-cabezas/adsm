@@ -53,11 +53,11 @@ void mpiInit(void) GMAC_LOCAL;
 namespace __impl { 
 
 namespace memory {
-class Protocol;
+class protocol_interface;
 
 void Init(void);
 #define GLOBAL_PROTOCOL 0x1
-Protocol *ProtocolInit(unsigned flags);
+protocol_interface *ProtocolInit(unsigned flags);
 void Fini(void);
 }
 

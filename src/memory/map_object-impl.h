@@ -127,7 +127,7 @@ map_object::releasedObjects() const
 }
 
 inline
-Protocol &
+protocol_interface &
 map_object::getProtocol()
 {
     return protocol_;

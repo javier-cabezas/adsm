@@ -55,9 +55,9 @@ namespace core {
 
 namespace memory {
 
-class Block;
+class block;
 
-typedef __impl::util::smart_ptr<Block>::shared block_ptr;
+typedef __impl::util::smart_ptr<block>::shared block_ptr;
 
 /** Memory block
  * A memory block is a coherence unit of shared memory objects in GMAC, which are a collection of memory blocks.  Each
@@ -69,8 +69,8 @@ typedef __impl::util::smart_ptr<Block>::shared block_ptr;
  * stil be accessible from the CPU.
  * Memory block methods should only be called from GMAC objects and GMAC memory coherence protocols.
  */
-class GMAC_LOCAL Block : public gmac::util::mutex {
-    DBC_FORCE_TEST(Block)
+class GMAC_LOCAL block : public gmac::util::mutex {
+    DBC_FORCE_TEST(block)
 
     friend class object;
 
@@ -91,12 +91,12 @@ protected:
      * \param shadow Shadow host memory mapping that is always read/write
      * \param size Size (in bytes) of the memory block
      */
-    Block(hostptr_t addr, hostptr_t shadow, size_t size);
+    block(hostptr_t addr, hostptr_t shadow, size_t size);
 
     /**
      * Default destructor
      */
-    virtual ~Block();
+    virtual ~block();
 
 public:
 
@@ -165,16 +165,16 @@ public:
      *  \return Error code
      */
     template <typename R>
-    R coherenceOp(R (Protocol::*op)(block_ptr));
+    R coherenceOp(R (protocol_interface::*op)(block_ptr));
     template <typename R, typename T>
-    R coherenceOp(R (Protocol::*op)(block_ptr, T &), T &param);
+    R coherenceOp(R (protocol_interface::*op)(block_ptr, T &), T &param);
 
-    static hal::event_t copy_op(Protocol::CopyOp1To op, block_ptr dst, size_t dstOff, const hostptr_t src, size_t count, gmacError_t &err);
-    static hal::event_t copy_op(Protocol::CopyOp1From op, hostptr_t dst, block_ptr src, size_t srcOff, size_t count, gmacError_t &err);
-    static hal::event_t copy_op(Protocol::CopyOp2 op, block_ptr dst, size_t dstOff, block_ptr src, size_t srcOff, size_t count, gmacError_t &err);
+    static hal::event_t copy_op(protocol_interface::CopyOp1To op, block_ptr dst, size_t dstOff, const hostptr_t src, size_t count, gmacError_t &err);
+    static hal::event_t copy_op(protocol_interface::CopyOp1From op, hostptr_t dst, block_ptr src, size_t srcOff, size_t count, gmacError_t &err);
+    static hal::event_t copy_op(protocol_interface::CopyOp2 op, block_ptr dst, size_t dstOff, block_ptr src, size_t srcOff, size_t count, gmacError_t &err);
 
-    static hal::event_t device_op(Protocol::DeviceOpTo op, hal::device_output &output, block_ptr src, size_t srcOff, size_t count, gmacError_t &err);
-    static hal::event_t device_op(Protocol::DeviceOpFrom op, block_ptr dst, size_t dstOff, hal::device_input &input, size_t count, gmacError_t &err);
+    static hal::event_t device_op(protocol_interface::DeviceOpTo op, hal::device_output &output, block_ptr src, size_t srcOff, size_t count, gmacError_t &err);
+    static hal::event_t device_op(protocol_interface::DeviceOpFrom op, block_ptr dst, size_t dstOff, hal::device_input &input, size_t count, gmacError_t &err);
 
 #if 0
     /**
@@ -192,7 +192,7 @@ public:
      * \sa copyFromAccelerator(core::io_buffer &, size_t, size_t, size_t) const
      * \sa __impl::memory::Protocol
      */
-    TESTABLE gmacError_t memoryOp(Protocol::MemoryOp op,
+    TESTABLE gmacError_t memoryOp(protocol_interface::MemoryOp op,
                                   core::io_buffer &buffer, size_t size, size_t bufferOffset, size_t blockOffset);
 #endif
 
@@ -239,13 +239,12 @@ public:
     hostptr_t get_shadow() const;
 };
 
-
 }}
 
-#include "Block-impl.h"
+#include "block-impl.h"
 
 #ifdef USE_DBC
-#include "memory/dbc/Block.h"
+#include "memory/dbc/block.h"
 #endif
 
 #endif
