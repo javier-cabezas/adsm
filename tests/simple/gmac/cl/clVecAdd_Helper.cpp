@@ -49,10 +49,13 @@ int main(int argc, char *argv[])
 
     getTime(&s);
     // Alloc & init input data
-	assert(clMalloc(helper.command_queues[0], (void **)&a, vecSize * sizeof(float)) == CL_SUCCESS);
-    assert(clMalloc(helper.command_queues[0], (void **)&b, vecSize * sizeof(float)) == CL_SUCCESS);
+	error_code = clMalloc(helper.command_queues[0], (void **)&a, vecSize * sizeof(float));
+	assert(error_code == CL_SUCCESS);
+    error_code = clMalloc(helper.command_queues[0], (void **)&b, vecSize * sizeof(float));
+	assert(error_code == CL_SUCCESS);
     // Alloc output data
-    assert(clMalloc(helper.command_queues[0], (void **)&c, vecSize * sizeof(float)) == CL_SUCCESS);
+    error_code = clMalloc(helper.command_queues[0], (void **)&c, vecSize * sizeof(float));
+	assert(error_code == CL_SUCCESS);
     getTime(&t);
     printTime(&s, &t, "Alloc: ", "\n");
 
@@ -86,10 +89,13 @@ int main(int argc, char *argv[])
     error_code = clSetKernelArg(kernel, 2, sizeof(cl_mem), &mem);
 	if (mem == NULL || error_code != CL_SUCCESS)
 		return error_code;
-    assert(clSetKernelArg(kernel, 3, sizeof(vecSize), &vecSize) == CL_SUCCESS);
+    error_code = clSetKernelArg(kernel, 3, sizeof(vecSize), &vecSize);
+	assert(error_code == CL_SUCCESS);
 
-    assert(clEnqueueNDRangeKernel(helper.command_queues[0], kernel, 1, NULL, &global_size, NULL, 0, NULL, NULL) == CL_SUCCESS);
-	assert(clFinish(helper.command_queues[0]) == CL_SUCCESS);
+    error_code = clEnqueueNDRangeKernel(helper.command_queues[0], kernel, 1, NULL, &global_size, NULL, 0, NULL, NULL);
+	assert(error_code == CL_SUCCESS);
+	error_code = clFinish(helper.command_queues[0]);
+	assert(error_code == CL_SUCCESS);
 
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");
@@ -111,9 +117,12 @@ int main(int argc, char *argv[])
         abort();
     }
 
-    clFree(helper.command_queues[0], a);
-    clFree(helper.command_queues[0], b);
-    clFree(helper.command_queues[0], c);
+    error_code = clFree(helper.command_queues[0], a);
+	assert(error_code == CL_SUCCESS);
+    error_code = clFree(helper.command_queues[0], b);
+	assert(error_code == CL_SUCCESS);
+    error_code = clFree(helper.command_queues[0], c);
+	assert(error_code == CL_SUCCESS);
 	clReleaseHelpers();
     return 0;
 }

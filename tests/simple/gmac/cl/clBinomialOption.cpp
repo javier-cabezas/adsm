@@ -1,4 +1,4 @@
-#include <math.h>
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -124,8 +124,10 @@ int main(int argc, char *argv[])
 
     getTime(&s);
     // Alloc
-    assert(clMalloc(command_queue, (void **)&randArray, numSamples * sizeof(cl_float4)) == CL_SUCCESS);
-    assert(clMalloc(command_queue, (void **)&output, numSamples * sizeof(cl_float4)) == CL_SUCCESS);
+    error_code = clMalloc(command_queue, (void **)&randArray, numSamples * sizeof(cl_float4));
+	assert (error_code == CL_SUCCESS);
+    error_code = clMalloc(command_queue, (void **)&output, numSamples * sizeof(cl_float4));
+	assert(error_code == CL_SUCCESS);
     refOutput = (float*)malloc(numSamples * sizeof(cl_float4));
     if(refOutput == NULL)
         return 0;
@@ -146,17 +148,24 @@ int main(int argc, char *argv[])
     getTime(&s);
     cl_mem randArray_device = clGetBuffer(context, randArray);
     cl_mem output_device = clGetBuffer(context, output);
-    assert(clSetKernelArg(kernel, 0, sizeof(numSteps), &numSteps) == CL_SUCCESS);
-    assert(clSetKernelArg(kernel, 1, sizeof(cl_mem), &randArray_device) == CL_SUCCESS);
-    assert(clSetKernelArg(kernel, 2, sizeof(cl_mem), &output_device) == CL_SUCCESS);
-    assert(clSetKernelArg(kernel, 3, (numSteps + 1) * sizeof(cl_float4), NULL) == CL_SUCCESS);
-    assert(clSetKernelArg(kernel, 4, numSteps * sizeof(cl_float4), NULL) == CL_SUCCESS);
+    error_code = clSetKernelArg(kernel, 0, sizeof(numSteps), &numSteps);
+	assert(error_code == CL_SUCCESS);
+    error_code = clSetKernelArg(kernel, 1, sizeof(cl_mem), &randArray_device);
+	assert(error_code == CL_SUCCESS);
+    error_code = clSetKernelArg(kernel, 2, sizeof(cl_mem), &output_device);
+	assert(error_code == CL_SUCCESS);
+    error_code = clSetKernelArg(kernel, 3, (numSteps + 1) * sizeof(cl_float4), NULL);
+	assert(error_code == CL_SUCCESS);
+    error_code = clSetKernelArg(kernel, 4, numSteps * sizeof(cl_float4), NULL);
+	assert(error_code == CL_SUCCESS);
 
     size_t globalThreads[] = {numSamples * (numSteps + 1)};
     size_t localThreads[] = {numSteps + 1};
 
-    assert(clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, globalThreads, localThreads, 0, NULL, NULL) == CL_SUCCESS);
-    assert(clFinish(command_queue) == CL_SUCCESS);
+    error_code = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, globalThreads, localThreads, 0, NULL, NULL);
+	assert(error_code == CL_SUCCESS);
+    error_code = clFinish(command_queue);
+	assert(error_code == CL_SUCCESS);
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");
 
@@ -194,10 +203,23 @@ int main(int argc, char *argv[])
     printTime(&s, &t, "Check: ", "\n");
 
     getTime(&s);
+	/* Release memory */
     free(refOutput);
     refOutput = NULL;
-    assert(clFree(command_queue, randArray) == CL_SUCCESS);
-    assert(clFree(command_queue, output) == CL_SUCCESS);
+    error_code = clFree(command_queue, randArray);
+	assert(error_code == CL_SUCCESS);
+    error_code = clFree(command_queue, output);
+	assert(error_code == CL_SUCCESS);
+
+	/* Release OpenCL resources */
+	error_code = clReleaseKernel(kernel);
+	assert(error_code == CL_SUCCESS);
+	error_code = clReleaseProgram(program);
+	assert(error_code == CL_SUCCESS);
+	error_code = clReleaseCommandQueue(command_queue);
+	assert(error_code == CL_SUCCESS);
+	error_code = clReleaseContext(context);
+	assert(error_code == CL_SUCCESS);
     getTime(&t);
     printTime(&s, &t, "Free: ", "\n");
 

@@ -162,9 +162,12 @@ int main(int argc, char *argv[])
 
     getTime(&s);
     // Alloc & init input data
-    assert(clMalloc(command_queue, (void **)&randArray, width * height * sizeof(cl_float4)) == CL_SUCCESS);
-    assert(clMalloc(command_queue, (void **)&deviceCallPrice, width * height * sizeof(cl_float4)) == CL_SUCCESS);
-    assert(clMalloc(command_queue, (void **)&devicePutPrice, width * height * sizeof(cl_float4)) == CL_SUCCESS);
+    error_code = clMalloc(command_queue, (void **)&randArray, width * height * sizeof(cl_float4));
+	assert(error_code == CL_SUCCESS);
+    error_code = clMalloc(command_queue, (void **)&deviceCallPrice, width * height * sizeof(cl_float4));
+	assert(error_code == CL_SUCCESS);
+    error_code = clMalloc(command_queue, (void **)&devicePutPrice, width * height * sizeof(cl_float4));
+	assert (error_code == CL_SUCCESS);
     hostCallPrice = (cl_float*)malloc(width * height * sizeof(cl_float4));
     if(hostCallPrice == NULL)
         return 0;
@@ -202,13 +205,19 @@ int main(int argc, char *argv[])
     cl_mem randArray_device = clGetBuffer(context, randArray);
     cl_mem deviceCallPrice_device = clGetBuffer(context, deviceCallPrice);
     cl_mem devicePutPrice_device = clGetBuffer(context, devicePutPrice);
-    assert(clSetKernelArg(kernel, 0, sizeof(cl_mem), &randArray_device) == CL_SUCCESS);
-    assert(clSetKernelArg(kernel, 1, sizeof(width), &width) == CL_SUCCESS);
-    assert(clSetKernelArg(kernel, 2, sizeof(cl_mem), &deviceCallPrice_device) == CL_SUCCESS);
-    assert(clSetKernelArg(kernel, 3, sizeof(cl_mem), &devicePutPrice_device) == CL_SUCCESS);
+    error_code = clSetKernelArg(kernel, 0, sizeof(cl_mem), &randArray_device);
+	assert(error_code == CL_SUCCESS);
+    error_code = clSetKernelArg(kernel, 1, sizeof(width), &width);
+	assert(error_code == CL_SUCCESS);
+    error_code = clSetKernelArg(kernel, 2, sizeof(cl_mem), &deviceCallPrice_device);
+	assert(error_code == CL_SUCCESS);
+    error_code = clSetKernelArg(kernel, 3, sizeof(cl_mem), &devicePutPrice_device);
+	assert(error_code == CL_SUCCESS);
 
-    assert(clEnqueueNDRangeKernel(command_queue, kernel, 2, NULL, globalThreads, localThreads, 0, NULL, NULL) == CL_SUCCESS);
-    assert(clFinish(command_queue) == CL_SUCCESS);
+    error_code = clEnqueueNDRangeKernel(command_queue, kernel, 2, NULL, globalThreads, localThreads, 0, NULL, NULL);
+	assert(error_code == CL_SUCCESS);
+    error_code = clFinish(command_queue);
+	assert(error_code == CL_SUCCESS);
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");
 
@@ -283,17 +292,29 @@ int main(int argc, char *argv[])
     printTime(&s, &t, "Check: ", "\n");
 
     getTime(&s);
+	/* Release memory */
     free(hostPutPrice);
     hostPutPrice = NULL;
     free(hostCallPrice);
     hostCallPrice = NULL;
-
-    assert(clFree(command_queue, devicePutPrice) == CL_SUCCESS);
-    assert(clFree(command_queue, deviceCallPrice) == CL_SUCCESS);
-    assert(clFree(command_queue, randArray) == CL_SUCCESS);
-
+    error_code = clFree(command_queue, devicePutPrice);
+	assert(error_code == CL_SUCCESS);
+    error_code = clFree(command_queue, deviceCallPrice);
+	assert(error_code == CL_SUCCESS);
+    error_code = clFree(command_queue, randArray);
+	assert(error_code == CL_SUCCESS);
     free(maxWorkItemSizes);
     maxWorkItemSizes = NULL;
+
+	/* Release OpenCL resources */
+	error_code = clReleaseKernel(kernel);
+	assert(error_code == CL_SUCCESS);
+	error_code = clReleaseProgram(program);
+	assert(error_code == CL_SUCCESS);
+	error_code = clReleaseCommandQueue(command_queue);
+	assert(error_code == CL_SUCCESS);
+	error_code = clReleaseContext(context);
+	assert(error_code == CL_SUCCESS);
     getTime(&t);
     printTime(&s, &t, "Free: ", "\n");
 

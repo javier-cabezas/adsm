@@ -176,12 +176,25 @@ void* Thread(void *_name)
 	}
 
 	fprintf(stdout, "%s: clFree\n", name);
-	clFree(command_queue, a);
+	error_code = clFree(command_queue, a);
+	assert(error_code == CL_SUCCESS);
 	fprintf(stdout, "%s: clFree out 1\n", name);
-	clFree(command_queue, b);
+	error_code = clFree(command_queue, b);
+	assert(error_code == CL_SUCCESS);
 	fprintf(stdout, "%s: clFree out 2\n", name);
-	clFree(command_queue, c);
+	error_code = clFree(command_queue, c);
+	assert(error_code == CL_SUCCESS);
 	fprintf(stdout, "%s: clFree out 3 OVER\n", name);
+
+	/* Release OpenCL resources */
+	error_code = clReleaseKernel(kernel);
+	assert(error_code == CL_SUCCESS);
+	error_code = clReleaseProgram(program);
+	assert(error_code == CL_SUCCESS);
+	error_code = clReleaseCommandQueue(command_queue);
+	assert(error_code == CL_SUCCESS);
+	error_code = clReleaseContext(context);
+	assert(error_code == CL_SUCCESS);
 
     return NULL;
 }

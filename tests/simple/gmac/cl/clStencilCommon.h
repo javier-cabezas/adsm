@@ -203,12 +203,15 @@ do_stencil(void * ptr)
 	getTime(&s);
 
 	// Alloc 3 volumes for 2-degree time integration
-	assert(clMalloc(command_queue, (void **)&descr->u2, descr->size()) == CL_SUCCESS);
+	error_code = clMalloc(command_queue, (void **)&descr->u2, descr->size());
+	assert(error_code == CL_SUCCESS);
 	memset(descr->u2, 0, descr->size());
-	assert(clMalloc(command_queue, (void **)&descr->u3, descr->size()) == CL_SUCCESS);
+	error_code = clMalloc(command_queue, (void **)&descr->u3, descr->size());
+	assert(error_code == CL_SUCCESS);
     memset(descr->u3, 0, descr->size());
 
-    assert(clMalloc(command_queue, (void **) &v, descr->realSize()) == CL_SUCCESS);
+    error_code = clMalloc(command_queue, (void **) &v, descr->realSize());
+	assert(error_code == CL_SUCCESS);
 
     for (size_t k = 0; k < descr->slices; k++) {        
         for (size_t j = 0; j < descr->dimRealElems; j++) {        
@@ -234,16 +237,23 @@ do_stencil(void * ptr)
 	getTime(&s);
 
     cl_mem tmpMem = clGetBuffer(context, v);
-    assert(clSetKernelArg(kernel, 2, sizeof(cl_mem), &tmpMem) == CL_SUCCESS);
+    error_code = clSetKernelArg(kernel, 2, sizeof(cl_mem), &tmpMem);
+	assert(error_code == CL_SUCCESS);
     float dt2 = 0.08f;
-    assert(clSetKernelArg(kernel, 3, sizeof(dt2), &dt2) == CL_SUCCESS);
-    assert(clSetKernelArg(kernel, 4, sizeof(descr->dimElems), &descr->dimElems) == CL_SUCCESS);
-    assert(clSetKernelArg(kernel, 5, sizeof(descr->dimRealElems), &descr->dimRealElems) == CL_SUCCESS);
+    error_code = clSetKernelArg(kernel, 3, sizeof(dt2), &dt2);
+	assert(error_code == CL_SUCCESS);
+    error_code = clSetKernelArg(kernel, 4, sizeof(descr->dimElems), &descr->dimElems);
+	assert(error_code == CL_SUCCESS);
+    error_code = clSetKernelArg(kernel, 5, sizeof(descr->dimRealElems), &descr->dimRealElems);
+	assert(error_code== CL_SUCCESS);
     unsigned intTmp = descr->sliceElems();
-    assert(clSetKernelArg(kernel, 6, sizeof(intTmp), &intTmp) == CL_SUCCESS);
+    error_code = clSetKernelArg(kernel, 6, sizeof(intTmp), &intTmp);
+	assert(error_code == CL_SUCCESS);
     intTmp = descr->sliceRealElems();
-    assert(clSetKernelArg(kernel, 7, sizeof(intTmp), &intTmp) == CL_SUCCESS);
-    assert(clSetKernelArg(kernel, 8, sizeof(descr->slices), &descr->slices) == CL_SUCCESS);
+    error_code = clSetKernelArg(kernel, 7, sizeof(intTmp), &intTmp);
+	assert(error_code == CL_SUCCESS);
+    error_code = clSetKernelArg(kernel, 8, sizeof(descr->slices), &descr->slices);
+	assert(error_code == CL_SUCCESS);
 
 
     for (uint32_t i = 1; i <= ITERATIONS; i++) {
@@ -251,22 +261,27 @@ do_stencil(void * ptr)
         
         // Call the kernel
         tmpMem = clGetBuffer(context, descr->u2);
-        assert(clSetKernelArg(kernel, 0, sizeof(cl_mem), &tmpMem) == CL_SUCCESS);
+        error_code = clSetKernelArg(kernel, 0, sizeof(cl_mem), &tmpMem);
+		assert(error_code == CL_SUCCESS);
         tmpMem = clGetBuffer(context, descr->u3);                            
-        assert(clSetKernelArg(kernel, 1, sizeof(cl_mem), &tmpMem) == CL_SUCCESS);
+        error_code = clSetKernelArg(kernel, 1, sizeof(cl_mem), &tmpMem);
+		assert(error_code == CL_SUCCESS);
         
 #if 0
-        assert(__oclKernelConfigure(&kernel, 2, NULL, globalSize, localSize) == CL_SUCCESS);
+        error_code = __oclKernelConfigure(&kernel, 2, NULL, globalSize, localSize);
+		assert(error_code == CL_SUCCESS);
         oclError_t ret;
         ret = __oclKernelLaunch(&kernel);
         assert(ret == CL_SUCCESS);
 #endif
 
-        assert(clEnqueueNDRangeKernel(command_queue, kernel, 2, NULL, globalSize, localSize, 0, NULL, NULL) == CL_SUCCESS);
+        error_code = clEnqueueNDRangeKernel(command_queue, kernel, 2, NULL, globalSize, localSize, 0, NULL, NULL);
+		assert(error_code == CL_SUCCESS);
 
 #if 0
         if(descr->gpus > 1) {
-            assert(clFinish(command_queue) == CL_SUCCESS);
+            error_code = clFinish(command_queue);
+			assert(error_code == CL_SUCCESS);
             barrier_wait(&barrier);
 
             // Send data
@@ -290,7 +305,8 @@ do_stencil(void * ptr)
         descr->u2 = tmp;
     }
 
-    assert(clFinish(command_queue) == CL_SUCCESS);
+    error_code = clFinish(command_queue);
+	assert(error_code == CL_SUCCESS);
     if(descr->gpus > 1) {
         barrier_wait(&barrier);
     }
@@ -299,9 +315,23 @@ do_stencil(void * ptr)
 	printTime(&s, &t, "Run: ", "\n");
 
     getTime(&s);
-	clFree(command_queue, descr->u2);
-	clFree(command_queue, descr->u3);
-	clFree(command_queue, v);
+	/* Release memory */
+	error_code = clFree(command_queue, descr->u2);
+	assert(error_code == CL_SUCCESS);
+	error_code = clFree(command_queue, descr->u3);
+	assert(error_code == CL_SUCCESS);
+	error_code = clFree(command_queue, v);
+	assert(error_code == CL_SUCCESS);
+
+	/* Release OpenCL resources */
+	error_code = clReleaseKernel(kernel);
+	assert(error_code == CL_SUCCESS);
+	error_code = clReleaseProgram(program);
+	assert(error_code == CL_SUCCESS);
+	error_code = clReleaseCommandQueue(command_queue);
+	assert(error_code == CL_SUCCESS);
+	error_code = clReleaseContext(context);
+	assert(error_code == CL_SUCCESS);
     getTime(&t);
     printTime(&s, &t, "Free: ", "\n");
 

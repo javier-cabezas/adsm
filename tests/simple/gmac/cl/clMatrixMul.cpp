@@ -102,12 +102,14 @@ main(int argc, char** argv)
 
     // allocate memory for matrices A and B
 	getTime(&s);
-    assert(clMalloc(command_queue, (void**) &A, sizeA) == CL_SUCCESS);
-    assert(clMalloc(command_queue, (void**) &B, sizeB) == CL_SUCCESS);
-    assert(clMalloc(command_queue, (void**) &C, sizeC) == CL_SUCCESS);
+    error_code = clMalloc(command_queue, (void**) &A, sizeA);
+	assert(error_code == CL_SUCCESS);
+    error_code = clMalloc(command_queue, (void**) &B, sizeB);
+	assert(error_code == CL_SUCCESS);
+    error_code = clMalloc(command_queue, (void**) &C, sizeC);
+	assert(error_code == CL_SUCCESS);
 	getTime(&t);
 	printTime(&s, &t, "Alloc: ", "\n");
-
 
 	getTime(&s);
     valueInit(A, 100.f, elemsA);
@@ -122,18 +124,25 @@ main(int argc, char** argv)
     globalSize[1] = HC;
 
     cl_mem tmp = clGetBuffer(context, C);
-    assert(clSetKernelArg(kernel, 0, sizeof(cl_mem), &tmp) == CL_SUCCESS);
+    error_code = clSetKernelArg(kernel, 0, sizeof(cl_mem), &tmp);
+	assert(error_code == CL_SUCCESS);
     tmp = clGetBuffer(context, A);
-    assert(clSetKernelArg(kernel, 1, sizeof(cl_mem), &tmp) == CL_SUCCESS);
+    error_code = clSetKernelArg(kernel, 1, sizeof(cl_mem), &tmp);
+	assert(error_code == CL_SUCCESS);
     tmp = clGetBuffer(context, B);
-    assert(clSetKernelArg(kernel, 2, sizeof(cl_mem), &tmp) == CL_SUCCESS);
+    error_code = clSetKernelArg(kernel, 2, sizeof(cl_mem), &tmp);
+	assert(error_code == CL_SUCCESS);
     int param = int(WA);
-    assert(clSetKernelArg(kernel, 3, sizeof(int), &param) == CL_SUCCESS);
-    param     = int(WB);
-    assert(clSetKernelArg(kernel, 4, sizeof(int), &param) == CL_SUCCESS);
+    error_code = clSetKernelArg(kernel, 3, sizeof(int), &param);
+	assert(error_code == CL_SUCCESS);
+    param = int(WB);
+    error_code = clSetKernelArg(kernel, 4, sizeof(int), &param);
+	assert(error_code == CL_SUCCESS);
 
-    assert(clEnqueueNDRangeKernel(command_queue, kernel, 2, NULL, globalSize, localSize, 0, NULL, NULL) == CL_SUCCESS);
-    assert(clFinish(command_queue) == CL_SUCCESS);
+    error_code = clEnqueueNDRangeKernel(command_queue, kernel, 2, NULL, globalSize, localSize, 0, NULL, NULL);
+	assert(error_code == CL_SUCCESS);
+    error_code = clFinish(command_queue);
+	assert(error_code == CL_SUCCESS);
 
     getTime(&t);
     printTime(&s, &t, "Run: ", "\n");
@@ -149,12 +158,26 @@ main(int argc, char** argv)
     getTime(&t);
     printTime(&s, &t, "Check: ", "\n");
 
-    free(reference);
-
     getTime(&s);
-	clFree(command_queue, A);
-	clFree(command_queue, B);
-	clFree(command_queue, C);
+	/* Release memory */
+	free(reference);
+	reference = NULL;
+	error_code = clFree(command_queue, A);
+	assert(error_code == CL_SUCCESS);
+	error_code = clFree(command_queue, B);
+	assert(error_code == CL_SUCCESS);
+	error_code = clFree(command_queue, C);
+	assert(error_code == CL_SUCCESS);
+
+	/* Release OpenCL resources */
+	error_code = clReleaseKernel(kernel);
+	assert(error_code == CL_SUCCESS);
+	error_code = clReleaseProgram(program);
+	assert(error_code == CL_SUCCESS);
+	error_code = clReleaseCommandQueue(command_queue);
+	assert(error_code == CL_SUCCESS);
+	error_code = clReleaseContext(context);
+	assert(error_code == CL_SUCCESS);
     getTime(&t);
     printTime(&s, &t, "Free: ", "\n");
 
