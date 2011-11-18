@@ -65,8 +65,10 @@ int main(int argc, char *argv[])
 
     getTime(&s);
     // Alloc data
-    assert(clMalloc(command_queue, (void **)&input, vecSize * sizeof(cl_uint)) == CL_SUCCESS);
-    assert(clMalloc(command_queue, (void **)&output, sizeof(cl_uint4)) == CL_SUCCESS);
+    error_code = clMalloc(command_queue, (void **)&input, vecSize * sizeof(cl_uint));
+	assert(error_code == CL_SUCCESS);
+    error_code = clMalloc(command_queue, (void **)&output, sizeof(cl_uint4));
+	assert(error_code == CL_SUCCESS);
     getTime(&t);
     printTime(&s, &t, "Alloc: ", "\n");
 
@@ -117,19 +119,27 @@ int main(int argc, char *argv[])
 
     cl_mem input_device = clGetBuffer(context, input);
     cl_mem output_device = clGetBuffer(context, output);
-    assert(clSetKernelArg(kernel, 0, sizeof(cl_mem), &output_device) == CL_SUCCESS);
-    assert(clSetKernelArg(kernel, 1, sizeof(cl_mem), &input_device) == CL_SUCCESS);
-    assert(clSetKernelArg(kernel, 2, sizeof(findMe), &findMe) == CL_SUCCESS);
+    error_code = clSetKernelArg(kernel, 0, sizeof(cl_mem), &output_device);
+	assert(error_code == CL_SUCCESS);
+    error_code = clSetKernelArg(kernel, 1, sizeof(cl_mem), &input_device);
+	assert(error_code == CL_SUCCESS);
+    error_code = clSetKernelArg(kernel, 2, sizeof(findMe), &findMe);
+	assert(error_code == CL_SUCCESS);
     while(subdivSize > 1 && output[3] != 0) {
         output[3] = 0;
-        assert(clSetKernelArg(kernel, 3, sizeof(globalLowerBound), &globalLowerBound) == CL_SUCCESS);
-        assert(clSetKernelArg(kernel, 4, sizeof(globalUpperBound), &globalUpperBound) == CL_SUCCESS);
-        assert(clSetKernelArg(kernel, 5, sizeof(subdivSize), &subdivSize) == CL_SUCCESS);
+        error_code = clSetKernelArg(kernel, 3, sizeof(globalLowerBound), &globalLowerBound);
+		assert(error_code == CL_SUCCESS);
+        error_code = clSetKernelArg(kernel, 4, sizeof(globalUpperBound), &globalUpperBound);
+		assert(error_code == CL_SUCCESS);
+        error_code = clSetKernelArg(kernel, 5, sizeof(subdivSize), &subdivSize);
+		assert(error_code == CL_SUCCESS);
 
-        assert(clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, globalThreads, localThreads, 0, NULL, NULL) == CL_SUCCESS);
-        assert(clFinish(command_queue) == CL_SUCCESS);
+        error_code = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, globalThreads, localThreads, 0, NULL, NULL);
+		assert(error_code == CL_SUCCESS);
+        error_code = clFinish(command_queue);
+		assert(error_code == CL_SUCCESS);
 
-        globalLowerBound = output[0];
+		globalLowerBound = output[0];
         globalUpperBound = output[1];
         subdivSize = (globalUpperBound - globalLowerBound + 1)/numSubdivisions;
     }
@@ -165,8 +175,21 @@ int main(int argc, char *argv[])
     printTime(&s, &t, "Check: ", "\n");
 
     getTime(&s);
-    assert(clFree(command_queue, input) == CL_SUCCESS);
-    assert(clFree(command_queue, output) == CL_SUCCESS);
+	/* Release memory */
+    error_code = clFree(command_queue, input);
+	assert(error_code == CL_SUCCESS);
+    error_code = clFree(command_queue, output);
+	assert(error_code == CL_SUCCESS);
+
+	/* Release OpenCL resources */
+	error_code = clReleaseKernel(kernel);
+	assert(error_code == CL_SUCCESS);
+	error_code = clReleaseProgram(program);
+	assert(error_code == CL_SUCCESS);
+	error_code = clReleaseCommandQueue(command_queue);
+	assert(error_code == CL_SUCCESS);
+	error_code = clReleaseContext(context);
+	assert(error_code == CL_SUCCESS);
     getTime(&t);
     printTime(&s, &t, "Free: ", "\n");
 

@@ -106,14 +106,22 @@ int main(int argc, char *argv[])
     }
 
 	/* Clean up resources */
-    clFree(command_queue, a);
-    clFree(command_queue, b);
-    clFree(command_queue, c);
+    error_code = clFree(command_queue, a);
+	assert(error_code == CL_SUCCESS);
+    error_code = clFree(command_queue, b);
+	assert(error_code == CL_SUCCESS);
+    error_code = clFree(command_queue, c);
+	assert(error_code == CL_SUCCESS);
 
-	clReleaseKernel(kernel);
-	clReleaseProgram(program);
-	clReleaseCommandQueue(command_queue);
-	clReleaseContext(context);
+	/* Release OpenCL resources */
+	error_code = clReleaseKernel(kernel);
+	assert(error_code == CL_SUCCESS);
+	error_code = clReleaseProgram(program);
+	assert(error_code == CL_SUCCESS);
+	error_code = clReleaseCommandQueue(command_queue);
+	assert(error_code == CL_SUCCESS);
+	error_code = clReleaseContext(context);
+	assert(error_code == CL_SUCCESS);
 	
     return 0;
 }

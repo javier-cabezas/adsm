@@ -80,7 +80,8 @@ int main(int argc, char *argv[])
 
     getTime(&s);
     // Alloc
-    assert(clMalloc(command_queue, (void **)&input, length * sizeof(cl_uint)) == CL_SUCCESS);
+    error_code = clMalloc(command_queue, (void **)&input, length * sizeof(cl_uint));
+	assert(error_code == CL_SUCCESS);
     verificationInput = (cl_uint *) malloc(length*sizeof(cl_uint));
     if(verificationInput == NULL)
         return 0;
@@ -116,18 +117,25 @@ int main(int argc, char *argv[])
     for(cl_uint temp = length; temp > 1; temp >>= 1)
         ++numStages;
     cl_mem input_device = clGetBuffer(context, input);
-    assert(clSetKernelArg(kernel, 0, sizeof(cl_mem), &input_device) == CL_SUCCESS);
-    assert(clSetKernelArg(kernel, 3, sizeof(length), &length) == CL_SUCCESS);
-    assert(clSetKernelArg(kernel, 4, sizeof(sortDescending), &sortDescending) == CL_SUCCESS);
+    error_code = clSetKernelArg(kernel, 0, sizeof(cl_mem), &input_device);
+	assert(error_code == CL_SUCCESS);
+    error_code = clSetKernelArg(kernel, 3, sizeof(length), &length);
+	assert(error_code == CL_SUCCESS);
+    error_code = clSetKernelArg(kernel, 4, sizeof(sortDescending), &sortDescending);
+	assert(error_code == CL_SUCCESS);
     for(cl_uint stage = 0; stage < numStages; ++stage) {
         /* stage of the algorithm */
-        assert(clSetKernelArg(kernel, 1, sizeof(stage), &stage) == CL_SUCCESS);
+        error_code = clSetKernelArg(kernel, 1, sizeof(stage), &stage);
+		assert(error_code == CL_SUCCESS);
         /* Every stage has stage+1 passes. */
         for(cl_uint passOfStage = 0; passOfStage < stage + 1; ++passOfStage) {
             /* pass of the current stage */
-            assert(clSetKernelArg(kernel, 2, sizeof(passOfStage), &passOfStage) == CL_SUCCESS);
-            assert(clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, globalThreads, localThreads, 0, NULL, NULL) == CL_SUCCESS);
-            assert(clFinish(command_queue) == CL_SUCCESS);
+            error_code = clSetKernelArg(kernel, 2, sizeof(passOfStage), &passOfStage);
+			assert(error_code == CL_SUCCESS);
+            error_code = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL, globalThreads, localThreads, 0, NULL, NULL);
+			assert(error_code == CL_SUCCESS);
+            error_code = clFinish(command_queue);
+			assert(error_code == CL_SUCCESS);
         }
     }
     getTime(&t);
@@ -149,9 +157,21 @@ int main(int argc, char *argv[])
     printTime(&s, &t, "Check: ", "\n");
 
     getTime(&s);
+	/* Release memory */
     free(verificationInput);
     verificationInput = NULL;
-    assert(clFree(command_queue, input) == CL_SUCCESS);
+    error_code = clFree(command_queue, input);
+	assert(error_code == CL_SUCCESS);
+
+	/* Release OpenCL resources */
+	error_code = clReleaseKernel(kernel);
+	assert(error_code == CL_SUCCESS);
+	error_code = clReleaseProgram(program);
+	assert(error_code == CL_SUCCESS);
+	error_code = clReleaseCommandQueue(command_queue);
+	assert(error_code == CL_SUCCESS);
+	error_code = clReleaseContext(context);
+	assert(error_code == CL_SUCCESS);
     getTime(&t);
     printTime(&s, &t, "Free: ", "\n");
 
