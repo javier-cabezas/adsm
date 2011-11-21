@@ -70,7 +70,7 @@ source_group(${current_GROUP} FILES
     cpp/eclVecAdd_cplusplus.cpp
     cpp/eclFileVecAdd_cplusplus.cpp
     cpp/eclBinarySearch.cpp
-  #  cpp/eclBinomialOption.cpp
+    cpp/eclBinomialOption.cpp
     cpp/eclBitonicSort.cpp
     cpp/eclBlackScholes.cpp
 )
@@ -160,8 +160,8 @@ target_link_libraries(eclVecAdd_cpp gmac-hpe)
 add_executable(eclBinarySearch_cpp ${common_SRC} cpp/eclBinarySearch.cpp eclBinarySearchKernel.cl)
 target_link_libraries(eclBinarySearch_cpp gmac-hpe)
 
-#add_executable(eclBinomialOption_cpp ${common_SRC} cpp/eclBinomialOption.cpp eclBinomialOptionKernel.cl)
-#target_link_libraries(eclBinomialOption_cpp gmac-hpe)
+add_executable(eclBinomialOption_cpp ${common_SRC} cpp/eclBinomialOption.cpp eclBinomialOptionKernel.cl)
+target_link_libraries(eclBinomialOption_cpp gmac-hpe)
 
 add_executable(eclBitonicSort_cpp ${common_SRC} cpp/eclBitonicSort.cpp eclBitonicSortKernel.cl)
 target_link_libraries(eclBitonicSort_cpp gmac-hpe)
