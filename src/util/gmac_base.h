@@ -147,6 +147,9 @@ class GMAC_LOCAL gmac_base
     public unique<T, R>,
     public debug_memory<T>,
     public named
+#else
+    :
+    public unique_release
 #endif
 {
 #ifdef DEBUG

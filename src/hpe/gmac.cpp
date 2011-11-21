@@ -27,7 +27,7 @@
 #include "hal/types.h"
 
 #include "memory/manager.h"
-#include "memory/Allocator.h"
+#include "memory/allocator.h"
 #ifdef DEBUG
 #include "memory/protocol/common/BlockState.h"
 #endif

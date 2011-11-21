@@ -35,7 +35,7 @@ WITH THE SOFTWARE.  */
 #define GMAC_MEMORY_ALLOCATOR_SLAB_H_
 
 #include "config/common.h"
-#include "memory/Allocator.h"
+#include "memory/allocator.h"
 
 #include "Cache.h"
 

@@ -1,5 +1,5 @@
 #include "manager.h"
-#include "Allocator.h"
+#include "allocator.h"
 
 #include "allocator/Slab.h"
 

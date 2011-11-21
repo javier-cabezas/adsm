@@ -70,51 +70,6 @@ kernel::launch_config(vdevice &dev, hal::kernel_t::config &conf, hal::kernel_t::
     return ret;
 }
 
-#if 0
-inline
-Kernel::Kernel(const KernelDescriptor & k) :
-    KernelDescriptor(k.getName(), k.key())
-{
-}
-
-#ifdef DEBUG
-inline
-KernelLaunch::KernelLaunch(Mode &mode, gmac_kernel_id_t k) :
-    mode_(mode), k_(k)
-#else
-inline
-KernelLaunch::KernelLaunch(Mode &mode) :
-    mode_(mode)
-#endif
-{ }
-
-
-inline
-Mode &
-KernelLaunch::getMode()
-{
-    return mode_;
-}
-
-#ifdef DEBUG
-inline
-gmac_kernel_id_t
-KernelLaunch::getKernelId() const
-{
-    return k_;
-}
-#endif
-
-
-inline
-const std::list<memory::ObjectInfo> &
-KernelLaunch::getObjects() const
-{
-    return usedObjects_;
-}
-
-#endif
-
 }}}
 
 #endif

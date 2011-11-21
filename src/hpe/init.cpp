@@ -11,7 +11,7 @@
 
 #include "hal/types.h"
 
-#include "memory/Allocator.h"
+#include "memory/allocator.h"
 #include "memory/handler.h"
 #include "memory/manager.h"
 #include "memory/Memory.h"

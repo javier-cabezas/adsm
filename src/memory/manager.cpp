@@ -225,7 +225,7 @@ gmacError_t manager::free(core::address_space_ptr aspace, hostptr_t addr)
 size_t
 manager::getAllocSize(core::address_space_ptr aspace, const hostptr_t addr, gmacError_t &err) const
 {
-    size_t ret;
+    size_t ret = 0;
     trace::EnterCurrentFunction();
     err = gmacSuccess;
 

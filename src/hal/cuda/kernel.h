@@ -7,6 +7,7 @@
 
 #include "hal/types-detail.h"
 
+#include "util/ReusableObject.h"
 #include "util/unique.h"
 
 namespace __impl { namespace hal {
@@ -67,7 +68,7 @@ public:
 
     kernel_t(CUfunction func, const std::string &name);
 
-    launch &launch_config(Parent::config &config, Parent::arg_list &args, stream_t &stream);
+    //launch &launch_config(Parent::config &config, Parent::arg_list &args, stream_t &stream);
 };
 
 }}}

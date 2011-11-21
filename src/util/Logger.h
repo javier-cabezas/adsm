@@ -116,7 +116,7 @@ void dummy_assertion(bool /*b*/, ...)
 
 #   define TRACE(...) dummy_trace(__VA_ARGS__)
 #   define ASSERTION(c, ...) dummy_assertion(c, ##__VA_ARGS__)
-#endif
+#endif // DEBUG
 
 #ifdef DEBUG
 #define MESSAGE(fmt, ...) do {                                        \

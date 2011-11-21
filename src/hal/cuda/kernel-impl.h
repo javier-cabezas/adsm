@@ -9,6 +9,7 @@ kernel_t::kernel_t(CUfunction func, const std::string &name) :
 {
 }
 
+#if 0
 inline 
 kernel_t::launch &
 kernel_t::launch_config(Parent::config &conf, Parent::arg_list &args, stream_t &stream)
@@ -16,6 +17,7 @@ kernel_t::launch_config(Parent::config &conf, Parent::arg_list &args, stream_t &
     return *(new launch(*this, (kernel_t::config &) conf,
                                (kernel_t::arg_list &) args, stream));
 }
+#endif
 
 inline
 kernel_t::launch::launch(kernel_t &parent, config &conf, arg_list &args, stream_t &stream) :
