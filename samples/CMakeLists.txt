@@ -75,11 +75,11 @@ add_executable(eclBlackScholes
 )
 target_link_libraries(eclBlackScholes ${GMAC_HPE})
 
-#add_executable(eclBlackScholes_cplusplus
-#    ${CMAKE_SOURCE_DIR}/ecl/eclBlackScholes_cplusplus.cpp 
-#    ${CMAKE_SOURCE_DIR}/ecl/eclBlackScholesKernel.cl
-#)
-#target_link_libraries(eclBlackScholes_cplusplus ${GMAC_HPE})
+add_executable(eclBlackScholes_cplusplus
+    ${CMAKE_SOURCE_DIR}/ecl/eclBlackScholes_cplusplus.cpp 
+    ${CMAKE_SOURCE_DIR}/ecl/eclBlackScholesKernel.cl
+)
+target_link_libraries(eclBlackScholes_cplusplus ${GMAC_HPE})
 
 add_executable(clVecAdd
     ${CMAKE_SOURCE_DIR}/cl/clVecAdd.cpp
