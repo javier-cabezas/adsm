@@ -69,6 +69,16 @@ public:
     unsigned long get_print_id() const;
 };
 
+class GMAC_LOCAL unique_release {
+public:
+    inline
+    unsigned long get_print_id() const
+    {
+        return 0;
+    }
+};
+
+
 }}
 
 #define FMT_ID "%lu"

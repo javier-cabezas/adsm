@@ -85,7 +85,7 @@ inline
 const typename I::kernel &
 kernel_t<B, I>::launch::get_kernel() const
 {
-    return dynamic_cast<typename I::kernel &>(kernel_);
+    return reinterpret_cast<typename I::kernel &>(kernel_);
 }
 
 template <typename B, typename I>

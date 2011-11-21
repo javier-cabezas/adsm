@@ -13,7 +13,7 @@
 
 #include "hpe/init.h"
 
-#include "memory/Manager.h"
+#include "memory/manager.h"
 
 using __impl::hal::cuda::context_t;
 using __impl::hal::cuda::texture_t;

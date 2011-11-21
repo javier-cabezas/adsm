@@ -71,7 +71,7 @@ public:
     const typename B::kernel &operator()() const;
 
     const std::string &get_name() const;
-    virtual launch &launch_config(config &config, arg_list &args, typename I::stream &stream) = 0;
+    //virtual launch &launch_config(config &config, arg_list &args, typename I::stream &stream) = 0;
 };
 
 }
