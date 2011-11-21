@@ -10,7 +10,7 @@
 #include "utils.h"
 #include "debug.h"
 
-#include "eclBinomialOptionKernel.cl"
+#include "../eclBinomialOptionKernel.cl"
 
 #define VOLATILITY 0.30f
 #define RISKFREE 0.02f
@@ -118,14 +118,14 @@ int main(int argc, char *argv[])
 	ecl::config localSize(numSteps + 1);
 
 	ecl::error err;
-	ecl::kernel kernel("binomialOptions", err);
+	ecl::kernel kernel("binomial_options", err);
 	assert(err == eclSuccess);
 #ifndef __GXX_EXPERIMENTAL_CXX0X__
 	assert(kernel.setArg(0, numSteps) == eclSuccess);
 	assert(kernel.setArg(1, randArray) == eclSuccess);
 	assert(kernel.setArg(2, output) == eclSuccess);
-	assert(kernel.setArg(3, NULL) == eclSuccess);
-	assert(kernel.setArg(4, NULL) == eclSuccess);
+	assert(kernel.setArg(3, (cl_float4 *)NULL) == eclSuccess);
+	assert(kernel.setArg(4, (cl_float4 *)NULL) == eclSuccess);
 	assert(kernel.callNDRange(globalSize, localSize) == eclSuccess);
 #else
 	assert(kernel(globalSize, localSize)(numSteps, randArray, output, NULL, NULL) == eclSuccess);
