@@ -60,15 +60,16 @@ class thread;
 class vdevice;
 
 /** Map that contains in which accelerator resides a mode */
-class GMAC_LOCAL vdeviceMap : private std::map<vdevice *, unsigned>,
-                              private gmac::util::mutex {
+class GMAC_LOCAL map_vdevice : private std::map<vdevice *, unsigned>,
+                              private gmac::util::mutex<map_vdevice> {
     friend class process;
 private:
     typedef std::map<vdevice *, unsigned> Parent;
+    typedef gmac::util::mutex<map_vdevice> Lock;
 
 public:
     /** Constructs the vdeviceMap */
-    vdeviceMap();
+    map_vdevice();
 
     typedef Parent::iterator iterator;
     typedef Parent::const_iterator const_iterator;
@@ -86,9 +87,11 @@ public:
 
 /** Represents the resources used by a running process */
 class GMAC_LOCAL process : public core::process,
-                           public gmac::util::lock_rw {
+                           public gmac::util::lock_rw<process> {
     DBC_FORCE_TEST(process)
 protected:
+	typedef gmac::util::lock_rw<process> Lock;
+
     unsigned current_;
 
     resource_manager resourceManager_;

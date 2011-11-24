@@ -49,12 +49,12 @@ public:
         typedef std::map<hostptr_t, cl_mem_ref> map_subbuffer;
         class map_global_subbuffer :
             protected std::map<cl_context, map_subbuffer>,
-            protected gmac::util::spinlock {
+            protected gmac::util::spinlock<map_global_subbuffer> {
         public:
             typedef std::map<cl_context, map_subbuffer> Parent;
             typedef Parent::iterator iterator;
             map_global_subbuffer() :
-                gmac::util::spinlock("map_global_subbuffer")
+                gmac::util::spinlock<map_global_subbuffer>("map_global_subbuffer")
             {
             }
 

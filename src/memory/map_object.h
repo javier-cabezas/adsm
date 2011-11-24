@@ -59,12 +59,12 @@ class protocol_interface;
 
 //! A map of objects that is not bound to any Mode
 class GMAC_LOCAL map_object :
-     protected gmac::util::lock_rw,
-     protected std::map<const hostptr_t, object *>,
-     public util::NonCopyable {
+    protected gmac::util::lock_rw<map_object>,
+    protected std::map<const hostptr_t, object *>,
+    public util::NonCopyable {
 protected:
-    friend class core::hpe::AddressSpace;
     typedef std::map<const hostptr_t, object *> Parent;
+    typedef gmac::util::lock_rw<map_object> Lock;
 
 #if 0
     core::Process &parent_;

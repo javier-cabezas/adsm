@@ -41,15 +41,15 @@ WITH THE SOFTWARE.  */
 
 namespace __dbc { namespace util { namespace allocator {
 
-class GMAC_LOCAL Buddy :
-    public __impl::util::allocator::Buddy,
+class GMAC_LOCAL buddy :
+    public __impl::util::allocator::buddy,
     public virtual Contract {
-    DBC_TESTED(__impl::util::allocator::Buddy)
+    DBC_TESTED(__impl::util::allocator::buddy)
 protected:
     off_t getFromList(uint8_t i);
     void putToList(off_t addr, uint8_t i);
 public:
-    Buddy(hostptr_t addr, size_t size);
+    buddy(hostptr_t addr, size_t size);
     hostptr_t get(size_t &size);
     void put(hostptr_t addr, size_t size);
 };

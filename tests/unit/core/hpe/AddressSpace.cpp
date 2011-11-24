@@ -9,7 +9,7 @@
 using gmac::core::hpe::Process;
 
 using __impl::core::hpe::Mode;
-using __impl::memory::Object;
+using __impl::memory::object;
 using __impl::core::hpe::AddressSpace;
 
 Mode *AddressSpaceTest::Mode_ = NULL;
@@ -45,12 +45,12 @@ TEST_F(AddressSpaceTest, Creation) {
 	ASSERT_TRUE(aSpace != NULL);
 }
 
-TEST_F(AddressSpaceTest, Object) {
+TEST_F(AddressSpaceTest, object) {
 	__impl::memory::ObjectMap &map = Mode_->getAddressSpace();
 	ASSERT_TRUE(&map != NULL);
 	__impl::memory::protocol_interface &proto = map.getProtocol();
 	ASSERT_TRUE(&proto != NULL);
-	Object *object = proto.createObject(*Mode_, Size_, NULL, GMAC_PROT_READ, 0);
+	object *object = proto.createObject(*Mode_, Size_, NULL, GMAC_PROT_READ, 0);
 	ASSERT_TRUE(object != NULL);
 	
 	hostptr_t ptr = object->addr();

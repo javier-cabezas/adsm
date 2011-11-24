@@ -6,7 +6,7 @@
 
 #include "util/allocator/Buddy.h"
 
-using gmac::util::allocator::Buddy;
+using gmac::util::allocator::buddy;
 
 class BuddyTest : public testing::Test {
 public:
@@ -26,7 +26,7 @@ long_t BuddyTest::Base_ = 0x1000;
 void *BuddyTest::BasePtr_ = (void *)Base_;
 
 TEST_F(BuddyTest, SimpleAllocations) {
-    Buddy buddy(hostptr_t(BasePtr_), Size_);
+    buddy buddy(hostptr_t(BasePtr_), Size_);
     ASSERT_TRUE(buddy.addr() == BasePtr_);
 
     std::list<hostptr_t> allocs;
@@ -62,7 +62,7 @@ TEST_F(BuddyTest, RandomAllocations) {
     const int Allocations = 1024;
     const size_t MinMemory = 4 * 4096;
     size_t freeMemory = Size_;
-    Buddy buddy(hostptr_t(BasePtr_), Size_);
+    buddy buddy(hostptr_t(BasePtr_), Size_);
     ASSERT_TRUE(buddy.addr() == BasePtr_);
 
     typedef std::map<hostptr_t, size_t> AllocMap;

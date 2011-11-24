@@ -91,10 +91,10 @@ public:
 	~RWLock();
 
     //! Get shared access to the lock
-	void lockRead() const;
+	void lock_read() const;
 
     //! Get exclusive access to the lock
-	void lockWrite() const;
+	void lock_write() const;
 
     //! Release the lock
 	void unlock() const;

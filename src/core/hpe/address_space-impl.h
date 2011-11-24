@@ -19,10 +19,10 @@ address_space::get_hal_context() const
 
 inline
 bool
-address_space::has_direct_copy(const core::address_space &_aspace) const
+address_space::has_direct_copy(core::address_space_const_ptr _aspace) const
 {
-    const address_space &aspace = reinterpret_cast<const address_space &>(_aspace);
-    return ctx_.get_device().has_direct_copy(aspace.ctx_.get_device());
+    address_space_const_ptr aspace = util::static_pointer_cast<const address_space>(_aspace);
+    return ctx_.get_device().has_direct_copy(aspace->ctx_.get_device());
 }
 
 }}}

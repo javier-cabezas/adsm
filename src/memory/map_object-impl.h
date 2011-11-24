@@ -10,7 +10,7 @@ gmacError_t
 map_object::forEachObject(gmacError_t (object::*f)(void))
 {
     iterator i;
-    lockRead();
+    lock_read();
     for(i = begin(); i != end(); i++) {
         gmacError_t ret = (i->second->*f)();
         if(ret != gmacSuccess) {
@@ -27,7 +27,7 @@ gmacError_t
 map_object::forEachObject(gmacError_t (object::*f)(P1 &), P1 &p1)
 {
     const_iterator i;
-    lockRead();
+    lock_read();
     for(i = begin(); i != end(); i++) {
         gmacError_t ret = (i->second->*f)(p1);
         if(ret != gmacSuccess) {
@@ -44,7 +44,7 @@ map_object::forEachObject(gmacError_t (object::*f)(P1 &), P1 &p1)
 inline
 gmacError_t map_object::dumpObjects(const std::string &dir, std::string prefix, protocol::common::Statistic stat) const
 {
-    lockRead();
+    lock_read();
     const_iterator i;
     for(i = begin(); i != end(); i++) {
         object &obj = *(i->second);
@@ -65,7 +65,7 @@ inline
 gmacError_t map_object::dumpObject(const std::string &dir, std::string prefix, protocol::common::Statistic stat, hostptr_t ptr) const
 {
     object *obj = getObject(ptr, 1);
-    lockRead();
+    lock_read();
     ASSERTION(obj != NULL);
     std::stringstream name;
     name << dir << prefix << "#" << obj->getId() << "-" << obj->getDumps(stat) << "_" << protocol::common::StatisticName[stat];
@@ -84,7 +84,7 @@ inline
 bool
 map_object::hasModifiedObjects() const
 {
-    lockRead();
+    lock_read();
     bool ret = modifiedObjects_;
     unlock();
     return ret;
@@ -94,7 +94,7 @@ inline
 void
 map_object::invalidateObjects()
 {
-    lockWrite();
+    lock_write();
     modifiedObjects_ = false;
     unlock();
 }
@@ -111,7 +111,7 @@ inline
 void
 map_object::modifiedObjects()
 {
-    lockWrite();
+    lock_write();
     modifiedObjects_unlocked();
     unlock();
 }
@@ -120,7 +120,7 @@ inline
 bool
 map_object::releasedObjects() const
 {
-    lockRead();
+    lock_read();
     bool ret = releasedObjects_;
     unlock();
     return ret;

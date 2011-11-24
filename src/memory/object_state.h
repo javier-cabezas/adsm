@@ -42,7 +42,9 @@ namespace __impl {
 
 namespace core {
 	class address_space;
-	class ResourceManager;
+
+	typedef util::shared_ptr<core::address_space> address_space_ptr;
+	typedef util::shared_ptr<const core::address_space> address_space_const_ptr;
 }
 
 namespace memory {
@@ -56,13 +58,13 @@ protected:
     bool hasUserMemory_;
 #if 0
     typedef std::map<accptr_t, std::list<core::address_space *> > AcceleratorMap;
-    typedef std::map<core::address_space *, accptr_t> aspace_map;
+    typedef std::map<core::address_space *, accptr_t> map_aspace;
 
     AcceleratorMap acceleratorAddr_;
-    aspace_map owners_;
+    map_aspace owners_;
 #endif
     accptr_t deviceAddr_;
-    util::smart_ptr<core::address_space>::shared ownerShortcut_;
+    core::address_space_ptr ownerShortcut_;
 
     gmacError_t repopulateBlocks(core::address_space &aspace);
 
@@ -74,11 +76,11 @@ public:
     accptr_t get_device_addr(const hostptr_t addr) const;
     accptr_t get_device_addr() const;
 
-    core::address_space &owner();
-    const core::address_space &owner() const;
+    core::address_space_ptr owner();
+    core::address_space_const_ptr owner() const;
 
-    gmacError_t addOwner(util::smart_ptr<core::address_space>::shared owner);
-    gmacError_t removeOwner(util::smart_ptr<core::address_space>::shared owner);
+    gmacError_t addOwner(core::address_space_ptr owner);
+    gmacError_t removeOwner(core::address_space_const_ptr owner);
 
     gmacError_t mapToAccelerator();
     gmacError_t unmapFromAccelerator();

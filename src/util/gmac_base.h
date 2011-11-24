@@ -92,7 +92,7 @@ typedef void (*report_fn)();
 #ifdef DEBUG
 
 class GMAC_LOCAL debug :
-    public gmac::util::mutex {
+    public gmac::util::mutex<debug> {
     static debug debug_;
 
     typedef std::map<std::string, report_fn> MapTypes;
@@ -117,7 +117,7 @@ class GMAC_LOCAL debug :
     }
 public:
     debug() :
-        gmac::util::mutex("debug")
+        gmac::util::mutex<debug>("debug")
     {
     }
 
@@ -136,7 +136,6 @@ public:
         debug_.dumpInfo_();
     }
 };
-
 
 #endif
 

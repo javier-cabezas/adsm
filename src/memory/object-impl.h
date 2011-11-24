@@ -12,7 +12,7 @@
 namespace __impl { namespace memory {
 
 inline object::object(protocol_interface &protocol, hostptr_t addr, size_t size) :
-    gmac::util::lock_rw("Object"),
+    Lock("object"),
     util::Reference("Object"),
     protocol_(protocol),
     addr_(addr),
@@ -103,7 +103,7 @@ gmacError_t object::coherenceOp(gmacError_t (protocol_interface::*op)(block_ptr,
 inline gmacError_t
 object::acquire(GmacProtection &prot)
 {
-    lockWrite();
+    lock_write();
     gmacError_t ret = gmacSuccess;
     TRACE(LOCAL, "Acquiring object %p?", addr_);
     if (released_ == true) {
@@ -118,7 +118,7 @@ object::acquire(GmacProtection &prot)
 inline gmacError_t
 object::release()
 {
-    lockWrite();
+    lock_write();
     released_ = true;
     unlock();
     return gmacSuccess;
@@ -127,7 +127,7 @@ object::release()
 inline gmacError_t
 object::releaseBlocks()
 {
-    lockWrite();
+    lock_write();
     gmacError_t ret = gmacSuccess;
 
     TRACE(LOCAL, "Releasing object %p?", addr_);
@@ -145,7 +145,7 @@ object::releaseBlocks()
 inline gmacError_t
 object::acquireWithBitmap()
 {
-    lockRead();
+    lock_read();
     gmacError_t ret = coherenceOp(&protocol_interface::acquireWithBitmap);
     unlock();
     return ret;
@@ -156,7 +156,7 @@ template <typename P1, typename P2>
 gmacError_t
 object::forEachBlock(gmacError_t (protocol_interface::*op)(block_ptr, P1 &, P2), P1 &p1, P2 p2)
 {
-    lockRead();
+    lock_read();
     gmacError_t ret = gmacSuccess;
     vector_block::iterator i;
     for(i = blocks_.begin(); i != blocks_.end(); i++) {
@@ -169,7 +169,7 @@ object::forEachBlock(gmacError_t (protocol_interface::*op)(block_ptr, P1 &, P2),
 
 inline gmacError_t object::toHost()
 {
-    lockRead();
+    lock_read();
     gmacError_t ret= coherenceOp(&protocol_interface::toHost);
     unlock();
     return ret;
@@ -177,7 +177,7 @@ inline gmacError_t object::toHost()
 
 inline gmacError_t object::toAccelerator()
 {
-    lockRead();
+    lock_read();
     gmacError_t ret = coherenceOp(&protocol_interface::release);
     unlock();
     return ret;
@@ -188,7 +188,7 @@ inline gmacError_t
 object::copyToBuffer(core::io_buffer &buffer, size_t size,
                      size_t bufferOffset, size_t objectOffset)
 {
-    lockRead();
+    lock_read();
     gmacError_t ret = memoryOp(&protocol_interface::copyToBuffer, buffer, size,
                                bufferOffset, objectOffset);
     unlock();
@@ -198,7 +198,7 @@ object::copyToBuffer(core::io_buffer &buffer, size_t size,
 inline gmacError_t object::copyFromBuffer(core::io_buffer &buffer, size_t size,
                                           size_t bufferOffset, size_t objectOffset)
 {
-    lockRead();
+    lock_read();
     gmacError_t ret = memoryOp(&protocol_interface::copyFromBuffer, buffer, size,
                                bufferOffset, objectOffset);
     unlock();
@@ -210,8 +210,8 @@ inline gmacError_t object::copyFromBuffer(core::io_buffer &buffer, size_t size,
 inline gmacError_t object::copyObjectToObject(object &dst, size_t dstOff,
                                               object &src, size_t srcOff, size_t count)
 {
-    dst.lockWrite();
-    src.lockWrite();
+    dst.lock_write();
+    src.lock_write();
         gmacError_t ret = memoryOp(&protocol_interface::copyFromBuffer, buffer, size,
         bufferOffset, objectOffset);
     dst.unlock();

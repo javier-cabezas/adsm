@@ -5,131 +5,131 @@
 
 namespace __dbc { namespace memory { namespace protocol {
 
-LazyBase::LazyBase(bool eager) :
-    __impl::memory::protocol::LazyBase(eager)
+lazy_base::lazy_base(bool eager) :
+    __impl::memory::protocol::lazy_base(eager)
 {
 }
 
-LazyBase::~LazyBase()
+lazy_base::~lazy_base()
 {
 }
 
 gmacError_t
-LazyBase::signal_read(BlockPtrImpl _block, hostptr_t addr)
+lazy_base::signal_read(block_ptr_impl _block, hostptr_t addr)
 {
 	REQUIRES(_block);
 
-    LazyBlockPtrImpl block = __impl::util::smart_ptr<LazyBlockImpl>::static_pointer_cast(_block);
+    lazy_block_ptr_impl block = __impl::util::static_pointer_cast<lazy_block_impl>(_block);
     //REQUIRES(block.getState() == __impl::memory::protocol::lazy::Invalid);
 
-    gmacError_t ret = Parent::signal_read(block, addr);
+    gmacError_t ret = parent::signal_read(block, addr);
 
     return ret;
 }
 
 gmacError_t
-LazyBase::signal_write(BlockPtrImpl _block, hostptr_t addr)
+lazy_base::signal_write(block_ptr_impl _block, hostptr_t addr)
 {
 	REQUIRES(_block);
 
-	LazyBlockPtrImpl block = __impl::util::smart_ptr<LazyBlockImpl>::static_pointer_cast(_block);
-    gmacError_t ret = Parent::signal_write(block, addr);
+	lazy_block_ptr_impl block = __impl::util::static_pointer_cast<lazy_block_impl>(_block);
+    gmacError_t ret = parent::signal_write(block, addr);
 
-    ENSURES(block->getState() == __impl::memory::protocol::lazy::Dirty);
+    ENSURES(block->getState() == __impl::memory::protocol::lazy_types::Dirty);
 
     return ret;
 }
 
 gmacError_t
-LazyBase::acquire(BlockPtrImpl _block, GmacProtection &prot)
+lazy_base::acquire(block_ptr_impl _block, GmacProtection &prot)
 {
 	REQUIRES(_block);
 
-	LazyBlockPtrImpl block = __impl::util::smart_ptr<LazyBlockImpl>::static_pointer_cast(_block);
+	lazy_block_ptr_impl block = __impl::util::static_pointer_cast<lazy_block_impl>(_block);
 
-    REQUIRES(block->getState() == __impl::memory::protocol::lazy::ReadOnly ||
-             block->getState() == __impl::memory::protocol::lazy::Invalid);
+    REQUIRES(block->getState() == __impl::memory::protocol::lazy_types::ReadOnly ||
+             block->getState() == __impl::memory::protocol::lazy_types::Invalid);
 
-    gmacError_t ret = Parent::acquire(block, prot);
+    gmacError_t ret = parent::acquire(block, prot);
 
     ENSURES((prot != GMAC_PROT_READWRITE && prot != GMAC_PROT_WRITE) ||
-            block->getState() == __impl::memory::protocol::lazy::Invalid);
+            block->getState() == __impl::memory::protocol::lazy_types::Invalid);
 
     return ret;
 }
 
 gmacError_t
-LazyBase::release(BlockPtrImpl _block)
+lazy_base::release(block_ptr_impl _block)
 {
 	REQUIRES(_block);
-	LazyBlockPtrImpl block = __impl::util::smart_ptr<LazyBlockImpl>::static_pointer_cast(_block);
-    gmacError_t ret = Parent::release(block);
+	lazy_block_ptr_impl block = __impl::util::static_pointer_cast<lazy_block_impl>(_block);
+    gmacError_t ret = parent::release(block);
 
-    ENSURES(block->getState() == __impl::memory::protocol::lazy::ReadOnly ||
-            block->getState() == __impl::memory::protocol::lazy::Invalid);
+    ENSURES(block->getState() == __impl::memory::protocol::lazy_types::ReadOnly ||
+            block->getState() == __impl::memory::protocol::lazy_types::Invalid);
 
     return ret;
 }
 
 gmacError_t
-LazyBase::releaseAll()
+lazy_base::releaseAll()
 {
-    gmacError_t ret = Parent::releaseAll();
+    gmacError_t ret = parent::releaseAll();
 
-    ENSURES(Parent::dbl_.size() == 0);
+    ENSURES(parent::dbl_.size() == 0);
 
     return ret;
 }
 
 gmacError_t
-LazyBase::toHost(BlockPtrImpl _block)
+lazy_base::toHost(block_ptr_impl _block)
 {
 	REQUIRES(_block);
-	LazyBlockPtrImpl block = __impl::util::smart_ptr<LazyBlockImpl>::static_pointer_cast(_block);
-    gmacError_t ret = Parent::toHost(block);
+	lazy_block_ptr_impl block = __impl::util::static_pointer_cast<lazy_block_impl>(_block);
+    gmacError_t ret = parent::toHost(block);
 
-    ENSURES(block->getState() != __impl::memory::protocol::lazy::Invalid);
+    ENSURES(block->getState() != __impl::memory::protocol::lazy_types::Invalid);
 
     return ret;
 }
 
 __impl::hal::event_t
-LazyBase::memset(const BlockPtrImpl block, size_t blockOffset, int v, size_t size, gmacError_t &err)
+lazy_base::memset(const block_ptr_impl block, size_t blockOffset, int v, size_t size, gmacError_t &err)
 {
 	REQUIRES(block);
     REQUIRES(blockOffset + size <= block->size());
 
-    __impl::hal::event_t ret = Parent::memset(block, blockOffset, v, size, err);
+    __impl::hal::event_t ret = parent::memset(block, blockOffset, v, size, err);
 
     return ret;
 }
 
 gmacError_t
-LazyBase::flushDirty()
+lazy_base::flushDirty()
 {
-    gmacError_t ret = Parent::flushDirty();
+    gmacError_t ret = parent::flushDirty();
 
-    ENSURES(Parent::dbl_.size() == 0);
+    ENSURES(parent::dbl_.size() == 0);
 
     return ret;
 }
 
 __impl::hal::event_t
-LazyBase::copyBlockToBlock(BlockPtrImpl d, size_t dstOffset, BlockPtrImpl s, size_t srcOffset, size_t count, gmacError_t &err)
+lazy_base::copyBlockToBlock(block_ptr_impl d, size_t dstOffset, block_ptr_impl s, size_t srcOffset, size_t count, gmacError_t &err)
 {
 	REQUIRES(d);
 	REQUIRES(s);
 
-    LazyBlockPtrImpl dst = __impl::util::smart_ptr<LazyBlockImpl>::static_pointer_cast(d);
-    LazyBlockPtrImpl src = __impl::util::smart_ptr<LazyBlockImpl>::static_pointer_cast(s);
+    lazy_block_ptr_impl dst = __impl::util::static_pointer_cast<lazy_block_impl>(d);
+    lazy_block_ptr_impl src = __impl::util::static_pointer_cast<lazy_block_impl>(s);
 
     REQUIRES(dstOffset + count <= dst->size());
     REQUIRES(srcOffset + count <= src->size());
 
-    StateImpl dstState = dst->getState();
-    StateImpl srcState = src->getState();
+    state_impl dstState = dst->getState();
+    state_impl srcState = src->getState();
 
-    __impl::hal::event_t ret = Parent::copyBlockToBlock(d, dstOffset, s, srcOffset, count, err);
+    __impl::hal::event_t ret = parent::copyBlockToBlock(d, dstOffset, s, srcOffset, count, err);
 
     ENSURES(dst->getState() == dstState);
     ENSURES(src->getState() == srcState);

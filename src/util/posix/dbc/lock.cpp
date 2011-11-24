@@ -4,6 +4,7 @@
 
 namespace __dbc { namespace util {
 
+#if 0
 #if !defined(__APPLE__)
 spinlock::spinlock(const char *name) :
     __impl::util::spinlock(name),
@@ -105,14 +106,14 @@ lock_rw::~lock_rw()
     readers_.clear();
 }
 
-void lock_rw::lockRead() const
+void lock_rw::lock_read() const
 {
     pthread_mutex_lock(&internal_);
     REQUIRES(readers_.find(pthread_self()) == readers_.end() &&
              writer_ != pthread_self());
     pthread_mutex_unlock(&internal_);
 
-    __impl::util::lock_rw::lockRead();
+    __impl::util::lock_rw::lock_read();
 
     pthread_mutex_lock(&internal_);
     ENSURES(state_ == Idle || state_ == Read);
@@ -121,14 +122,14 @@ void lock_rw::lockRead() const
     pthread_mutex_unlock(&internal_);
 }
 
-void lock_rw::lockWrite() const
+void lock_rw::lock_write() const
 {
     pthread_mutex_lock(&internal_);
     REQUIRES(readers_.find(pthread_self()) == readers_.end());
     REQUIRES(writer_ != pthread_self());
     pthread_mutex_unlock(&internal_);
 
-    __impl::util::lock_rw::lockWrite();
+    __impl::util::lock_rw::lock_write();
 
     pthread_mutex_lock(&internal_);
     ENSURES(readers_.empty() == true);
@@ -157,6 +158,8 @@ void lock_rw::unlock() const
 
     pthread_mutex_unlock(&internal_);
 }
+
+#endif
 
 }}
 

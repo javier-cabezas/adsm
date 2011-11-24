@@ -4,8 +4,8 @@
 
 namespace __impl { namespace util { namespace allocator {
 
-Buddy::Buddy(hostptr_t addr, size_t size) :
-    gmac::util::mutex("Buddy"),
+buddy::buddy(hostptr_t addr, size_t size) :
+    gmac::util::mutex<buddy>("Buddy"),
     addr_(addr),
     size_(round((uint32_t)size)),
     index_(index(size_))
@@ -13,12 +13,12 @@ Buddy::Buddy(hostptr_t addr, size_t size) :
     _tree[index_].push_back(0);
 }
 
-Buddy::~Buddy()
+buddy::~buddy()
 {
     _tree.clear();
 }
 
-uint8_t Buddy::ones(register uint32_t x) const
+uint8_t buddy::ones(register uint32_t x) const
 {
     /* 32-bit recursive reduction using SWAR...
        but first step is mapping 2-bit values
@@ -32,7 +32,7 @@ uint8_t Buddy::ones(register uint32_t x) const
     return (x & 0x0000003f);
 }
 
-uint8_t Buddy::index(register uint32_t x) const
+uint8_t buddy::index(register uint32_t x) const
 {
     register int32_t y = (x & (x - 1));
 
@@ -46,7 +46,7 @@ uint8_t Buddy::index(register uint32_t x) const
     return uint8_t(ones(x >> 1) - y);
 }
 
-uint32_t Buddy::round(register uint32_t x) const
+uint32_t buddy::round(register uint32_t x) const
 {
     x--;
     x |= x >> 1;
@@ -59,7 +59,7 @@ uint32_t Buddy::round(register uint32_t x) const
     return x;
 }
 
-off_t Buddy::getFromList(uint8_t i)
+off_t buddy::getFromList(uint8_t i)
 {
     if(i > index_) {
         TRACE(LOCAL,"Requested size (%d) larger than available I/O memory", 1 << i);
@@ -84,7 +84,7 @@ off_t Buddy::getFromList(uint8_t i)
     return larger;
 }
 
-void Buddy::putToList(off_t addr, uint8_t i)
+void buddy::putToList(off_t addr, uint8_t i)
 {
     if(i == index_) {
         _tree[i].push_back(addr);
@@ -108,7 +108,7 @@ void Buddy::putToList(off_t addr, uint8_t i)
 
 }
 
-hostptr_t Buddy::get(size_t &size)
+hostptr_t buddy::get(size_t &size)
 {
     uint8_t i = index((uint32_t)size);
     uint32_t realSize = (uint32_t) 1 << i;
@@ -122,7 +122,7 @@ hostptr_t Buddy::get(size_t &size)
     return addr_ + off;
 }
 
-void Buddy::put(hostptr_t addr, size_t size)
+void buddy::put(hostptr_t addr, size_t size)
 {
     uint8_t i = index((uint32_t)size);
     off_t off = off_t(addr - addr_);

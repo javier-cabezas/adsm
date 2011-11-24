@@ -112,10 +112,10 @@ public:
 
 protected:
     //! Get shared access to the lock
-	TESTABLE void lockRead() const;
+	TESTABLE void lock_read() const;
 
     //! Get exclusive access to the lock
-	TESTABLE void lockWrite() const;
+	TESTABLE void lock_write() const;
 
     //! Release the lock
 	TESTABLE void unlock() const;

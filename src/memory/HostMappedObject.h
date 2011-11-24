@@ -49,37 +49,39 @@ namespace core {
 
 namespace memory {
 
-class HostMappedObject;
+class object_host_mapped;
 //! A set of Host-mapped memory blocks
 /*! This class is actually a map, because we need to easily locate blocks
     using host memory addresses
 */
-class GMAC_LOCAL HostMappedSet : protected std::map<void *, HostMappedObject *>, 
-    public gmac::util::lock_rw {
+class GMAC_LOCAL set_object_host_mapped :
+protected std::map<void *, object_host_mapped *>,
+    public gmac::util::lock_rw<set_object_host_mapped> {
 protected:
-    friend class HostMappedObject;
+    friend class object_host_mapped;
 
-    typedef std::map<void *, HostMappedObject *> Parent;
+    typedef std::map<void *, object_host_mapped *> Parent;
+    typedef gmac::util::lock_rw<set_object_host_mapped> Lock;
 
     //! Inster a host mapped object in the set
     /*!
         \param object Host  mapped object to be inserted
         \return True if the block was inserted
     */
-    bool insert(HostMappedObject *object);
+    bool insert(object_host_mapped *object);
 
     //! Find a host mapped object that contains a memory address
     /*!
         \param addr Host memory address within the host mapped object
         \return Host mapped object containing the memory address. NULL if not found
     */
-    HostMappedObject *get(hostptr_t addr) const;
+    object_host_mapped *get(hostptr_t addr) const;
 public:
     //! Default constructor
-    HostMappedSet();
+    set_object_host_mapped();
 
     //! Default destructor
-    ~HostMappedSet();
+    ~set_object_host_mapped();
 
     //! Remove a block from the list that contains a given host memory address
     /*!
@@ -90,7 +92,7 @@ public:
 };
 
 //! A memory object that only resides in host memory, but that is accessible from the accelerator
-class GMAC_LOCAL HostMappedObject :
+class GMAC_LOCAL object_host_mapped :
     public util::Reference {
 protected:
     //! Starting host memory address of the object
@@ -100,7 +102,7 @@ protected:
     size_t size_;
 
     //! Set of all host mapped memory objects
-    static HostMappedSet set_;
+    static set_object_host_mapped set_;
 
     hal::ptr_t alloc(core::address_space_ptr aspace, gmacError_t &err);
     void free(core::address_space_ptr aspace);
@@ -115,10 +117,10 @@ public:
      * \param aspace Execution aspace creating the object
      * \param size Size (in bytes) of the object being created
      */
-    HostMappedObject(core::address_space_ptr aspace, size_t size);
+    object_host_mapped(core::address_space_ptr aspace, size_t size);
 
     /// Default destructor
-    virtual ~HostMappedObject();
+    virtual ~object_host_mapped();
 
 #ifdef USE_OPENCL
     gmacError_t acquire(core::address_space_ptr current);
@@ -161,7 +163,7 @@ public:
      * \param addr Host memory address within the object
      * \return Host mapped object cotainig the host memory address. NULL if not found
      */
-    static HostMappedObject *get(const hostptr_t addr);
+    static object_host_mapped *get(const hostptr_t addr);
 };
 
 }}

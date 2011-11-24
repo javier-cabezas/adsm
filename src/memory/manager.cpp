@@ -97,14 +97,14 @@ manager::unmap(core::address_space_ptr aspace, hostptr_t addr, size_t size)
         map.removeObject(*object);
         object->decRef();
     } else {
-        HostMappedObject *hostMappedObject = HostMappedObject::get(addr);
+        object_host_mapped *hostMappedObject = object_host_mapped::get(addr);
         if(hostMappedObject == NULL) {
             trace::ExitCurrentFunction();
             return gmacErrorInvalidValue;
         }
         hostMappedObject->decRef();
         // We need to release the object twice to effectively destroy it
-        HostMappedObject::remove(addr);
+        object_host_mapped::remove(addr);
         hostMappedObject->decRef();
     }
     trace::ExitCurrentFunction();
@@ -150,7 +150,7 @@ gmacError_t manager::hostMappedAlloc(core::address_space_ptr aspace, hostptr_t *
 {
     TRACE(LOCAL, "New host-mapped allocation");
     trace::EnterCurrentFunction();
-    HostMappedObject *object = new HostMappedObject(aspace, size);
+    object_host_mapped *object = new object_host_mapped(aspace, size);
     *addr = object->addr();
     if(*addr == NULL) {
         object->decRef();
@@ -208,14 +208,14 @@ gmacError_t manager::free(core::address_space_ptr aspace, hostptr_t addr)
         ASSERTION(it != mapAllocations_.end(), "Object not registered");
         mapAllocations_.erase(it);
     } else {
-        HostMappedObject *hostMappedObject = HostMappedObject::get(addr);
+        object_host_mapped *hostMappedObject = object_host_mapped::get(addr);
         if(hostMappedObject == NULL) {
             trace::ExitCurrentFunction();
             return gmacErrorInvalidValue;
         }
         hostMappedObject->decRef();
         // We need to release the object twice to effectively destroy it
-        HostMappedObject::remove(addr);
+        object_host_mapped::remove(addr);
         hostMappedObject->decRef();
     }
     trace::ExitCurrentFunction();
@@ -233,7 +233,7 @@ manager::getAllocSize(core::address_space_ptr aspace, const hostptr_t addr, gmac
 
     object *obj = map.getObject(addr);
     if (obj == NULL) {
-        HostMappedObject *hostMappedObject = HostMappedObject::get(addr);
+        object_host_mapped *hostMappedObject = object_host_mapped::get(addr);
         if (hostMappedObject != NULL) {
             ret = hostMappedObject->size();
         } else {
@@ -256,7 +256,7 @@ manager::translate(core::address_space_ptr aspace, const hostptr_t addr)
     object *obj = map.getObject(addr);
     accptr_t ret(0);
     if(obj == NULL) {
-        HostMappedObject *object = HostMappedObject::get(addr);
+        object_host_mapped *object = object_host_mapped::get(addr);
         if(object != NULL) {
             ret = object->get_device_addr(aspace, addr);
             object->decRef();
@@ -303,7 +303,7 @@ manager::acquireObjects(core::address_space_ptr aspace, const ListAddr &addrs)
         for (it = addrs.begin(); it != addrs.end(); it++) {
             object *obj = map.getObject(it->first);
             if (obj == NULL) {
-                HostMappedObject *hostMappedObject = HostMappedObject::get(it->first);
+                object_host_mapped *hostMappedObject = object_host_mapped::get(it->first);
                 ASSERTION(hostMappedObject != NULL, "Address not found");
 #ifdef USE_OPENCL
                 hostMappedObject->acquire(aspace);
@@ -347,7 +347,7 @@ manager::releaseObjects(core::address_space_ptr aspace, const ListAddr &addrs)
         for (it = addrs.begin(); it != addrs.end(); it++) {
             object *obj = map.getObject(it->first);
             if (obj == NULL) {
-                HostMappedObject *hostMappedObject = HostMappedObject::get(it->first);
+                object_host_mapped *hostMappedObject = object_host_mapped::get(it->first);
                 ASSERTION(hostMappedObject != NULL, "Address not found");
 #ifdef USE_OPENCL
                 hostMappedObject->release(aspace);
@@ -802,7 +802,7 @@ gmacError_t manager::moveTo(hostptr_t addr, core::address_space_ptr aspace)
 
     mode.putObject(*obj);
 #if 0
-    StateObject<T>::lockWrite();
+    StateObject<T>::lock_write();
     typename StateObject<T>::SystemMap::iterator i;
     int idx = 0;
     for(i = StateObject<T>::systemMap.begin(); i != StateObject<T>::systemMap.end(); i++) {

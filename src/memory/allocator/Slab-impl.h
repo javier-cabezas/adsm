@@ -3,12 +3,12 @@
 
 namespace __impl { namespace memory { namespace allocator {
 
-inline Slab::Slab(manager &manager) : manager_(manager) {}
+inline slab::slab(manager &manager) : manager_(manager) {}
 
-inline Slab::~Slab()
+inline slab::~slab()
 {
-    aspace_map::iterator i;
-    aspaces_.lockWrite();
+    map_aspace::iterator i;
+    aspaces_.lock_write();
     for(i = aspaces_.begin(); i != aspaces_.end(); i++) {
         CacheMap &map = i->second;
         CacheMap::iterator j;

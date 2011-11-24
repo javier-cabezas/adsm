@@ -82,7 +82,7 @@ class GMAC_LOCAL vdevice :
 protected:
     process &proc_;
 
-    util::smart_ptr<address_space>::shared aspace_;
+    util::shared_ptr<address_space> aspace_;
 
     hal::stream_t &streamLaunch_;
 #ifdef USE_VM
@@ -115,7 +115,7 @@ public:
      * \param streamLaunch Stream to which enqueue kernel launch:w
     */
     vdevice(process &proc,
-            util::smart_ptr<address_space>::shared aspace,
+            util::shared_ptr<address_space> aspace,
             hal::stream_t &streamLaunch);
 
 #if 0
@@ -246,8 +246,8 @@ public:
     memory::map_object &get_object_map();
     const memory::map_object &get_object_map() const;
 
-    util::smart_ptr<address_space>::shared get_address_space();
-    util::smart_ptr<const address_space>::shared get_address_space() const;
+    util::shared_ptr<address_space> get_address_space();
+    util::shared_ptr<const address_space> get_address_space() const;
 
     const hal::device &get_device();
 };

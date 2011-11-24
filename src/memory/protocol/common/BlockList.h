@@ -54,19 +54,20 @@ class block;
 namespace protocol {
 
 //! FIFO list of blocks
-class GMAC_LOCAL BlockList :
+class GMAC_LOCAL list_block :
     protected std::list<block_ptr>,
-    public gmac::util::spinlock {
-// We need a locked list becase execution modes might be shared among different threads
+    public gmac::util::spinlock<list_block> {
+    // We need a locked list because execution modes might be shared among different threads
 protected:
     typedef std::list<block_ptr> Parent;
+    typedef gmac::util::spinlock<list_block> Lock;
 
 public:
     /// Default constructor
-    BlockList();
+    list_block();
 
     /// Default destructor
-    virtual ~BlockList();
+    virtual ~list_block();
 
     /** Whether the list is empty or not
      *

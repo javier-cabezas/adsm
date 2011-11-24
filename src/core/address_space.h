@@ -55,7 +55,10 @@ class map_object;
     
 namespace core {
 
-class io_buffer;
+class address_space;
+
+typedef util::shared_ptr<address_space> address_space_ptr;
+typedef util::shared_ptr<const address_space> address_space_const_ptr;
 
 class GMAC_LOCAL address_space :
     public util::unique<address_space, GmacAddressSpaceId> {
@@ -96,7 +99,7 @@ public:
 
     virtual bool is_integrated() const = 0;
 
-    virtual bool has_direct_copy(const address_space &aspace) const = 0;
+    virtual bool has_direct_copy(address_space_const_ptr aspace) const = 0;
 
 #ifdef USE_OPENCL
 #if 0
@@ -108,8 +111,6 @@ public:
     virtual void notify_pending_changes() = 0;
 #endif
 };
-
-typedef util::smart_ptr<address_space>::shared address_space_ptr;
 
 }}
 

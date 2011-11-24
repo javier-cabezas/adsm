@@ -47,38 +47,44 @@ namespace memory { namespace allocator {
 /**
  * Simple slab allocator
  */
-class GMAC_LOCAL Slab : public memory::allocator_interface {
+class GMAC_LOCAL slab : public memory::allocator_interface {
 protected:
-    class GMAC_LOCAL AddressMap : public std::map<hostptr_t, Cache *>, gmac::util::lock_rw {
+    class GMAC_LOCAL map_address :
+    	public std::map<hostptr_t, cache *>, gmac::util::lock_rw<map_address> {
+    	typedef gmac::util::lock_rw<map_address> Lock;
     protected:
-        friend class Slab;
+        friend class slab;
     public:
-        AddressMap() : gmac::util::lock_rw("memory::Slab") {}
+        map_address() : Lock("memory::Slab") {}
     };
 
-    typedef std::map<long_t, Cache *> CacheMap;
+    typedef std::map<long_t, cache *> CacheMap;
 
-    class GMAC_LOCAL aspace_map : public std::map<util::smart_ptr<core::address_space>::shared, CacheMap>, gmac::util::lock_rw {
-        friend class Slab;
+    class GMAC_LOCAL map_aspace :
+    	public std::map<util::shared_ptr<core::address_space>, CacheMap>,
+    	gmac::util::lock_rw<map_aspace> {
+        friend class slab;
+
+        typedef gmac::util::lock_rw<map_aspace> Lock;
     public:
-        aspace_map() : gmac::util::lock_rw("memory::Slab") {}
+        map_aspace() : Lock("memory::Slab") {}
     };
 
-    AddressMap addresses_;
-    aspace_map aspaces_; // Per-context cache map
+    map_address addresses_;
+    map_aspace aspaces_; // Per-context cache map
 
-    Cache &createCache(util::smart_ptr<core::address_space>::shared aspace, CacheMap &map, long_t key, size_t size);
-    Cache &get(util::smart_ptr<core::address_space>::shared current, long_t key, size_t size);
-    void cleanup(util::smart_ptr<core::address_space>::shared current);
+    cache &createCache(util::shared_ptr<core::address_space> aspace, CacheMap &map, long_t key, size_t size);
+    cache &get(util::shared_ptr<core::address_space> current, long_t key, size_t size);
+    void cleanup(util::shared_ptr<core::address_space> current);
 
     manager &manager_;
 
-    virtual ~Slab();
+    virtual ~slab();
 public:
-    Slab(manager &manager);
+    slab(manager &manager);
 
-    virtual hostptr_t alloc(util::smart_ptr<core::address_space>::shared current, const size_t size, const hostptr_t addr);
-    virtual bool free(util::smart_ptr<core::address_space>::shared current, const hostptr_t addr);
+    virtual hostptr_t alloc(util::shared_ptr<core::address_space> current, const size_t size, const hostptr_t addr);
+    virtual bool free(util::shared_ptr<core::address_space> current, const hostptr_t addr);
 };
 
 }}}
@@ -87,7 +93,7 @@ public:
 
 #if defined(USE_DBC)
 namespace __dbc { namespace memory { namespace allocator {
-typedef __impl::memory::allocator::Slab Slab;
+typedef __impl::memory::allocator::slab slab;
 }}}
 #endif
 

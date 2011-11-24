@@ -143,7 +143,7 @@ object_state<State>::get_device_addr(const hostptr_t addr) const
 {
     return deviceAddr_ + (addr - addr_);
 #if 0
-    aspace_map::const_iterator m;
+    map_aspace::const_iterator m;
     if (owners_.size() == 1) {
         m = owners_.begin();
         ret = m->second + (addr - this->addr_);
@@ -165,7 +165,7 @@ object_state<State>::get_device_addr() const
 {
     return get_device_addr(addr_);
 #if 0
-    aspace_map::const_iterator m;
+    map_aspace::const_iterator m;
     if (owners_.size() == 1) {
         m = owners_.begin();
         ret = m->second + (addr - this->addr_);
@@ -182,19 +182,19 @@ object_state<State>::get_device_addr() const
 }
 
 template<typename State>
-inline core::address_space &
+inline core::address_space_ptr
 object_state<State>::owner()
 {
-    ASSERTION(ownerShortcut_ != NULL);
+    ASSERTION(ownerShortcut_);
 
-    return *ownerShortcut_;
+    return ownerShortcut_;
 #if 0
     core::address_space *ret;
-    lockRead();
+    lock_read();
     if (owners_.size() == 1) {
         ret = ownerShortcut_;
     } else {
-        aspace_map::const_iterator m;
+        map_aspace::const_iterator m;
         m = owners_.find(&current);
         if (m == owners_.end()) {
             ret = owners_.begin()->first;
@@ -208,20 +208,21 @@ object_state<State>::owner()
 }
 
 template<typename State>
-inline const core::address_space &
+inline core::address_space_const_ptr
 object_state<State>::owner() const
 {
-    ASSERTION(ownerShortcut_ != NULL);
+    ASSERTION(ownerShortcut_);
 
-    return *ownerShortcut_;
+    core::address_space_const_ptr ret(ownerShortcut_);
+
+    return ret;
 }
-
 
 template<typename State>
 inline gmacError_t
-object_state<State>::addOwner(util::smart_ptr<core::address_space>::shared owner)
+object_state<State>::addOwner(core::address_space_ptr owner)
 {
-    ASSERTION(ownerShortcut_ == NULL);
+    ASSERTION(!ownerShortcut_);
     ownerShortcut_ = owner;
 
     gmacError_t ret = mallocAccelerator(*owner, addr_, size_, deviceAddr_);
@@ -234,7 +235,7 @@ object_state<State>::addOwner(util::smart_ptr<core::address_space>::shared owner
     gmacError_t ret = mallocAccelerator(aspace, addr_, size_, acceleratorAddr);
     if (ret != gmacSuccess) return ret;
 
-    lockWrite();
+    lock_write();
 
     AcceleratorMap::iterator it = acceleratorAddr_.find(acceleratorAddr);
     if (it == acceleratorAddr_.end()) {
@@ -246,7 +247,7 @@ object_state<State>::addOwner(util::smart_ptr<core::address_space>::shared owner
     }
 
     ASSERTION(owners_.find(&aspace) == owners_.end());
-    owners_.insert(aspace_map::value_type(&aspace, addr));
+    owners_.insert(map_aspace::value_type(&aspace, addr));
 
     if (owners_.size() == 1) {
         ownerShortcut_ = &aspace;
@@ -261,7 +262,7 @@ object_state<State>::addOwner(util::smart_ptr<core::address_space>::shared owner
 // TODO: move checks to DBC
 template<typename State>
 inline gmacError_t
-object_state<State>::removeOwner(util::smart_ptr<core::address_space>::shared owner)
+object_state<State>::removeOwner(core::address_space_const_ptr owner)
 {
     ASSERTION(ownerShortcut_ == owner);
 
@@ -282,13 +283,13 @@ object_state<State>::removeOwner(util::smart_ptr<core::address_space>::shared ow
 
     return gmacSuccess;
 #if 0
-    lockWrite();
+    lock_write();
 
     TRACE(LOCAL, "Remove owner %p Object @ %p: %u -> %u", &aspace, addr_, owners_.size(), owners_.size() - 1);
 
     ASSERTION(owners_.size() > 0);
 
-    aspace_map::iterator m;
+    map_aspace::iterator m;
     m = owners_.find(&aspace);
     ASSERTION(m != owners_.end());
     owners_.erase(m);
@@ -356,9 +357,9 @@ template<typename State>
 inline gmacError_t
 object_state<State>::mapToAccelerator()
 {
-    ASSERTION(ownerShortcut_ != NULL);
+    ASSERTION(ownerShortcut_);
 
-    lockWrite();
+    lock_write();
 
     // Allocate accelerator memory in the new aspace
     accptr_t newDeviceAddr(0);
@@ -391,7 +392,7 @@ object_state<State>::mapToAccelerator()
 
     gmacError_t ret;
 
-    lockWrite();
+    lock_write();
 
     if (owners_ == 1) {
         // Allocate accelerator memory in the new aspace
@@ -428,8 +429,8 @@ object_state<State>::unmapFromAccelerator()
 {
     gmacError_t ret = gmacSuccess;
 
-    if (ownerShortcut_ != NULL) {
-        lockWrite();
+    if (ownerShortcut_) {
+        lock_write();
         // Remove blocks from the coherence domain
         ret = coherenceOp(&protocol_interface::unmapFromAccelerator);
 

@@ -44,7 +44,7 @@ class GMAC_LOCAL Lazy :
     public virtual Contract {
     DBC_TESTED(__impl::memory::protocol::Lazy<T>)
 
-    typedef __impl::memory::protocol::Lazy<T> Parent;
+    typedef __impl::memory::protocol::Lazy<T> parent;
 
 protected:
 public:

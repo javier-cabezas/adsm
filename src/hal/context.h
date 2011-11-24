@@ -79,9 +79,10 @@ public:
 template <typename I>
 class GMAC_LOCAL queue_event :
     std::queue<typename I::event::event_type *>,
-    gmac::util::mutex {
+    gmac::util::mutex<queue_event<I> > {
 
     typedef std::queue<typename I::event::event_type *> Parent;
+    typedef gmac::util::mutex<queue_event<I> > Lock;
 
 public:
     queue_event();
@@ -97,7 +98,7 @@ private:
 
 protected:
     typename B::context context_;
-    typedef util::locked_counter<unsigned, gmac::util::spinlock> buffer_counter;
+    typedef util::locked_counter<unsigned, gmac::util::spinlock<context_t> > buffer_counter;
     D &device_;
 
     static const unsigned &MaxBuffersIn_;

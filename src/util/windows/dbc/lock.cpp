@@ -96,13 +96,13 @@ lock_rw::~lock_rw()
     DeleteCriticalSection(&internal_);
 }
 
-void lock_rw::lockRead() const
+void lock_rw::lock_read() const
 {
     EnterCriticalSection(&internal_);
     REQUIRES(readers_.find(GetCurrentThreadId()) == readers_.end());
     LeaveCriticalSection(&internal_);
 
-    __impl::util::lock_rw::lockRead();
+    __impl::util::lock_rw::lock_read();
 
     EnterCriticalSection(&internal_);
     ENSURES(state_ == Idle || state_ == Read);
@@ -111,14 +111,14 @@ void lock_rw::lockRead() const
     LeaveCriticalSection(&internal_);
 }
 
-void lock_rw::lockWrite() const
+void lock_rw::lock_write() const
 {
     EnterCriticalSection(&internal_);
     REQUIRES(readers_.find(GetCurrentThreadId()) == readers_.end());
 	REQUIRES(writer_ != GetCurrentThreadId());
     LeaveCriticalSection(&internal_);
 
-    __impl::util::lock_rw::lockWrite();
+    __impl::util::lock_rw::lock_write();
 
     EnterCriticalSection(&internal_);
     ENSURES(readers_.empty() == true);

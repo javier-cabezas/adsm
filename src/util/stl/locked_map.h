@@ -42,8 +42,9 @@ namespace __impl { namespace util { namespace stl {
 template <typename K, typename V>
 class GMAC_LOCAL locked_map :
     private std::map<K, V>,
-    protected gmac::util::lock_rw {
+    protected gmac::util::lock_rw<locked_map<K, V> > {
     typedef std::map<K, V> Parent;
+    typedef gmac::util::lock_rw<locked_map<K, V> > Lock;
 
 public:
     typedef typename std::map<K, V>::iterator iterator;

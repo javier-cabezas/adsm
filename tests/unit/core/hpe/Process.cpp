@@ -13,7 +13,7 @@ using __impl::core::hpe::ModeMap;
 using gmac::core::hpe::Process;
 using gmac::core::hpe::Thread;
 
-using __impl::memory::Object;
+using __impl::memory::object;
 using __impl::memory::Protocol;
 
 extern void CUDA(Process &);
@@ -41,8 +41,8 @@ TEST_F(ProcessTest, ModeMap) {
     ASSERT_TRUE(mode != NULL);
 
     ModeMap mm;
-    typedef std::map<__impl::core::hpe::Mode *, unsigned> Parent;
-    typedef Parent::iterator iterator;
+    typedef std::map<__impl::core::hpe::Mode *, unsigned> parent;
+    typedef parent::iterator iterator;
     std::pair<iterator, bool> ib = mm.insert(mode);
     ASSERT_TRUE(ib.second);
     mm.remove(*mode);
@@ -57,7 +57,7 @@ TEST_F(ProcessTest, GlobalMemory) {
     const size_t size = 4 * 1024 * 1024;
     protocol_interface *protocol_interface = proc->getProtocol();
     ASSERT_TRUE(protocol_interface != NULL);
-    Object *object = protocol_interface->createObject(proc->getResourceManager(), size, NULL, GMAC_PROT_READ, 0);
+    object *object = protocol_interface->createObject(proc->getResourceManager(), size, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
     ASSERT_EQ(gmacSuccess, proc->globalMalloc(*object));
     ASSERT_TRUE(object->addr() != NULL);

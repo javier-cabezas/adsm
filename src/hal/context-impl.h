@@ -46,7 +46,7 @@ list_event<I>::add_event(typename I::event event)
 template <typename I>
 inline
 queue_event<I>::queue_event() :
-    gmac::util::mutex("queue_event")
+    Lock("queue_event")
 {
 }
 
@@ -56,12 +56,12 @@ queue_event<I>::pop()
 {
     typename I::event::event_type *ret = NULL;
 
-    lock();
+    Lock::lock();
     if (Parent::size() > 0) {
         ret = Parent::front();
         Parent::pop();
     }
-    unlock();
+    Lock::unlock();
 
     return ret;
 }
@@ -70,9 +70,9 @@ template <typename I>
 void
 queue_event<I>::push(typename I::event::event_type &event)
 {
-    lock();
+	Lock::lock();
     Parent::push(&event);
-    unlock();
+    Lock::unlock();
 }
 
 template <typename D, typename B, typename I>

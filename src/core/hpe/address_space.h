@@ -57,11 +57,18 @@ class kernel;
 class process;
 class vdevice;
 
+class address_space;
+
+typedef util::shared_ptr<address_space> address_space_ptr;
+typedef util::shared_ptr<const address_space> address_space_const_ptr;
+
 class GMAC_LOCAL address_space :
     public core::address_space,
-    private gmac::util::mutex {
+    private gmac::util::mutex<address_space> {
     friend class resource_manager;
     friend class vdevice;
+
+    typedef gmac::util::mutex<address_space> Lock;
 
     hal::context_t &ctx_;
 
@@ -118,7 +125,7 @@ public:
 
     bool is_integrated() const;
 
-    bool has_direct_copy(const core::address_space &aspace) const;
+    bool has_direct_copy(core::address_space_const_ptr aspace) const;
 
     /**
      * Returns a kernel identified by k

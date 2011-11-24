@@ -42,10 +42,10 @@ class GMAC_LOCAL vdevice :
     DBC_TESTED(__impl::core::hpe::vdevice)
 
 private:
-    typedef __impl::core::hpe::vdevice Parent;
+    typedef __impl::core::hpe::vdevice parent;
 
     typedef __impl::core::IOBuffer IOBufferImpl;
-    typedef __impl::core::hpe::process ProcessImpl;
+    typedef __impl::core::hpe::process process_impl;
     typedef __impl::core::hpe::address_space AddressSpaceImpl;
 
 protected:
@@ -53,7 +53,7 @@ protected:
     gmacError_t cleanUp();
 
 public:
-    vdevice(ProcessImpl &proc, AddressSpaceImpl &aSpace);
+    vdevice(process_impl &proc, AddressSpaceImpl &aSpace);
     virtual ~vdevice();
 
     gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1);

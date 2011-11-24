@@ -7,7 +7,7 @@ namespace __impl { namespace memory { namespace protocol {
 
 template<typename T>
 inline Lazy<T>::Lazy(bool eager) :
-    gmac::memory::protocol::LazyBase(eager)
+    gmac::memory::protocol::lazy_base(eager)
 {}
 
 template<typename T>
@@ -20,7 +20,7 @@ Lazy<T>::createObject(size_t size, hostptr_t cpuPtr,
                       GmacProtection prot, unsigned flags)
 {
     gmacError_t err;
-    object *ret = new T(*this, cpuPtr, size, LazyBase::state(prot), err);
+    object *ret = new T(*this, cpuPtr, size, lazy_base::state(prot), err);
     if(ret == NULL) return ret;
     if(err != gmacSuccess) {
         ret->decRef();

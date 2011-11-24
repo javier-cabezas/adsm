@@ -53,7 +53,7 @@ namespace core {
 }
 
 namespace memory {
-class Object;
+class object;
 class block;
 template<typename T> class StateBlock;
 
@@ -112,7 +112,7 @@ protected:
 
     //! Dirty block list
     //! List of all memory blocks in Dirty state
-    BlockList dbl_;
+    list_block dbl_;
 
     //! Add a new block to the Dirty Block List
     void addDirty(block &block);
@@ -128,7 +128,7 @@ protected:
 
 public:
     // Protocol Interface
-        void deleteObject(Object &obj);
+        void deleteObject(object &obj);
 
     bool needUpdate(const block &block) const;
 
@@ -177,7 +177,7 @@ public:
     virtual ~Gather();
 
     // Protocol Interface
-    memory::Object *createObject(size_t size, hostptr_t cpuPtr,
+    memory::object *createObject(size_t size, hostptr_t cpuPtr,
         GmacProtection prot, unsigned flags);
 };
 

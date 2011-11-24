@@ -36,7 +36,7 @@ mutex::unlock() const
 }
 
 inline void
-lock_rw::lockRead() const
+lock_rw::lock_read() const
 {
     enter();
     AcquireSlock_rwShared(&lock_);
@@ -44,7 +44,7 @@ lock_rw::lockRead() const
 }
 
 inline void
-lock_rw::lockWrite() const
+lock_rw::lock_write() const
 {
     enter();
     AcquireSlock_rwExclusive(&lock_);

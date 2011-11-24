@@ -11,7 +11,7 @@ namespace __impl { namespace memory {
 
 inline
 block::block(hostptr_t addr, hostptr_t shadow, size_t size) :
-    gmac::util::mutex("Block"),
+    Lock("block"),
     size_(size),
     addr_(addr),
     shadow_(shadow)

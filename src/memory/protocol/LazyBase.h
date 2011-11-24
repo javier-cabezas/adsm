@@ -65,9 +65,10 @@ namespace protocol {
  * release operation. Data is transferred from accelerator memory to host memory
  * lazily, whenever it is needed by the application
  */
-class GMAC_LOCAL LazyBase : public protocol_interface, handler,
-                            private gmac::util::mutex {
-    DBC_FORCE_TEST(LazyBase)
+class GMAC_LOCAL lazy_base : public protocol_interface, handler,
+                            private gmac::util::mutex<lazy_base> {
+    DBC_FORCE_TEST(lazy_base)
+    typedef gmac::util::mutex<lazy_base> Lock;
 
 protected:
     /** Return the state corresponding to a memory protection
@@ -75,7 +76,7 @@ protected:
      * \param prot Memory protection
      * \return Protocol state
      */
-    lazy::State state(GmacProtection prot) const;
+    lazy_types::State state(GmacProtection prot) const;
 
     /// Uses eager update
     bool eager_;
@@ -84,19 +85,19 @@ protected:
     size_t limit_;
 
     /// Dirty block list. List of all memory blocks in Dirty state
-    BlockList dbl_;
+    list_block dbl_;
 
     /// Add a new block to the Dirty Block List
-    void addDirty(lazy::block_ptr block);
+    void addDirty(lazy_types::block_ptr block);
 
     /** Default constructor
      *
      * \param eager Tells if protocol uses eager update
      */
-    explicit LazyBase(bool eager);
+    explicit lazy_base(bool eager);
 
     /// Default destructor
-    virtual ~LazyBase();
+    virtual ~lazy_base();
 
 public:
     // Protocol Interface

@@ -48,7 +48,7 @@ GatherBase::State GatherBase::state(GmacProtection prot) const
 }
 
 
-void GatherBase::deleteObject(Object &obj)
+void GatherBase::deleteObject(object &obj)
 {
     obj.release();
 }

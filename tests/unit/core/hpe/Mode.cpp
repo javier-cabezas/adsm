@@ -11,7 +11,7 @@
 using gmac::core::hpe::Process;
 using __impl::core::hpe::Mode;
 using __impl::core::IOBuffer;
-using __impl::memory::Object;
+using __impl::memory::object;
 
 Mode *ModeTest::Mode_ = NULL;
 Process *ModeTest::Process_ = NULL;
@@ -45,14 +45,14 @@ TEST_F(ModeTest, MemoryObject) {
 	ASSERT_TRUE(Process_ != NULL);
 
     __impl::memory::ObjectMap &map = Mode_->getAddressSpace();
-    Object *obj = map.getProtocol().createObject(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_READ, 0);
+    object *obj = map.getProtocol().createObject(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(obj != NULL);
     map.addObject(*obj);
     const hostptr_t addr = obj->addr();
     ASSERT_TRUE(addr != 0);
     obj->decRef();
 
-    Object *ref = map.getObject(addr);
+    object *ref = map.getObject(addr);
     ASSERT_TRUE(ref != NULL);
     ASSERT_EQ(obj, ref);
     map.removeObject(*obj);
@@ -65,9 +65,9 @@ TEST_F(ModeTest, MemoryObjectMap){
 	ASSERT_TRUE(Process_ != NULL);
 
 	__impl::memory::ObjectMap &map = Mode_->getAddressSpace();
-	Object *obj = map.getProtocol().createObject(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_WRITE, 0);
+	object *obj = map.getProtocol().createObject(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_WRITE, 0);
 	ASSERT_TRUE(obj != NULL);
-	Object *obj2 = map.getProtocol().createObject(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_WRITE, 0);
+	object *obj2 = map.getProtocol().createObject(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_WRITE, 0);
     ASSERT_TRUE(obj2 != NULL);
 	ASSERT_FALSE(map.hasObject(*obj));
     ASSERT_TRUE(map.addObject(*obj));

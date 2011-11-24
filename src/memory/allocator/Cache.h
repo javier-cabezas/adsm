@@ -50,7 +50,7 @@ typedef std::list<hostptr_t> ObjectList;
  * \sa Cache
  * \sa Slab
  */
-class GMAC_LOCAL Arena {
+class GMAC_LOCAL arena {
 protected:
     hostptr_t ptr_;
     size_t size_;
@@ -58,11 +58,11 @@ protected:
     ObjectList objects_;
 
     manager &manager_;
-    util::smart_ptr<core::address_space>::shared aspace_;
+    util::shared_ptr<core::address_space> aspace_;
 
 public:
-    Arena(manager &manager, util::smart_ptr<core::address_space>::shared aspace, size_t objSize);
-    ~Arena();
+    arena(manager &manager, util::shared_ptr<core::address_space> aspace, size_t objSize);
+    ~arena();
 
     inline hostptr_t address() const { return ptr_; }
     hostptr_t key() const;
@@ -81,22 +81,23 @@ public:
  * \sa Arena
  * \sa Slab
  */
-class GMAC_LOCAL Cache :
-    protected gmac::util::mutex {
+class GMAC_LOCAL cache :
+    protected gmac::util::mutex<cache> {
+    typedef gmac::util::mutex<cache> Lock;
 protected:
     size_t objectSize;
     size_t arenaSize;
 
-    typedef std::map<hostptr_t, Arena *> ArenaMap;
-    ArenaMap arenas;
+    typedef std::map<hostptr_t, arena *> map_arena;
+    map_arena arenas;
 
     manager &manager_;
-    util::smart_ptr<core::address_space>::shared aspace_;
+    util::shared_ptr<core::address_space> aspace_;
 public:
-    Cache(manager &manager, util::smart_ptr<core::address_space>::shared aspace, size_t size);
-    virtual ~Cache();
+    cache(manager &manager, util::shared_ptr<core::address_space> aspace, size_t size);
+    virtual ~cache();
 
-    static Cache &get(long key, size_t size);
+    static cache &get(long key, size_t size);
     static void cleanup();
 
     hostptr_t get();
