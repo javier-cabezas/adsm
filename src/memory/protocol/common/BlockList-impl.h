@@ -9,14 +9,14 @@
 namespace __impl { namespace memory { namespace protocol {
 
 
-inline BlockList::BlockList() :
-    gmac::util::spinlock("BlockList")
+inline list_block::list_block() :
+    Lock("list_block")
 {}
 
-inline BlockList::~BlockList()
+inline list_block::~list_block()
 {}
 
-inline bool BlockList::empty() const
+inline bool list_block::empty() const
 {
     lock();
     bool ret = Parent::empty();
@@ -24,7 +24,7 @@ inline bool BlockList::empty() const
     return ret;
 }
 
-inline size_t BlockList::size() const
+inline size_t list_block::size() const
 {
     lock();
     size_t ret = Parent::size();
@@ -32,14 +32,14 @@ inline size_t BlockList::size() const
     return ret;
 }
 
-inline void BlockList::push(block_ptr block)
+inline void list_block::push(block_ptr block)
 {
     lock();
     Parent::push_back(block);
     unlock();
 }
 
-inline block_ptr BlockList::front()
+inline block_ptr list_block::front()
 {
     ASSERTION(Parent::empty() == false);
     lock();
@@ -49,7 +49,7 @@ inline block_ptr BlockList::front()
     return ret;
 }
 
-inline void BlockList::remove(block_ptr block)
+inline void list_block::remove(block_ptr block)
 {
     lock();
     Parent::remove(block);

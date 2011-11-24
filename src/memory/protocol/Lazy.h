@@ -39,7 +39,8 @@ WITH THE SOFTWARE.  */
 namespace __impl { namespace memory { namespace protocol {
 
 template <typename T>
-class GMAC_LOCAL Lazy : public gmac::memory::protocol::LazyBase {
+class GMAC_LOCAL Lazy :
+	public gmac::memory::protocol::lazy_base {
     DBC_FORCE_TEST(Lazy<T>)
 
 public:

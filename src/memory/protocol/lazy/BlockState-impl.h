@@ -50,8 +50,8 @@ WITH THE SOFTWARE.  */
 
 namespace __impl {
 namespace memory {
-namespace protocol_interface {
-namespace lazy {
+namespace protocol {
+namespace lazy_types {
 
 inline
 BlockTreeState::BlockTreeState() :
@@ -60,7 +60,7 @@ BlockTreeState::BlockTreeState() :
 }
 
 inline
-BlockTreeInfo::BlockTreeInfo(lazy::block &block) :
+BlockTreeInfo::BlockTreeInfo(lazy_types::block &block) :
     block_(block)
 { 
     // Initialize subblock state tree (for random access patterns)
@@ -148,7 +148,7 @@ BlockTreeInfo::getUnprotectInfo()
 }
 
 inline
-StrideInfo::StrideInfo(lazy::block &block) :
+StrideInfo::StrideInfo(lazy_types::block &block) :
     block_(block)
 {
     reset();
@@ -266,8 +266,8 @@ BlockState::setAll(ProtocolState state)
 }
 
 inline
-BlockState::BlockState(lazy::State init) :
-    common::BlockState<lazy::State>(init),
+BlockState::BlockState(lazy_types::State init) :
+    common::BlockState<lazy_types::State>(init),
     subBlocks_(block().size()/SubBlockSize_ + ((block().size() % SubBlockSize_ == 0)? 0: 1)),
     subBlockState_(subBlocks_),
 #ifdef DEBUG
@@ -295,7 +295,7 @@ BlockState::BlockState(lazy::State init) :
 }
 
 #if 0
-common::BlockState<lazy::State>::ProtocolState
+common::BlockState<lazy_types::State>::ProtocolState
 BlockState::getState(hostptr_t addr) const
 {
     return ProtocolState(subBlockState_[GetSubBlockIndex(block().addr(), addr)]);
@@ -309,10 +309,10 @@ BlockState::setState(ProtocolState state, hostptr_t addr)
         setAll(state);
         state_ = state;
     } else {
-        if (state == lazy::Dirty) {
-            state_ = lazy::Dirty;
-        } else if (state == lazy::ReadOnly) {
-            if (state_ != lazy::Dirty) state_ = lazy::ReadOnly;
+        if (state == lazy_types::Dirty) {
+            state_ = lazy_types::Dirty;
+        } else if (state == lazy_types::ReadOnly) {
+            if (state_ != lazy_types::Dirty) state_ = lazy_types::ReadOnly;
         } else {
             FATAL("Wrong state transition");
         }
@@ -361,15 +361,15 @@ BlockState::syncToAccelerator()
 #endif
     for (unsigned i = 0; i != subBlocks_; i++) {
 #ifdef USE_VM
-        if (bitmap.getEntry<ProtocolState>(block().acceleratorAddr(GetMode()) + i * SubBlockSize_) == lazy::Dirty) {
+        if (bitmap.getEntry<ProtocolState>(block().acceleratorAddr(GetMode()) + i * SubBlockSize_) == lazy_types::Dirty) {
 #else
-        if (subBlockState_[i] == lazy::Dirty) {
+        if (subBlockState_[i] == lazy_types::Dirty) {
 #endif
             if (!inGroup) {
                 groupStart = i;
                 inGroup = true;
             }
-            setSubBlock(i, lazy::ReadOnly);
+            setSubBlock(i, lazy_types::ReadOnly);
             groupEnd = i;
         } else if (inGroup) {
             if (vm::costGaps<vm::MODEL_TODEVICE>(SubBlockSize_, gaps + 1, i - groupStart + 1) <
@@ -429,7 +429,7 @@ BlockState::syncToHost()
 
     vm::Bitmap &bitmap = GetBitmap();
     for (unsigned i = 0; i != subBlocks_; i++) {
-        if (bitmap.getEntry<ProtocolState>(block().acceleratorAddr(GetMode()) + i * SubBlockSize_) == lazy::Invalid) {
+        if (bitmap.getEntry<ProtocolState>(block().acceleratorAddr(GetMode()) + i * SubBlockSize_) == lazy_types::Invalid) {
 #ifdef DEBUG
             transfersToHost_[i]++;
 #endif
@@ -437,7 +437,7 @@ BlockState::syncToHost()
                 groupStart = i;
                 inGroup = true;
             }
-            setSubBlock(i, lazy::ReadOnly);
+            setSubBlock(i, lazy_types::ReadOnly);
             groupEnd = i;
         } else if (inGroup) {
             if (vm::costGaps<vm::MODEL_TOHOST>(SubBlockSize_, gaps + 1, i - groupStart + 1) <
@@ -469,7 +469,7 @@ BlockState::read(const hostptr_t addr)
     faultsRead_++;
     faultsCacheRead_++;
 
-    setSubBlock(currentSubBlock, lazy::ReadOnly);
+    setSubBlock(currentSubBlock, lazy_types::ReadOnly);
 #ifdef DEBUG
     subBlockFaultsRead_[currentSubBlock]++;
 #endif
@@ -487,7 +487,7 @@ BlockState::writeStride(const hostptr_t addr)
                 cur < (block().addr() + block().size());
                 cur += strideInfo_.getStride()) {
             long_t subBlock = GetSubBlockIndex(block().addr(), cur);
-            setSubBlock(subBlock, lazy::Dirty);
+            setSubBlock(subBlock, lazy_types::Dirty);
         }
     }
 }
@@ -499,7 +499,7 @@ BlockState::writeTree(const hostptr_t addr)
     BlockTreeInfo::Pair info = treeInfo_.getUnprotectInfo();
 
     for (unsigned i = info.first; i < info.first + info.second; i++) {
-        setSubBlock(i, lazy::Dirty);
+        setSubBlock(i, lazy_types::Dirty);
     }
 }
 
@@ -511,7 +511,7 @@ BlockState::write(const hostptr_t addr)
     faultsWrite_++;
     faultsCacheWrite_++;
 
-    setSubBlock(currentSubBlock, lazy::Dirty);
+    setSubBlock(currentSubBlock, lazy_types::Dirty);
 
 #ifdef DEBUG
     subBlockFaultsWrite_[currentSubBlock]++;
@@ -569,7 +569,7 @@ BlockState::unprotect()
 #else
         ProtocolState state = ProtocolState(subBlockState_[i]);
 #endif
-        if (state == lazy::Dirty) {
+        if (state == lazy_types::Dirty) {
             if (size == 0) start = i;
             size++;
         } else if (size > 0) {
@@ -592,7 +592,7 @@ BlockState::protect(GmacProtection prot)
     ret = memory_ops::protect(block().addr(), block().size(), prot);
 #else
     for (unsigned i = 0; i < subBlockState_.size(); i++) {
-        if (subBlockState_[i] == lazy::Dirty) {
+        if (subBlockState_[i] == lazy_types::Dirty) {
             ret = memory_ops::protect(getSubBlockAddr(i), SubBlockSize_, prot);
             if (ret < 0) break;
         }
@@ -617,7 +617,7 @@ void
 BlockState::released()
 {
     //setAll(lazy::ReadOnly);   
-    state_ = lazy::ReadOnly;
+    state_ = lazy_types::ReadOnly;
     reset();
 #ifdef DEBUG
     //::memset(&subBlockFaults_[0], 0, subBlockFaults_.size() * sizeof(long_t));
@@ -674,7 +674,7 @@ BlockState::dump(std::ostream &stream, common::Statistic stat)
 namespace __impl {
 namespace memory {
 namespace protocol {
-namespace lazy {
+namespace lazy_types {
 
 inline
 Block &
@@ -692,11 +692,9 @@ BlockState::block() const
 	return *(const Block *)this;
 }
 
-
-
 inline
 BlockState::BlockState(ProtocolState init) :
-    common::BlockState<lazy::State>(init)
+    common::BlockState<lazy_types::State>(init)
 #ifdef DEBUG
     , faultsRead_(0),
     faultsWrite_(0),
@@ -794,7 +792,7 @@ BlockState::acquired()
     faultsWrite_ = 0;
 #endif
 
-    state_ = lazy::Invalid;
+    state_ = lazy_types::Invalid;
 }
 
 inline
@@ -806,7 +804,7 @@ BlockState::released()
     faultsWrite_ = 0;
 #endif
 
-    state_ = lazy::ReadOnly;
+    state_ = lazy_types::ReadOnly;
 }
 
 inline

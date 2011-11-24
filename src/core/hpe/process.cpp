@@ -9,12 +9,12 @@
 
 namespace __impl { namespace core { namespace hpe {
 
-vdeviceMap::vdeviceMap() :
-    gmac::util::mutex("vdeviceMap")
+map_vdevice::map_vdevice() :
+    Lock("map_vdevice")
 {}
 
-std::pair<vdeviceMap::iterator, bool>
-vdeviceMap::insert(vdevice *mode)
+std::pair<map_vdevice::iterator, bool>
+map_vdevice::insert(vdevice *mode)
 {
     lock();
     std::pair<iterator, bool> ret = Parent::insert(value_type(mode, 1));
@@ -23,7 +23,7 @@ vdeviceMap::insert(vdevice *mode)
     return ret;
 }
 
-void vdeviceMap::remove(vdevice &mode)
+void map_vdevice::remove(vdevice &mode)
 {
     lock();
     iterator i = Parent::find(&mode);
@@ -36,7 +36,7 @@ void vdeviceMap::remove(vdevice &mode)
 
 process::process() :
     core::process(),
-    gmac::util::lock_rw("process"),
+    Lock("process"),
     current_(0),
     resourceManager_(*this)
 {

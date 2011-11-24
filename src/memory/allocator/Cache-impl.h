@@ -6,41 +6,41 @@
 namespace __impl { namespace memory { namespace allocator {
 
 inline
-hostptr_t Arena::key() const
+hostptr_t arena::key() const
 {
     ASSERTION(ptr_ != NULL);
     return ptr_ + memory::BlockSize_;
 }
 
 inline
-const ObjectList &Arena::objects() const
+const ObjectList &arena::objects() const
 {
     ASSERTION(ptr_ != NULL);
     return objects_;
 }
 
 inline
-bool Arena::valid() const
+bool arena::valid() const
 {
     return ptr_ != NULL;
 }
 
 inline
-bool Arena::full() const
+bool arena::full() const
 {
     ASSERTION(ptr_ != NULL);
     return objects_.size() == size_;
 }
 
 inline
-bool Arena::empty() const
+bool arena::empty() const
 {
     ASSERTION(ptr_ != NULL);
     return objects_.empty();
 }
 
 inline
-hostptr_t Arena::get()
+hostptr_t arena::get()
 {
     ASSERTION(ptr_ != NULL);
     ASSERTION(objects_.empty() == false);
@@ -51,15 +51,15 @@ hostptr_t Arena::get()
 }
 
 inline
-void Arena::put(hostptr_t obj)
+void arena::put(hostptr_t obj)
 {
     ASSERTION(ptr_ != NULL);
     objects_.push_back(obj);
 }
 
 inline
-Cache::Cache(manager &manager, util::smart_ptr<core::address_space>::shared aspace, size_t size) :
-    gmac::util::mutex("Cache"),
+cache::cache(manager &manager, util::shared_ptr<core::address_space> aspace, size_t size) :
+    Lock("cache"),
     objectSize(size),
     arenaSize(memory::BlockSize_),
     manager_(manager),
@@ -68,10 +68,10 @@ Cache::Cache(manager &manager, util::smart_ptr<core::address_space>::shared aspa
 
 
 inline
-void Cache::put(hostptr_t obj)
+void cache::put(hostptr_t obj)
 {
     lock();
-    ArenaMap::iterator i;
+    map_arena::iterator i;
     i = arenas.upper_bound(obj);
     CFATAL(i != arenas.end(), "Address for invalid arena: %p", obj);
     CFATAL(i->second->address() <= obj, "Address for invalid arena: %p", obj);

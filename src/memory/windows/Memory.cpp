@@ -12,7 +12,7 @@ static DWORD ProtBits[] = {
 };
 
 
-static FileMap Files;
+static map_file Files;
 
 int memory_ops::protect(hostptr_t addr, size_t count, GmacProtection prot)
 {
@@ -50,7 +50,7 @@ hostptr_t memory_ops::map(hostptr_t addr, size_t count, GmacProtection prot)
 hostptr_t memory_ops::shadow(hostptr_t addr, size_t count)
 {
 	TRACE(GLOBAL, "Getting shadow mapping for %p ("FMT_SIZE" bytes)", addr, count);
-	FileMapEntry entry = Files.find(addr);
+	map_file_entry entry = Files.find(addr);
 	if(entry.handle() == NULL) return NULL;
 	off_t offset = off_t(addr - entry.address());
 	hostptr_t ret = (hostptr_t)MapViewOfFile(entry.handle(), FILE_MAP_WRITE, 0, (DWORD)offset, (DWORD)count);
@@ -66,7 +66,7 @@ void memory_ops::unshadow(hostptr_t addr, size_t /*count*/)
 
 void memory_ops::unmap(hostptr_t addr, size_t /*count*/)
 {
-	FileMapEntry entry = Files.find(addr);
+	map_file_entry entry = Files.find(addr);
 	if(Files.remove(addr) == false) return;
 	UnmapViewOfFile(entry.address());
 	CloseHandle(entry.handle());

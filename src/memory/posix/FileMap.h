@@ -40,34 +40,35 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace memory {
 
-class GMAC_LOCAL FileMapEntry {
+class GMAC_LOCAL map_file_entry {
 protected:
     int fd_;
 	hostptr_t address_;
 	size_t size_;
 public:
-	FileMapEntry(int fd, hostptr_t address, size_t size) :
+	map_file_entry(int fd, hostptr_t address, size_t size) :
 	    fd_(fd), address_(address), size_(size) {};
-	virtual ~FileMapEntry() {};
+	virtual ~map_file_entry() {};
 
 	inline int fd() const { return fd_; }
 	inline hostptr_t address() const { return address_; }
 	inline size_t size() const { return size_; }
 };
 
-class GMAC_LOCAL FileMap :
-	protected std::map<hostptr_t, FileMapEntry>,
-	public gmac::util::lock_rw
-{
+class GMAC_LOCAL map_file :
+	protected std::map<hostptr_t, map_file_entry>,
+	public gmac::util::lock_rw<map_file> {
 protected:
-	typedef std::map<hostptr_t, FileMapEntry> Parent;
+	typedef std::map<hostptr_t, map_file_entry> Parent;
+	typedef gmac::util::lock_rw<map_file> Lock;
+
 public:
-	FileMap();
-	virtual ~FileMap();
+	map_file();
+	virtual ~map_file();
 
 	bool insert(int fd, hostptr_t address, size_t size);
 	bool remove(hostptr_t address);
-	const FileMapEntry find(hostptr_t address) const;
+	const map_file_entry find(hostptr_t address) const;
 };
 
 }}

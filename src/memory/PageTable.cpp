@@ -61,7 +61,7 @@ void PageTable::insert(void *host, void *acc)
 	sync();
 
 	enterFunction(FuncVmAlloc);
-	lock.lockWrite();
+	lock.lock_write();
 #ifdef USE_VM
 	_clean = false;
 #endif
@@ -94,7 +94,7 @@ void PageTable::remove(void *host)
 #ifndef USE_MMAP
 	sync();
 	enterFunction(FuncVmFree);
-	lock.lockWrite();
+	lock.lock_write();
 #ifdef USE_VM
 	_clean = false;
 #endif
@@ -122,7 +122,7 @@ void *PageTable::translate(void *host)
 #else
 	sync();
 
-	lock.lockRead();
+	lock.lock_read();
 	if(rootTable.present(entry(host, rootShift, rootTable.size())) == false) {
 		lock.unlock();
         trace("Translate %p to NULL in RootTable");

@@ -51,11 +51,27 @@ namespace __impl { namespace util {
 class mutex;
 typedef mutex spinlock;
 #else
-class GMAC_API spinlock : public __impl::util::lock__ {
+
+template <typename T>
+class spinlocker;
+
+template <typename T>
+class locker;
+
+template <typename T>
+class locker_rw;
+
+template <typename T>
+class GMAC_API spinlock :
+	public __impl::util::lock__ {
     DBC_FORCE_TEST(spinlock)
+    friend class spinlocker<T>;
+
 protected:
 	mutable pthread_spinlock_t spinlock_;
 public:
+	typedef spinlocker<T> locker_type;
+
 	spinlock(const char *name);
 	VIRTUAL ~spinlock();
 
@@ -65,12 +81,16 @@ protected:
 };
 #endif
 
-class GMAC_API mutex : public __impl::util::lock__ {
+template <typename T>
+class GMAC_API mutex :
+	public __impl::util::lock__ {
     DBC_FORCE_TEST(mutex)
-
+	friend class locker<T>;
 protected:
 	mutable pthread_mutex_t mutex_;
 public:
+	typedef locker<T> locker_type;
+
 	mutex(const char *name);
 	VIRTUAL ~mutex();
 
@@ -79,20 +99,70 @@ protected:
 	TESTABLE void unlock() const;
 };
 
+template <typename T>
 class GMAC_API lock_rw : public __impl::util::lock__ {
     DBC_FORCE_TEST(lock_rw)
-
+	friend class locker_rw<T>;
 protected:
 	mutable pthread_rwlock_t lock_;
     bool write_;
 public:
+    typedef locker_rw<T> locker_type;
+
 	lock_rw(const char *name);
 	VIRTUAL ~lock_rw();
 
 protected:
-	TESTABLE void lockRead() const;
-	TESTABLE void lockWrite() const;
+	TESTABLE void lock_read() const;
+	TESTABLE void lock_write() const;
 	TESTABLE void unlock() const;
+};
+
+template <typename T>
+class spinlocker {
+protected:
+	void lock(spinlock<T> &l) const
+	{
+		l.lock();
+	}
+
+	void unlock(spinlock<T> &l) const
+	{
+		l.unlock();
+	}
+};
+
+template <typename T>
+class locker {
+protected:
+	void lock(mutex<T> &l) const
+	{
+		l.lock();
+	}
+
+	void unlock(mutex<T> &l) const
+	{
+		l.unlock();
+	}
+};
+
+template <typename T>
+class locker_rw {
+protected:
+	void lock_read(lock_rw<T> &l) const
+	{
+		l.lock_read();
+	}
+
+	void lock_write(lock_rw<T> &l) const
+	{
+		l.lock_write();
+	}
+
+	void unlock(lock_rw<T> &l) const
+	{
+		l.unlock();
+	}
 };
 
 }}

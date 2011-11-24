@@ -38,7 +38,7 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace util {
 
-template <typename T = unsigned, typename L = gmac::util::mutex>
+template <typename T, typename L>
 class locked_counter :
     public L {
     typedef L Parent;

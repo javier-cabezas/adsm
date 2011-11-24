@@ -50,14 +50,16 @@ namespace __impl {
 
 namespace core {
     class address_space;
-    class io_buffer;
+
+    typedef util::shared_ptr<address_space> address_space_ptr;
+    typedef util::shared_ptr<const address_space> address_space_const_ptr;
 }
 
 namespace memory {
 
 class block;
 
-typedef __impl::util::smart_ptr<block>::shared block_ptr;
+typedef __impl::util::shared_ptr<block> block_ptr;
 
 /** Memory block
  * A memory block is a coherence unit of shared memory objects in GMAC, which are a collection of memory blocks.  Each
@@ -69,8 +71,11 @@ typedef __impl::util::smart_ptr<block>::shared block_ptr;
  * stil be accessible from the CPU.
  * Memory block methods should only be called from GMAC objects and GMAC memory coherence protocols.
  */
-class GMAC_LOCAL block : public gmac::util::mutex {
+class GMAC_LOCAL block :
+	public gmac::util::mutex<block> {
     DBC_FORCE_TEST(block)
+
+	typedef gmac::util::mutex<block> Lock;
 
     friend class object;
 
@@ -214,7 +219,7 @@ public:
      * Get memory block owner
      * \return Owner of the memory block
      */
-    virtual core::address_space &owner() const = 0;
+    virtual core::address_space_ptr owner() const = 0;
 
     /**
      * Get memory block address at the accelerator

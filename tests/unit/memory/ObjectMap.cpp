@@ -8,7 +8,7 @@
 using __impl::core::Mode;
 using __impl::core::Process;
 using __impl::core::hpe::AddressSpace;
-using __impl::memory::Object;
+using __impl::memory::object;
 using __impl::memory::Protocol;
 using __impl::memory::ObjectMap;
 
@@ -70,8 +70,8 @@ TEST_F(ObjectMapTest, Coherence) {
 	protocol_interface &proto = map.getProtocol();
 	ASSERT_TRUE(&proto != NULL);
 	
-    Object *obj1 = proto.createObject(*mode, Size_, NULL, GMAC_PROT_READ, 0);
-	Object *obj2 = proto.createObject(*mode, Size_, NULL, GMAC_PROT_READWRITE, 0);
+    object *obj1 = proto.createObject(*mode, Size_, NULL, GMAC_PROT_READ, 0);
+	object *obj2 = proto.createObject(*mode, Size_, NULL, GMAC_PROT_READWRITE, 0);
 
 	hostptr_t addr1 = obj1->addr();
 	hostptr_t addr2 = obj2->addr();

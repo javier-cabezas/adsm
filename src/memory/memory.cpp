@@ -62,21 +62,21 @@ protocol_interface *ProtocolInit(unsigned flags)
         }
         if(0 != (flags & 0x1)) {
             ret = new gmac::memory::protocol::Lazy<
-                memory::object_state<protocol::lazy::BlockState> >(eager);
+                memory::object_state<protocol::lazy_types::BlockState> >(eager);
         } else {
             ret = new gmac::memory::protocol::Lazy<
-                memory::object_state<protocol::lazy::BlockState> >(eager);
+                memory::object_state<protocol::lazy_types::BlockState> >(eager);
         }
     }
 #ifdef USE_VM
     else if(strcasecmp(config::params::protocol_interface, "Gather") == 0) {
         if(0 != (flags & 0x1)) {
             ret = new gmac::memory::protocol_interface::Lazy<
-                memory::object_state<protocol_interface::lazy::BlockState> >(eager);
+                memory::object_state<protocol_interface::lazy_types::BlockState> >(eager);
         }
         else {
             ret = new gmac::memory::protocol_interface::Lazy<
-                memory::object_state<protocol_interface::lazy::BlockState> >(eager);
+                memory::object_state<protocol_interface::lazy_types::BlockState> >(eager);
         }
     }
 #endif

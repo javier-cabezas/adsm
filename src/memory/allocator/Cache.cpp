@@ -8,7 +8,7 @@
 
 namespace __impl { namespace memory { namespace allocator {
 
-Arena::Arena(manager &manager, util::smart_ptr<core::address_space>::shared aspace, size_t objSize) :
+arena::arena(manager &manager, core::address_space_ptr aspace, size_t objSize) :
     ptr_(NULL),
     size_(0),
     manager_(manager),
@@ -22,7 +22,7 @@ Arena::Arena(manager &manager, util::smart_ptr<core::address_space>::shared aspa
     }
 }
 
-Arena::~Arena()
+arena::~arena()
 {
     CFATAL(objects_.size() == size_, "Destroying non-full Arena");
     objects_.clear();
@@ -32,17 +32,17 @@ Arena::~Arena()
     }
 }
 
-Cache::~Cache()
+cache::~cache()
 {
-    ArenaMap::iterator i;
+    map_arena::iterator i;
     for(i = arenas.begin(); i != arenas.end(); i++) {
         delete i->second;
     }
 }
 
-hostptr_t Cache::get()
+hostptr_t cache::get()
 {
-    ArenaMap::iterator i;
+    map_arena::iterator i;
     lock();
     for(i = arenas.begin(); i != arenas.end(); i++) {
         if(i->second->empty()) continue;
@@ -51,14 +51,15 @@ hostptr_t Cache::get()
         return i->second->get();
     }
     // There are no free objects in any arena
-    Arena *arena = new Arena(manager_, aspace_, objectSize);
-    if(arena->valid() == false) {
-        delete arena; unlock();
+    arena *a = new arena(manager_, aspace_, objectSize);
+    if(a->valid() == false) {
+        delete a;
+        unlock();
         return NULL;
     }
-    TRACE(LOCAL,"Cache %p creates new arena %p with key %p", this, arena, arena->key());
-    arenas.insert(ArenaMap::value_type(arena->key(), arena));
-    hostptr_t ptr = arena->get();
+    TRACE(LOCAL,"Cache %p creates new arena %p with key %p", this, a, a->key());
+    arenas.insert(map_arena::value_type(a->key(), a));
+    hostptr_t ptr = a->get();
     unlock();
     return ptr;
 }

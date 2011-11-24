@@ -91,7 +91,7 @@ done_addr:
 #endif
 
 template<typename State>
-inline core::address_space &
+inline core::address_space_ptr
 block_state<State>::owner() const
 {
     return parent_.owner();
@@ -153,9 +153,9 @@ block_state<State>::toHost(unsigned blockOff, size_t count)
 {
     gmacError_t ret = gmacSuccess;
 
-    ret = parent_.owner().copy(hal::ptr_t(this->shadow_ + blockOff),
-                               get_device_addr() + blockOff,
-                               count);
+    ret = parent_.owner()->copy(hal::ptr_t(this->shadow_ + blockOff),
+                                get_device_addr() + blockOff,
+                                count);
 #if 0
     // Fast path
     if (owners_.size() == 1) {
@@ -177,9 +177,9 @@ block_state<State>::toAccelerator(unsigned blockOff, size_t count)
 {
     gmacError_t ret = gmacSuccess;
 
-    parent_.owner().copy_async(get_device_addr() + blockOff,
-                               hal::ptr_t(shadow_ + blockOff),
-                               count, ret);
+    parent_.owner()->copy_async(get_device_addr() + blockOff,
+                                hal::ptr_t(shadow_ + blockOff),
+                                count, ret);
 #if 0
     // Fast path
     if (owners_.size() == 1) {

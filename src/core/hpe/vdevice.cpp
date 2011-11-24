@@ -7,7 +7,7 @@
 
 namespace __impl { namespace core { namespace hpe {
 
-vdevice::vdevice(process &proc, util::smart_ptr<address_space>::shared aspace,
+vdevice::vdevice(process &proc, util::shared_ptr<address_space> aspace,
                  hal::stream_t &streamLaunch) :
     proc_(proc),
     aspace_(aspace),

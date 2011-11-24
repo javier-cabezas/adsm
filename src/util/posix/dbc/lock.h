@@ -49,46 +49,120 @@ namespace __dbc { namespace util {
 class mutex;
 typedef mutex spinlock;
 #else
+template <typename T>
 class GMAC_API spinlock :
-    public __impl::util::spinlock,
+    public __impl::util::spinlock<T>,
     public virtual Contract {
-    DBC_TESTED(__impl::util::spinlock)
+    DBC_TESTED(__impl::util::spinlock<T>)
 
 protected:
     mutable pthread_mutex_t internal_;
     mutable bool locked_;
     mutable pthread_t owner_;
 public:
-    spinlock(const char *name);
-    virtual ~spinlock();
-protected:
-    void lock() const;
-    void unlock() const;
+    spinlock(const char *name) :
+    	__impl::util::spinlock<T>(name),
+        locked_(false),
+        owner_(0)
+    {
+        pthread_mutex_init(&internal_, NULL);
+    }
 
+    virtual ~spinlock()
+    {
+    	pthread_mutex_destroy(&internal_);
+    }
+protected:
+    void lock() const
+    {
+    	pthread_mutex_lock(&internal_);
+		REQUIRES(owner_ != pthread_self());
+		pthread_mutex_unlock(&internal_);
+
+		__impl::util::spinlock<T>::lock();
+
+		pthread_mutex_lock(&internal_);
+		ENSURES(owner_ == 0);
+		ENSURES(locked_ == false);
+		locked_ = true;
+		owner_ = pthread_self();
+		pthread_mutex_unlock(&internal_);
+	}
+
+    void unlock() const
+    {
+        pthread_mutex_lock(&internal_);
+        REQUIRES(locked_ == true);
+        REQUIRES(owner_ == pthread_self());
+        owner_ = 0;
+        locked_ = false;
+
+        __impl::util::spinlock<T>::unlock();
+
+        pthread_mutex_unlock(&internal_);
+    }
 };
 #endif
 
+template <typename T>
 class GMAC_API mutex :
-    public __impl::util::mutex,
+    public __impl::util::mutex<T>,
     public virtual Contract {
-    DBC_TESTED(__impl::util::mutex)
+    DBC_TESTED(__impl::util::mutex<T>)
 
 protected:
     mutable pthread_mutex_t internal_;
     mutable bool locked_;
     mutable pthread_t owner_;
 public:
-    mutex(const char *name);
-    virtual ~mutex();
+    mutex(const char *name) :
+        __impl::util::mutex<T>(name),
+    	locked_(false),
+    	owner_(0)
+    {
+    	pthread_mutex_init(&internal_, NULL);
+    }
+
+    virtual ~mutex()
+    {
+    	pthread_mutex_destroy(&internal_);
+    }
 protected:
-    void lock() const;
-    void unlock() const;
+    void lock() const
+    {
+    	pthread_mutex_lock(&internal_);
+		REQUIRES(owner_ != pthread_self());
+		pthread_mutex_unlock(&internal_);
+
+		__impl::util::mutex<T>::lock();
+
+		pthread_mutex_lock(&internal_);
+		ENSURES(owner_ == 0);
+		ENSURES(locked_ == false);
+		locked_ = true;
+		owner_ = pthread_self();
+    	pthread_mutex_unlock(&internal_);
+    }
+
+    void unlock() const
+    {
+    	pthread_mutex_lock(&internal_);
+		REQUIRES(locked_ == true);
+		REQUIRES(owner_ == pthread_self());
+		owner_ = 0;
+		locked_ = false;
+
+		__impl::util::mutex<T>::unlock();
+
+		pthread_mutex_unlock(&internal_);
+    }
 };
 
+template <typename T>
 class GMAC_API lock_rw :
-    public __impl::util::lock_rw,
+    public __impl::util::lock_rw<T>,
     public virtual Contract {
-    DBC_TESTED(__impl::util::lock_rw)
+    DBC_TESTED(__impl::util::lock_rw<T>)
 
 protected:
     mutable enum { Idle, Read, Write } state_;
@@ -98,12 +172,72 @@ protected:
 
     mutable unsigned magic_;
 public:
-    lock_rw(const char *name);
-    virtual ~lock_rw();
+    lock_rw(const char *name) :
+        __impl::util::lock_rw<T>(name),
+        state_(Idle),
+        writer_(0)
+    {
+        ENSURES(pthread_mutex_init(&internal_, NULL) == 0);
+    }
+
+    virtual ~lock_rw()
+    {
+        ENSURES(pthread_mutex_destroy(&internal_) == 0);
+        readers_.clear();
+    }
 protected:
-    void lockRead() const;
-    void lockWrite() const;
-    void unlock() const;
+    void lock_read() const
+    {
+    	pthread_mutex_lock(&internal_);
+		REQUIRES(readers_.find(pthread_self()) == readers_.end() &&
+				 writer_ != pthread_self());
+		pthread_mutex_unlock(&internal_);
+
+		__impl::util::lock_rw<T>::lock_read();
+
+		pthread_mutex_lock(&internal_);
+		ENSURES(state_ == Idle || state_ == Read);
+		state_ = Read;
+		readers_.insert(pthread_self());
+		pthread_mutex_unlock(&internal_);
+    }
+
+    void lock_write() const
+    {
+        pthread_mutex_lock(&internal_);
+        REQUIRES(readers_.find(pthread_self()) == readers_.end());
+        REQUIRES(writer_ != pthread_self());
+        pthread_mutex_unlock(&internal_);
+
+        __impl::util::lock_rw<T>::lock_write();
+
+        pthread_mutex_lock(&internal_);
+        ENSURES(readers_.empty() == true);
+        ENSURES(state_ == Idle);
+        state_ = Write;
+        writer_ = pthread_self();
+        pthread_mutex_unlock(&internal_);
+    }
+
+    void unlock() const
+    {
+    	pthread_mutex_lock(&internal_);
+		if (writer_ == pthread_self()) {
+			REQUIRES(readers_.empty() == true);
+			REQUIRES(state_ == Write);
+			state_ = Idle;
+			writer_ = 0;
+		} else {
+			REQUIRES(readers_.erase(pthread_self()) == 1);
+			REQUIRES(state_ == Read);
+			if (readers_.empty() == true)
+				state_ = Idle;
+		}
+
+		__impl::util::lock_rw<T>::unlock();
+
+		pthread_mutex_unlock(&internal_);
+    }
 };
 
 }}

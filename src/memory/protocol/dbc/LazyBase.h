@@ -38,40 +38,39 @@ WITH THE SOFTWARE.  */
 
 namespace __dbc { namespace memory { namespace protocol {
 
-class GMAC_LOCAL LazyBase :
-    public __impl::memory::protocol::LazyBase,
+class GMAC_LOCAL lazy_base :
+    public __impl::memory::protocol::lazy_base,
     public virtual Contract {
-    DBC_TESTED(__impl::memory::protocol::LazyBase)
+    DBC_TESTED(__impl::memory::protocol::lazy_base)
 
 protected:
-    LazyBase(bool eager);
-    virtual ~LazyBase();
+    lazy_base(bool eager);
+    virtual ~lazy_base();
 
-    typedef __impl::memory::protocol::LazyBase Parent;
-    typedef __impl::memory::block_ptr BlockPtrImpl;
-    typedef __impl::memory::object ObjectImpl;
-    typedef __impl::memory::protocol::lazy::State StateImpl;
-    typedef __impl::memory::protocol::lazy::Block LazyBlockImpl;
-    typedef __impl::util::smart_ptr<LazyBlockImpl>::shared LazyBlockPtrImpl;
-    typedef __impl::core::io_buffer io_buffer_impl;
+    typedef __impl::memory::protocol::lazy_base parent;
+    typedef __impl::memory::block_ptr block_ptr_impl;
+    typedef __impl::memory::object object_impl;
+    typedef __impl::memory::protocol::lazy_types::State state_impl;
+    typedef __impl::memory::protocol::lazy_types::Block lazy_block_impl;
+    typedef __impl::util::shared_ptr<lazy_block_impl> lazy_block_ptr_impl;
 
 public:
-    gmacError_t signal_read(BlockPtrImpl block, hostptr_t addr);
-    gmacError_t signal_write(BlockPtrImpl block, hostptr_t addr);
+    gmacError_t signal_read(block_ptr_impl block, hostptr_t addr);
+    gmacError_t signal_write(block_ptr_impl block, hostptr_t addr);
 
-    gmacError_t acquire(BlockPtrImpl obj, GmacProtection &prot);
-    gmacError_t release(BlockPtrImpl block);
+    gmacError_t acquire(block_ptr_impl obj, GmacProtection &prot);
+    gmacError_t release(block_ptr_impl block);
 
     gmacError_t releaseAll();
 
-    gmacError_t toHost(BlockPtrImpl block);
+    gmacError_t toHost(block_ptr_impl block);
 
-    __impl::hal::event_t memset(BlockPtrImpl block, size_t blockOffset, int v, size_t size,
+    __impl::hal::event_t memset(block_ptr_impl block, size_t blockOffset, int v, size_t size,
                                 gmacError_t &err);
 
     gmacError_t flushDirty();
 
-    __impl::hal::event_t copyBlockToBlock(BlockPtrImpl d, size_t dstOffset, BlockPtrImpl s, size_t srcOffset, size_t count, gmacError_t &err);
+    __impl::hal::event_t copyBlockToBlock(block_ptr_impl d, size_t dstOffset, block_ptr_impl s, size_t srcOffset, size_t count, gmacError_t &err);
 };
 
 }}}

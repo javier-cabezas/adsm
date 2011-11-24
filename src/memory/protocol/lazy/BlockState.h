@@ -47,7 +47,7 @@ namespace memory {
 template <typename State> class StateBlock;
 
 namespace protocol {
-namespace lazy {
+namespace lazy_types {
 
 #if defined(USE_SUBBLOCK_TRACKING) || defined(USE_VM)
 template <typename T>
@@ -88,14 +88,14 @@ typedef Array<uint8_t> SubBlocks;
 typedef Array<long_t> SubBlockCounters;
 
 /// Tree used to group subblocks and speculatively unprotect them
-struct GMAC_LOCAL BlockTreeState : public util::ReusableObject<BlockTreeState> {
+struct GMAC_LOCAL BlockTreeState : public util::reusable<BlockTreeState> {
     unsigned counter_;
     BlockTreeState();
 };
 
 class GMAC_LOCAL StrideInfo {
 protected:
-    lazy::block &block_;
+    lazy_types::block &block_;
 
     unsigned stridedFaults_;
     long_t stride_;
@@ -103,7 +103,7 @@ protected:
     hostptr_t firstAddr_;
 
 public:
-    StrideInfo(lazy::block &block);
+    StrideInfo(lazy_types::block &block);
 
     void signal_write(hostptr_t addr);
 
@@ -120,7 +120,7 @@ class GMAC_LOCAL BlockTreeInfo {
 public:
     typedef std::pair<unsigned, unsigned> Pair;
 protected:
-    lazy::block &block_;
+    lazy_types::block &block_;
 
     unsigned treeStateLevels_;
     BlockTreeState *treeState_;
@@ -129,7 +129,7 @@ protected:
 
     Pair increment(unsigned subBlock);
 public:
-    BlockTreeInfo(lazy::block &block);
+    BlockTreeInfo(lazy_types::block &block);
     ~BlockTreeInfo();
 
     void signal_write(const hostptr_t addr);
@@ -141,15 +141,15 @@ public:
 #endif
 
 class GMAC_LOCAL BlockState :
-    public common::BlockState<lazy::State> {
+    public common::BlockState<lazy_types::State> {
 #if defined(USE_SUBBLOCK_TRACKING)
     friend class StrideInfo;
     friend class BlockTreeInfo;
 #endif
 
 protected:
-    lazy::Block &block();
-    const lazy::Block &block() const;
+    lazy_types::Block &block();
+    const lazy_types::Block &block() const;
 
 #if defined(USE_SUBBLOCK_TRACKING)
     //const lazy::Block &block();
@@ -193,7 +193,7 @@ protected:
 #endif
 
 public:
-    BlockState(lazy::State init);
+    BlockState(lazy_types::State init);
 
     void setState(ProtocolState state, hostptr_t addr = NULL);
 

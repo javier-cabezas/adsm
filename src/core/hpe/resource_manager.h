@@ -61,7 +61,7 @@ struct GMAC_LOCAL address_space_resources {
     hal::stream_t *streamAccelerator_;
 };
 
-typedef util::smart_ptr<address_space>::shared address_space_ptr;
+typedef util::shared_ptr<address_space> address_space_ptr;
 
 /** Represents the resources used by a running process */
 class GMAC_LOCAL resource_manager {

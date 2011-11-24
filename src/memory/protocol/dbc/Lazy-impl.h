@@ -7,7 +7,7 @@ namespace __dbc { namespace memory { namespace protocol {
 
 template <typename T>
 Lazy<T>::Lazy(bool eager) :
-    Parent(eager)
+    parent(eager)
 {
 }
 

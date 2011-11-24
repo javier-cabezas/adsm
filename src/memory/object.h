@@ -41,13 +41,17 @@ WITH THE SOFTWARE.  */
 
 #include "util/Atomics.h"
 #include "util/lock.h"
+#include "util/locked_iterator.h"
 #include "util/Reference.h"
 #include "memory/Protocol.h"
 
 namespace __impl {
 
 namespace core {
-    class address_space;
+	class address_space;
+
+	typedef util::shared_ptr<address_space> address_space_ptr;
+	typedef util::shared_ptr<const address_space> address_space_const_ptr;
 }
 
 namespace memory {
@@ -59,8 +63,10 @@ class block;
  * divided into blocks, which are the unit of coherence
  */
 class GMAC_LOCAL object :
-    protected gmac::util::lock_rw,
+    protected gmac::util::lock_rw<object>,
     public util::Reference {
+
+    typedef gmac::util::lock_rw<object> Lock;
 
     // DBC_FORCE_TEST(object)
 protected:
@@ -86,6 +92,12 @@ protected:
     /// Tells whether the object has been released or not
     bool released_;
 
+    /// Last toHost event
+    hal::event_t lastToHost_;
+
+    /// Last toDevice event
+    hal::event_t lastToDevice_;
+
     /**
      * Returns the block corresponding to a given offset from the begining of the object
      *
@@ -93,7 +105,8 @@ protected:
      * \param blockOffset Returns the block offset of the object offset
      * \return Constant iterator pointing to the block
      */
-    vector_block::const_iterator get_block(size_t objectOffset, size_t *blockOffset = NULL) const;
+    typedef util::const_locked_iterator<vector_block> const_locked_iterator;
+    const_locked_iterator get_block(size_t objectOffset, size_t *blockOffset = NULL) const;
 
     /** Execute a coherence operation on all the blocks of the object
      *
@@ -221,8 +234,8 @@ public:
      *
      * \return The owner of the object
      */
-    virtual core::address_space &owner() = 0;
-    virtual const core::address_space &owner() const = 0;
+    virtual core::address_space_ptr owner() = 0;
+    virtual core::address_space_const_ptr owner() const = 0;
 
     /**
      * Add a new owner to the object
@@ -230,14 +243,14 @@ public:
      * \param owner The new owner of the mode
      * \return Wether it was possible to add the owner or not
      */
-    virtual gmacError_t addOwner(util::smart_ptr<core::address_space>::shared owner) = 0;
+    virtual gmacError_t addOwner(core::address_space_ptr owner) = 0;
 
     /**
      * Remove an owner from the object
      *
      * \param owner The owner to be removed
      */
-    virtual gmacError_t removeOwner(util::smart_ptr<core::address_space>::shared owner) = 0;
+    virtual gmacError_t removeOwner(core::address_space_const_ptr owner) = 0;
 
     /**
      * Acquire the ownership of the object for the CPU

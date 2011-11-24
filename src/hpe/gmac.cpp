@@ -351,7 +351,7 @@ gmacFree(void *cpuPtr)
         return ret;
     }
     gmac::trace::EnterCurrentFunction();
-    smart_ptr<address_space>::shared aspace = thread::get_current_thread().get_current_virtual_device().get_address_space();
+    address_space_ptr aspace = thread::get_current_thread().get_current_virtual_device().get_address_space();
     if(hasAllocator() == false || getAllocator().free(aspace, hostptr_t(cpuPtr)) == false) {
         ret = getManager().free(aspace, hostptr_t(cpuPtr));
     }
@@ -378,7 +378,7 @@ gmacLaunch(__impl::core::hpe::kernel::launch &launch)
 {
     gmacError_t ret = gmacSuccess;
     vdevice &dev = launch.get_virtual_device();
-    smart_ptr<address_space>::shared aspace = dev.get_address_space();
+    address_space_ptr aspace = dev.get_address_space();
     manager &manager = getManager();
     TRACE(GLOBAL, "Flush the memory used in the kernel");
     const std::list<__impl::memory::ObjectInfo> &objects = launch.get_arg_list().get_objects();
@@ -452,7 +452,7 @@ gmacThreadSynchronize()
     gmacError_t ret = gmacSuccess;
     if (AutoSync == false) {
         vdevice &dev = thread::get_current_thread().get_current_virtual_device();
-        smart_ptr<address_space>::shared aspace = dev.get_address_space();
+        address_space_ptr aspace = dev.get_address_space();
         dev.wait();
         TRACE(GLOBAL, "Memory Sync");
         ret = getManager().acquireObjects(aspace);
@@ -495,8 +495,8 @@ gmacMemcpy(void *dst, const void *src, size_t size)
     void *ret = dst;
 
     // Locate memory regions (if any)
-    smart_ptr<__impl::core::address_space>::shared aspaceDst = getManager().owner(hostptr_t(dst), size);
-    smart_ptr<__impl::core::address_space>::shared aspaceSrc = getManager().owner(hostptr_t(src), size);
+    __impl::core::address_space_ptr aspaceDst = getManager().owner(hostptr_t(dst), size);
+    __impl::core::address_space_ptr aspaceSrc = getManager().owner(hostptr_t(src), size);
     if (aspaceDst == NULL && aspaceSrc == NULL) {
         exitGmac();
         return ::memcpy(dst, src, size);

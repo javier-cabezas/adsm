@@ -45,8 +45,8 @@ namespace __impl { namespace util { namespace allocator {
 /**
  * Simple buddy allocator
  */
-class GMAC_LOCAL Buddy : protected gmac::util::mutex {
-    DBC_FORCE_TEST(__impl::util::allocator::Buddy)
+class GMAC_LOCAL buddy : protected gmac::util::mutex<buddy> {
+    DBC_FORCE_TEST(__impl::util::allocator::buddy)
 
 protected:
     hostptr_t addr_;
@@ -64,8 +64,8 @@ protected:
     TESTABLE off_t getFromList(uint8_t i);
     TESTABLE void putToList(off_t addr, uint8_t i);
 public:
-    Buddy(hostptr_t addr, size_t size);
-    ~Buddy();
+    buddy(hostptr_t addr, size_t size);
+    ~buddy();
 
     inline hostptr_t addr() const { return addr_; }
     TESTABLE hostptr_t get(size_t &size);

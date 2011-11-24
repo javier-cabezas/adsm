@@ -39,7 +39,7 @@ map_object::mapFind(const hostptr_t addr, size_t size) const
 {
     map_object::const_iterator i;
     object *ret = NULL;
-    lockRead();
+    lock_read();
     const uint8_t *limit = (const uint8_t *)addr + size;
     i = upper_bound(addr);
     if(i != end() && i->second->addr() <= limit) ret = i->second;
@@ -48,7 +48,7 @@ map_object::mapFind(const hostptr_t addr, size_t size) const
 }
 
 map_object::map_object(const char *name) :
-    gmac::util::lock_rw(name),
+    Lock(name),
     protocol_(*ProtocolInit(0)),
     modifiedObjects_(false),
     releasedObjects_(false)
@@ -70,7 +70,7 @@ void
 map_object::cleanUp()
 {
     const_iterator i;
-    lockRead();
+    lock_read();
     for(i = begin(); i != end(); i++) {
         // Decrement reference count of pointed objects to allow later destruction
         i->second->decRef();
@@ -80,7 +80,7 @@ map_object::cleanUp()
 
 size_t map_object::size() const
 {
-    lockRead();
+    lock_read();
     size_t ret = Parent::size();
     unlock();
     return ret;
@@ -102,7 +102,7 @@ map_object::getProcess() const
 
 bool map_object::addObject(object &obj)
 {
-    lockWrite();
+    lock_write();
     TRACE(LOCAL, "Insert object: %p", obj.addr());
     std::pair<iterator, bool> ret = Parent::insert(value_type(obj.end(), &obj));
     if(ret.second == true) obj.incRef();
@@ -113,7 +113,7 @@ bool map_object::addObject(object &obj)
 
 bool map_object::removeObject(object &obj)
 {
-    lockWrite();
+    lock_write();
     iterator i = find(obj.end());
     bool ret = (i != end());
     if(ret == true) {
@@ -159,7 +159,7 @@ size_t map_object::memorySize() const
 {
     size_t total = 0;
     const_iterator i;
-    lockRead();
+    lock_read();
     for(i = begin(); i != end(); i++) {
         total += i->second->size();
     }
@@ -169,7 +169,7 @@ size_t map_object::memorySize() const
 
 gmacError_t map_object::releaseObjects()
 {
-    lockWrite();
+    lock_write();
 #ifdef DEBUG
     if (config::params::Stats) {
         unsigned dump = AtomicInc(StatDumps_);
@@ -191,7 +191,7 @@ gmacError_t map_object::releaseObjects()
 gmacError_t
 map_object::acquireObjects()
 {
-    lockWrite();
+    lock_write();
     modifiedObjects_ = false;
     releasedObjects_ = false;
     unlock();

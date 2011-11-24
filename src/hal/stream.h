@@ -15,14 +15,14 @@ namespace detail {
 template <typename T>
 class GMAC_LOCAL map_pool :
     std::map<size_t, std::list<T *> >,
-    gmac::util::mutex {
+    gmac::util::mutex<map_pool<T> > {
 
     typedef std::list<T *> queue_subset;
     typedef std::map<size_t, queue_subset> Parent;
 
 public:
     map_pool() :
-        gmac::util::mutex("map_pool")
+        gmac::util::mutex<map_pool>("map_pool")
     {
     }
 
@@ -30,7 +30,7 @@ public:
     {
         T *ret = NULL;
 
-        lock();
+        this->lock();
         typename Parent::iterator it;
         it = Parent::lower_bound(size);
         if (it != Parent::end()) {
@@ -40,7 +40,7 @@ public:
                 queue.pop_front();
             }
         }
-        unlock();
+        this->unlock();
 
         return ret;
     }
@@ -49,7 +49,7 @@ public:
     {
         bool ret = false;
 
-        lock();
+        this->lock();
         typename Parent::iterator it;
         it = Parent::lower_bound(size);
         if (it != Parent::end()) {
@@ -62,14 +62,14 @@ public:
                 ret = true;
             }
         }
-        unlock();
+        this->unlock();
 
         return ret;
     }
 
     void push(T *v, size_t size)
     {
-        lock();
+    	this->lock();
         typename Parent::iterator it;
         it = Parent::find(size);
         if (it != Parent::end()) {
@@ -80,17 +80,19 @@ public:
             queue.push_back(v);
             Parent::insert(typename Parent::value_type(size, queue));
         }
-        unlock();
+        this->unlock();
     }
 };
 
 class GMAC_LOCAL local_mutex :
-    public gmac::util::mutex {
+    public gmac::util::mutex<local_mutex> {
+
+    typedef gmac::util::mutex<local_mutex> Parent;
 public:
-    local_mutex(const std::string &name) : gmac::util::mutex(name.c_str())
+    local_mutex(const std::string &name) : Parent(name.c_str())
     {}
-    void lock() { gmac::util::mutex::lock(); }
-    void unlock() { gmac::util::mutex::unlock(); }
+    void lock() { Parent::lock(); }
+    void unlock() { Parent::unlock(); }
 };
 
 template <typename B, typename I>

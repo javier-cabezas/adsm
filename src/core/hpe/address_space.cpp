@@ -24,7 +24,7 @@ address_space::address_space(hal::context_t &context,
                              hal::stream_t &streamToHost,
                              hal::stream_t &streamAccelerator,
                              process &proc) :
-    gmac::util::mutex("address_space"),
+    Lock("address_space"),
     ctx_(context),
     streamLaunch_(streamLaunch),
     streamToAccelerator_(streamToAccelerator),

@@ -40,7 +40,7 @@ template <typename State> class block_state;
 
 namespace protocol {
 
-namespace lazy {
+namespace lazy_types {
 class BlockState;
 
 //! Protocol states
@@ -51,8 +51,9 @@ enum State {
     HostOnly = 3 /*< Data only allowed in host memory */
 };
 
-typedef block_state<lazy::BlockState> Block;
-typedef __impl::util::smart_ptr<Block>::shared block_ptr;
+typedef block_state<lazy_types::BlockState> Block;
+typedef __impl::util::shared_ptr<Block> block_ptr;
+typedef __impl::util::shared_ptr<const Block> block_const_ptr;
 
 }}}}
 

@@ -2,27 +2,27 @@
 
 namespace __impl { namespace memory {
 
-FileMap::FileMap() :
-	gmac::util::lock_rw("FileMap")
+map_file::map_file() :
+	Lock("FileMap")
 { }
 
-FileMap::~FileMap()
+map_file::~map_file()
 { }
 
-bool FileMap::insert(int fd, hostptr_t address, size_t size)
+bool map_file::insert(int fd, hostptr_t address, size_t size)
 {
 	hostptr_t key = address + size;
-	lockWrite();
+	lock_write();
 	std::pair<Parent::iterator, bool> ret = Parent::insert(
-		Parent::value_type(key, FileMapEntry(fd, address, size)));
+		Parent::value_type(key, map_file_entry(fd, address, size)));
 	unlock();
 	return ret.second;
 }
 
-bool FileMap::remove(hostptr_t address)
+bool map_file::remove(hostptr_t address)
 {
 	bool ret = true;
-	lockWrite();
+	lock_write();
 	Parent::iterator i = Parent::upper_bound(address);
 	if(i != Parent::end()) Parent::erase(i);
 	else ret = false;
@@ -30,10 +30,10 @@ bool FileMap::remove(hostptr_t address)
 	return ret;
 }
 
-const FileMapEntry FileMap::find(hostptr_t address) const
+const map_file_entry map_file::find(hostptr_t address) const
 {
-	FileMapEntry ret(-1, NULL, 0);
-	lockRead();
+	map_file_entry ret(-1, NULL, 0);
+	lock_read();
 	Parent::const_iterator i = Parent::upper_bound(address);
 	if(i != Parent::end()) {
 		if((uint8_t *)i->second.address() <= (uint8_t *) address) {

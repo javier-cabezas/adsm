@@ -49,7 +49,7 @@ class vdevice;
 #if 0
 class GMAC_LOCAL contextMap : protected std::map<address_space *, context *> {
 protected:
-    typedef std::map<THREAD_T, context *> Parent;
+    typedef std::map<THREAD_T, context *> parent;
     address_space &owner_;
 
 public:

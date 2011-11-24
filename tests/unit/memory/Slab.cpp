@@ -51,7 +51,7 @@ TEST_F(SlabTest, Creation)
 {
     ASSERT_TRUE(Manager_ != NULL);
     for(int i = 0; i < 16; i++) {
-        allocator::Slab *slab = new allocator::Slab(*Manager_);
+        allocator::slab *slab = new allocator::slab(*Manager_);
         ASSERT_TRUE(slab != NULL);
         slab->destroy();
     }
@@ -60,7 +60,7 @@ TEST_F(SlabTest, Creation)
 TEST_F(SlabTest, SmallObject)
 {
     ASSERT_TRUE(Manager_ != NULL);
-    allocator::Slab *slab = new allocator::Slab(*Manager_);
+    allocator::slab *slab = new allocator::slab(*Manager_);
 
     const size_t objectSize = 1024;
     const unsigned numObjects = 128 * 1024;
@@ -83,7 +83,7 @@ TEST_F(SlabTest, SmallObject)
 TEST_F(SlabTest, MultiSizeObject)
 {
     ASSERT_TRUE(Manager_ != NULL);
-    allocator::Slab *slab = new allocator::Slab(*Manager_);
+    allocator::slab *slab = new allocator::slab(*Manager_);
     ASSERT_TRUE(slab != NULL);
 
     const size_t minObjectSize = 64;
@@ -111,7 +111,7 @@ TEST_F(SlabTest, MultiSizeObject)
 TEST_F(SlabTest, MultiKeyObject)
 {
     ASSERT_TRUE(Manager_ != NULL);
-    allocator::Slab *slab = new allocator::Slab(*Manager_);
+    allocator::slab *slab = new allocator::slab(*Manager_);
     ASSERT_TRUE(slab != NULL);
 
     const size_t objectSize = 1024;
@@ -136,7 +136,7 @@ TEST_F(SlabTest, MultiKeyObject)
 TEST_F(SlabTest, MultiSizeKeyObject)
 {
     ASSERT_TRUE(Manager_ != NULL);
-    allocator::Slab *slab = new allocator::Slab(*Manager_);
+    allocator::slab *slab = new allocator::slab(*Manager_);
     ASSERT_TRUE(slab != NULL);
 
     const size_t minObjectSize = 64;

@@ -61,7 +61,7 @@ void initGmac(void)
     TRACE(GLOBAL, "Initializing memory");
     Manager_ = new gmac::memory::manager(*Process_);
 #if !defined(USE_OPENCL)
-    Allocator_ = new __impl::memory::allocator::Slab(*Manager_);
+    Allocator_ = new __impl::memory::allocator::slab(*Manager_);
 #endif
 
 #if 0

@@ -17,7 +17,7 @@ int ProtBits[] = {
     PROT_READ | PROT_WRITE
 };
 
-static FileMap Files;
+static map_file Files;
 
 int memory_ops::protect(hostptr_t addr, size_t count, GmacProtection prot)
 {
@@ -78,7 +78,7 @@ hostptr_t memory_ops::shadow(hostptr_t addr, size_t count)
 {
     trace::EnterCurrentFunction();
     TRACE(GLOBAL, "Getting shadow mapping for %p (%zd bytes)", addr, count);
-    FileMapEntry entry = Files.find(addr);
+    map_file_entry entry = Files.find(addr);
     if(entry.fd() == -1) {
         trace::ExitCurrentFunction();
         return NULL;
@@ -103,7 +103,7 @@ void memory_ops::unshadow(hostptr_t addr, size_t count)
 void memory_ops::unmap(hostptr_t addr, size_t count)
 {
     trace::EnterCurrentFunction();
-    FileMapEntry entry = Files.find(addr);
+    map_file_entry entry = Files.find(addr);
     if(Files.remove(addr) == false) {
         trace::ExitCurrentFunction();
         return;

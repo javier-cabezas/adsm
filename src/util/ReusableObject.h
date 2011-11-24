@@ -44,22 +44,23 @@ WITH THE SOFTWARE.  */
 namespace __impl { namespace util {
 
 template <typename T>
-class GMAC_LOCAL Pool :
-    protected gmac::util::mutex {
+class GMAC_LOCAL pool:
+    protected gmac::util::mutex<pool<T> > {
+    typedef gmac::util::mutex<pool> Lock;
 public:
-    union Object {
+    union object {
         char dummy[sizeof(T)];
-        Object * next;
+        object * next;
     };
 
-    Pool() :
-        gmac::util::mutex("ReusableObjectPool"),
+    pool() :
+        Lock("ReusableObjectPool"),
         freeList_(NULL)
     {}
 
-    ~Pool()
+    ~pool()
     {
-        Object * next, * tmp;
+        object * next, * tmp;
         for (next = freeList_; next; next = tmp) {
             tmp = next->next;
             delete next;
@@ -68,48 +69,48 @@ public:
 
     T *get()
     {
-        lock();
-        Object *ret = freeList_;
+        Lock::lock();
+        object *ret = freeList_;
         if (ret) freeList_ = ret->next;
-        unlock();
+        Lock::unlock();
         return (T *) ret;
     }
 
     void put(T *ptr)
     {
-        lock();
-        ((Object *) ptr)->next = freeList_;
-        freeList_ = (Object *) ptr;
-        unlock();
+    	Lock::lock();
+        ((object *) ptr)->next = freeList_;
+        freeList_ = (object *) ptr;
+        Lock::unlock();
     }
 
 
 private:
-    Object * freeList_;
+    object * freeList_;
 };
 
 template <typename T>
-class GMAC_LOCAL ReusableObject {
+class GMAC_LOCAL reusable {
 public:
     void *operator new(size_t bytes)
     {
-        T *res = pool.get();
-        return res? res : (T *) new typename Pool<T>::Object;
+        T *res = Pool_.get();
+        return res? res : (T *) new typename pool<T>::object;
     }
 
     void operator delete(void *ptr)
     {
-        pool.put((T *) ptr);
+        Pool_.put((T *) ptr);
     }
 
 protected:
-    static Pool<T> pool;
+    static pool<T> Pool_;
 };
 
 // Static initialization
 
-template<class T> GMAC_LOCAL Pool<T> 
-ReusableObject<T>::pool;
+template<class T> GMAC_LOCAL pool<T> 
+reusable<T>::Pool_;
 
 }}
 

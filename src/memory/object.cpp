@@ -14,25 +14,26 @@ Atomic object::Id_ = 0;
 object::~object()
 {
     vector_block::iterator i;
-    lockWrite();
+    lock_write();
     gmacError_t ret = coherenceOp(&protocol_interface::deleteBlock);
     ASSERTION(ret == gmacSuccess);
     blocks_.clear();
     unlock();
 }
 
-object::vector_block::const_iterator
+object::const_locked_iterator
 object::get_block(size_t objectOffset, size_t *blockOffset) const
 {
 	if (objectOffset > size()) {
-		return blocks_.end();
+		return const_locked_iterator(blocks_.end(), blocks_);
 	}
 
 	if (blockOffset != NULL) {
 		*blockOffset = objectOffset % config::params::BlockSize;
 	}
 
-	return blocks_.begin() + (objectOffset / config::params::BlockSize);
+	return const_locked_iterator(blocks_.begin() + (objectOffset / config::params::BlockSize),
+			                     blocks_);
 }
 
 gmacError_t
@@ -55,14 +56,16 @@ object::to_io_device(hal::device_output &output, size_t objOff, size_t count)
     gmacError_t ret = gmacSuccess;
     size_t blockOffset = 0;
     size_t off = 0;
-    vector_block::const_iterator i = get_block(objOff, &blockOffset);
-    for(; i != blocks_.end() && count > 0; i++) {
+    const_locked_iterator i = get_block(objOff, &blockOffset);
+    for(; count > 0 && i != blocks_.end(); i++) {
         block_ptr block = *i;
         size_t blockSize = block->size() - blockOffset;
         blockSize = count < blockSize? count: blockSize;
+        block->lock();
         event = protocol_.to_io_device(output,
                                        block, blockOffset,
                                        blockSize, ret);
+        block->unlock();
         //block.memoryOp(op, buffer, blockSize, bufferOffset, blockOffset);
         blockOffset = 0;
         off   += blockSize;
@@ -78,7 +81,7 @@ object::from_io_device(size_t objOff, hal::device_input &input, size_t count)
     gmacError_t ret = gmacSuccess;
     size_t blockOffset = 0;
     size_t off = 0;
-    vector_block::const_iterator i = get_block(objOff, &blockOffset);
+    const_locked_iterator i = get_block(objOff, &blockOffset);
     for(; i != blocks_.end() && count > 0; i++) {
         block_ptr block = *i;
         size_t blockSize = block->size() - blockOffset;
@@ -121,12 +124,14 @@ gmacError_t object::memset(size_t offset, int v, size_t size)
 	hal::event_t event;
     gmacError_t ret = gmacSuccess;
     size_t blockOffset = 0;
-    vector_block::const_iterator i = get_block(offset, &blockOffset);
+    const_locked_iterator i = get_block(offset, &blockOffset);
     for(; i != blocks_.end() && size > 0; i++) {
         block_ptr block = *i;
         size_t blockSize = block->size() - blockOffset;
         blockSize = size < blockSize? size: blockSize;
+        block->lock();
         event = protocol_.memset(block, blockOffset, v, blockSize, ret);
+        block->unlock();
         blockOffset = 0;
         size -= blockSize;
     }
@@ -140,91 +145,22 @@ object::memcpyToObject(size_t objOff, const hostptr_t src, size_t size)
     gmacError_t ret = gmacSuccess;
     size_t blockOffset = 0;
     size_t off = 0;
-    vector_block::const_iterator i = get_block(objOff, &blockOffset);
+    const_locked_iterator i = get_block(objOff, &blockOffset);
     for(; i != blocks_.end() && size > 0; i++) {
         block_ptr block = *i;
         size_t blockSize = block->size() - blockOffset;
         blockSize = size < blockSize? size: blockSize;
+        block->lock();
         event = protocol_.copyToBlock(block, blockOffset,
                                              src + off,
                                              blockSize, ret);
+        block->unlock();
         //block.memoryOp(op, buffer, blockSize, bufferOffset, blockOffset);
         blockOffset = 0;
         off  += blockSize;
         size -= blockSize;
     }
     return ret;
-
-#if 0
-    trace::EnterCurrentFunction();
-    gmacError_t ret = gmacSuccess;
-
-#if 0
-    // We need to I/O buffers to double-buffer the copy
-    core::io_buffer *active;
-    core::io_buffer *passive;
-#endif
-
-    // Control variables
-    size_t left = size;
-
-    // Adjust the first copy to deal with a single block
-    size_t copySize = size < blockEnd(objOff)? size: blockEnd(objOff);
-
-#if 0
-    size_t bufSize = size < blockSize()? size: blockSize();
-
-    active = owner().create_io_buffer(bufSize, GMAC_PROT_WRITE);
-    ASSERTION(bufSize >= copySize);
-
-    if (copySize < size) {
-        passive = owner().create_io_buffer(bufSize, GMAC_PROT_WRITE);
-    } else {
-        passive = NULL;
-    }
-
-    // Copy the data to the first block
-    ::memcpy(active->addr(), src, copySize);
-#endif
-
-    hostptr_t ptr = src;
-    while(left > 0) {
-        // We do not need for the active buffer to be full because ::memcpy() is
-        // a synchronous call
-        ret = copyFromBuffer(*active, copySize, 0, objOff);
-        ASSERTION(ret == gmacSuccess);
-        //if (ret != gmacSuccess) return ret;
-        ptr       += copySize;
-        left      -= copySize;
-        objOff += copySize;
-        if(left > 0) {
-            // Start copying data from host memory to the passive I/O buffer
-            copySize = (left < passive->size()) ? left : passive->size();
-            ASSERTION(bufSize >= copySize);
-            passive->wait(); // Avoid overwritten a buffer that is already in use
-            ::memcpy(passive->addr(), ptr, copySize);
-        }
-        // Swap buffers
-        core::io_buffer *tmp = active;
-        active = passive;
-        passive = tmp;
-    }
-
-#if 0
-    // Clean up buffers after they are idle
-    if (passive != NULL) {
-        passive->wait();
-        owner().destroy_io_buffer(*passive);
-    }
-    if (active  != NULL) {
-        active->wait();
-        owner().destroy_io_buffer(*active);
-    }
-#endif
-
-    trace::ExitCurrentFunction();
-    return ret;
-#endif
 }
 
 gmacError_t
@@ -235,19 +171,9 @@ object::memcpyObjectToObject(object &dstObj, size_t dstOffset, size_t srcOffset,
 
     hal::event_t event;
 
-#if 0
-    hostptr_t dstPtr = dstObj.addr() + dstOffset;
-    hostptr_t srcPtr = addr() + srcOffset;
-
-        accptr_t dstPtr = dstObj.get_device_addr(dstOwner, dstObj.addr() + dstOffset);
-        accptr_t srcPtr = get_device_addr(srcOwner, addr() + srcOffset);
-
-        lockWrite();
-        dstObj.lockWrite();
-#endif
-    vector_block::const_iterator i = get_block(srcOffset);
+    const_locked_iterator i = get_block(srcOffset);
     TRACE(LOCAL, "FP: %p "FMT_SIZE, dstObj.addr() + dstOffset, size);
-    vector_block::const_iterator j = dstObj.get_block(dstOffset);
+    const_locked_iterator j = dstObj.get_block(dstOffset);
     TRACE(LOCAL, "FP: %p vs %p "FMT_SIZE, (*j)->addr(), dstObj.addr() + dstOffset, size);
     size_t left = size;
     while (left > 0) {
@@ -392,7 +318,7 @@ object::memcpyFromObject(hostptr_t dst, size_t objOff, size_t size)
     gmacError_t ret = gmacSuccess;
     size_t blockOffset = 0;
     size_t off = 0;
-    vector_block::const_iterator i = get_block(objOff);
+    const_locked_iterator i = get_block(objOff);
     for(; i != blocks_.end() && size > 0; i++) {
         block_ptr block = *i;
         size_t blockSize = block->size() - blockOffset;
@@ -473,10 +399,10 @@ gmacError_t
 object::signal_read(hostptr_t addr)
 {
     gmacError_t ret = gmacSuccess;
-    lockRead();
+    lock_read();
     /// \todo is this validate necessary?
     //validate();
-    vector_block::const_iterator i = get_block(addr - addr_);
+    const_locked_iterator i = get_block(addr - addr_);
     if(i == blocks_.end()) ret = gmacErrorInvalidValue;
     else if((*i)->addr() > addr) ret = gmacErrorInvalidValue;
     else ret = protocol_.signal_read(*i, addr);
@@ -488,9 +414,9 @@ gmacError_t
 object::signal_write(hostptr_t addr)
 {
     gmacError_t ret = gmacSuccess;
-    lockRead();
+    lock_read();
     modifiedObject();
-    vector_block::const_iterator i = get_block(addr - addr_);
+    const_locked_iterator i = get_block(addr - addr_);
     if(i == blocks_.end()) ret = gmacErrorInvalidValue;
     else if((*i)->addr() > addr) ret = gmacErrorInvalidValue;
     else ret = protocol_.signal_write(*i, addr);
@@ -502,7 +428,7 @@ gmacError_t
 object::dump(std::ostream &out, protocol::common::Statistic stat)
 {
 #ifdef DEBUG
-    lockWrite();
+    lock_write();
     std::ostringstream oss;
     oss << (void *) addr();
     out << oss.str() << " ";

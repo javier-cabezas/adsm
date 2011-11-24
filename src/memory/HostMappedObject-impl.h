@@ -3,16 +3,16 @@
 
 namespace __impl { namespace memory {
 
-inline HostMappedSet::HostMappedSet() :
+inline set_object_host_mapped::set_object_host_mapped() :
     lock_rw("HostMappedSet")
 {}
 
-inline HostMappedSet::~HostMappedSet()
+inline set_object_host_mapped::~set_object_host_mapped()
 {}
 
 #ifdef USE_OPENCL
 inline gmacError_t
-HostMappedObject::acquire(core::address_space_ptr current)
+object_host_mapped::acquire(core::address_space_ptr current)
 {
     gmacError_t ret = gmacSuccess;
 #if 0
@@ -22,7 +22,7 @@ HostMappedObject::acquire(core::address_space_ptr current)
 }
 
 inline gmacError_t
-HostMappedObject::release(core::address_space_ptr current)
+object_host_mapped::release(core::address_space_ptr current)
 {
     gmacError_t ret = gmacSuccess;
 #if 0
@@ -32,22 +32,22 @@ HostMappedObject::release(core::address_space_ptr current)
 }
 #endif
 
-inline hostptr_t HostMappedObject::addr() const
+inline hostptr_t object_host_mapped::addr() const
 {
     return addr_.get_host_addr();
 }
 
-inline size_t HostMappedObject::size() const
+inline size_t object_host_mapped::size() const
 {
     return size_;
 }
 
-inline void HostMappedObject::remove(hostptr_t addr)
+inline void object_host_mapped::remove(hostptr_t addr)
 {
     set_.remove(addr);
 }
 
-inline HostMappedObject *HostMappedObject::get(const hostptr_t addr)
+inline object_host_mapped *object_host_mapped::get(const hostptr_t addr)
 {
     return set_.get(addr);
 }

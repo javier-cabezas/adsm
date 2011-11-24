@@ -48,7 +48,7 @@ namespace __impl {
 namespace memory {
 
 class block;
-typedef __impl::util::smart_ptr<block>::shared block_ptr;
+typedef __impl::util::shared_ptr<block> block_ptr;
 class object;
 
 /**

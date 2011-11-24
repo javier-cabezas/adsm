@@ -47,6 +47,9 @@ namespace __impl {
 
 namespace core {
     class address_space;
+
+    typedef util::shared_ptr<core::address_space> address_space_ptr;
+    typedef util::shared_ptr<const core::address_space> address_space_const_ptr;
 }
 
 namespace memory {
@@ -93,7 +96,7 @@ public:
      *
      * \return A reference to the owner mode of the memory block
      */
-    core::address_space &owner() const;
+    core::address_space_ptr owner() const;
 
     /**
      * Get memory block address at the accelerator
