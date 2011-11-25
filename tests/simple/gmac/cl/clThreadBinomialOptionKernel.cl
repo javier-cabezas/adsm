@@ -1,5 +1,5 @@
 
-static const char * code = " \n \
+static const char * code = "\
 #define RISKFREE 0.02f \n \
 #define VOLATILITY 0.30f \n \
 \n \
