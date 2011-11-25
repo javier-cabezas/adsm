@@ -36,6 +36,7 @@ source_group(${current_GROUP} FILES
     eclBinarySearchKernel.cl
     eclBitonicSortKernel.cl
     eclBlackScholesKernel.cl
+    eclThreadBinomialOptionKernel.cl
     c/eclBarr.cpp
     c/eclFile.cpp
     c/eclFileVecAdd.cpp
@@ -59,6 +60,7 @@ source_group(${current_GROUP} FILES
     c/eclBinomialOption.cpp
     c/eclBlackScholes.cpp
     c/eclBitonicSort.cpp
+    c/eclThreadBinomialOption.cpp
     cpp/eclColumnMajor.cpp
     cpp/eclCompress.cpp
     cpp/eclCompressSend.cpp
@@ -142,6 +144,8 @@ target_link_libraries(eclVecAdd gmac-hpe)
 add_executable(eclThreadVecAdd_eclMemcpy ${common_SRC} c/eclThreadVecAdd_eclMemcpy.cpp)
 target_link_libraries(eclThreadVecAdd_eclMemcpy gmac-hpe)
 
+add_executable(eclThreadBinomialOption ${common_SRC} c/eclThreadBinomialOption.cpp eclThreadBinomialOptionKernel.cl)
+target_link_libraries(eclThreadBinomialOption gmac-hpe)
 
 # C++ API
 

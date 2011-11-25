@@ -40,6 +40,8 @@ source_group(${current_GROUP} FILES
 	clBitonicSortKernel.cl
 	clBlackScholes.cpp
 	clBlackScholesKernel.cl
+	clThreadBinomialOption.cpp	
+	clThreadBinomialOptionKernel.cl
 )
 
 add_executable(clVecAdd ${common_SRC} clVecAdd.cpp)
@@ -71,6 +73,9 @@ target_link_libraries(clBitonicSort ${GMAC_CL})
 
 add_executable(clBlackScholes ${common_SRC} clBlackScholes.cpp clBlackScholesKernel.cl)
 target_link_libraries(clBlackScholes ${GMAC_CL})
+
+add_executable(clThreadBinomialOption ${common_SRC} clThreadBinomialOption.cpp clThreadBinomialOptionKernel.cl)
+target_link_libraries(clThreadBinomialOption ${GMAC_CL})
 
 file(COPY vars-cl.spec tests-cl.spec DESTINATION ${PROJECT_BINARY_DIR})
 
