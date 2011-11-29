@@ -312,6 +312,7 @@ static inline
     return gmacMalloc(devPtr, count);
 }
 
+#if 0
 /**
  * Allocate shared memory accessible from all accelerators
  *
@@ -326,6 +327,7 @@ static inline
 {
     return gmacGlobalMalloc(devPtr, count, ECL_GLOBAL_MALLOC_REPLICATED);
 }
+#endif
 
 /**
  * Release shared memory

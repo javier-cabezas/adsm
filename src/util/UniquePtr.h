@@ -79,7 +79,7 @@ template<typename T1,
          bool C5, typename T5>
 struct conditional_switch<false, T1, true, T2, C3, T3, C4, T4, C5, T5>
 {
-	typedef T1 type;
+	typedef T2 type;
 };
 
 /// \todo move this to its own file
@@ -90,7 +90,7 @@ template<typename T1,
          bool C5, typename T5>
 struct conditional_switch<false, T1, false, T2, true, T3, C4, T4, C5, T5>
 {
-	typedef T1 type;
+	typedef T3 type;
 };
 
 /// \todo move this to its own file
@@ -101,7 +101,7 @@ template<typename T1,
          bool C5, typename T5>
 struct conditional_switch<false, T1, false, T2, false, T3, true, T4, C5, T5>
 {
-	typedef T1 type;
+	typedef T4 type;
 };
 
 /// \todo move this to its own file
@@ -112,7 +112,7 @@ template<typename T1,
          typename T5>
 struct conditional_switch<false, T1, false, T2, false, T3, false, T4, true, T5>
 {
-	typedef T1 type;
+	typedef T5 type;
 };
 
 template <bool B, class T = void>

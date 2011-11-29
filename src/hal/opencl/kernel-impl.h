@@ -65,15 +65,19 @@ inline
 event_t
 kernel_t::launch::execute(event_t event, gmacError_t &err)
 {
-    event_t ret;
+	event_t ret;
 
-    cl_event ev = event();
+    if (event.is_valid() == false) {
+		ret = execute(err);
+	} else {
+		cl_event &ev = event();
 
-    ret = execute(1, &ev, err);
+    	ret = execute(1, &ev, err);
 
-    if (err == gmacSuccess) {
-        event.set_synced();
-    }
+    	if (err == gmacSuccess) {
+        	event.set_synced();
+    	}
+	}
 
     return ret;
 }

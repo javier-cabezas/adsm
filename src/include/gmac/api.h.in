@@ -181,7 +181,7 @@ GMAC_API gmacError_t APICALL gmacMemoryUnmap(void *cpuPtr, size_t count);
  */
 GMAC_API gmacError_t APICALL gmacMalloc(void **devPtr, size_t count);
 
-
+#if 0
 /**
  * Allocates a range of memory in all the GPUs and the CPU. Both, GPU and CPU,
  * use the same addresses for this memory.
@@ -193,6 +193,7 @@ GMAC_API gmacError_t APICALL gmacMalloc(void **devPtr, size_t count);
  */
 GMAC_API gmacError_t APICALL gmacGlobalMalloc(void **devPtr, size_t count,
         GmacGlobalMallocType hint __dv(GMAC_GLOBAL_MALLOC_CENTRALIZED));
+#endif
 
 /**
  * Gets a the GPU address of an allocation performed with gmacMalloc or

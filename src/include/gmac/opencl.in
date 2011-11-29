@@ -519,6 +519,7 @@ error malloc(void **devPtr, size_t count)
     return ::@OPENCL_API_PREFIX@Malloc(devPtr, count);
 }
 
+#if 0
 /**
  * \sa @OPENCL_API_PREFIX@GlobalMalloc
  */
@@ -527,6 +528,7 @@ error globalMalloc(void **devPtr, size_t count, memory_hint hint = ECL_GLOBAL_MA
 {
     return ::@OPENCL_API_PREFIX@GlobalMalloc(devPtr, count, hint);
 }
+#endif
 
 /**
  * \sa @OPENCL_API_PREFIX@Free
