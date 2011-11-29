@@ -227,8 +227,8 @@ lazy_base::addDirty(lazy_types::block_ptr block)
         }
     }
     while (dbl_.size() > limit_) {
-        lazy_types::block_ptr b = util::static_pointer_cast<lazy_types::Block>(dbl_.front());
-        release(b);
+        list_block::const_locked_iterator b = dbl_.front();
+        release(*b);
     }
     unlock();
     return;
@@ -249,8 +249,8 @@ gmacError_t lazy_base::releaseAll()
     TRACE(LOCAL, "Releasing all blocks");
 
     while(dbl_.empty() == false) {
-        block_ptr b = dbl_.front();
-        gmacError_t ret = release(b);
+    	list_block::const_locked_iterator it = dbl_.front();
+        gmacError_t ret = release(*it);
         ASSERTION(ret == gmacSuccess);
     }
 

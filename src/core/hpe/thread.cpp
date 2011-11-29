@@ -4,7 +4,7 @@ namespace __impl { namespace core { namespace hpe {
 
 thread::~thread()
 {
-    for (map_config::iterator it = mapConfigs_.begin(); it != mapConfigs_.end(); it++) {
+    for (map_config::iterator it = mapConfigs_.begin(); it != mapConfigs_.end(); ++it) {
         delete it->second.first;
         delete it->second.second;
     }
@@ -15,7 +15,7 @@ thread::~thread()
     }
 #endif
 
-    for (map_vdevice::iterator it = mapVDevices_.begin(); it != mapVDevices_.end(); it++) {
+    for (map_vdevice::iterator it = mapVDevices_.begin(); it != mapVDevices_.end(); ++it) {
         process_.get_resource_manager().destroy_virtual_device(*it->second);
     }
 }

@@ -1,7 +1,11 @@
 #ifndef GMAC_UTIL_DELAYED_EXEC_H_
 #define GMAC_UTIL_DELAYED_EXEC_H_
 
-#include "tr1/functional"
+#ifdef USE_CXX0X
+#include <functional>
+#else
+#include <tr1/functional>
+#endif
 
 namespace __impl { namespace util {
 
@@ -47,9 +51,13 @@ public:
     }
 };
 
+#ifdef USE_CXX0X
+using std::bind;
+#else
 using namespace std::tr1;
+#endif
 
-#define do_member(f,o,...) bind(std::tr1::mem_fn(&f), o, __VA_ARGS__)
+#define do_member(f,o,...) bind(std::mem_fn(&f), o, __VA_ARGS__)
 #define do_func(f,...)     bind(&f, __VA_ARGS__)
 
 class GMAC_LOCAL delayed_exec {

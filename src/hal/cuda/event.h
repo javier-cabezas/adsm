@@ -64,7 +64,7 @@ class GMAC_LOCAL event_t {
     friend class kernel_t;
 
 private:
-    util::smart_ptr<_event_t>::shared ptrEvent_;
+    util::shared_ptr<_event_t> ptrEvent_;
 
     event_t(bool async, _event_t::type t, context_t &context);
 

@@ -45,6 +45,7 @@ WITH THE SOFTWARE.  */
 #include "util/lock.h"
 #include "util/Private.h"
 #include "util/UniquePtr.h"
+#include "util/stl/locked_map.h"
 
 #include "core/process.h"
 
@@ -61,7 +62,7 @@ class vdevice;
 
 /** Map that contains in which accelerator resides a mode */
 class GMAC_LOCAL map_vdevice : private std::map<vdevice *, unsigned>,
-                              private gmac::util::mutex<map_vdevice> {
+                               private gmac::util::mutex<map_vdevice> {
     friend class process;
 private:
     typedef std::map<vdevice *, unsigned> Parent;
@@ -96,7 +97,7 @@ protected:
 
     resource_manager resourceManager_;
 
-    typedef std::map<THREAD_T, thread *> map_thread;
+    typedef util::stl::locked_map<THREAD_T, thread *> map_thread;
     map_thread mapThreads_; 
 
     /**

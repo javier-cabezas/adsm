@@ -20,6 +20,7 @@ block::block(hostptr_t addr, hostptr_t shadow, size_t size) :
 
 inline block::~block()
 {
+	printf("Freeing block\n");
 }
 
 inline hostptr_t block::addr() const

@@ -38,7 +38,8 @@ process::process() :
     core::process(),
     Lock("process"),
     current_(0),
-    resourceManager_(*this)
+    resourceManager_(*this),
+    mapThreads_("map_thread")
 {
     TLS::Init();
 }

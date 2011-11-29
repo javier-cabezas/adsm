@@ -9,14 +9,17 @@
 namespace __impl { namespace memory { namespace protocol {
 
 
-inline list_block::list_block() :
+inline
+list_block::list_block() :
     Lock("list_block")
 {}
 
-inline list_block::~list_block()
+inline
+list_block::~list_block()
 {}
 
-inline bool list_block::empty() const
+inline bool
+list_block::empty() const
 {
     lock();
     bool ret = Parent::empty();
@@ -24,7 +27,8 @@ inline bool list_block::empty() const
     return ret;
 }
 
-inline size_t list_block::size() const
+inline size_t
+list_block::size() const
 {
     lock();
     size_t ret = Parent::size();
@@ -32,20 +36,22 @@ inline size_t list_block::size() const
     return ret;
 }
 
-inline void list_block::push(block_ptr block)
+inline void
+list_block::push(block_ptr block)
 {
     lock();
     Parent::push_back(block);
     unlock();
 }
 
-inline block_ptr list_block::front()
+inline list_block::const_locked_iterator
+list_block::front()
 {
     ASSERTION(Parent::empty() == false);
     lock();
-    block_ptr ret = Parent::front();
+    Parent::const_iterator it = Parent::begin();
+    const_locked_iterator ret(it, *this);
     unlock();
-    ASSERTION(ret);
     return ret;
 }
 
