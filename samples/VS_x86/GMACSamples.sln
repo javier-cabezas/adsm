@@ -26,6 +26,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "eclBlackScholes", "eclBlack
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "eclBlackScholes_cplusplus", "eclBlackScholes_cplusplus.vcxproj", "{70215BE9-72FC-4F59-8596-0018A2D6D4E4}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "eclMonteCarloAsian_cplusplus", "eclMonteCarloAsian_cplusplus.vcxproj", "{43ED168F-55E7-4AC9-85D3-F36255863339}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -138,6 +140,14 @@ Global
 		{70215BE9-72FC-4F59-8596-0018A2D6D4E4}.Release|Win32.Build.0 = Release|Win32
 		{70215BE9-72FC-4F59-8596-0018A2D6D4E4}.RelWithDebInfo|Win32.ActiveCfg = RelWithDebInfo|Win32
 		{70215BE9-72FC-4F59-8596-0018A2D6D4E4}.RelWithDebInfo|Win32.Build.0 = RelWithDebInfo|Win32
+            {43ED168F-55E7-4AC9-85D3-F36255863339}.Debug|Win32.ActiveCfg = Debug|Win32
+		{43ED168F-55E7-4AC9-85D3-F36255863339}.Debug|Win32.Build.0 = Debug|Win32
+		{43ED168F-55E7-4AC9-85D3-F36255863339}.MinSizeRel|Win32.ActiveCfg = MinSizeRel|Win32
+		{43ED168F-55E7-4AC9-85D3-F36255863339}.MinSizeRel|Win32.Build.0 = MinSizeRel|Win32
+		{43ED168F-55E7-4AC9-85D3-F36255863339}.Release|Win32.ActiveCfg = Release|Win32
+		{43ED168F-55E7-4AC9-85D3-F36255863339}.Release|Win32.Build.0 = Release|Win32
+		{43ED168F-55E7-4AC9-85D3-F36255863339}.RelWithDebInfo|Win32.ActiveCfg = RelWithDebInfo|Win32
+		{43ED168F-55E7-4AC9-85D3-F36255863339}.RelWithDebInfo|Win32.Build.0 = RelWithDebInfo|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
