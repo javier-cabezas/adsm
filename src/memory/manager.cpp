@@ -135,6 +135,7 @@ gmacError_t manager::alloc(core::address_space_ptr aspace, hostptr_t *addr, size
     object->addOwner(aspace);
     *addr = object->addr();
 
+    printf("Registering %p\n", *addr);
     // Insert object into the global memory map
     ASSERTION(mapAllocations_.find(*addr) == mapAllocations_.end(), "Object already registered");
     mapAllocations_.insert(map_allocation::value_type(*addr + size, aspace));

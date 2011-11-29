@@ -73,9 +73,8 @@ thread::get_virtual_device(GmacVirtualDeviceId id)
     vdevice *ret = NULL;
 
     map_vdevice::iterator it;
-    map_vdevice &mapVDevices = mapVDevices_;
-    it = mapVDevices.find(id);
-    if (it != mapVDevices.end()) {
+    it = mapVDevices_.find(id);
+    if (it != mapVDevices_.end()) {
         ret = it->second;
     }
 
@@ -98,12 +97,11 @@ thread::add_virtual_device(GmacVirtualDeviceId id, vdevice &dev)
     gmacError_t ret;
 
     ret = gmacSuccess;
-    map_vdevice &mapVDevices = mapVDevices_;
 
     map_vdevice::iterator it;
-    it = mapVDevices.find(id);
-    if (it == mapVDevices.end()) {
-        mapVDevices.insert(map_vdevice::value_type(id, &dev));
+    it = mapVDevices_.find(id);
+    if (it == mapVDevices_.end()) {
+        mapVDevices_.insert(map_vdevice::value_type(id, &dev));
     } else {
         ret = gmacErrorInvalidValue;
     }
@@ -118,13 +116,12 @@ thread::remove_virtual_device(vdevice &dev)
     ASSERTION(currentVirtualDevice_ != NULL);
 
     gmacError_t ret;
-    map_vdevice &mapVDevices = mapVDevices_;
 
     ret = gmacSuccess;
     map_vdevice::iterator it;
-    it = mapVDevices.find(dev.get_id());
-    if (it != mapVDevices.end()) {
-        mapVDevices.erase(it);
+    it = mapVDevices_.find(dev.get_id());
+    if (it != mapVDevices_.end()) {
+        mapVDevices_.erase(it);
     } else {
         ret = gmacErrorInvalidValue;
     }

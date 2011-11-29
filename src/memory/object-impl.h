@@ -167,7 +167,8 @@ object::forEachBlock(gmacError_t (protocol_interface::*op)(block_ptr, P1 &, P2),
     return ret;
 }
 
-inline gmacError_t object::toHost()
+inline gmacError_t
+object::toHost()
 {
     lock_read();
     gmacError_t ret= coherenceOp(&protocol_interface::toHost);
@@ -175,7 +176,8 @@ inline gmacError_t object::toHost()
     return ret;
 }
 
-inline gmacError_t object::toAccelerator()
+inline gmacError_t
+object::toAccelerator()
 {
     lock_read();
     gmacError_t ret = coherenceOp(&protocol_interface::release);

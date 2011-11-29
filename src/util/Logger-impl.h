@@ -35,7 +35,7 @@ void Logger::__Trace(const char *name, const char *funcName, const char *fileNam
     std::stringstream newFmt;
     newFmt << std::string("(") << tid << std::string(") ") << "[" << funcName << "] ";
 
-    if (config::params::DebugPrintFile) {
+    if (::config::params::DebugPrintFile) {
         newFmt << "{" << fileName << ":" << lineNumber << "} ";
     }
 
@@ -44,7 +44,7 @@ void Logger::__Trace(const char *name, const char *funcName, const char *fileNam
     if (AtomicTestAndSet(Ready_, 0, 1) == 0) Init();
 
 #ifdef USE_CXX0X
-    if (__impl::util::params::ParamDebugUseFinalClass) {
+    if (::config::params::DebugUseFinalClass) {
         Log(name, "TRACE", newFmt.str().c_str(), list...);
     } else {
         Log(funcName, "TRACE", newFmt.str().c_str(), list...);
@@ -55,7 +55,7 @@ void Logger::__Trace(const char *name, const char *funcName, const char *fileNam
 
     if (std::string(name).compare(std::string(GLOBAL)) == 0) {
         Log(name, "TRACE", newFmt.str().c_str(), list);
-    } else if (config::params::DebugUseFinalClass) {
+    } else if (::config::params::DebugUseFinalClass) {
         Log(name, "TRACE", newFmt.str().c_str(), list);
     } else {
         Log(funcName, "TRACE", newFmt.str().c_str(), list);

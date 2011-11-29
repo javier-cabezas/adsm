@@ -34,7 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_UTIL_LOCKED_ITERATOR_H_
 #define GMAC_UTIL_LOCKED_ITERATOR_H_
 
-#include <tr1/functional>
+#include <utility>
 
 #include "lock.h"
 
@@ -297,9 +297,22 @@ protected:
 		lock(parent::get_element(it_));
 	}
 
+	locked_iterator_base(locked_iterator_base &&it) :
+		it_(it.it_),
+		c_(it.c_)
+	{
+		// Make old reference point to end to avoid it to unlock the object
+		it.it_ = c_.end();
+	}
+
 	// These operations are not public since they can cause a double-lock
 	locked_iterator_base operator++(int dummy);
 	locked_iterator_base operator--(int dummy);
+
+private:
+	// Do not allow copies
+	locked_iterator_base &operator=(const locked_iterator_base &it);
+	locked_iterator_base(const locked_iterator_base &it);
 
 public:
 	typedef typename I::iterator_category iterator_category;
@@ -325,7 +338,16 @@ class locked_iterator :
     public locked_iterator_base<typename C::iterator, C, typename C::value_type> {
 
     typedef locked_iterator_base<typename C::iterator, C, typename C::value_type> parent;
+
+private:
+    locked_iterator(const locked_iterator &it);
+
 public:
+    locked_iterator(locked_iterator &&it) :
+        parent(std::move(it))
+    {
+    }
+
     inline
     locked_iterator(typename C::const_iterator p, const C &c) :
         parent(p, c)
@@ -350,7 +372,16 @@ class const_locked_iterator :
     public locked_iterator_base<typename C::const_iterator, C, typename C::value_type> {
 
     typedef locked_iterator_base<typename C::const_iterator, C, typename C::value_type> parent;
+
+private:
+    const_locked_iterator(const const_locked_iterator &it);
+
 public:
+    const_locked_iterator(const_locked_iterator &&it) :
+    	parent(std::move(it))
+    {
+    }
+
     inline
 	const_locked_iterator(typename C::const_iterator p, const C &c) :
 		parent(p, c)

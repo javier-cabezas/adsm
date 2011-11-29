@@ -20,6 +20,7 @@ using __impl::hal::cuda::texture_t;
 using __impl::hal::cuda::variable_t;
 
 using __impl::core::hpe::address_space;
+using __impl::core::hpe::address_space_ptr;
 using __impl::core::hpe::thread;
 using __impl::core::hpe::vdevice;
 
@@ -483,7 +484,7 @@ GMAC_API cudaError_t APICALL cudaMemcpy2DToArray(struct cudaArray *dst, size_t w
 	enterGmac();
 	cudaError_t ret = cudaSuccess;
     __impl::memory::manager &manager = __impl::memory::getManager();
-    __impl::util::smart_ptr<__impl::core::address_space>::shared aspace = manager.owner(hostptr_t(src));
+    __impl::util::shared_ptr<__impl::core::address_space> aspace = manager.owner(hostptr_t(src));
     if(aspace == NULL) {
 #if CUDA_VERSION >= 3020
         __cudaMemcpy2D((CUarray)dst, wOffset, hOffset, src, spitch, width, height);
