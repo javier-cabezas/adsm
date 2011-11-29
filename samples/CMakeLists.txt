@@ -81,6 +81,12 @@ add_executable(eclBlackScholes_cplusplus
 )
 target_link_libraries(eclBlackScholes_cplusplus ${GMAC_HPE})
 
+add_executable(eclMonteCarloAsian_cplusplus
+    ${CMAKE_SOURCE_DIR}/ecl/eclMonteCarloAsian_cplusplus.cpp 
+    ${CMAKE_SOURCE_DIR}/ecl/eclMonteCarloAsianKernel.cl
+)
+target_link_libraries(eclMonteCarloAsian_cplusplus ${GMAC_HPE})
+
 add_executable(clVecAdd
     ${CMAKE_SOURCE_DIR}/cl/clVecAdd.cpp
 )

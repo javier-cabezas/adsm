@@ -37,6 +37,7 @@ source_group(${current_GROUP} FILES
     eclBitonicSortKernel.cl
     eclBlackScholesKernel.cl
     eclThreadBinomialOptionKernel.cl
+    eclMonteCarloAsianKernel.cl
     c/eclBarr.cpp
     c/eclFile.cpp
     c/eclFileVecAdd.cpp
@@ -75,6 +76,7 @@ source_group(${current_GROUP} FILES
     cpp/eclBinomialOption.cpp
     cpp/eclBitonicSort.cpp
     cpp/eclBlackScholes.cpp
+    cpp/eclMonteCarloAsian.cpp
 )
 
 # Plain OpenCL tests
@@ -172,6 +174,9 @@ target_link_libraries(eclBitonicSort_cpp gmac-hpe)
 
 add_executable(eclBlackScholes_cpp ${common_SRC} cpp/eclBlackScholes.cpp eclBlackScholesKernel.cl)
 target_link_libraries(eclBlackScholes_cpp gmac-hpe)
+
+add_executable(eclMonteCarloAsian_cpp ${common_SRC} cpp/eclMonteCarloAsian.cpp eclMonteCarloAsianKernel.cl)
+target_link_libraries(eclMonteCarloAsian_cpp gmac-hpe)
 
 add_executable(eclPartialVecAdd_cpp ${common_SRC} cpp/eclPartialVecAdd.cpp)
 target_link_libraries(eclPartialVecAdd_cpp gmac-hpe)
