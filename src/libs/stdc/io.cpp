@@ -32,7 +32,8 @@ class GMAC_LOCAL stdc_input :
 public:
     stdc_input(FILE *file, size_t sizeElem) :
         file_(file),
-        sizeElem_(sizeElem)
+        sizeElem_(sizeElem),
+        result_(0)
     {
     }
 
@@ -63,7 +64,8 @@ class GMAC_LOCAL stdc_output :
 public:
     stdc_output(FILE *file, size_t sizeElem) :
         file_(file),
-        sizeElem_(sizeElem)
+        sizeElem_(sizeElem),
+        result_(0)
     {
     }
 

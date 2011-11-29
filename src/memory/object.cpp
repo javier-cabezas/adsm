@@ -41,7 +41,7 @@ object::coherenceOp(gmacError_t (protocol_interface::*f)(block_ptr))
 {
     gmacError_t ret = gmacSuccess;
     vector_block::const_iterator i;
-    for(i = blocks_.begin(); i != blocks_.end(); i++) {
+    for(i = blocks_.begin(); i != blocks_.end(); ++i) {
         //ret = (*i)->coherenceOp(f);
         ret = (protocol_.*f)(*i);
         if(ret != gmacSuccess) break;
@@ -57,15 +57,13 @@ object::to_io_device(hal::device_output &output, size_t objOff, size_t count)
     size_t blockOffset = 0;
     size_t off = 0;
     const_locked_iterator i = get_block(objOff, &blockOffset);
-    for(; count > 0 && i != blocks_.end(); i++) {
+    for(; count > 0 && i != blocks_.end(); ++i) {
         block_ptr block = *i;
         size_t blockSize = block->size() - blockOffset;
         blockSize = count < blockSize? count: blockSize;
-        block->lock();
         event = protocol_.to_io_device(output,
                                        block, blockOffset,
                                        blockSize, ret);
-        block->unlock();
         //block.memoryOp(op, buffer, blockSize, bufferOffset, blockOffset);
         blockOffset = 0;
         off   += blockSize;
@@ -82,7 +80,7 @@ object::from_io_device(size_t objOff, hal::device_input &input, size_t count)
     size_t blockOffset = 0;
     size_t off = 0;
     const_locked_iterator i = get_block(objOff, &blockOffset);
-    for(; i != blocks_.end() && count > 0; i++) {
+    for(; i != blocks_.end() && count > 0; ++i) {
         block_ptr block = *i;
         size_t blockSize = block->size() - blockOffset;
         blockSize = count < blockSize? count: blockSize;
@@ -125,7 +123,7 @@ gmacError_t object::memset(size_t offset, int v, size_t size)
     gmacError_t ret = gmacSuccess;
     size_t blockOffset = 0;
     const_locked_iterator i = get_block(offset, &blockOffset);
-    for(; i != blocks_.end() && size > 0; i++) {
+    for(; i != blocks_.end() && size > 0; ++i) {
         block_ptr block = *i;
         size_t blockSize = block->size() - blockOffset;
         blockSize = size < blockSize? size: blockSize;
@@ -146,7 +144,7 @@ object::memcpyToObject(size_t objOff, const hostptr_t src, size_t size)
     size_t blockOffset = 0;
     size_t off = 0;
     const_locked_iterator i = get_block(objOff, &blockOffset);
-    for(; i != blocks_.end() && size > 0; i++) {
+    for(; i != blocks_.end() && size > 0; ++i) {
         block_ptr block = *i;
         size_t blockSize = block->size() - blockOffset;
         blockSize = size < blockSize? size: blockSize;
@@ -184,7 +182,7 @@ object::memcpyObjectToObject(object &dstObj, size_t dstOffset, size_t srcOffset,
             event = protocol_.copyBlockToBlock(*j, dstOffset % blockSize(),
                                                *i, srcOffset % blockSize(), copySize, ret);
             ASSERTION(ret == gmacSuccess);
-            i++;
+            ++i;
         }
         else { // Two copies from the source to fill the buffer
             TRACE(LOCAL, "FP: Copying2: "FMT_SIZE" bytes", copySize);
@@ -195,7 +193,7 @@ object::memcpyObjectToObject(object &dstObj, size_t dstOffset, size_t srcOffset,
                                                *i, srcOffset % blockSize(),
                                                firstCopySize, ret);
             ASSERTION(ret == gmacSuccess);
-            i++;
+            ++i;
             event = protocol_.copyBlockToBlock(*j, (dstOffset + firstCopySize) % blockSize(),
                                                *i, (srcOffset + firstCopySize) % blockSize(),
                                                secondCopySize, ret);
@@ -204,7 +202,7 @@ object::memcpyObjectToObject(object &dstObj, size_t dstOffset, size_t srcOffset,
         left -= copySize;
         dstOffset += copySize;
         srcOffset += copySize;
-        j++;
+        ++j;
     }
 
     if (event.is_valid()) {
@@ -319,7 +317,7 @@ object::memcpyFromObject(hostptr_t dst, size_t objOff, size_t size)
     size_t blockOffset = 0;
     size_t off = 0;
     const_locked_iterator i = get_block(objOff);
-    for(; i != blocks_.end() && size > 0; i++) {
+    for(; i != blocks_.end() && size > 0; ++i) {
         block_ptr block = *i;
         size_t blockSize = block->size() - blockOffset;
         blockSize = size < blockSize? size: blockSize;

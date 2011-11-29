@@ -31,7 +31,8 @@ class GMAC_LOCAL posix_input :
 
 public:
     posix_input(int fd) :
-        fd_(fd)
+        fd_(fd),
+        result_(0)
     {
     }
 
@@ -64,7 +65,8 @@ class GMAC_LOCAL posix_output :
 
 public:
     posix_output(int fd) :
-        fd_(fd)
+        fd_(fd),
+        result_(0)
     {
     }
 

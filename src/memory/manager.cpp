@@ -728,7 +728,7 @@ manager::from_io_device(core::address_space_ptr aspace, hostptr_t addr,
     do {
         // Check if the address range belongs to one GMAC object
         core::address_space_ptr aspace = owner(addr + off);
-        if (aspace == NULL) {
+        if (!aspace) {
             trace::ExitCurrentFunction();
             return gmacErrorInvalidValue;
         }
@@ -765,7 +765,7 @@ manager::to_io_device(hal::device_output &output, core::address_space_ptr aspace
     do {
         // Check if the address range belongs to one GMAC object
         core::address_space_ptr aspace = owner(addr + off);
-        if (aspace) {
+        if (!aspace) {
             trace::ExitCurrentFunction();
             return gmacErrorInvalidValue;
         }

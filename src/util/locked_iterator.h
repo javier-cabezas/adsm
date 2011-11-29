@@ -296,6 +296,11 @@ protected:
 		CFATAL(it != c.end(), "Cannot initialize an iterator with an end value");
 		lock(parent::get_element(it_));
 	}
+
+	// These operations are not public since they can cause a double-lock
+	locked_iterator_base operator++(int dummy);
+	locked_iterator_base operator--(int dummy);
+
 public:
 	typedef typename I::iterator_category iterator_category;
 	typedef typename I::value_type        value_type;
@@ -312,10 +317,7 @@ public:
 	}
 
 	locked_iterator_base &operator++();
-	locked_iterator_base operator++(int dummy);
-
 	locked_iterator_base &operator--();
-	locked_iterator_base operator--(int dummy);
 };
 
 template <typename C>

@@ -133,6 +133,7 @@ malloc(void **devPtr, size_t count)
     return ::gmacMalloc(devPtr, count);
 }
 
+#if 0
 /**
  * Allocates a range of memory in all the GPUs and the CPU. Both, GPU and CPU,
  * use the same addresses for this memory.
@@ -148,6 +149,7 @@ globalMalloc(void **devPtr, size_t count, GmacGlobalMallocType hint = GMAC_GLOBA
 {
     return ::gmacGlobalMalloc(devPtr, count, hint);
 }
+#endif
 
 /**
  * Gets a the GPU address of an allocation performed with gmacMalloc or

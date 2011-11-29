@@ -617,7 +617,7 @@ lazy_base::to_io_device(hal::device_output &output,
 
     if (src->getState() == lazy_types::Invalid) {
         TRACE(LOCAL, "I ->");
-        // Copy acc-device
+        // Copy acc-disk
         ret = src->owner()->copy_async(output,
                                        src->get_device_addr() + srcOff, count, err);
     } else if (src->getState() == lazy_types::Dirty) {
@@ -626,11 +626,9 @@ lazy_base::to_io_device(hal::device_output &output,
         output.write(src->get_shadow() + srcOff, count);
     } else if (src->getState() == lazy_types::ReadOnly) {
         TRACE(LOCAL, "R ->");
-        // Copy acc-to-acc
+        // Copy acc-to-disk
         ret = src->owner()->copy_async(output,
                                        src->get_device_addr() + srcOff, count, err);
-        // write to device
-        output.write(src->get_shadow() + srcOff, count);
     }
 
     TRACE(LOCAL, "Finished");
@@ -650,7 +648,7 @@ lazy_base::from_io_device(block_ptr d, size_t dstOff,
 
     if (dst->getState() == lazy_types::Invalid) {
         TRACE(LOCAL, "-> I");
-        // Copy acc-acc
+        // Copy disk-acc
         ret = dst->owner()->copy_async(dst->get_device_addr() + dstOff,
                                        input, count, err);
     } else if (dst->getState() == lazy_types::Dirty) {
@@ -659,16 +657,16 @@ lazy_base::from_io_device(block_ptr d, size_t dstOff,
         input.read(dst->get_shadow() + dstOff, count);
     } else if (dst->getState() == lazy_types::ReadOnly) {
         TRACE(LOCAL, "-> R");
-        // Copy acc-to-acc
-        ret = dst->owner()->copy_async(dst->get_device_addr() + dstOff,
-                                       input, count, err);
-        // memcpy
+        // disk-to-host
         input.read(dst->get_shadow() + dstOff, count);
+
+        // Copy host-to-acc
+        ret = dst->owner()->copy_async(dst->get_device_addr() + dstOff,
+        		                       hal::ptr_t(dst->get_shadow() + dstOff), count, err);
     }
 
     TRACE(LOCAL, "Finished");
     return ret;
-
 }
 
 gmacError_t lazy_base::dump(block_ptr b, std::ostream &out, common::Statistic stat)
