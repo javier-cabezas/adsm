@@ -40,8 +40,7 @@ gmacError_t
 object::coherenceOp(gmacError_t (protocol_interface::*f)(block_ptr))
 {
     gmacError_t ret = gmacSuccess;
-    vector_block::const_iterator i;
-    for(i = blocks_.begin(); i != blocks_.end(); ++i) {
+    for(const_locked_iterator i = get_block(0, NULL); i != blocks_.end(); ++i) {
         //ret = (*i)->coherenceOp(f);
         ret = (protocol_.*f)(*i);
         if(ret != gmacSuccess) break;

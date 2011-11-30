@@ -34,7 +34,11 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_UTIL_UNIQUE_PTR_H_
 #define GMAC_UTIL_UNIQUE_PTR_H_
 
+#ifdef USE_CXX0X
+#include <memory>
+#else
 #include <tr1/memory>
+#endif
 
 /// \todo move this to its own file
 template<bool _Cond, typename _Iftrue, typename _Iffalse>
@@ -144,12 +148,21 @@ namespace __impl { namespace util {
     };
 #endif
 
+#ifdef USE_CXX0X
+    using std::shared_ptr;
+
+    using std::is_pointer;
+    using std::is_same;
+
+    using std::static_pointer_cast;
+#else
     using std::tr1::shared_ptr;
 
     using std::tr1::is_pointer;
     using std::tr1::is_same;
 
     using std::tr1::static_pointer_cast;
+#endif
 
 #if  0
     template <typename T>

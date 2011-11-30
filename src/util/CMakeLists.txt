@@ -16,6 +16,7 @@ set(util_SRC
     locked_counter.h
     locked_iterator.h
     locked_iterator-impl.h
+    locked_object.h
     Logger.h
     Logger-impl.h
     Logger.cpp

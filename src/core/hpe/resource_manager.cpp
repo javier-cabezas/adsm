@@ -158,7 +158,7 @@ resource_manager::destroy_virtual_device(vdevice &dev)
 {
     gmacError_t ret = gmacSuccess;
 
-    ret = thread::get_current_thread().remove_virtual_device(dev);
+    // Nothing to do for now
 
     return ret;
 }

@@ -47,6 +47,8 @@ template<typename State>
 gmacError_t
 object_state<State>::repopulateBlocks(core::address_space &aspace)
 {
+    abort();
+
     // Repopulate the block-set
     ptroff_t offset = 0;
     for (vector_block::iterator i = blocks_.begin(); i != blocks_.end(); i++) {

@@ -143,13 +143,13 @@ locked_iterator_base<I, C, E> &
 locked_iterator_base<I, C, E>::operator++()
 {
 	if (it_ != c_.end()) {
-		parent::locker_type::unlock(parent::get_element(it_));
+		getter::locker_type::unlock(*getter::get_element(it_));
 	}
 
 	++it_;
 
 	if (it_ != c_.end()) {
-		parent::locker_type::lock(parent::get_element(it_));
+		getter::locker_type::lock(*getter::get_element(it_));
 	}
 
 	return *this;
@@ -162,13 +162,13 @@ locked_iterator_base<I, C, E>::operator++(int dummy)
 	locked_iterator_base ret(it_, c_);
 
 	if (it_ != c_.end()) {
-		unlock(parent::get_element(it_));
+		unlock(getter::get_element(it_));
 	}
 
 	it_++;
 
 	if (it_ != c_.end()) {
-		lock(parent::get_element(it_));
+		lock(getter::get_element(it_));
 	}
 
 	return ret;
@@ -178,14 +178,14 @@ template <typename I, typename C, typename E>
 locked_iterator_base<I, C, E> &
 locked_iterator_base<I, C, E>::operator--()
 {
-	if (it_ != parent::c_.end()) {
-		parent::locker_type::unlock(parent::get_element(it_));
+	if (it_ != getter::c_.end()) {
+		getter::locker_type::unlock(getter::get_element(it_));
 	}
 
 	--it_;
 
-	if (it_ != parent::c_.end()) {
-		parent::locker_type::lock(parent::get_element(it_));
+	if (it_ != getter::c_.end()) {
+		getter::locker_type::lock(getter::get_element(it_));
 	}
 
 	return *this;
@@ -198,13 +198,13 @@ locked_iterator_base<I, C, E>::operator--(int dummy)
 	locked_iterator_base ret(it_, c_);
 
 	if (it_ != c_.end()) {
-		parent::locker_type::unlock(parent::get_element(it_));
+		getter::locker_type::unlock(getter::get_element(it_));
 	}
 
 	it_--;
 
-	if (it_ != parent::c_.end()) {
-		parent::locker_type::lock(parent::get_element(it_));
+	if (it_ != getter::c_.end()) {
+		getter::locker_type::lock(getter::get_element(it_));
 	}
 
 	return ret;

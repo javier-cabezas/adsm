@@ -44,13 +44,13 @@ list_block::push(block_ptr block)
     unlock();
 }
 
-inline list_block::const_locked_iterator
+inline list_block::locked_block
 list_block::front()
 {
     ASSERTION(Parent::empty() == false);
     lock();
-    Parent::const_iterator it = Parent::begin();
-    const_locked_iterator ret(it, *this);
+    block_ptr b = Parent::front();
+    locked_block ret(b);
     unlock();
     return ret;
 }

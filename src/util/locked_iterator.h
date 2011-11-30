@@ -45,10 +45,10 @@ class _locked_iterator_base {
 public:
 	typedef typename C::value_type::locker_type locker_type;
 
-	static typename C::value_type::element_type &
+	static typename C::value_type *
 	get_element(I &it)
 	{
-		return *it;
+		return &*it;
 	}
 };
 
@@ -57,10 +57,10 @@ class _locked_iterator_base_ptr {
 public:
 	typedef typename C::value_type::element_type::locker_type locker_type;
 
-	static typename C::value_type::element_type &
+	static typename C::value_type
 	get_element(I &it)
 	{
-		return **it;
+		return *it;
 	}
 };
 
@@ -71,31 +71,35 @@ struct is_random_access_iterator {
 
 template <typename I>
 struct is_bidirectional_iterator {
-	static const bool value = __impl::util::is_same<typename I::iterator_category, std::bidirectional_iterator_tag>::value ||
-			                  is_random_access_iterator<I>::value;
+	static const bool value = __impl::util::is_same<typename I::iterator_category,
+                                                    std::bidirectional_iterator_tag>::value ||
+			                                        is_random_access_iterator<I>::value;
 };
 
 template <typename I>
 struct is_forward_iterator {
-	static const bool value = __impl::util::is_same<typename I::iterator_category, std::forward_iterator_tag>::value ||
-			                  is_bidirectional_iterator<I>::value ||
-			                  is_random_access_iterator<I>::value;
+	static const bool value = __impl::util::is_same<typename I::iterator_category,
+                                                    std::forward_iterator_tag>::value   ||
+                                                    is_bidirectional_iterator<I>::value ||
+                                                    is_random_access_iterator<I>::value;
 };
 
 template <typename I>
 struct is_output_iterator {
-	static const bool value = __impl::util::is_same<typename I::iterator_category, std::output_iterator_tag>::value ||
-			                  is_forward_iterator<I>::value       ||
-			                  is_bidirectional_iterator<I>::value ||
-			                  is_random_access_iterator<I>::value;
+	static const bool value = __impl::util::is_same<typename I::iterator_category,
+                                                    std::output_iterator_tag>::value    ||
+                                                    is_forward_iterator<I>::value       ||
+                                                    is_bidirectional_iterator<I>::value ||
+                                                    is_random_access_iterator<I>::value;
 };
 
 template <typename I>
 struct is_input_iterator {
-	static const bool value = __impl::util::is_same<typename I::iterator_category, std::input_iterator_tag>::value ||
-			                  is_forward_iterator<I>::value       ||
-			                  is_bidirectional_iterator<I>::value ||
-			                  is_random_access_iterator<I>::value;
+	static const bool value = __impl::util::is_same<typename I::iterator_category,
+                                                    std::input_iterator_tag>::value     ||
+                                                    is_forward_iterator<I>::value       ||
+                                                    is_bidirectional_iterator<I>::value ||
+                                                    is_random_access_iterator<I>::value;
 };
 
 static const int Input  = 0;
@@ -278,7 +282,7 @@ class locked_iterator_base :
 protected:
 	typedef typename conditional<__impl::util::is_any_ptr<E>::value,
 				                 _locked_iterator_base_ptr<I, C>,
-				                 _locked_iterator_base<I, C> >::type parent;
+				                 _locked_iterator_base<I, C> >::type getter;
 	typedef typename conditional_switch<is_random_access_iterator<I>::value, locked_random_access_iterator<locked_iterator_base, I, C>,
 			                            is_bidirectional_iterator<I>::value, locked_bidirectional_iterator<locked_iterator_base, I, C>,
 			                            is_forward_iterator<I>::value,       locked_forward_iterator<locked_iterator_base, I, C>,
@@ -294,7 +298,7 @@ protected:
 		c_(c)
 	{
 		CFATAL(it != c.end(), "Cannot initialize an iterator with an end value");
-		lock(parent::get_element(it_));
+		lock(*getter::get_element(it_));
 	}
 
 	locked_iterator_base(locked_iterator_base &&it) :
@@ -324,8 +328,9 @@ public:
 	virtual
 	inline ~locked_iterator_base()
 	{
-		if (it_ != c_.end()) {
-			unlock(parent::get_element(it_));
+        typename C::value_type ptr;
+		if (it_ != c_.end() && (ptr = getter::get_element(it_))) {
+			unlock(*ptr);
 		}
 	}
 
@@ -343,6 +348,7 @@ private:
     locked_iterator(const locked_iterator &it);
 
 public:
+    inline
     locked_iterator(locked_iterator &&it) :
         parent(std::move(it))
     {
@@ -377,6 +383,7 @@ private:
     const_locked_iterator(const const_locked_iterator &it);
 
 public:
+    inline
     const_locked_iterator(const_locked_iterator &&it) :
     	parent(std::move(it))
     {
@@ -395,13 +402,15 @@ public:
     }
 
     inline
-	const typename C::value_type *operator->()
+	const typename C::value_type *
+    operator->()
 	{
 		return parent::it_.operator->();
 	}
 
     inline
-	const typename C::value_type &operator*()
+	const typename C::value_type &
+    operator*()
 	{
 		return parent::it_.operator*();
 	}

@@ -118,10 +118,14 @@ object::acquire(GmacProtection &prot)
 inline gmacError_t
 object::release()
 {
-    lock_write();
     released_ = true;
-    unlock();
     return gmacSuccess;
+}
+
+inline bool
+object::is_released() const
+{
+    return released_;
 }
 
 inline gmacError_t
