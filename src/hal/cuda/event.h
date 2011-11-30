@@ -80,7 +80,6 @@ public:
     event_t(event_t &&event) :
         ptrEvent_(std::move(event.ptrEvent_))
     {
-        printf("Per move!\n");
     }
 #endif
 
@@ -104,7 +103,6 @@ public:
     inline
     event_t &operator=(event_t &&event)
     {
-        printf("= Per move!\n");
         ptrEvent_ = std::move(event.ptrEvent_);
         return *this;
     }

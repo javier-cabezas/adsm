@@ -4,7 +4,7 @@
 namespace __impl { namespace memory {
 
 inline set_object_host_mapped::set_object_host_mapped() :
-    lock_rw("HostMappedSet")
+    gmac::util::lock_rw<set_object_host_mapped>("HostMappedSet")
 {}
 
 inline set_object_host_mapped::~set_object_host_mapped()

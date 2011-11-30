@@ -41,7 +41,7 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 #include "include/gmac/types.h"
 #include "util/lock.h"
-#include "util/locked_iterator.h"
+#include "util/locked_object.h"
 
 namespace __impl {
 
@@ -92,8 +92,8 @@ public:
      *
      * \return Block from extracted from the begining of the list
      */
-    typedef util::const_locked_iterator<Parent> const_locked_iterator;
-    const_locked_iterator front();
+    typedef util::locked_object<block_ptr> locked_block;
+    locked_block front();
 
     /** Remove a block from the list
      *

@@ -135,10 +135,10 @@ gmacError_t manager::alloc(core::address_space_ptr aspace, hostptr_t *addr, size
     object->addOwner(aspace);
     *addr = object->addr();
 
-    printf("Registering %p\n", *addr);
     // Insert object into the global memory map
-    ASSERTION(mapAllocations_.find(*addr) == mapAllocations_.end(), "Object already registered");
-    mapAllocations_.insert(map_allocation::value_type(*addr + size, aspace));
+    std::pair<map_allocation::iterator, bool> res = mapAllocations_.insert(map_allocation::value_type(*addr + size, aspace));
+
+    ASSERTION(res.second == true, "Object already registered");
 
     // Insert object into memory maps
     map.addObject(*object);
@@ -311,10 +311,12 @@ manager::acquireObjects(core::address_space_ptr aspace, const ListAddr &addrs)
 #endif
                 hostMappedObject->decRef();
             } else {
-                GmacProtection prot = it->second;
-                ret = obj->acquire(prot);
-                ASSERTION(ret == gmacSuccess);
-                obj->decRef();
+                if (obj->is_released()) {
+                    GmacProtection prot = it->second;
+                    ret = obj->acquire(prot);
+                    ASSERTION(ret == gmacSuccess);
+                    obj->decRef();
+                }
             }
         }
     }
@@ -356,18 +358,22 @@ manager::releaseObjects(core::address_space_ptr aspace, const ListAddr &addrs)
                 hostMappedObject->decRef();
             } else {
                 // Release all the blocks in the object
-                ret = obj->releaseBlocks();
-                ASSERTION(ret == gmacSuccess);
-                obj->decRef();
+                if (obj->is_released() == false) {
+                    ret = obj->releaseBlocks();
+                    ASSERTION(ret == gmacSuccess);
+                    obj->decRef();
+                }
             }
         }
 
+#if 0
         // Notify protocols
         // 1. Mode protocol
         ret = map.getProtocol().releasedAll();
         ASSERTION(ret == gmacSuccess);
 
         map.releaseObjects();
+#endif
     }
     trace::ExitCurrentFunction();
     return ret;

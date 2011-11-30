@@ -275,6 +275,12 @@ public:
      */
     gmacError_t release();
 
+    /** Tells if the object has been released
+     *
+     * \return A boolean that tells if the object has been released
+     */
+    bool is_released() const;
+
     /** Releases the ownership of the object for the CPU and notifies the
      * protocol that all the blocks are released
      *
