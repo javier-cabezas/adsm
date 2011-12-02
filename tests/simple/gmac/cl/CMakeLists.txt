@@ -42,6 +42,10 @@ source_group(${current_GROUP} FILES
 	clBlackScholesKernel.cl
 	clThreadBinomialOption.cpp	
 	clThreadBinomialOptionKernel.cl
+	clMonteCarloAsian.cpp
+	clMonteCarloAsianKernel.cl
+	clThreadMonteCarloAsian.cpp
+	clThreadMonteCarloAsianKernel.cl
 )
 
 add_executable(clVecAdd ${common_SRC} clVecAdd.cpp)
@@ -74,8 +78,14 @@ target_link_libraries(clBitonicSort ${GMAC_CL})
 add_executable(clBlackScholes ${common_SRC} clBlackScholes.cpp clBlackScholesKernel.cl)
 target_link_libraries(clBlackScholes ${GMAC_CL})
 
+add_executable(clMonteCarloAsian ${common_SRC} clMonteCarloAsian.cpp clMonteCarloAsianKernel.cl)
+target_link_libraries(clMonteCarloAsian ${GMAC_CL})
+
 add_executable(clThreadBinomialOption ${common_SRC} clThreadBinomialOption.cpp clThreadBinomialOptionKernel.cl)
 target_link_libraries(clThreadBinomialOption ${GMAC_CL})
+
+add_executable(clThreadMonteCarloAsian ${common_SRC} clThreadMonteCarloAsian.cpp clThreadMonteCarloAsianKernel.cl)
+target_link_libraries(clThreadMonteCarloAsian ${GMAC_CL})
 
 file(COPY vars-cl.spec tests-cl.spec DESTINATION ${PROJECT_BINARY_DIR})
 

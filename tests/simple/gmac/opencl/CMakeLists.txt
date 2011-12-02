@@ -38,6 +38,7 @@ source_group(${current_GROUP} FILES
     eclBlackScholesKernel.cl
     eclThreadBinomialOptionKernel.cl
     eclMonteCarloAsianKernel.cl
+    eclThreadMonteCarloAsianKernel.cl
     c/eclBarr.cpp
     c/eclFile.cpp
     c/eclFileVecAdd.cpp
@@ -62,6 +63,8 @@ source_group(${current_GROUP} FILES
     c/eclBlackScholes.cpp
     c/eclBitonicSort.cpp
     c/eclThreadBinomialOption.cpp
+    c/eclMonteCarloAsian.cpp
+    c/eclThreadMonteCarloAsian.cpp
     cpp/eclColumnMajor.cpp
     cpp/eclCompress.cpp
     cpp/eclCompressSend.cpp
@@ -77,6 +80,7 @@ source_group(${current_GROUP} FILES
     cpp/eclBitonicSort.cpp
     cpp/eclBlackScholes.cpp
     cpp/eclMonteCarloAsian.cpp
+    cpp/eclThreadMonteCarloAsian.cpp
 )
 
 # Plain OpenCL tests
@@ -100,6 +104,9 @@ target_link_libraries(eclBitonicSort gmac-hpe)
 
 add_executable(eclBlackScholes ${common_SRC} c/eclBlackScholes.cpp eclBlackScholesKernel.cl)
 target_link_libraries(eclBlackScholes gmac-hpe)
+
+add_executable(eclMonteCarloAsian ${common_SRC} c/eclMonteCarloAsian.cpp eclMonteCarloAsianKernel.cl)
+target_link_libraries(eclMonteCarloAsian gmac-hpe)
 
 add_executable(eclFile ${common_SRC} c/eclFile.cpp)
 target_link_libraries(eclFile gmac-hpe)
@@ -149,6 +156,9 @@ target_link_libraries(eclThreadVecAdd_eclMemcpy gmac-hpe)
 add_executable(eclThreadBinomialOption ${common_SRC} c/eclThreadBinomialOption.cpp eclThreadBinomialOptionKernel.cl)
 target_link_libraries(eclThreadBinomialOption gmac-hpe)
 
+add_executable(eclThreadMonteCarloAsian ${common_SRC} c/eclThreadMonteCarloAsian.cpp eclThreadMonteCarloAsianKernel.cl)
+target_link_libraries(eclThreadMonteCarloAsian gmac-hpe)
+
 # C++ API
 
 add_executable(eclColumnMajor_cpp ${common_SRC} cpp/eclColumnMajor.cpp)
@@ -177,6 +187,9 @@ target_link_libraries(eclBlackScholes_cpp gmac-hpe)
 
 add_executable(eclMonteCarloAsian_cpp ${common_SRC} cpp/eclMonteCarloAsian.cpp eclMonteCarloAsianKernel.cl)
 target_link_libraries(eclMonteCarloAsian_cpp gmac-hpe)
+
+add_executable(eclThreadMonteCarloAsian_cpp ${common_SRC} cpp/eclThreadMonteCarloAsian.cpp eclThreadMonteCarloAsianKernel.cl)
+target_link_libraries(eclThreadMonteCarloAsian_cpp gmac-hpe)
 
 add_executable(eclPartialVecAdd_cpp ${common_SRC} cpp/eclPartialVecAdd.cpp)
 target_link_libraries(eclPartialVecAdd_cpp gmac-hpe)
