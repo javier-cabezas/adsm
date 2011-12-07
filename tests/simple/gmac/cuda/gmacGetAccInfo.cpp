@@ -7,32 +7,32 @@
 
 #include <gmac/cuda.h>
 
-typedef std::map<GmacAcceleratorType, std::string> DevStrings;
-static DevStrings accTypeString;
+typedef std::map<GmacDeviceType, std::string> DevStrings;
+static DevStrings devTypeString;
 
-static GmacAcceleratorType accTypes [] = { GMAC_ACCELERATOR_TYPE_UNKNOWN,
-                                            GMAC_ACCELERATOR_TYPE_CPU,
-                                            GMAC_ACCELERATOR_TYPE_GPU,
-                                            GMAC_ACCELERATOR_TYPE_ACCELERATOR };
+static GmacDeviceType devTypes [] = { GMAC_DEVICE_TYPE_UNKNOWN,
+                                           GMAC_DEVICE_TYPE_CPU,
+                                           GMAC_DEVICE_TYPE_GPU,
+                                           GMAC_DEVICE_TYPE_ACCELERATOR };
 
 static void init_map()
 {
-    accTypeString.insert(DevStrings::value_type(GMAC_ACCELERATOR_TYPE_UNKNOWN,     "GMAC_ACCELERATOR_TYPE_UNKNOWN"));
-    accTypeString.insert(DevStrings::value_type(GMAC_ACCELERATOR_TYPE_CPU,         "GMAC_ACCELERATOR_TYPE_CPU"));
-    accTypeString.insert(DevStrings::value_type(GMAC_ACCELERATOR_TYPE_GPU,         "GMAC_ACCELERATOR_TYPE_GPU"));
-    accTypeString.insert(DevStrings::value_type(GMAC_ACCELERATOR_TYPE_ACCELERATOR, "GMAC_ACCELERATOR_TYPE_ACCELERATOR"));
+    devTypeString.insert(DevStrings::value_type(GMAC_DEVICE_TYPE_UNKNOWN, "GMAC_DEVICE_TYPE_UNKNOWN"));
+    devTypeString.insert(DevStrings::value_type(GMAC_DEVICE_TYPE_CPU,     "GMAC_DEVICE_TYPE_CPU"));
+    devTypeString.insert(DevStrings::value_type(GMAC_DEVICE_TYPE_GPU,     "GMAC_DEVICE_TYPE_GPU"));
+    devTypeString.insert(DevStrings::value_type(GMAC_DEVICE_TYPE_ACCELERATOR,  "GMAC_DEVICE_TYPE_ACCELERATOR"));
 }
 
-static std::string get_type_string(GmacAcceleratorType type)
+static std::string get_type_string(GmacDeviceType type)
 {
     std::string type_string;
     for (unsigned i = 0; i < 4; i++) {
-        GmacAcceleratorType t = accTypes[i];
+        GmacDeviceType t = devTypes[i];
         if ((type & t) != 0) {
             if (type_string.size() > 0) {
                 type_string += " | ";
             }
-            type_string.append(accTypeString[t]);
+            type_string.append(devTypeString[t]);
         }
     }
 
@@ -59,14 +59,14 @@ int main(int argc, char *argv[])
 
     init_map();
 
-    for (unsigned i = 0; i < gmacGetNumberOfAccelerators(); i++) {
-        assert(gmacGetAcceleratorInfo(i, &info) == gmacSuccess);
-        fprintf(stdout, "Accelerator %u/%u\n", i + 1, gmacGetNumberOfAccelerators());
+    for (unsigned i = 0; i < gmacGetNumberOfDevices(); i++) {
+        assert(gmacGetDeviceInfo(i, &info) == gmacSuccess);
+        fprintf(stdout, "Device %u/%u\n", i + 1, gmacGetNumberOfDevices());
 
-        fprintf(stdout, "- name: %s\n", info.acceleratorName);
+        fprintf(stdout, "- name: %s\n", info.deviceName);
         fprintf(stdout, "- vendor: %s\n", info.vendorName);
         fprintf(stdout, "- vendor id: %u\n", info.vendorId);
-        fprintf(stdout, "- type: %s\n", get_type_string(info.acceleratorType).c_str());
+        fprintf(stdout, "- type: %s\n", get_type_string(info.deviceType).c_str());
         fprintf(stdout, "- available: %u\n", info.isAvailable);
 
         fprintf(stdout, "- compute units: %u\n", info.computeUnits);

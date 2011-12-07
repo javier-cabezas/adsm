@@ -7,7 +7,9 @@ namespace __impl { namespace hal { namespace cuda {
 
 device::device(CUdevice cudaDevice, coherence_domain &coherenceDomain) :
     Parent(coherenceDomain),
-    cudaDevice_(cudaDevice)
+    gmac::util::mutex<device>("device"),
+    cudaDevice_(cudaDevice),
+    isInfoInitialized_(false)
 {
     CUresult ret;
     int val;
@@ -114,6 +116,59 @@ device::has_direct_copy(const Parent &_dev) const
     ASSERTION(ret == CUDA_SUCCESS, "Error querying devices");
 
     return canAccess == 1;
+}
+
+gmacError_t
+device::get_info(GmacDeviceInfo &info)
+{
+    lock();
+    if (!isInfoInitialized_) {
+        static const size_t MaxAcceleratorNameLength = 128;
+        char deviceName[MaxAcceleratorNameLength];
+        CUresult res = cuDeviceGetName(deviceName, MaxAcceleratorNameLength, cudaDevice_);
+        ASSERTION(res == CUDA_SUCCESS);
+
+        info_.deviceName = deviceName;
+        info_.vendorName = "NVIDIA Corporation";
+        info_.deviceType = GMAC_DEVICE_TYPE_GPU;
+        info_.vendorId = 1;
+        info_.isAvailable = 1;
+        
+        int val;
+        res = cuDeviceGetAttribute(&val, CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT, cudaDevice_);
+        ASSERTION(res == CUDA_SUCCESS);
+        info_.computeUnits = val;
+
+        CUdevprop deviceProperties;
+
+        res = cuDeviceGetProperties(&deviceProperties, cudaDevice_);
+        ASSERTION(res == CUDA_SUCCESS);
+
+        info_.maxDimensions = 3;
+
+        size_t *maxSizes = new size_t[3];
+        maxSizes[0] = deviceProperties.maxThreadsDim[0];
+        maxSizes[1] = deviceProperties.maxThreadsDim[1];
+        maxSizes[2] = deviceProperties.maxThreadsDim[2];
+
+        info_.maxSizes = maxSizes;
+        info_.maxWorkGroupSize = deviceProperties.maxThreadsPerBlock;
+        info_.globalMemSize = get_total_memory();
+        info_.localMemSize  = deviceProperties.sharedMemPerBlock;
+        info_.cacheMemSize  = 0;
+
+        int cudaVersion = 0;
+        res = cuDriverGetVersion(&cudaVersion);
+        if(res == CUDA_SUCCESS) info_.driverMajor = cudaVersion;
+        else info_.driverMajor = 0;
+        info_.driverMinor = info_.driverRev = 0;
+
+        isInfoInitialized_ = true;
+    }
+    unlock();
+
+    info = info_;
+    return gmacSuccess;
 }
 
 }}}

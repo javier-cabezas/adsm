@@ -91,6 +91,8 @@ public:
 
     bool has_direct_copy(const Parent &dev) const;
 
+    gmacError_t get_info(GmacDeviceInfo &info);
+
     platform &get_platform()
     {
         return platform_;
@@ -100,8 +102,6 @@ public:
     {
         return platform_;
     }
-
-    gmacError_t get_info(GmacDeviceInfo &info);
 
 #if 0
     static void set_devices(std::list<opencl::device *> devices)
