@@ -100,7 +100,7 @@ public:
      * \warning This method assumes that the block is not modified during its
      * execution
      */
-    virtual gmacError_t signal_read(block_ptr block, hostptr_t addr) = 0;
+    virtual hal::event_t signal_read(block_ptr block, hostptr_t addr, gmacError_t &err) = 0;
 
     /**
      * Signal handler for faults caused due to memory writes
@@ -111,7 +111,7 @@ public:
      * \warning This method assumes that the block is not modified during its
      * execution
      */
-    virtual gmacError_t signal_write(block_ptr block, hostptr_t addr) = 0;
+    virtual hal::event_t signal_write(block_ptr block, hostptr_t addr, gmacError_t &err) = 0;
 
     /** Acquires the ownership of a memory block for the CPU
      *
@@ -120,9 +120,9 @@ public:
      * \warning This method assumes that the block is not modified during its
      * execution
      */
-    virtual gmacError_t acquire(block_ptr block, GmacProtection &prot) = 0;
+    virtual hal::event_t acquire(block_ptr block, GmacProtection &prot, gmacError_t &err) = 0;
 #ifdef USE_VM
-    virtual gmacError_t acquireWithBitmap(block_ptr block) = 0;
+    virtual hal::event_t acquireWithBitmap(block_ptr block, gmacError_t &err) = 0;
 #endif
 
     /**
@@ -130,8 +130,8 @@ public:
      *
      * \return Error code
      */
-    virtual gmacError_t releaseAll() = 0;
-    virtual gmacError_t releasedAll() = 0;
+    virtual hal::event_t releaseAll(gmacError_t &err) = 0;
+    //virtual hal::event_t releasedAll(gmacError_t &err) = 0;
 
     //virtual gmacError_t releaseObjects(const std::list<object *> &objects) = 0;
 
@@ -143,7 +143,7 @@ public:
      * \warning This method assumes that the block is not modified during its
      * execution
      */
-    virtual gmacError_t release(block_ptr block) = 0;
+    virtual hal::event_t release(block_ptr block, gmacError_t &err) = 0;
 
     /**
      * Removes a block from the coherence domain.
@@ -157,7 +157,7 @@ public:
      * \warning This method assumes that the block is not modified during its
      * execution
      */
-    virtual gmacError_t unmapFromAccelerator(block_ptr block) = 0;
+    virtual hal::event_t unmapFromAccelerator(block_ptr block, gmacError_t &err) = 0;
 
     /**
      * Adds a block to the coherence domain.
@@ -169,7 +169,7 @@ public:
      * \warning This method assumes that the block is not modified during its
      * execution
      */
-    virtual gmacError_t mapToAccelerator(block_ptr block) = 0;
+    virtual hal::event_t mapToAccelerator(block_ptr block, gmacError_t &err) = 0;
 
     /**
      * Deletes all references to the block within the protocol
@@ -181,7 +181,7 @@ public:
      * \warning This method assumes that the block is not modified during its
      * execution
      */
-    virtual gmacError_t deleteBlock(block_ptr block) = 0;
+    virtual hal::event_t deleteBlock(block_ptr block, gmacError_t &err) = 0;
 
     /**
      * Ensures that the host memory of a block contains an updated copy of the
@@ -192,7 +192,7 @@ public:
      * \warning This method assumes that the block is not modified during its
      * execution
      */
-    virtual gmacError_t toHost(block_ptr block) = 0;
+    virtual hal::event_t toHost(block_ptr block, gmacError_t &err) = 0;
 
 #if 0
     /**
@@ -204,7 +204,7 @@ public:
      * \warning This method assumes that the block is not modified during its
      * execution
      */
-    virtual gmacError_t toAccelerator(block_ptr block) = 0;
+    virtual hal::event_t toAccelerator(block_ptr block, gmacError_t &err) = 0;
 #endif
 
     /**
@@ -222,7 +222,7 @@ public:
     virtual hal::event_t memset(block_ptr block, size_t blockOffset, int v, size_t size,
                                 gmacError_t &err) = 0;
 
-    virtual gmacError_t flushDirty() = 0;
+    virtual hal::event_t flushDirty(gmacError_t &err) = 0;
 
     /**
      * Copies between two memory blocks, assuming that direct copies are
@@ -258,7 +258,7 @@ public:
 
     virtual gmacError_t dump(block_ptr block, std::ostream &out, protocol::common::Statistic stat) = 0;
 
-    typedef gmacError_t (protocol_interface::*CoherenceOp)(block_ptr);
+    typedef hal::event_t (protocol_interface::*CoherenceOp)(block_ptr, gmacError_t &err);
 
     typedef hal::event_t (protocol_interface::*CopyOp1To)(block_ptr, size_t, const hostptr_t, size_t, gmacError_t &);
     typedef hal::event_t (protocol_interface::*CopyOp1From)(hostptr_t, block_ptr, size_t, size_t, gmacError_t &);

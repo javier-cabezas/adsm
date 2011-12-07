@@ -9,8 +9,8 @@
 
 #include "eclStencilCommon.h"
 
-const char * nIterStr = "GMAC_NITER";
-const unsigned nIterDefault        = 4;
+const char * nIterStr       = "GMAC_NITER";
+const unsigned nIterDefault = 4;
 
 static unsigned nIter = 0;
 

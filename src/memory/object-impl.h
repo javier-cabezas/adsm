@@ -89,55 +89,66 @@ object::size() const
 }
 
 template <typename T>
-gmacError_t object::coherenceOp(gmacError_t (protocol_interface::*op)(block_ptr, T &), T &param)
+hal::event_t
+object::coherenceOp(hal::event_t (protocol_interface::*op)(block_ptr, T &, gmacError_t &),
+                    T &param,
+                    gmacError_t &err)
 {
-    gmacError_t ret = gmacSuccess;
+    hal::event_t ret;
     vector_block::const_iterator i;
     for(i = blocks_.begin(); i != blocks_.end(); i++) {
-        ret = (protocol_.*op)(*i, param);
-        if(ret != gmacSuccess) break;
+        ret = (protocol_.*op)(*i, param, err);
+        if(err != gmacSuccess) break;
     }
     return ret;
 }
 
-inline gmacError_t
-object::acquire(GmacProtection &prot)
+inline hal::event_t
+object::acquire(GmacProtection &prot, gmacError_t &err)
 {
     lock_write();
-    gmacError_t ret = gmacSuccess;
+    hal::event_t ret;
     TRACE(LOCAL, "Acquiring object %p?", addr_);
     if (released_ == true) {
         TRACE(LOCAL, "Acquiring object %p", addr_);
-        ret = coherenceOp<GmacProtection>(&protocol_interface::acquire, prot);
+        ret = coherenceOp<GmacProtection>(&protocol_interface::acquire, prot, err);
     }
     released_ = false;
     unlock();
     return ret;
 }
 
-inline gmacError_t
-object::release()
+inline hal::event_t 
+object::release(gmacError_t &err)
 {
+    hal::event_t ret;
+    lock_write();
     released_ = true;
-    return gmacSuccess;
+    unlock();
+    err = gmacSuccess;
+    return ret;
 }
 
 inline bool
 object::is_released() const
 {
-    return released_;
+    bool ret;
+    lock_read();
+    ret = released_;
+    unlock();
+    return ret;
 }
 
-inline gmacError_t
-object::releaseBlocks()
+inline hal::event_t
+object::releaseBlocks(gmacError_t &err)
 {
     lock_write();
-    gmacError_t ret = gmacSuccess;
+    hal::event_t ret;
 
     TRACE(LOCAL, "Releasing object %p?", addr_);
     if (released_ == false) {
         TRACE(LOCAL, "Releasing object %p", addr_);
-        ret = coherenceOp(&protocol_interface::release);
+        ret = coherenceOp(&protocol_interface::release, err);
     }
 
     released_ = true;
@@ -171,20 +182,20 @@ object::forEachBlock(gmacError_t (protocol_interface::*op)(block_ptr, P1 &, P2),
     return ret;
 }
 
-inline gmacError_t
-object::toHost()
+inline hal::event_t 
+object::toHost(gmacError_t &err)
 {
     lock_read();
-    gmacError_t ret= coherenceOp(&protocol_interface::toHost);
+    hal::event_t ret= coherenceOp(&protocol_interface::toHost, err);
     unlock();
     return ret;
 }
 
-inline gmacError_t
-object::toAccelerator()
+inline hal::event_t
+object::toAccelerator(gmacError_t &err)
 {
     lock_read();
-    gmacError_t ret = coherenceOp(&protocol_interface::release);
+    hal::event_t ret = coherenceOp(&protocol_interface::release, err);
     unlock();
     return ret;
 }

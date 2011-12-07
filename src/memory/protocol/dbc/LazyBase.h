@@ -55,20 +55,20 @@ protected:
     typedef __impl::util::shared_ptr<lazy_block_impl> lazy_block_ptr_impl;
 
 public:
-    gmacError_t signal_read(block_ptr_impl block, hostptr_t addr);
-    gmacError_t signal_write(block_ptr_impl block, hostptr_t addr);
+    __impl::hal::event_t signal_read(block_ptr_impl block, hostptr_t addr, gmacError_t &err);
+    __impl::hal::event_t signal_write(block_ptr_impl block, hostptr_t addr, gmacError_t &err);
 
-    gmacError_t acquire(block_ptr_impl obj, GmacProtection &prot);
-    gmacError_t release(block_ptr_impl block);
+    __impl::hal::event_t acquire(block_ptr_impl obj, GmacProtection &prot, gmacError_t &err);
+    __impl::hal::event_t release(block_ptr_impl block, gmacError_t &err);
 
-    gmacError_t releaseAll();
+    __impl::hal::event_t releaseAll(gmacError_t &err);
 
-    gmacError_t toHost(block_ptr_impl block);
+    __impl::hal::event_t toHost(block_ptr_impl block, gmacError_t &err);
 
     __impl::hal::event_t memset(block_ptr_impl block, size_t blockOffset, int v, size_t size,
                                 gmacError_t &err);
 
-    gmacError_t flushDirty();
+    __impl::hal::event_t flushDirty(gmacError_t &err);
 
     __impl::hal::event_t copyBlockToBlock(block_ptr_impl d, size_t dstOffset, block_ptr_impl s, size_t srcOffset, size_t count, gmacError_t &err);
 };

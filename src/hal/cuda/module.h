@@ -150,8 +150,8 @@ public:
     void register_kernels(T &t) const;
 #endif
 
-    const kernel_t *get_kernel(gmac_kernel_id_t key) const;
-    const kernel_t *get_kernel(const std::string &name) const;
+    kernel_t *get_kernel(gmac_kernel_id_t key);
+    kernel_t *get_kernel(const std::string &name);
 
     const variable_t *variable(cuda_variable_t key) const;
 	const variable_t *constant(cuda_variable_t key) const;

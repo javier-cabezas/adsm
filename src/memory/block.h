@@ -77,8 +77,6 @@ class GMAC_LOCAL block :
 
 	typedef gmac::util::mutex<block> Lock;
 
-    friend class object;
-
 protected:
     /** Block size (in bytes) */
     size_t size_;
@@ -136,14 +134,20 @@ protected:
      * Ensures that the host memory has a valid and accessible copy of the data
      * \return Error code
      */
-    gmacError_t toAccelerator() { return toAccelerator(0, size_); }
-    virtual gmacError_t toAccelerator(unsigned blockOff, size_t count) = 0;
+    virtual hal::event_t to_accelerator(unsigned blockOff, size_t count, gmacError_t &err) = 0;
+    hal::event_t to_accelerator(gmacError_t &err)
+    {
+        return to_accelerator(0, size_, err);
+    }
 
     /**
      * Ensures that the host memory has a valid and accessible copy of the data
      * \return Error code
      */
-    gmacError_t toHost() { return toHost(0, size_); }
+    hal::event_t to_host(gmacError_t &err)
+    {
+        return to_host(0, size_, err);
+    }
 
     /**
      * Ensures that the host memory has a valid and accessible copy of the data
@@ -151,7 +155,7 @@ protected:
      * \param count Size (in bytes)
      * \return Error code
      */
-    virtual gmacError_t toHost(unsigned blockOff, size_t count) = 0;
+    virtual hal::event_t to_host(unsigned blockOff, size_t count, gmacError_t &err) = 0;
 
 public:
 #if 0

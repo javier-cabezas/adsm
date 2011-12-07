@@ -16,7 +16,6 @@ set(hal_SRC
     stream-impl.h
     types.h
     types-detail.h
-    types-impl.h
 )
 
 add_gmac_sources(gmac-hal ${hal_SRC})

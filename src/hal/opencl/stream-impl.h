@@ -4,6 +4,13 @@
 namespace __impl { namespace hal { namespace opencl {
 
 inline
+stream_t::stream_t(cl_command_queue stream, context_t &context) :
+    Parent(stream, context)
+{
+    TRACE(LOCAL, "Creating stream: "FMT_ID, get_print_id());
+}
+
+inline
 stream_t::Parent::state
 stream_t::query()
 {
@@ -30,20 +37,6 @@ stream_t::query()
     }
 
     return ret;
-}
-
-inline
-void
-stream_t::set_last_event(event_t event)
-{
-    lastEvent_ = event;
-}
-
-inline
-event_t
-stream_t::get_last_event()
-{
-    return lastEvent_;
 }
 
 inline

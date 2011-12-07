@@ -268,9 +268,10 @@ object_state<State>::removeOwner(core::address_space_const_ptr owner)
 {
     ASSERTION(ownerShortcut_ == owner);
 
-    gmacError_t ret = coherenceOp(&protocol_interface::deleteBlock);
+    gmacError_t ret;
+    hal::event_t evt = coherenceOp(&protocol_interface::deleteBlock, ret);
     ASSERTION(ret == gmacSuccess);
-    ret = coherenceOp(&protocol_interface::unmapFromAccelerator);
+    evt = coherenceOp(&protocol_interface::unmapFromAccelerator, ret);
     ASSERTION(ret == gmacSuccess);
     ownerShortcut_->unmap(addr_, size_);
 
@@ -429,12 +430,12 @@ template <typename State>
 inline gmacError_t
 object_state<State>::unmapFromAccelerator()
 {
-    gmacError_t ret = gmacSuccess;
+    gmacError_t ret;
 
     if (ownerShortcut_) {
         lock_write();
         // Remove blocks from the coherence domain
-        ret = coherenceOp(&protocol_interface::unmapFromAccelerator);
+        hal::event_t evt = coherenceOp(&protocol_interface::unmapFromAccelerator, ret);
 
         // Free accelerator memory
         if (ret == gmacSuccess) {

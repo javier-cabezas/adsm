@@ -65,11 +65,13 @@ bool lazy_base::needUpdate(const block_ptr b) const
     return false;
 }
 
-gmacError_t lazy_base::signal_read(block_ptr b, hostptr_t addr)
+hal::event_t
+lazy_base::signal_read(block_ptr b, hostptr_t addr, gmacError_t &err)
 {
     trace::EnterCurrentFunction();
     lazy_types::block_ptr block = util::static_pointer_cast<lazy_types::Block>(b);
-    gmacError_t ret = gmacSuccess;
+    hal::event_t ret;
+    err = gmacSuccess;
 
     block->read(addr);
     if(block->getState() == lazy_types::HostOnly) {
@@ -81,8 +83,8 @@ gmacError_t lazy_base::signal_read(block_ptr b, hostptr_t addr)
     }
 
     if (block->getState() == lazy_types::Invalid) {
-        ret = block->syncToHost();
-        if(ret != gmacSuccess) goto exit_func;
+        ret = block->syncToHost(err);
+        if(err != gmacSuccess) goto exit_func;
         block->setState(lazy_types::ReadOnly);
     }
 
@@ -94,11 +96,13 @@ exit_func:
     return ret;
 }
 
-gmacError_t lazy_base::signal_write(block_ptr b, hostptr_t addr)
+hal::event_t
+lazy_base::signal_write(block_ptr b, hostptr_t addr, gmacError_t &err)
 {
     trace::EnterCurrentFunction();
     lazy_types::block_ptr block = util::static_pointer_cast<lazy_types::Block>(b);
-    gmacError_t ret = gmacSuccess;
+    hal::event_t ret;
+    err = gmacSuccess;
 
     block->write(addr);
     switch (block->getState()) {
@@ -106,8 +110,8 @@ gmacError_t lazy_base::signal_write(block_ptr b, hostptr_t addr)
         block->unprotect();
         goto exit_func; // Somebody already fixed it
     case lazy_types::Invalid:
-        ret = block->syncToHost();
-        if(ret != gmacSuccess) goto exit_func;
+        ret = block->syncToHost(err);
+        if (err != gmacSuccess) goto exit_func;
         break;
     case lazy_types::HostOnly:
         WARNING("Signal on HostOnly block - Changing protection and continuing");
@@ -124,9 +128,11 @@ exit_func:
     return ret;
 }
 
-gmacError_t lazy_base::acquire(block_ptr b, GmacProtection &prot)
+hal::event_t
+lazy_base::acquire(block_ptr b, GmacProtection &prot, gmacError_t &err)
 {
-    gmacError_t ret = gmacSuccess;
+    hal::event_t ret;
+    err = gmacSuccess;
     lazy_types::block_ptr block = util::static_pointer_cast<lazy_types::Block>(b);
     switch(block->getState()) {
     case lazy_types::Invalid:
@@ -180,29 +186,34 @@ gmacError_t lazy_base::acquireWithBitmap(block_ptr b)
 }
 #endif
 
-gmacError_t lazy_base::mapToAccelerator(block_ptr b)
+hal::event_t
+lazy_base::mapToAccelerator(block_ptr b, gmacError_t &err)
 {
+    err = gmacSuccess;
+    hal::event_t ret;
     lazy_types::block_ptr block = util::static_pointer_cast<lazy_types::Block>(b);
     ASSERTION(block->getState() == lazy_types::HostOnly);
     TRACE(LOCAL,"Mapping block to accelerator %p", block->addr());
     block->setState(lazy_types::Dirty);
     addDirty(block);
-    return gmacSuccess;
+    return ret;
 }
 
-gmacError_t lazy_base::unmapFromAccelerator(block_ptr b)
+hal::event_t
+lazy_base::unmapFromAccelerator(block_ptr b, gmacError_t &err)
 {
     lazy_types::block_ptr block = util::static_pointer_cast<lazy_types::Block>(b);
     TRACE(LOCAL,"Unmapping block from accelerator %p", block->addr());
-    gmacError_t ret = gmacSuccess;
+    hal::event_t ret;
+    err = gmacSuccess;
     switch(block->getState()) {
     case lazy_types::HostOnly:
     case lazy_types::Dirty:
     case lazy_types::ReadOnly:
         break;
     case lazy_types::Invalid:
-        ret = block->syncToHost();
-        if(ret != gmacSuccess) break;
+        ret = block->syncToHost(err);
+        break;
     }
     if(block->unprotect() < 0)
         FATAL("Unable to set memory permissions");
@@ -228,14 +239,16 @@ lazy_base::addDirty(lazy_types::block_ptr block)
     }
     while (dbl_.size() > limit_) {
         list_block::locked_block b = dbl_.front();
-        gmacError_t ret = release(*b);
-        ASSERTION(ret == gmacSuccess);
+        gmacError_t err;
+        hal::event_t evt = release(*b, err);
+        ASSERTION(err == gmacSuccess);
     }
     unlock();
     return;
 }
 
-gmacError_t lazy_base::releaseAll()
+hal::event_t
+lazy_base::releaseAll(gmacError_t &err)
 {
     // We need to make sure that this operations is done before we
     // let other modes to proceed
@@ -249,22 +262,23 @@ gmacError_t lazy_base::releaseAll()
     // If the list of objects to be released is empty, assume a complete flush
     TRACE(LOCAL, "Releasing all blocks");
 
+    hal::event_t ret;
     while(dbl_.empty() == false) {
-    	list_block::locked_block it = dbl_.front();
-        gmacError_t ret = release(*it);
-        ASSERTION(ret == gmacSuccess);
+    	list_block::locked_block b = dbl_.front();
+        ret = release(*b, err);
+        ASSERTION(err == gmacSuccess);
     }
 
     unlock();
-    return gmacSuccess;
+    return ret;
 }
 
-gmacError_t lazy_base::flushDirty()
+hal::event_t lazy_base::flushDirty(gmacError_t &err)
 {
-    return releaseAll();
+    return releaseAll(err);
 }
 
-
+#if 0
 gmacError_t lazy_base::releasedAll()
 {
     lock();
@@ -279,18 +293,21 @@ gmacError_t lazy_base::releasedAll()
 
     return gmacSuccess;
 }
+#endif
 
-gmacError_t lazy_base::release(block_ptr b)
+hal::event_t
+lazy_base::release(block_ptr b, gmacError_t &err)
 {
     lazy_types::block_ptr block = util::static_pointer_cast<lazy_types::Block>(b);
     TRACE(LOCAL,"Releasing block %p", block->addr());
-    gmacError_t ret = gmacSuccess;
+    hal::event_t ret;
+    err = gmacSuccess;
     switch(block->getState()) {
     case lazy_types::Dirty:
         if(block->protect(GMAC_PROT_READ) < 0)
             FATAL("Unable to set memory permissions");
-        ret = block->syncToAccelerator();
-        if(ret != gmacSuccess) break;
+        ret = block->syncToAccelerator(err);
+        if(err != gmacSuccess) break;
         block->setState(lazy_types::ReadOnly);
         block->released();
         dbl_.remove(block);
@@ -303,24 +320,28 @@ gmacError_t lazy_base::release(block_ptr b)
     return ret;
 }
 
-gmacError_t lazy_base::deleteBlock(block_ptr block)
+hal::event_t lazy_base::deleteBlock(block_ptr block, gmacError_t &err)
 {
+    hal::event_t ret;
     dbl_.remove(block);
-    return gmacSuccess;
+    err = gmacSuccess;
+    return ret;
 }
 
-gmacError_t lazy_base::toHost(block_ptr b)
+hal::event_t
+lazy_base::toHost(block_ptr b, gmacError_t &err)
 {
     TRACE(LOCAL,"Sending block to host: %p", b->addr());
-    gmacError_t ret = gmacSuccess;
+    hal::event_t ret;
+    err = gmacSuccess;
     lazy_types::block_ptr block = util::static_pointer_cast<lazy_types::Block>(b);
     switch(block->getState()) {
     case lazy_types::Invalid:
-        ret = block->syncToHost();
+        ret = block->syncToHost(err);
         TRACE(LOCAL,"Invalid block");
-        if(block->protect(GMAC_PROT_READ) < 0)
+        if (block->protect(GMAC_PROT_READ) < 0)
             FATAL("Unable to set memory permissions");
-        if(ret != gmacSuccess) break;
+        if (err != gmacSuccess) break;
         block->setState(lazy_types::ReadOnly);
         break;
     case lazy_types::Dirty:

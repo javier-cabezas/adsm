@@ -8,6 +8,8 @@ set(util_SRC
     delayed_exec.h
     descriptor.h
     descriptor-impl.h
+    file.h
+    file.cpp
     gmac_base.h
     gmac_base.cpp
     lock.h

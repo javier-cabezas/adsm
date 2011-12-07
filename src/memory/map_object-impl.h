@@ -6,37 +6,39 @@
 namespace __impl { namespace memory {
 
 inline
-gmacError_t
-map_object::forEachObject(gmacError_t (object::*f)(void))
+hal::event_t
+map_object::forEachObject(hal::event_t (object::*f)(gmacError_t &), gmacError_t &err)
 {
+    hal::event_t ret;
     iterator i;
     lock_read();
     for(i = begin(); i != end(); i++) {
-        gmacError_t ret = (i->second->*f)();
-        if(ret != gmacSuccess) {
+        ret = (i->second->*f)(err);
+        if(err != gmacSuccess) {
             unlock();
             return ret;
         }
     }
     unlock();
-    return gmacSuccess;
+    return ret;
 }
 
 template <typename P1>
-gmacError_t
-map_object::forEachObject(gmacError_t (object::*f)(P1 &), P1 &p1)
+hal::event_t
+map_object::forEachObject(hal::event_t (object::*f)(P1 &, gmacError_t &), P1 &p1, gmacError_t &err)
 {
+    hal::event_t ret;
     const_iterator i;
     lock_read();
     for(i = begin(); i != end(); i++) {
-        gmacError_t ret = (i->second->*f)(p1);
-        if(ret != gmacSuccess) {
+        ret = (i->second->*f)(p1, err);
+        if (err != gmacSuccess) {
             unlock();
             return ret;
         }
     }
     unlock();
-    return gmacSuccess;
+    return ret;
 }
 
 

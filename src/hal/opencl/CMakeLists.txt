@@ -16,6 +16,7 @@ set(hal_opencl_SRC
     module.h
     module-impl.h
     module.cpp
+    ptr.h
     stream.h
     stream-impl.h
     types.h
@@ -24,6 +25,8 @@ set(hal_opencl_SRC
     helper/opencl_helper.h
     helper/opencl_helper-impl.h
     helper/opencl_helper.cpp
+    kernels/memset.cl
+    kernels/kernels.h
 )
 
 set(hal_opencl_hpe_SRC

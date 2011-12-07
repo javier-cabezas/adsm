@@ -1,12 +1,37 @@
 #include "config/common.h"
 
 #include "hal/opencl/helper/opencl_helper.h"
+#include "hal/opencl/kernels/kernels.h"
+
+#include "util/file.h"
 
 #include "coherence_domain.h"
 #include "device.h"
 #include "module.h"
 
 #define __GMAC_ERROR(r, err) case r: error = err; break
+
+namespace __impl { namespace hal { namespace opencl { 
+
+map_platform_repository Modules_("map_platform_repository");
+
+gmacError_t
+compile_embedded_code(std::list<opencl::device *> devices)
+{
+    return gmacErrorFeatureNotSupported;
+}
+
+static gmacError_t
+register_gmac_kernels(std::list<opencl::platform *> platforms)
+{
+    for (unsigned i = 0; i < 1; i++) {
+        /* module_descriptor *descriptor = */new module_descriptor(KernelsGmac_[i], "");
+    }
+
+    return gmacSuccess;
+}
+
+}}}
 
 namespace __impl { namespace hal {
 
@@ -25,8 +50,6 @@ init_platform()
     return ret;
 }
 
-opencl::map_platform_repository Modules_("map_platform_repository");
-
 std::list<opencl::device *>
 init_devices()
 {
@@ -39,6 +62,7 @@ init_devices()
     }
 
     std::list<opencl::device *> devices;
+    std::list<opencl::platform *> platforms;
 
     TRACE(GLOBAL, "Initializing OpenCL API");
     cl_uint platformSize = 0;
@@ -46,49 +70,49 @@ init_devices()
     ret = clGetPlatformIDs(0, NULL, &platformSize);
     CFATAL(ret == CL_SUCCESS);
     if(platformSize == 0) return devices;   
-    cl_platform_id * platforms = new cl_platform_id[platformSize];
-    ret = clGetPlatformIDs(platformSize, platforms, NULL);
+    cl_platform_id * platform_ids = new cl_platform_id[platformSize];
+    ret = clGetPlatformIDs(platformSize, platform_ids, NULL);
     CFATAL(ret == CL_SUCCESS);
     MESSAGE("%d OpenCL platforms found", platformSize);
 
     for (unsigned i = 0; i < platformSize; i++) {
-        MESSAGE("Platform [%u/%u]: %s", i + 1, platformSize, opencl::helper::get_platform_name(platforms[i]).c_str());
+        MESSAGE("Platform [%u/%u]: %s", i + 1, platformSize, opencl::helper::get_platform_name(platform_ids[i]).c_str());
         cl_uint deviceSize = 0;
-        ret = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_GPU,
+        ret = clGetDeviceIDs(platform_ids[i], CL_DEVICE_TYPE_GPU,
                              0, NULL, &deviceSize);
         ASSERTION(ret == CL_SUCCESS);
 	    if(deviceSize == 0) continue;
         cl_device_id *deviceIds = new cl_device_id[deviceSize];
-        ret = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_GPU,
+        ret = clGetDeviceIDs(platform_ids[i], CL_DEVICE_TYPE_GPU,
                              deviceSize, deviceIds, NULL);
         ASSERTION(ret == CL_SUCCESS);
         MESSAGE("... found %u OpenCL devices", deviceSize, i);
 
 #if 0
-        opencl::helper::opencl_version clVersion = opencl::helper::get_opencl_version(platforms[i]);
+        opencl::helper::opencl_version clVersion = opencl::helper::get_opencl_version(platform_ids[i]);
 #endif
 
         cl_context ctx;
         opencl::platform *plat;
 
         cl_context_properties prop[] = {
-            CL_CONTEXT_PLATFORM, (cl_context_properties)platforms[i], 0 };
+            CL_CONTEXT_PLATFORM, (cl_context_properties)platform_ids[i], 0 };
 
         ctx = clCreateContext(prop, deviceSize, deviceIds, NULL, NULL, &ret);
         CFATAL(ret == CL_SUCCESS, "Unable to create OpenCL context %d", ret);
 
-        TRACE(GLOBAL, "cl_context %p for platform: %s", ctx, opencl::helper::get_platform_name(platforms[i]).c_str());
+        TRACE(GLOBAL, "cl_context %p for platform: %s", ctx, opencl::helper::get_platform_name(platform_ids[i]).c_str());
 
-        plat = new opencl::platform(platforms[i], ctx);
+        plat = new opencl::platform(platform_ids[i], ctx);
 
         for (unsigned j = 0; j < deviceSize; j++) {
             MESSAGE("Device [%u/%u]: %s", j + 1, deviceSize, opencl::helper::get_device_name(deviceIds[j]).c_str());
 
             // Let's assume that this is not important; TODO: actually deal with this case
-            //CFATAL(util::getDeviceVendor(devices[j]) == util::getPlatformVendor(platforms[i]), "Not handled case");
+            //CFATAL(util::getDeviceVendor(devices[j]) == util::getPlatformVendor(platform_ids[i]), "Not handled case");
             opencl::device *device = NULL;
 
-            switch (opencl::helper::get_platform(platforms[i])) {
+            switch (opencl::helper::get_platform(platform_ids[i])) {
                 case opencl::helper::PLATFORM_AMD:
                     if (opencl::helper::is_device_amd_fusion(deviceIds[j])) {
                         device = new opencl::device(*plat, deviceIds[j], *new opencl::coherence_domain());
@@ -107,10 +131,13 @@ init_devices()
             devices.push_back(device);
         }
         delete[] deviceIds;
+
+        platforms.push_back(plat);
     }
-    delete[] platforms;
+    delete[] platform_ids;
     initialized = true;
 
+    opencl::register_gmac_kernels(platforms);
     opencl::compile_embedded_code(devices);
 
     return devices;
@@ -119,12 +146,6 @@ init_devices()
 }}
 
 namespace __impl { namespace hal { namespace opencl { 
-
-gmacError_t
-compile_embedded_code(std::list<opencl::device *> devices)
-{
-    return gmacErrorFeatureNotSupported;
-}
 
 gmacError_t compile_code(platform &plat, const std::string &code, const std::string &flags)
 {
@@ -159,46 +180,10 @@ gmacError_t error(cl_int err)
     return error;
 }
 
-void
-context_t::dispose_event(_event_t &event)
-{
-    queueEvents_.push(event);
-}
-
-context_t::context_t(cl_context ctx, device &dev) :
-    Parent(ctx, dev)
-{
-    TRACE(LOCAL, "Creating context: %p", (*this)());
-}
-
-const code_repository &
-context_t::get_code_repository()
-{
-    code_repository *repository;
-    platform &plat = get_device().get_platform();
-    map_platform_repository::iterator it = Modules_.find(&plat);
-    if (it == Modules_.end()) {
-        gmacError_t err;
-        code_repository tmp = module_descriptor::create_modules(plat, err);
-        ASSERTION(err == gmacSuccess);
-        repository = &Modules_.insert(map_platform_repository::value_type(&plat, tmp)).first->second;
-    } else {
-        repository = &it->second;
-    }
-
-    return *repository;
-}
-
-stream_t::stream_t(cl_command_queue stream, context_t &context) :
-    Parent(stream, context)
-{
-    TRACE(LOCAL, "Creating stream: %p", (*this)());
-}
-
 gmacError_t
 stream_t::sync()
 {
-    TRACE(LOCAL, "Waiting for stream: %p", (*this)());
+    TRACE(LOCAL, "stream <"FMT_ID">: waiting for stream", this->get_print_id());
     cl_int ret = clFinish((*this)());
 
     return error(ret);
@@ -207,11 +192,14 @@ stream_t::sync()
 void
 _event_t::reset(bool async, type t)
 {
+    // Locking is not needed
     async_ = async;
     type_ = t;
     err_ = gmacSuccess;
     synced_ = false;
     state_ = None;
+    cl_int res = clReleaseEvent(event_);
+    ASSERTION(res == CL_SUCCESS);
     
     remove_triggers();
 }
@@ -219,6 +207,8 @@ _event_t::reset(bool async, type t)
 _event_t::state
 _event_t::get_state()
 {
+    lock();
+
     if (state_ != End) {
         cl_int status;
         cl_int res = clGetEventInfo(event_,
@@ -239,6 +229,8 @@ _event_t::get_state()
             }
         }
     }
+
+    unlock();
 
     return state_;
 }

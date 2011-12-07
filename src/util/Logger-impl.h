@@ -33,10 +33,12 @@ void Logger::__Trace(const char *name, const char *funcName, const char *fileNam
 #endif
 {
     std::stringstream newFmt;
-    newFmt << std::string("(") << tid << std::string(") ") << "[" << funcName << "] ";
+    if (::config::params::DebugPrintLocation) {
+        newFmt << std::string("(") << tid << std::string(") ") << "[" << funcName << "] ";
 
-    if (::config::params::DebugPrintFile) {
-        newFmt << "{" << fileName << ":" << lineNumber << "} ";
+        if (::config::params::DebugPrintFile) {
+            newFmt << "{" << fileName << ":" << lineNumber << "} ";
+        }
     }
 
     newFmt << fmt;
@@ -44,7 +46,9 @@ void Logger::__Trace(const char *name, const char *funcName, const char *fileNam
     if (AtomicTestAndSet(Ready_, 0, 1) == 0) Init();
 
 #ifdef USE_CXX0X
-    if (::config::params::DebugUseFinalClass) {
+   if (std::string(name).compare(std::string(GLOBAL)) == 0) {
+        Log(name, "TRACE", newFmt.str().c_str(), list...);
+    } else  if (::config::params::DebugUseFinalClass) {
         Log(name, "TRACE", newFmt.str().c_str(), list...);
     } else {
         Log(funcName, "TRACE", newFmt.str().c_str(), list...);
@@ -62,9 +66,35 @@ void Logger::__Trace(const char *name, const char *funcName, const char *fileNam
     }
 
     va_end(list);
-
 #endif
 }
+
+#ifdef USE_CXX0X
+inline
+void Logger::__Trace(const char *name, const char *funcName, const char *fileName, unsigned lineNumber, THREAD_T tid, const char *fmt)
+{
+    std::stringstream newFmt;
+    if (::config::params::DebugPrintLocation) {
+        newFmt << std::string("(") << tid << std::string(") ") << "[" << funcName << "] ";
+
+        if (::config::params::DebugPrintFile) {
+            newFmt << "{" << fileName << ":" << lineNumber << "} ";
+        }
+    }
+
+    newFmt << fmt;
+
+    if (AtomicTestAndSet(Ready_, 0, 1) == 0) Init();
+
+   if (std::string(name).compare(std::string(GLOBAL)) == 0) {
+        Log(name, "TRACE", newFmt.str().c_str());
+    } else  if (::config::params::DebugUseFinalClass) {
+        Log(name, "TRACE", newFmt.str().c_str());
+    } else {
+        Log(funcName, "TRACE", newFmt.str().c_str());
+    }
+}
+#endif
 
 #ifdef USE_CXX0X
 template <typename ...Types>
@@ -105,6 +135,15 @@ void Logger::Log(const char *name, const char *tag, const char *fmt, va_list lis
 #endif
 }
 
+#ifdef USE_CXX0X
+inline
+void Logger::Log(const char *name, const char *tag, const char *fmt)
+{
+    if(Check(name) == false) return;
+
+    Print(tag, fmt);
+}
+#endif
 
 #endif // DEBUG
 
@@ -135,7 +174,7 @@ void Logger::Print(const char *tag, const char *fmt, va_list list)
 #else
 	VSNPRINTF(buffer, BufferSize_, fmt, list);
 #endif
-	fprintf(stderr,"%s: %s\n", tag, buffer);
+    fprintf(stderr,"%s: %s\n", tag, buffer);
 }
 
 
@@ -144,11 +183,18 @@ inline
 void Logger::Print(const char *tag, const char *fmt)
 {
     if(AtomicTestAndSet(Ready_, 0, 1) == 0) Init();
-	if (Buffer_.get() == NULL) {
-		Buffer_.set(new char[BufferSize_]);
+    char *buffer = Buffer_.get();
+	if (buffer == NULL) {
+        buffer = new char[BufferSize_];
+		Buffer_.set(buffer);
 	}
-	
-	fprintf(stderr,"%s: %s\n", tag, Buffer_.get());
+
+#ifdef USE_CXX0X
+	snprintf(buffer, BufferSize_, fmt);
+#else
+	VSNPRINTF(buffer, BufferSize_, fmt);
+#endif
+    fprintf(stderr,"%s: %s\n", tag, buffer);
 }
 #endif
 

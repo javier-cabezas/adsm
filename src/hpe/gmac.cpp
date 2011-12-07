@@ -374,14 +374,14 @@ gmacPtr(const void *ptr)
 }
 
 gmacError_t GMAC_LOCAL
-gmacLaunch(__impl::core::hpe::kernel::launch &launch)
+gmacLaunch(__impl::core::hpe::kernel::launch_ptr launch)
 {
     gmacError_t ret = gmacSuccess;
-    vdevice &dev = launch.get_virtual_device();
+    vdevice &dev = launch->get_virtual_device();
     address_space_ptr aspace = dev.get_address_space();
     manager &manager = getManager();
     TRACE(GLOBAL, "Flush the memory used in the kernel");
-    const std::list<__impl::memory::ObjectInfo> &objects = launch.get_arg_list().get_objects();
+    const std::list<__impl::memory::ObjectInfo> &objects = launch->get_arg_list().get_objects();
     // If the launch object does not contain objects, assume all the objects
     // in the mode are released
     ret = manager.releaseObjects(aspace, objects);
@@ -412,13 +412,12 @@ gmacLaunch(gmac_kernel_id_t k, __impl::hal::kernel_t::config &config, __impl::co
     enterGmac();
     gmac::trace::EnterCurrentFunction();
     vdevice &dev = thread::get_current_thread().get_current_virtual_device();
-    kernel::launch *launch = NULL;
+    kernel::launch_ptr launch;
     gmacError_t ret;
     launch = dev.launch(k, config, args, ret);
 
     if(ret == gmacSuccess) {
-        ret = gmacLaunch(*launch);
-        delete launch;
+        ret = gmacLaunch(launch);
     }
 
     gmac::trace::ExitCurrentFunction();
@@ -430,14 +429,14 @@ gmacLaunch(gmac_kernel_id_t k, __impl::hal::kernel_t::config &config, __impl::co
 }
 
 gmacError_t GMAC_LOCAL
-gmacThreadSynchronize(kernel::launch &launch)
+gmacThreadSynchronize(kernel::launch_ptr launch)
 {
     gmacError_t ret = gmacSuccess;
     if(AutoSync == false) {
         vdevice &dev = thread::get_current_thread().get_current_virtual_device();
         dev.wait(launch);
         TRACE(GLOBAL, "Memory Sync");
-        ret = getManager().acquireObjects(dev.get_address_space(), launch.get_arg_list().get_objects());
+        ret = getManager().acquireObjects(dev.get_address_space(), launch->get_arg_list().get_objects());
     }
     return ret;
 }

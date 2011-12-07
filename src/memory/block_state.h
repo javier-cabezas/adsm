@@ -114,19 +114,18 @@ public:
      */
     accptr_t get_device_addr() const;
 
-    gmacError_t toAccelerator(unsigned blockOff, size_t count);
-
-    gmacError_t toAccelerator()
+    hal::event_t to_accelerator(unsigned blockOff, size_t count, gmacError_t &err);
+    hal::event_t to_accelerator(gmacError_t &err)
     {
-        return toAccelerator(0, size_);
+        return to_accelerator(0, size_, err);
     }
 
-    gmacError_t toHost(unsigned blockOff, size_t count);
-
-    gmacError_t toHost()
+    hal::event_t to_host(unsigned blockOff, size_t count, gmacError_t &err);
+    hal::event_t to_host(gmacError_t &err)
     {
-        return toHost(0, size_);
+        return to_host(0, size_, err);
     }
+
 
     object_state<State> &get_parent()
 	{

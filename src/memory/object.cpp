@@ -15,8 +15,10 @@ object::~object()
 {
     vector_block::iterator i;
     lock_write();
-    gmacError_t ret = coherenceOp(&protocol_interface::deleteBlock);
-    ASSERTION(ret == gmacSuccess);
+    gmacError_t err;
+    hal::event_t evt;
+    evt = coherenceOp(&protocol_interface::deleteBlock, err);
+    ASSERTION(err == gmacSuccess);
     blocks_.clear();
     unlock();
 }
@@ -36,14 +38,13 @@ object::get_block(size_t objectOffset, size_t *blockOffset) const
 			                     blocks_);
 }
 
-gmacError_t
-object::coherenceOp(gmacError_t (protocol_interface::*f)(block_ptr))
+hal::event_t
+object::coherenceOp(hal::event_t (protocol_interface::*f)(block_ptr, gmacError_t &), gmacError_t &err)
 {
-    gmacError_t ret = gmacSuccess;
+    hal::event_t ret;
     for(const_locked_iterator i = get_block(0, NULL); i != blocks_.end(); ++i) {
-        //ret = (*i)->coherenceOp(f);
-        ret = (protocol_.*f)(*i);
-        if(ret != gmacSuccess) break;
+        ret = (protocol_.*f)(*i, err);
+        if(err != gmacSuccess) break;
     }
     return ret;
 }
@@ -126,9 +127,7 @@ gmacError_t object::memset(size_t offset, int v, size_t size)
         block_ptr block = *i;
         size_t blockSize = block->size() - blockOffset;
         blockSize = size < blockSize? size: blockSize;
-        block->lock();
         event = protocol_.memset(block, blockOffset, v, blockSize, ret);
-        block->unlock();
         blockOffset = 0;
         size -= blockSize;
     }
@@ -147,11 +146,9 @@ object::memcpyToObject(size_t objOff, const hostptr_t src, size_t size)
         block_ptr block = *i;
         size_t blockSize = block->size() - blockOffset;
         blockSize = size < blockSize? size: blockSize;
-        block->lock();
         event = protocol_.copyToBlock(block, blockOffset,
                                              src + off,
                                              blockSize, ret);
-        block->unlock();
         //block.memoryOp(op, buffer, blockSize, bufferOffset, blockOffset);
         blockOffset = 0;
         off  += blockSize;
@@ -392,31 +389,31 @@ object::memcpyFromObject(hostptr_t dst, size_t objOff, size_t size)
 #endif
 }
 
-gmacError_t
-object::signal_read(hostptr_t addr)
+hal::event_t
+object::signal_read(hostptr_t addr, gmacError_t &err)
 {
-    gmacError_t ret = gmacSuccess;
+    hal::event_t ret;
     lock_read();
     /// \todo is this validate necessary?
     //validate();
     const_locked_iterator i = get_block(addr - addr_);
-    if(i == blocks_.end()) ret = gmacErrorInvalidValue;
-    else if((*i)->addr() > addr) ret = gmacErrorInvalidValue;
-    else ret = protocol_.signal_read(*i, addr);
+    if(i == blocks_.end()) err = gmacErrorInvalidValue;
+    else if((*i)->addr() > addr) err = gmacErrorInvalidValue;
+    else ret = protocol_.signal_read(*i, addr, err);
     unlock();
     return ret;
 }
 
-gmacError_t
-object::signal_write(hostptr_t addr)
+hal::event_t
+object::signal_write(hostptr_t addr, gmacError_t &err)
 {
-    gmacError_t ret = gmacSuccess;
+    hal::event_t ret;
     lock_read();
     modifiedObject();
     const_locked_iterator i = get_block(addr - addr_);
-    if(i == blocks_.end()) ret = gmacErrorInvalidValue;
-    else if((*i)->addr() > addr) ret = gmacErrorInvalidValue;
-    else ret = protocol_.signal_write(*i, addr);
+    if(i == blocks_.end()) err = gmacErrorInvalidValue;
+    else if((*i)->addr() > addr) err = gmacErrorInvalidValue;
+    else ret = protocol_.signal_write(*i, addr, err);
     unlock();
     return ret;
 }

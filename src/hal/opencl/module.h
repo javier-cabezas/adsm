@@ -50,15 +50,12 @@ WITH THE SOFTWARE.  */
 
 #include "util/descriptor.h"
 #include "util/UniquePtr.h"
-#include "util/stl/locked_map.h"
 
 #include "types.h"
 
 namespace __impl { namespace hal { namespace opencl {
 
 typedef util::descriptor<gmac_kernel_id_t> kernel_descriptor;
-
-typedef util::stl::locked_map<platform *, code_repository> map_platform_repository;
 
 class GMAC_LOCAL module_descriptor {
 	friend class module;
@@ -82,20 +79,26 @@ public:
 typedef std::vector<module_descriptor *> vector_module_descriptor;
 
 class GMAC_LOCAL module :
-    public hal::detail::code_repository<device, backend_traits, implementation_traits> {
+    public hal::detail::code_repository<device, backend_traits, implementation_traits>,
+    public gmac::util::spinlock<module> {
 protected:
     typedef std::map<std::string, kernel_t *> map_kernel;
-    typedef std::map<std::string, kernel_t *> map_kernel_name;
 
-    map_kernel kernels_;
-    map_kernel_name kernelsByName_;
+    typedef std::map<THREAD_T, map_kernel> map_thread;
+    typedef std::vector<std::string> vector_name;
+
+    cl_program program_;
+
+    map_thread kernelMaps_;
+
+    vector_name kernels_;
 
 public:
 	module(const module_descriptor &descriptor, platform &plat, gmacError_t &err);
 	~module();
 
-    const kernel_t *get_kernel(gmac_kernel_id_t key) const;
-    const kernel_t *get_kernel(const std::string &name) const;
+    kernel_t *get_kernel(gmac_kernel_id_t key);
+    kernel_t *get_kernel(const std::string &name);
 };
 
 class GMAC_LOCAL code_repository :
@@ -110,9 +113,9 @@ class GMAC_LOCAL code_repository :
     }
 
 public:
-    const kernel_t *get_kernel(gmac_kernel_id_t key) const
+    kernel_t *get_kernel(gmac_kernel_id_t key)
     {
-        const kernel_t *ret = NULL;
+        kernel_t *ret = NULL;
         for (Parent::const_iterator it  = Parent::begin();
                                     it != Parent::end();
                                     it++) {
@@ -123,9 +126,9 @@ public:
         return ret;
     }
 
-    const kernel_t *get_kernel(const std::string &name) const
+    kernel_t *get_kernel(const std::string &name)
     {
-        const kernel_t *ret = NULL;
+        kernel_t *ret = NULL;
         for (Parent::const_iterator it  = Parent::begin();
                                     it != Parent::end();
                                     it++) {

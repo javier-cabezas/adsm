@@ -112,7 +112,7 @@ public:
      *
      * \param proc Reference to the process which the mode belongs to
      * \param aspace Address space to which the virtual device is linked
-     * \param streamLaunch Stream to which enqueue kernel launch:w
+     * \param streamLaunch Stream to which enqueue kernel launch
     */
     vdevice(process &proc,
             util::shared_ptr<address_space> aspace,
@@ -181,22 +181,22 @@ public:
      * \param err gmacSucces on succes, an error code otherwise
      * \return Reference to the KernelLaunch object
      */
-    kernel::launch *launch(gmac_kernel_id_t k, hal::kernel_t::config &conf,
-                                               hal::kernel_t::arg_list &args, gmacError_t &err);
+    kernel::launch_ptr launch(gmac_kernel_id_t k, hal::kernel_t::config &conf,
+                                                  hal::kernel_t::arg_list &args, gmacError_t &err);
 
     /**
      * Executes a kernel using a KernelLaunch object
      * \param launch Reference to a KernelLaunch object
      * \return An event that represents the kernel execution
      */
-    hal::event_t execute(kernel::launch &launch, gmacError_t &err);
+    hal::event_t execute(kernel::launch_ptr launch, gmacError_t &err);
 
     /**
      * Waits for kernel execution
      * \param launch Reference to KernelLaunch object
      * \return Error code
      */
-    gmacError_t wait(kernel::launch &launch);
+    gmacError_t wait(kernel::launch_ptr launch);
 
     /**
      * Waits for all kernels to finish execution

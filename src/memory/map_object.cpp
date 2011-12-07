@@ -70,7 +70,7 @@ void
 map_object::cleanUp()
 {
     const_iterator i;
-    lock_read();
+    lock_write();
     for(i = begin(); i != end(); i++) {
         // Decrement reference count of pointed objects to allow later destruction
         i->second->decRef();
@@ -106,8 +106,8 @@ bool map_object::addObject(object &obj)
     TRACE(LOCAL, "Insert object: %p", obj.addr());
     std::pair<iterator, bool> ret = Parent::insert(value_type(obj.end(), &obj));
     if(ret.second == true) obj.incRef();
-    unlock();
     modifiedObjects_unlocked();
+    unlock();
     return ret.second;
 }
 
@@ -140,15 +140,9 @@ bool map_object::removeObject(object &obj)
     return ret;
 }
 
-bool map_object::hasObject(object &obj) const
-{
-    object *ret = NULL;
-    ret = mapFind(obj.addr(), obj.size());
-    return ret == &obj;
-}
-
 object *map_object::getObject(const hostptr_t addr, size_t size) const
 {
+    // Lock already acquired in mapFind
     object *ret = NULL;
     ret = mapFind(addr, size);
     if(ret != NULL) ret->incRef();
@@ -182,7 +176,6 @@ gmacError_t map_object::releaseObjects()
         dumpObjects(StatsDir_, ss.str(), memory::protocol::common::PAGE_TRANSFERS_TO_ACCELERATOR);
     }
 #endif
-
     releasedObjects_ = true;
     unlock();
     return gmacSuccess;

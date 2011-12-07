@@ -14,6 +14,7 @@ PARAM(AutoSync, bool, false, "GMAC_AUTOSYNC")
 // GMAC debug settings
 PARAM(Debug, const char *, "none", "GMAC_DEBUG")
 PARAM(DebugPrintFile, bool, false, "GMAC_DEBUG_PRINT_FILE")
+PARAM(DebugPrintLocation, bool, false, "GMAC_DEBUG_PRINT_LOCATION")
 PARAM(DebugUseFinalClass, bool, false, "GMAC_DEBUG_USE_FINAL_CLASS")
 PARAM(DebugUseRealTID, bool, false, "GMAC_DEBUG_USE_REAL_TID")
 PARAM(DebugPrintDebugInfo, bool, false, "GMAC_DEBUG_PRINT_INFO")

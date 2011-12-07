@@ -72,17 +72,17 @@ template <typename D, typename B, typename I>
 class GMAC_LOCAL code_repository
 {
 public:
-    virtual const typename I::kernel *get_kernel(gmac_kernel_id_t key) const = 0;
-    virtual const typename I::kernel *get_kernel(const std::string &name) const = 0;
+    virtual typename I::kernel *get_kernel(gmac_kernel_id_t key) = 0;
+    virtual typename I::kernel *get_kernel(const std::string &name) = 0;
 };
 
 template <typename I>
 class GMAC_LOCAL queue_event :
     std::queue<typename I::event::event_type *>,
-    gmac::util::mutex<queue_event<I> > {
+    gmac::util::spinlock<queue_event<I> > {
 
     typedef std::queue<typename I::event::event_type *> Parent;
-    typedef gmac::util::mutex<queue_event<I> > Lock;
+    typedef gmac::util::spinlock<queue_event<I> > Lock;
 
 public:
     queue_event();
@@ -186,7 +186,7 @@ public:
     typename I::event memset_async(typename I::ptr dst, int c, size_t count, typename I::stream &stream, typename I::event event, gmacError_t &err);
     typename I::event memset_async(typename I::ptr dst, int c, size_t count, typename I::stream &stream, gmacError_t &err);
 
-    virtual const typename I::code_repository &get_code_repository() = 0;
+    virtual typename I::code_repository &get_code_repository() = 0;
 };
 
 template <typename D, typename B, typename I>

@@ -105,31 +105,31 @@ public:
 
     bool needUpdate(const block_ptr block) const;
 
-    TESTABLE gmacError_t signal_read(block_ptr block, hostptr_t addr);
+    TESTABLE hal::event_t signal_read(block_ptr block, hostptr_t addr, gmacError_t &err);
 
-    TESTABLE gmacError_t signal_write(block_ptr block, hostptr_t addr);
+    TESTABLE hal::event_t signal_write(block_ptr block, hostptr_t addr, gmacError_t &err);
 
-    TESTABLE gmacError_t acquire(block_ptr block, GmacProtection &prot);
+    TESTABLE hal::event_t acquire(block_ptr block, GmacProtection &prot, gmacError_t &err);
 
-    TESTABLE gmacError_t release(block_ptr block);
+    TESTABLE hal::event_t release(block_ptr block, gmacError_t &err);
 
 #ifdef USE_VM
-    gmacError_t acquireWithBitmap(block_ptr block);
+    hal::event_t acquireWithBitmap(block_ptr block, gmacError_t &err);
 #endif
 
-    TESTABLE gmacError_t releaseAll();
-    gmacError_t releasedAll();
+    TESTABLE hal::event_t releaseAll(gmacError_t &err);
+    //gmacError_t releasedAll();
 
-    gmacError_t mapToAccelerator(block_ptr block);
+    hal::event_t mapToAccelerator(block_ptr block, gmacError_t &err);
 
-    gmacError_t unmapFromAccelerator(block_ptr block);
+    hal::event_t unmapFromAccelerator(block_ptr block, gmacError_t &err);
 
-    gmacError_t deleteBlock(block_ptr block);
+    hal::event_t deleteBlock(block_ptr block, gmacError_t &err);
 
-    TESTABLE gmacError_t toHost(block_ptr block);
+    TESTABLE hal::event_t toHost(block_ptr block, gmacError_t &err);
 
 #if 0
-    gmacError_t toAccelerator(block_ptr block);
+    hal::event_t toAccelerator(block_ptr block, gmacError_t &err);
 
     TESTABLE gmacError_t copyToBuffer(block_ptr block, core::io_buffer &buffer, size_t size,
                                       size_t bufferOffset, size_t blockOffset);
@@ -141,7 +141,7 @@ public:
     TESTABLE hal::event_t memset(block_ptr block, size_t blockOffset, int v, size_t size,
                                  gmacError_t &err);
 
-    TESTABLE gmacError_t flushDirty();
+    TESTABLE hal::event_t flushDirty(gmacError_t &err);
 
     //bool isInAccelerator(block_ptr block);
     hal::event_t copyBlockToBlock(block_ptr d, size_t dstOffset, block_ptr s, size_t srcOffset, size_t count, gmacError_t &err);

@@ -63,7 +63,8 @@ struct GMAC_LOCAL FatBinDesc {
     int magic; int v; const unsigned long long* data; char* f;
 };
 
-module::module(const module_descriptor &descriptor, platform &plat, gmacError_t &err)
+module::module(const module_descriptor &descriptor, platform &plat, gmacError_t &err) :
+    gmac::util::spinlock<module>("module")
 {
     cl_int res;
 
@@ -71,7 +72,7 @@ module::module(const module_descriptor &descriptor, platform &plat, gmacError_t 
     const char *stringCode = code.c_str();
     size_t size = code.size();
 
-    cl_program program = clCreateProgramWithSource(plat.get_context(), 1, &stringCode, &size, &res);
+    program_ = clCreateProgramWithSource(plat.get_context(), 1, &stringCode, &size, &res);
     if (res != CL_SUCCESS) {
         err = error(res);
         return;
@@ -80,16 +81,18 @@ module::module(const module_descriptor &descriptor, platform &plat, gmacError_t 
     cl_device_id *deviceIds = plat.get_cl_device_array();
     size_t ndevices = plat.get_ndevices();
 
-    res = clBuildProgram(program, ndevices, deviceIds, descriptor.get_compilation_flags().c_str(), NULL, NULL);
+    res = clBuildProgram(program_, ndevices, deviceIds, descriptor.get_compilation_flags().c_str(), NULL, NULL);
 
     if (res == CL_SUCCESS) {
         cl_uint nkernels;
-        res = clCreateKernelsInProgram(program, 0, NULL, &nkernels);
+        res = clCreateKernelsInProgram(program_, 0, NULL, &nkernels);
 
         if (res == CL_SUCCESS) {
             cl_kernel *kernels = new cl_kernel[nkernels];
-            res = clCreateKernelsInProgram(program, nkernels, kernels, NULL);
+            res = clCreateKernelsInProgram(program_, nkernels, kernels, NULL);
             ASSERTION(res == CL_SUCCESS);
+
+            map_kernel map;
 
             for (cl_uint i = 0; i < nkernels; i++) {
                 size_t size;
@@ -101,10 +104,29 @@ module::module(const module_descriptor &descriptor, platform &plat, gmacError_t 
                 name[size] = '\0';
 
                 TRACE(LOCAL, "Registering kernel %s", name);
-                kernels_.insert(map_kernel::value_type(name, new kernel_t(kernels[i], std::string(name))));
+                map.insert(map_kernel::value_type(name, new kernel_t(kernels[i], std::string(name))));
+                kernels_.push_back(name);
             }
+
+            delete []kernels;
+
+            kernelMaps_.insert(map_thread::value_type(util::GetThreadId(), map));
         }
+    } else {
+        size_t len;
+        cl_int tmp = clGetProgramBuildInfo(program_, deviceIds[0],
+                CL_PROGRAM_BUILD_LOG, 0, NULL, &len);
+        ASSERTION(tmp == CL_SUCCESS);
+        char *msg = new char[len + 1];
+        tmp = clGetProgramBuildInfo(program_, deviceIds[0],
+                CL_PROGRAM_BUILD_LOG, len, msg, NULL);
+        ASSERTION(tmp == CL_SUCCESS);
+        msg[len] = '\0';
+        TRACE(GLOBAL, "Error compiling code accelerator: %d\n%s",
+                deviceIds[0], msg);
+        delete [] msg;
     }
+
 
     err = error(res);
     delete []deviceIds;
@@ -112,25 +134,16 @@ module::module(const module_descriptor &descriptor, platform &plat, gmacError_t 
 
 module::~module()
 {
-    map_kernel::iterator it;
-    for (it = kernels_.begin(); it != kernels_.end(); it++) {
-        delete it->second;
-    }
-#ifdef CALL_CUDA_ON_DESTRUCTION
-    std::vector<CUmodule>::const_iterator m;
-    for(m = mods_.begin(); m != mods_.end(); m++) {
-        CUresult ret = cuModuleUnload(*m);
-        ASSERTION(ret == CUDA_SUCCESS);
-    }
-    mods_.clear();
-#endif
+    map_thread::iterator it;
 
-    // TODO: remove objects from maps
-#if 0
-    variables_.clear();
-    constants_.clear();
-    textures_.clear();
-#endif
+    for (it = kernelMaps_.begin(); it != kernelMaps_.end(); it++) {
+        map_kernel &kernels = it->second;
+        map_kernel::iterator it2;
+
+        for (it2 = kernels.begin(); it2 != kernels.end(); it2++) {
+            delete it2->second;
+        }
+    }
 }
 
 }}}

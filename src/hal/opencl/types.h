@@ -9,6 +9,8 @@
 
 #include "hal/types-detail.h"
 
+#include "util/stl/locked_map.h"
+
 #include "ptr.h"
 
 namespace __impl { namespace hal { namespace opencl {
@@ -48,6 +50,10 @@ typedef hal::detail::implementation_traits<coherence_domain,
                                            event_list,
                                            buffer_t,
                                            ptr_t> implementation_traits;
+
+typedef util::stl::locked_map<platform *, code_repository> map_platform_repository;
+
+extern map_platform_repository Modules_;
 
 gmacError_t error(cl_int err);
 gmacError_t compile_embedded_code(std::list<device *> devices);

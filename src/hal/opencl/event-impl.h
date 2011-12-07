@@ -29,7 +29,8 @@ _event_common_t::get_stream()
 
 inline
 _event_t::_event_t(bool async, type t, context_t &context) :
-    Parent(async, t, context)
+    Parent(async, t, context),
+    gmac::util::mutex<_event_t>("_event_t")
 {
 }
 
@@ -38,8 +39,10 @@ gmacError_t
 _event_t::sync()
 {
     gmacError_t ret;
+    lock();
+
     if (synced_ == false) {
-        TRACE(LOCAL, "Waiting for event: %p", event_);
+        TRACE(LOCAL, "event<"FMT_ID">: waiting for event", get_print_id());
         cl_int res = clWaitForEvents(1, &event_);
         if (res == CL_SUCCESS) {
 #ifdef USE_TRACE
@@ -76,13 +79,17 @@ _event_t::sync()
             timeSubmit_ = timeBase_ + (submit - queued) / 1000;
             timeStart_  = timeBase_ + (start - queued) / 1000;
             timeEnd_    = timeBase_ + (end - queued) / 1000;
+
 #endif
-        }
+        } else abort();
+
         synced_ = true;
         ret = error(res);
     } else {
         ret = err_;
     }
+
+    unlock();
 
     return ret;
 }
@@ -91,7 +98,10 @@ inline
 void
 _event_t::set_synced()
 {
+    lock();
+
     if (synced_ == false) {
+        TRACE(LOCAL, "event<"FMT_ID">: setting event as synced", get_print_id());
 #ifdef USE_TRACE
         cl_ulong queued;
         cl_ulong submit;
@@ -128,9 +138,10 @@ _event_t::set_synced()
         timeStart_  = timeBase_ + (start - queued) / 1000;
         timeEnd_    = timeBase_ + (end - queued) / 1000;
 #endif
-
         synced_ = true;
     }
+
+    unlock();
 }
 
 inline

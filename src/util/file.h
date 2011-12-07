@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010, 2011 University of Illinois
+/* Copyright (c) 2009 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,59 +31,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_PROTOCOL_COMMON_BLOCKSTATE_H_
-#define GMAC_MEMORY_PROTOCOL_COMMON_BLOCKSTATE_H_
+#ifndef GMAC_UTIL_FILE_H_
+#define GMAC_UTIL_FILE_H_
 
-#include <ostream>
+#include <string>
 
-#include "config/common.h"
+#include "include/gmac/types.h"
+#include "include/gmac/visibility.h"
 
-#include "hal/types.h"
+namespace __impl { namespace util {
 
-namespace __impl {
-namespace memory { namespace protocol { namespace common {
+std::string GMAC_LOCAL get_file_contents(const std::string &path, gmacError_t &err);
 
-enum Statistic {
-    PAGE_FAULTS_READ              = 0,
-    PAGE_FAULTS_WRITE             = 1,
-    PAGE_TRANSFERS_TO_ACCELERATOR = 2,
-    PAGE_TRANSFERS_TO_HOST        = 3
-};
-extern const char *StatisticName[];
+}}
 
-template <typename T>
-class GMAC_LOCAL BlockState {
-public:
-    typedef T ProtocolState;
-    T state_;
-
-    unsigned faultsCacheWrite_;
-    unsigned faultsCacheRead_;
-
-public:
-    BlockState(ProtocolState state);
-
-    virtual hal::event_t syncToAccelerator(gmacError_t &err) = 0;
-    virtual hal::event_t syncToHost(gmacError_t &err) = 0;
-
-    virtual bool is(ProtocolState state) const = 0;
-
-    ProtocolState getState() const;
-    virtual void setState(ProtocolState state, hostptr_t addr = NULL) = 0;
-
-    unsigned getCacheWriteFaults() const;
-    unsigned getCacheReadFaults() const;
-
-    void resetCacheWriteFaults();
-    void resetCacheReadFaults();
-
-    virtual gmacError_t dump(std::ostream &stream, Statistic stat) = 0;
-};
-
-}}}}
-
-#include "BlockState-impl.h"
-
-#endif /* BLOCKINFO_H */
-
-/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */
+#endif

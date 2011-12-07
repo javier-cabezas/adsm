@@ -52,8 +52,8 @@ module_descriptor::add(texture_descriptor &t)
     textures_.push_back(t);
 }
 
-inline const kernel_t *
-code_repository::get_kernel(gmac_kernel_id_t key) const
+inline kernel_t *
+code_repository::get_kernel(gmac_kernel_id_t key)
 {
     map_kernel::const_iterator k;
     k = kernels_.find(key);
@@ -61,8 +61,8 @@ code_repository::get_kernel(gmac_kernel_id_t key) const
     return k->second;
 }
 
-inline const kernel_t *
-code_repository::get_kernel(const std::string &name) const
+inline kernel_t *
+code_repository::get_kernel(const std::string &name)
 {
     FATAL("Not implemented");
     return NULL;
