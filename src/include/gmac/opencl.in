@@ -259,7 +259,7 @@ inline
 kernel::kernel(std::string name, error &err)
 {
     err = @OPENCL_API_PREFIX@Success;
-    if (getByName(name) != @OPENCL_API_PREFIX@Success) err = @OPENCL_API_PREFIX@ErrorInvalidAcceleratorFunction;
+    if (getByName(name) != @OPENCL_API_PREFIX@Success) err = @OPENCL_API_PREFIX@ErrorInvalidDeviceFunction;
 }
 
 inline

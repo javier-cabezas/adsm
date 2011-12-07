@@ -169,8 +169,8 @@ gmacError_t error(cl_int err)
     gmacError_t error = gmacSuccess;
     switch(err) {
         __GMAC_ERROR(CL_SUCCESS, gmacSuccess);
-        __GMAC_ERROR(CL_DEVICE_NOT_FOUND, gmacErrorNoAccelerator);
-        __GMAC_ERROR(CL_DEVICE_NOT_AVAILABLE, gmacErrorInvalidAccelerator);
+        __GMAC_ERROR(CL_DEVICE_NOT_FOUND, gmacErrorNoDevice);
+        __GMAC_ERROR(CL_DEVICE_NOT_AVAILABLE, gmacErrorInvalidDevice);
         __GMAC_ERROR(CL_MEM_OBJECT_ALLOCATION_FAILURE, gmacErrorMemoryAllocation);
         __GMAC_ERROR(CL_OUT_OF_HOST_MEMORY, gmacErrorMemoryAllocation);
         __GMAC_ERROR(CL_OUT_OF_RESOURCES, gmacErrorMemoryAllocation);
