@@ -18,7 +18,7 @@ unsigned vecSize = 0;
 const size_t blockSize = 256;
 
 
-static float *a, *b;
+static float *a, *b, *c;
 static struct param {
 	int i;
 	float *ptr;
@@ -31,7 +31,7 @@ __kernel void vecAdd(__global float *c, __global const float *a, __global const 
     unsigned i = get_global_id(0);\
     if(i >= size) return;\
 \
-    c[i] = a[i + offset] + b[i + offset];\
+    c[i + offset] = a[i + offset] + b[i + offset];\
 }\
 ";
 
@@ -42,10 +42,6 @@ void *addVector(void *ptr)
 	gmactime_t s, t;
 	struct param *p = (struct param *)ptr;
     char *prefix = p->prefix;
-	ecl_error ret = eclSuccess;
-
-	ret = eclMalloc((void **)&p->ptr, vecSize * sizeof(float));
-	assert(ret == eclSuccess);
 
 	// Call the kernel
     size_t localSize = blockSize;
@@ -100,9 +96,12 @@ float do_test(GmacGlobalMallocType allocType, const char *prefix)
 
 	getTime(&s);
 	// Alloc & init input data
-	ret = eclGlobalMalloc((void **)&a, nIter * vecSize * sizeof(float), allocType);
+	ret = eclMalloc((void **)&a, nIter * vecSize * sizeof(float));
 	assert(ret == eclSuccess);
-	ret = eclGlobalMalloc((void **)&b, nIter * vecSize * sizeof(float), allocType);
+	ret = eclMalloc((void **)&b, nIter * vecSize * sizeof(float));
+	assert(ret == eclSuccess);
+
+	ret = eclMalloc((void **)&c, nIter * vecSize * sizeof(float));
 	assert(ret == eclSuccess);
 
 	// Alloc output data
@@ -141,12 +140,10 @@ float do_test(GmacGlobalMallocType allocType, const char *prefix)
     printTime(&s, &t, buffer, "\n");
 
     getTime(&s);
-    for(n = 0; n < nIter; n++) {
-		eclFree(param[n].ptr);
-	}
 
 	eclFree(a);
 	eclFree(b);
+	eclFree(c);
 
 	free(param);
 	free(nThread);

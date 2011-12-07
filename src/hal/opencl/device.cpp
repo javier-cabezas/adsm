@@ -208,15 +208,15 @@ device::get_info(GmacDeviceInfo &info)
 
 		info_.deviceType = GmacDeviceType(0);
 		if (deviceType & CL_DEVICE_TYPE_CPU) {
-			info_.deviceType = GmacDeviceType(info_.deviceType | GMAC_ACCELERATOR_TYPE_CPU);
+			info_.deviceType = GmacDeviceType(info_.deviceType | GMAC_DEVICE_TYPE_CPU);
 		}
 
 		if (deviceType & CL_DEVICE_TYPE_GPU) {
-			info_.deviceType = GmacDeviceType(info_.deviceType | GMAC_ACCELERATOR_TYPE_GPU);
+			info_.deviceType = GmacDeviceType(info_.deviceType | GMAC_DEVICE_TYPE_GPU);
 		}
 
 		if (deviceType & CL_DEVICE_TYPE_ACCELERATOR) {
-			info_.deviceType = GmacDeviceType(info_.deviceType | GMAC_ACCELERATOR_TYPE_ACCELERATOR);
+			info_.deviceType = GmacDeviceType(info_.deviceType | GMAC_DEVICE_TYPE_ACCELERATOR);
 		}
 
 		/// \todo Compute this value

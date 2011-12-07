@@ -108,10 +108,10 @@ typedef enum {
 static const int GMAC_MAP_DEFAULT = GMAC_MAP_READ | GMAC_MAP_WRITE;
 
 typedef enum {
-    GMAC_ACCELERATOR_TYPE_UNKNOWN     = 0x0,
-    GMAC_ACCELERATOR_TYPE_CPU         = 0x1,
-    GMAC_ACCELERATOR_TYPE_GPU         = 0x2,
-    GMAC_ACCELERATOR_TYPE_ACCELERATOR = 0x4
+    GMAC_DEVICE_TYPE_UNKNOWN     = 0x0,
+    GMAC_DEVICE_TYPE_CPU         = 0x1,
+    GMAC_DEVICE_TYPE_GPU         = 0x2,
+    GMAC_DEVICE_TYPE_ACCELERATOR = 0x4
 } GmacDeviceType;
 
 // TODO: only for testing purposes

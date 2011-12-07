@@ -7,8 +7,8 @@
 
 #include <gmac/cuda.h>
 
-typedef std::map<GmacAcceleratorType, std::string> AccStrings;
-static AccStrings accTypeString;
+typedef std::map<GmacAcceleratorType, std::string> DevStrings;
+static DevStrings accTypeString;
 
 static GmacAcceleratorType accTypes [] = { GMAC_ACCELERATOR_TYPE_UNKNOWN,
                                             GMAC_ACCELERATOR_TYPE_CPU,
@@ -17,10 +17,10 @@ static GmacAcceleratorType accTypes [] = { GMAC_ACCELERATOR_TYPE_UNKNOWN,
 
 static void init_map()
 {
-    accTypeString.insert(AccStrings::value_type(GMAC_ACCELERATOR_TYPE_UNKNOWN,     "GMAC_ACCELERATOR_TYPE_UNKNOWN"));
-    accTypeString.insert(AccStrings::value_type(GMAC_ACCELERATOR_TYPE_CPU,         "GMAC_ACCELERATOR_TYPE_CPU"));
-    accTypeString.insert(AccStrings::value_type(GMAC_ACCELERATOR_TYPE_GPU,         "GMAC_ACCELERATOR_TYPE_GPU"));
-    accTypeString.insert(AccStrings::value_type(GMAC_ACCELERATOR_TYPE_ACCELERATOR, "GMAC_ACCELERATOR_TYPE_ACCELERATOR"));
+    accTypeString.insert(DevStrings::value_type(GMAC_ACCELERATOR_TYPE_UNKNOWN,     "GMAC_ACCELERATOR_TYPE_UNKNOWN"));
+    accTypeString.insert(DevStrings::value_type(GMAC_ACCELERATOR_TYPE_CPU,         "GMAC_ACCELERATOR_TYPE_CPU"));
+    accTypeString.insert(DevStrings::value_type(GMAC_ACCELERATOR_TYPE_GPU,         "GMAC_ACCELERATOR_TYPE_GPU"));
+    accTypeString.insert(DevStrings::value_type(GMAC_ACCELERATOR_TYPE_ACCELERATOR, "GMAC_ACCELERATOR_TYPE_ACCELERATOR"));
 }
 
 static std::string get_type_string(GmacAcceleratorType type)
