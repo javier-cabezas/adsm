@@ -189,11 +189,8 @@ void Logger::Print(const char *tag, const char *fmt)
 		Buffer_.set(buffer);
 	}
 
-#ifdef USE_CXX0X
-	snprintf(buffer, BufferSize_, fmt);
-#else
-	VSNPRINTF(buffer, BufferSize_, fmt);
-#endif
+	SNPRINTF(buffer, BufferSize_, "%s", fmt);
+
     fprintf(stderr,"%s: %s\n", tag, buffer);
 }
 #endif

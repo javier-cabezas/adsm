@@ -122,7 +122,7 @@ public:
     inline
     gmacError_t sync()
     {
-        ASSERTION(ptrEvent_);
+        ASSERTION(bool(ptrEvent_), "Using not valid pointer");
 
         gmacError_t ret = ptrEvent_->sync();
         return ret;
@@ -131,7 +131,7 @@ public:
     inline
     void set_synced()
     {
-        ASSERTION(ptrEvent_);
+        ASSERTION(bool(ptrEvent_), "Using not valid pointer");
 
         ptrEvent_->set_synced();
     }
@@ -139,7 +139,7 @@ public:
     inline
     void begin(stream_t &stream)
     {
-        ASSERTION(ptrEvent_);
+        ASSERTION(bool(ptrEvent_), "Using not valid pointer");
 
         ptrEvent_->begin(stream);
     }
@@ -153,13 +153,13 @@ public:
     inline
     bool is_valid() const
     {
-        return ptrEvent_;
+        return bool(ptrEvent_);
     }
 
     inline
     _event_t &operator*()
     {
-        ASSERTION(ptrEvent_);
+        ASSERTION(bool(ptrEvent_), "Using not valid pointer");
 
         return (*ptrEvent_.get());
     }
@@ -167,7 +167,7 @@ public:
     inline
     cl_event &operator()()
     {
-        ASSERTION(ptrEvent_);
+        ASSERTION(bool(ptrEvent_), "Using not valid pointer");
 
         return (*ptrEvent_.get())();
     }
@@ -176,7 +176,7 @@ public:
     inline
     void add_trigger(F fun)
     {
-        ASSERTION(ptrEvent_);
+        ASSERTION(bool(ptrEvent_));
 
         ptrEvent_->add_trigger(fun);
     }

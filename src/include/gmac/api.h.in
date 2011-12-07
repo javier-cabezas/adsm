@@ -96,13 +96,13 @@ extern "C"
  * Returns the number of available accelerators.
  * \return The number of available accelerators
  */
-GMAC_API unsigned APICALL gmacGetNumberOfAccelerators();
+GMAC_API unsigned APICALL gmacGetNumberOfDevices();
 
 /**
  * Returns the ID of the accelerator the current thread is running on
  * \return The number of available accelerators
  */
-GMAC_API unsigned APICALL gmacGetCurrentAcceleratorId();
+GMAC_API unsigned APICALL gmacGetCurrentDeviceId();
 
 /**
  * Fills the struct passed by reference with the information of the given accelerator
@@ -112,7 +112,7 @@ GMAC_API unsigned APICALL gmacGetCurrentAcceleratorId();
  *
  * \return gmacSuccess on success, an error code otherwise
  */
-GMAC_API gmacError_t APICALL gmacGetAcceleratorInfo(unsigned acc, GmacAcceleratorInfo *info);
+GMAC_API gmacError_t APICALL gmacGetDeviceInfo(unsigned acc, GmacDeviceInfo *info);
 
 /**
  * Returns the amount of memory available in the given accelerator

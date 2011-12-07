@@ -10,7 +10,7 @@ namespace __impl { namespace memory {
 template<typename State>
 inline void object_state<State>::modifiedObject()
 {
-    ASSERTION(ownerShortcut_ != NULL);
+    ASSERTION(bool(ownerShortcut_));
 
     ownerShortcut_->get_object_map().modifiedObjects();
 #if 0
@@ -133,7 +133,7 @@ object_state<State>::~object_state()
 #endif
     }
 #endif
-    if (ownerShortcut_ != NULL) ownerShortcut_->unmap(addr_, size_);
+    if (ownerShortcut_) ownerShortcut_->unmap(addr_, size_);
     if (shadow_ != NULL) memory_ops::unshadow(shadow_, size_);
     if (addr_ != NULL && hasUserMemory_ == false) memory_ops::unmap(addr_, size_);
     TRACE(LOCAL, "Destroying BlockGroup @ %p", addr_);
@@ -187,7 +187,7 @@ template<typename State>
 inline core::address_space_ptr
 object_state<State>::owner()
 {
-    ASSERTION(ownerShortcut_);
+    ASSERTION(bool(ownerShortcut_));
 
     return ownerShortcut_;
 #if 0
@@ -213,11 +213,9 @@ template<typename State>
 inline core::address_space_const_ptr
 object_state<State>::owner() const
 {
-    ASSERTION(ownerShortcut_);
+    ASSERTION(bool(ownerShortcut_));
 
-    core::address_space_const_ptr ret(ownerShortcut_);
-
-    return ret;
+    return ownerShortcut_;
 }
 
 template<typename State>
@@ -360,7 +358,7 @@ template<typename State>
 inline gmacError_t
 object_state<State>::mapToAccelerator()
 {
-    ASSERTION(ownerShortcut_);
+    ASSERTION(bool(ownerShortcut_));
 
     lock_write();
 

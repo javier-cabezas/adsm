@@ -118,7 +118,7 @@ public:
 
     ~locked_object_ptr()
     {
-        if (obj_ != NULL) {
+        if (obj_) {
             parent::unlock(*obj_);
         }
     }

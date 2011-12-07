@@ -451,27 +451,27 @@ static inline error compileBinaryStream(std::istream &in, std::string flags = ""
  * \sa @OPENCL_API_PREFIX@GetNumberOfAccelerators
  */
 static inline
-unsigned getNumberOfAccelerators()
+unsigned getNumberOfDevices()
 {
-    return ::@OPENCL_API_PREFIX@GetNumberOfAccelerators();
+    return ::@OPENCL_API_PREFIX@GetNumberOfDevices();
 }
 
 /**
- * \sa @OPENCL_API_PREFIX@GetCurrentAcceleratorId
+ * \sa @OPENCL_API_PREFIX@GetCurrentDeviceId
  */
 static inline
-unsigned getCurrentAcceleratorId()
+unsigned getCurrentDeviceId()
 {
-    return ::@OPENCL_API_PREFIX@GetCurrentAcceleratorId();
+    return ::@OPENCL_API_PREFIX@GetCurrentDeviceId();
 }
 
 /**
- * \sa @OPENCL_API_PREFIX@GetAcceleratorInfo
+ * \sa @OPENCL_API_PREFIX@GetDeviceInfo
  */
 static inline
-unsigned getAcceleratorInfo(unsigned acc, @OPENCL_API_PREFIX@_accelerator_info *info)
+unsigned getDeviceInfo(unsigned devId, @OPENCL_API_PREFIX@_device_info *info)
 {
-    return ::@OPENCL_API_PREFIX@GetAcceleratorInfo(acc, info);
+    return ::@OPENCL_API_PREFIX@GetDeviceInfo(devId, info);
 }
 
 /**

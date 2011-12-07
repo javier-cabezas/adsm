@@ -37,6 +37,8 @@ public:
 
     virtual bool has_direct_copy(const device &dev) const = 0;
     bool is_integrated() const;
+
+    virtual gmacError_t get_info(GmacDeviceInfo &info) = 0;
 };
 
 template <typename I>

@@ -43,14 +43,6 @@ class GMAC_LOCAL block :
 
 protected:
 	block(hostptr_t addr, hostptr_t shadow, size_t size);
-    virtual ~block();
-public:
-
-#if 0
-	gmacError_t memoryOp(__impl::memory::protocol_interface::MemoryOp op, __impl::core::io_buffer &buffer, size_t size, size_t bufferOffset, size_t blockOffset);
-
-    gmacError_t memset(int v, size_t size, size_t blockOffset = 0);
-#endif
 };
 
 }}

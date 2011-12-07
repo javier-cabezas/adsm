@@ -80,8 +80,8 @@ typedef gmacError_t @OPENCL_API_PREFIX@_error;
 typedef GmacGlobalMallocType @OPENCL_API_PREFIX@_memory_hint;
 typedef GmacProtection @OPENCL_API_PREFIX@_protection;
 
-typedef GmacAcceleratorType @OPENCL_API_PREFIX@_accelerator_type;
-typedef GmacAcceleratorInfo @OPENCL_API_PREFIX@_accelerator_info;
+typedef GmacDeviceType @OPENCL_API_PREFIX@_device_type;
+typedef GmacDeviceInfo @OPENCL_API_PREFIX@_device_info;
 
 #define ECL_GLOBAL_MALLOC_CENTRALIZED GMAC_GLOBAL_MALLOC_CENTRALIZED
 #define ECL_GLOBAL_MALLOC_REPLICATED GMAC_GLOBAL_MALLOC_REPLICATED
@@ -218,9 +218,9 @@ GMAC_API @OPENCL_API_PREFIX@_error APICALL @OPENCL_API_PREFIX@CompileBinaryFile(
  * \return Number of accelerators
  */
 static inline
-unsigned @OPENCL_API_PREFIX@GetNumberOfAccelerators()
+unsigned @OPENCL_API_PREFIX@GetNumberOfDevices()
 {
-    return gmacGetNumberOfAccelerators();
+    return gmacGetNumberOfDevices();
 }
 
 /**
@@ -228,9 +228,9 @@ unsigned @OPENCL_API_PREFIX@GetNumberOfAccelerators()
  * \return The number of available accelerators
  */
 static inline
-unsigned @OPENCL_API_PREFIX@GetCurrentAcceleratorId()
+unsigned @OPENCL_API_PREFIX@GetCurrentDeviceId()
 {
-    return gmacGetCurrentAcceleratorId();
+    return gmacGetCurrentDeviceId();
 }
 
 /**
@@ -239,9 +239,9 @@ unsigned @OPENCL_API_PREFIX@GetCurrentAcceleratorId()
  * \return Number of accelerators
  */
 static inline
-unsigned @OPENCL_API_PREFIX@GetAcceleratorInfo(unsigned acc, @OPENCL_API_PREFIX@_accelerator_info *info)
+unsigned @OPENCL_API_PREFIX@GetDeviceInfo(unsigned acc, @OPENCL_API_PREFIX@_device_info *info)
 {
-    return gmacGetAcceleratorInfo(acc, info);
+    return gmacGetDeviceInfo(acc, info);
 }
 
 /**

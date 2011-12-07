@@ -41,12 +41,12 @@ static void segvHandler(int s, siginfo_t *info, void *ctx)
 
 	bool resolved = false;
     util::shared_ptr<core::address_space> aspace = Manager_->owner(addr);
-    if(aspace != NULL) {
+    if (aspace) {
 	    if(!writeAccess) resolved = Manager_->signal_read(aspace, addr);
     	else             resolved = Manager_->signal_write(aspace, addr);
     }
 
-	if(resolved == false) {
+	if (resolved == false) {
 		fprintf(stderr, "Uoops! I could not find a mapping for %p. I will abort the execution\n", addr);
 		abort();
 		// TODO: set the signal mask and other stuff
