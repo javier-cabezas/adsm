@@ -7,20 +7,20 @@
 
 #include <gmac/opencl.h>
 
-typedef std::map<ecl_device_type, std::string> AccStrings;
-static AccStrings accTypeString;
+typedef std::map<ecl_device_type, std::string> DevStrings;
+static DevStrings devTypeString;
 
-static ecl_device_type accTypes [] = { GMAC_ACCELERATOR_TYPE_UNKNOWN,
-                                       GMAC_ACCELERATOR_TYPE_CPU,
-                                       GMAC_ACCELERATOR_TYPE_GPU,
-                                       GMAC_ACCELERATOR_TYPE_ACCELERATOR };
+static ecl_device_type accTypes [] = { GMAC_DEVICE_TYPE_UNKNOWN,
+                                       GMAC_DEVICE_TYPE_CPU,
+                                       GMAC_DEVICE_TYPE_GPU,
+                                       GMAC_DEVICE_TYPE_ACCELERATOR };
 
 static void init_map()
 {
-    accTypeString.insert(AccStrings::value_type(GMAC_ACCELERATOR_TYPE_UNKNOWN,     "GMAC_ACCELERATOR_TYPE_UNKNOWN"));
-    accTypeString.insert(AccStrings::value_type(GMAC_ACCELERATOR_TYPE_CPU,         "GMAC_ACCELERATOR_TYPE_CPU"));
-    accTypeString.insert(AccStrings::value_type(GMAC_ACCELERATOR_TYPE_GPU,         "GMAC_ACCELERATOR_TYPE_GPU"));
-    accTypeString.insert(AccStrings::value_type(GMAC_ACCELERATOR_TYPE_ACCELERATOR, "GMAC_ACCELERATOR_TYPE_ACCELERATOR"));
+    devTypeString.insert(DevStrings::value_type(GMAC_DEVICE_TYPE_UNKNOWN,     "GMAC_DEVICE_TYPE_UNKNOWN"));
+    devTypeString.insert(DevStrings::value_type(GMAC_DEVICE_TYPE_CPU,         "GMAC_DEVICE_TYPE_CPU"));
+    devTypeString.insert(DevStrings::value_type(GMAC_DEVICE_TYPE_GPU,         "GMAC_DEVICE_TYPE_GPU"));
+    devTypeString.insert(DevStrings::value_type(GMAC_DEVICE_TYPE_ACCELERATOR, "GMAC_DEVICE_TYPE_ACCELERATOR"));
 }
 
 static std::string get_type_string(ecl_device_type type)
@@ -32,7 +32,7 @@ static std::string get_type_string(ecl_device_type type)
             if (type_string.size() > 0) {
                 type_string += " | ";
             }
-            type_string.append(accTypeString[t]);
+            type_string.append(devTypeString[t]);
         }
     }
 
