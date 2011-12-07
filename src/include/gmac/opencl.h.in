@@ -66,15 +66,15 @@ typedef gmacError_t @OPENCL_API_PREFIX@_error;
 #define @OPENCL_API_PREFIX@ErrorMemoryAllocation              gmacErrorMemoryAllocation
 #define @OPENCL_API_PREFIX@ErrorLaunchFailure                 gmacErrorLaunchFailure
 #define @OPENCL_API_PREFIX@ErrorNotReady                      gmacErrorNotReady
-#define @OPENCL_API_PREFIX@ErrorNoAccelerator                 gmacErrorNoAccelerator
+#define @OPENCL_API_PREFIX@ErrorNoDevice                      gmacErrorNoDevice
 #define @OPENCL_API_PREFIX@ErrorInvalidValue                  gmacErrorInvalidValue
-#define @OPENCL_API_PREFIX@ErrorInvalidAccelerator            gmacErrorInvalidAccelerator
-#define @OPENCL_API_PREFIX@ErrorInvalidAcceleratorFunction    gmacErrorInvalidAcceleratorFunction
+#define @OPENCL_API_PREFIX@ErrorInvalidDevice                 gmacErrorInvalidDevice
+#define @OPENCL_API_PREFIX@ErrorInvalidDeviceFunction         gmacErrorInvalidDeviceFunction
 #define @OPENCL_API_PREFIX@ErrorInvalidSize                   gmacErrorInvalidSize
 #define @OPENCL_API_PREFIX@ErrorAlreadyBound                  gmacErrorAlreadyBound
 #define @OPENCL_API_PREFIX@ErrorApiFailureBase                gmacErrorApiFailureBase
 #define @OPENCL_API_PREFIX@ErrorFeatureNotSupported           gmacErrorFeatureNotSupported
-#define @OPENCL_API_PREFIX@ErrorInsufficientAcceleratorMemory gmacErrorInsufficientAcceleratorMemory
+#define @OPENCL_API_PREFIX@ErrorInsufficientDeviceMemory      gmacErrorInsufficientDeviceMemory
 #define @OPENCL_API_PREFIX@ErrorUnknown                       gmacErrorUnknown
 
 typedef GmacGlobalMallocType @OPENCL_API_PREFIX@_memory_hint;
@@ -259,7 +259,7 @@ gmacError_t @OPENCL_API_PREFIX@GetFreeMemory(unsigned acc, size_t *freeMem)
 /**
  * Attach the calling CPU thread to a different accelerator
  *
- * \param acc Accelerator to attach the current CPU thread
+ * \param acc Device to attach the current CPU thread
  *
  * \return @OPENCL_API_PREFIX@Success on success, an error code otherwise
  */
