@@ -7,13 +7,13 @@
 
 #include <gmac/opencl.h>
 
-typedef std::map<ecl_accelerator_type, std::string> AccStrings;
+typedef std::map<ecl_device_type, std::string> AccStrings;
 static AccStrings accTypeString;
 
-static ecl_accelerator_type accTypes [] = { GMAC_ACCELERATOR_TYPE_UNKNOWN,
-                                            GMAC_ACCELERATOR_TYPE_CPU,
-                                            GMAC_ACCELERATOR_TYPE_GPU,
-                                            GMAC_ACCELERATOR_TYPE_ACCELERATOR };
+static ecl_device_type accTypes [] = { GMAC_ACCELERATOR_TYPE_UNKNOWN,
+                                       GMAC_ACCELERATOR_TYPE_CPU,
+                                       GMAC_ACCELERATOR_TYPE_GPU,
+                                       GMAC_ACCELERATOR_TYPE_ACCELERATOR };
 
 static void init_map()
 {
@@ -23,11 +23,11 @@ static void init_map()
     accTypeString.insert(AccStrings::value_type(GMAC_ACCELERATOR_TYPE_ACCELERATOR, "GMAC_ACCELERATOR_TYPE_ACCELERATOR"));
 }
 
-static std::string get_type_string(ecl_accelerator_type type)
+static std::string get_type_string(ecl_device_type type)
 {
     std::string type_string;
     for (unsigned i = 0; i < 4; i++) {
-        ecl_accelerator_type t = accTypes[i];
+        ecl_device_type t = accTypes[i];
         if ((type & t) != 0) {
             if (type_string.size() > 0) {
                 type_string += " | ";
@@ -55,18 +55,18 @@ static std::string get_dim_sizes_string(unsigned dims, const size_t *maxSizes)
 
 int main(int argc, char *argv[])
 {
-    ecl_accelerator_info info;
+    ecl_device_info info;
 
     init_map();
 
-    for (unsigned i = 0; i < eclGetNumberOfAccelerators(); i++) {
-        assert(eclGetAcceleratorInfo(i, &info) == eclSuccess);
-        fprintf(stdout, "Accelerator %u/%u\n", i + 1, eclGetNumberOfAccelerators());
+    for (unsigned i = 0; i < eclGetNumberOfDevices(); i++) {
+        assert(eclGetDeviceInfo(i, &info) == eclSuccess);
+        fprintf(stdout, "Accelerator %u/%u\n", i + 1, eclGetNumberOfDevices());
 
-        fprintf(stdout, "- name: %s\n", info.acceleratorName);
+        fprintf(stdout, "- name: %s\n", info.deviceName);
         fprintf(stdout, "- vendor: %s\n", info.vendorName);
         fprintf(stdout, "- vendor id: %u\n", info.vendorId);
-        fprintf(stdout, "- type: %s\n", get_type_string(info.acceleratorType).c_str());
+        fprintf(stdout, "- type: %s\n", get_type_string(info.deviceType).c_str());
         fprintf(stdout, "- available: %u\n", info.isAvailable);
 
         fprintf(stdout, "- compute units: %u\n", info.computeUnits);
@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
         fprintf(stdout, "- local mem size: "FMT_SIZE"\n", info.localMemSize);
         fprintf(stdout, "- cache mem size: "FMT_SIZE" ("FMT_SIZE" per compute unit)\n", info.cacheMemSize, info.cacheMemSize / info.computeUnits);
 
-        fprintf(stdout, "- dirver: %u.%u.%u\n", info.driverMajor, info.driverMinor, info.driverRev);
+        fprintf(stdout, "- driver version: %u.%u.%u\n", info.driverMajor, info.driverMinor, info.driverRev);
         fprintf(stdout, "\n");
     }
 

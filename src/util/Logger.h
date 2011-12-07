@@ -54,11 +54,13 @@ WITH THE SOFTWARE.  */
 #	include <strings.h>
 #	define STRTOK strtok_r
 #	define VSNPRINTF vsnprintf
+#	define SNPRINTF snprintf
 #   define VFPRINTF vfprintf
 #	define LOCATION_STRING " in function %s [%s:%d]", __func__, __FILE__, __LINE__
 #elif defined(_MSC_VER)
 #	define STRTOK strtok_s
 #	define VSNPRINTF(str, size, format, ap) vsnprintf_s(str, size, size - 1, format, ap)
+#	define SNPRINTF(str, size, format, ap) _snprintf_s(str, size, size - 1, format, ap)
 #	define VFPRINTF(file, format, ap) vfprintf_s(file, format, ap)
 #	define LOCATION_STRING " in function %s [%s:%d]", __FUNCTION__, __FILE__, __LINE__
 #endif
@@ -101,7 +103,7 @@ get_class_name(const char *mangled);
                                                                    fmt, \
                                                                    ##__VA_ARGS__)
 #   endif
-#   define ASSERTION(c, ...) __impl::util::Logger::__Assertion(c, "Assertion '"#c"' failed", LOCATION_STRING)
+#   define ASSERTION(c, ...) __impl::util::Logger::__Assertion(c, "Assertion '"#c"' failed", LOCATION_STRING, ##__VA_ARGS__)
 #else
 
 static inline

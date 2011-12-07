@@ -46,9 +46,9 @@ namespace gmac {
  * \return The number of available accelerators
  */
 static inline unsigned
-getNumberOfAccelerators()
+getNumberOfDevices()
 {
-    return ::gmacGetNumberOfAccelerators();
+    return ::gmacGetNumberOfDevices();
 }
 
 /**
@@ -56,9 +56,9 @@ getNumberOfAccelerators()
  * \return The number of available accelerators
  */
 static inline unsigned
-getCurrentAcceleratorId()
+getCurrentDeviceId()
 {
-    return ::gmacGetCurrentAcceleratorId();
+    return ::gmacGetCurrentDeviceId();
 }
 
 /**

@@ -96,11 +96,6 @@ protected:
      */
     block(hostptr_t addr, hostptr_t shadow, size_t size);
 
-    /**
-     * Default destructor
-     */
-    virtual ~block();
-
 public:
 
     /**
@@ -116,20 +111,6 @@ public:
     size_t size() const;
 
 protected:
-    /**
-     * Signal handler for faults caused due to memory reads
-     * \param addr Faulting address
-     * \return Error code
-     */
-    gmacError_t signal_read(hostptr_t addr);
-
-    /**
-     * Signal handler for faults caused due to memory writes
-     * \param addr Faulting address
-     * \return Error code
-     */
-    gmacError_t signal_write(hostptr_t addr);
-
     /**
      * Ensures that the host memory has a valid and accessible copy of the data
      * \return Error code
@@ -158,67 +139,6 @@ protected:
     virtual hal::event_t to_host(unsigned blockOff, size_t count, gmacError_t &err) = 0;
 
 public:
-#if 0
-    /**
-     * Initializes a memory range within the block to a specific value
-     * \param v Value to initialize the memory to
-     * \param size Size (in bytes) of the memory region to be initialized
-     * \param blockOffset Offset (in bytes) from the begining of the block to perform the initialization
-     * \return Error code
-     */
-    TESTABLE gmacError_t memset(int v, size_t size, size_t blockOffset);
-
-    /** Request a memory coherence operation
-     *
-     *  \param op Memory coherence operation to be executed
-     *  \return Error code
-     */
-    template <typename R>
-    R coherenceOp(R (protocol_interface::*op)(block_ptr));
-    template <typename R, typename T>
-    R coherenceOp(R (protocol_interface::*op)(block_ptr, T &), T &param);
-
-    static hal::event_t copy_op(protocol_interface::CopyOp1To op, block_ptr dst, size_t dstOff, const hostptr_t src, size_t count, gmacError_t &err);
-    static hal::event_t copy_op(protocol_interface::CopyOp1From op, hostptr_t dst, block_ptr src, size_t srcOff, size_t count, gmacError_t &err);
-    static hal::event_t copy_op(protocol_interface::CopyOp2 op, block_ptr dst, size_t dstOff, block_ptr src, size_t srcOff, size_t count, gmacError_t &err);
-
-    static hal::event_t device_op(protocol_interface::DeviceOpTo op, hal::device_output &output, block_ptr src, size_t srcOff, size_t count, gmacError_t &err);
-    static hal::event_t device_op(protocol_interface::DeviceOpFrom op, block_ptr dst, size_t dstOff, hal::device_input &input, size_t count, gmacError_t &err);
-
-#if 0
-    /**
-     *  Request a memory operation over an I/O buffer
-     * \param op Memory operation to be executed
-     * \param buffer IOBuffer where the operation will be executed
-     * \param size Size (in bytes) of the memory operation
-     * \param bufferOffset Offset (in bytes) from the starting of the I/O buffer where the memory operation starts
-     * \param blockOffset Offset (in bytes) from the starting of the block where the memory opration starts
-     * \return Error code
-     * \warning This method should be only called from a Protocol class
-     * \sa copyToHost(core::io_buffer &, size_t, size_t, size_t) const
-     * \sa copyToAccelerator(core::io_buffer &, size_t, size_t, size_t) const
-     * \sa copyFromHost(core::io_buffer &, size_t, size_t, size_t) const
-     * \sa copyFromAccelerator(core::io_buffer &, size_t, size_t, size_t) const
-     * \sa __impl::memory::Protocol
-     */
-    TESTABLE gmacError_t memoryOp(protocol_interface::MemoryOp op,
-                                  core::io_buffer &buffer, size_t size, size_t bufferOffset, size_t blockOffset);
-#endif
-
-    /**
-     * Copy data from a GMAC object to the memory block
-     *
-     * \param obj GMAC memory object to copy data from
-     * \param size Size (in bytes) of the data to be copied
-     * \param blockOffset Offset (in bytes) from the begining of the block to
-     * copy the data to
-     * \param objectOffset Offset (in bytes) from the begining of the object to
-     * copy the data from
-     * \return Error code
-     */
-    gmacError_t memcpyFromObject(const object &obj, size_t size,
-                                 size_t blockOffset = 0, size_t objectOffset = 0);
-#endif
     /**
      * Get memory block owner
      * \return Owner of the memory block

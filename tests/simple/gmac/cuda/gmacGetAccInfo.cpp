@@ -55,7 +55,7 @@ static std::string get_dim_sizes_string(unsigned dims, const size_t *maxSizes)
 
 int main(int argc, char *argv[])
 {
-    GmacAcceleratorInfo info;
+    GmacDeviceInfo info;
 
     init_map();
 

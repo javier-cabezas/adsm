@@ -195,6 +195,13 @@ resource_manager::are_all_devices_integrated() const
     return ret;
 }
 
+gmacError_t
+resource_manager::get_device_info(unsigned deviceId, GmacDeviceInfo &info)
+{
+	ASSERTION(size_t(deviceId) < devices_.size());
+	return devices_[deviceId]->get_info(info);
+}
+
 }}}
 
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

@@ -112,7 +112,7 @@ typedef enum {
     GMAC_ACCELERATOR_TYPE_CPU         = 0x1,
     GMAC_ACCELERATOR_TYPE_GPU         = 0x2,
     GMAC_ACCELERATOR_TYPE_ACCELERATOR = 0x4
-} GmacAcceleratorType;
+} GmacDeviceType;
 
 // TODO: only for testing purposes
 #if 0
@@ -158,10 +158,10 @@ public:
 #endif
 
 typedef struct {
-    const char *acceleratorName;
+    const char *deviceName;
     const char *vendorName;
 
-    GmacAcceleratorType acceleratorType;
+    GmacDeviceType deviceType;
     unsigned vendorId;
     unsigned char isAvailable; 
 
@@ -176,7 +176,7 @@ typedef struct {
     unsigned driverMajor;
     unsigned driverMinor;
     unsigned driverRev;
-} GmacAcceleratorInfo;
+} GmacDeviceInfo;
 
 #ifdef __cplusplus
 };

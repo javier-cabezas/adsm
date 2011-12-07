@@ -106,7 +106,7 @@ ssize_t SYMBOL(read)(int fd, void *buf, size_t count)
     manager &manager = getManager();
     address_space_ptr aspaceDst = manager.owner(hostptr_t(buf));
 
-    if(aspaceDst == NULL) {
+    if (!aspaceDst) {
         exitGmac();
         return __libc_read(fd, buf, count);
     }
@@ -137,7 +137,7 @@ ssize_t SYMBOL(write)(int fd, const void *buf, size_t count)
     manager &manager = getManager();
     address_space_ptr aspaceSrc = manager.owner(hostptr_t(buf));
 
-    if(aspaceSrc == NULL) {
+    if (!aspaceSrc) {
         exitGmac();
         return __libc_write(fd, buf, count);
     }

@@ -131,23 +131,6 @@ template <class Cond, class T = void>
 struct enable_if : public enable_if_c<Cond::value, T> {};
 
 namespace __impl { namespace util {
-#if 0
-    template <typename T>
-    struct smart_ptr {
-        /*
-        typedef std::mierda<T> unique;
-        */
-        typedef std::tr1::shared_ptr<T> shared;
-
-        template<typename T2>
-        static shared
-        static_pointer_cast(const std::tr1::shared_ptr<T2> &r)
-        {
-        	return std::tr1::static_pointer_cast<T>(r);
-        }
-    };
-#endif
-
 #ifdef USE_CXX0X
     using std::shared_ptr;
 
@@ -163,92 +146,6 @@ namespace __impl { namespace util {
 
     using std::tr1::static_pointer_cast;
 #endif
-
-#if  0
-    template <typename T>
-    class UniquePtr :
-        public std::unique_ptr<T>
-    {
-    private:
-        typedef std::unique_ptr<T> parent;
-
-    public:
-        inline
-        virtual ~UniquePtr()
-        {
-        }
-
-        unique_ptr ();
-        unique_ptr (
-                nullptr_t _Nptr
-                );
-        explicit unique_ptr (
-                pointer _Ptr
-                );
-        unique_ptr (
-                pointer _Ptr,
-                typename conditional<
-                is_reference<Del>::value, 
-                Del,
-                typename add_reference<const Del>::type
-                >::type _Deleter
-                );
-        unique_ptr (
-                pointer _Ptr,
-                typename remove_reference<Del>::type&& _Deleter
-                );
-        unique_ptr (
-                unique_ptr&& _Right
-                );
-        template<class Type2, Class Del2>
-            unique_ptr (
-                    unique_ptr<Type2, Del2>&& _Right
-                    );
-
-        template<class Y>
-        inline
-        explicit UniquePtr(Y* p) :
-            parent(p)
-        {
-        }
-
-        template<class Y, class D>
-        inline
-        UniquePtr(Y* p, D d) :
-            parent(p, d)
-        {
-        }
-
-        inline
-        UniquePtr(UniquePtr const& r) :
-            parent(r)
-        {
-        }
-
-        template<class Y>
-        inline
-        UniquePtr(UniquePtr<Y> const& r) :
-            parent(r)
-        {
-        }
-
-        inline
-        UniquePtr& operator=(UniquePtr const& r)
-        {
-            parent::operator=(r);
-            return *this;
-        }
-
-        template<class Y> 
-        inline
-        UniquePtr& operator=(UniquePtr<Y> const& r)
-        {
-            parent::operator=(r);
-            return *this;
-        }
-    };
-#endif
-
 	template <typename T>
 	struct is_shared_ptr
 	{

@@ -540,7 +540,7 @@ manager::memset(core::address_space_ptr aspace, hostptr_t s, int c, size_t size)
     trace::EnterCurrentFunction();
     core::address_space_ptr aspaceOwner = owner(s, size);
 
-    if (aspaceOwner == NULL) {
+    if (!aspaceOwner) {
         ::memset(s, c, size);
         trace::ExitCurrentFunction();
         return gmacSuccess;
@@ -639,7 +639,7 @@ manager::memcpy(core::address_space_ptr aspace, hostptr_t dst, const hostptr_t s
     core::address_space_ptr aspaceDst = owner(dst, size);
     core::address_space_ptr aspaceSrc = owner(src, size);
 
-    if(aspaceDst == NULL && aspaceSrc == NULL) {
+    if(!aspaceDst && !aspaceSrc) {
         ::memcpy(dst, src, size);
         trace::ExitCurrentFunction();
         return gmacSuccess;
@@ -652,11 +652,11 @@ manager::memcpy(core::address_space_ptr aspace, hostptr_t dst, const hostptr_t s
     memory::map_object *mapSrc = NULL;
 
     // Get initial objects
-    if(aspaceDst != NULL) {
+    if(aspaceDst) {
         mapDst = &aspaceDst->get_object_map();
         dstObject = mapDst->getObject(dst, size);
     }
-    if(aspaceSrc != NULL) {
+    if(aspaceSrc) {
         mapSrc = &aspaceSrc->get_object_map();
         srcObject = mapSrc->getObject(src, size);
     }
@@ -667,11 +667,11 @@ manager::memcpy(core::address_space_ptr aspace, hostptr_t dst, const hostptr_t s
     size_t copySize = 0;
     while(left > 0) {
         // Get next objects involved, if necessary
-        if(aspaceDst != NULL && dstObject != NULL && dstObject->end() < (dst + offset)) {
+        if(aspaceDst && dstObject && dstObject->end() < (dst + offset)) {
             dstObject->decRef();
             dstObject = mapDst->getObject(dst + offset, left);
         }
-        if(aspaceSrc != NULL && srcObject != NULL && srcObject->end() < (src + offset)) {
+        if(aspaceSrc && srcObject && srcObject->end() < (src + offset)) {
             srcObject->decRef();
             srcObject = mapSrc->getObject(src + offset, left);
         }

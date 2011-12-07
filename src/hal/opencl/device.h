@@ -58,7 +58,8 @@ public:
 
 class GMAC_LOCAL device :
     public hal_device,
-    public util::unique<device> {
+    public util::unique<device>,
+    public gmac::util::mutex<device> {
     typedef hal_device Parent;
     friend class platform;
 protected:
@@ -70,6 +71,9 @@ protected:
     helper::opencl_version openclVersion_;
 
     size_t memorySize_;
+
+    GmacDeviceInfo info_;
+    bool isInfoInitialized_;
 
 public:
     device(platform &p,
@@ -96,6 +100,8 @@ public:
     {
         return platform_;
     }
+
+    gmacError_t get_info(GmacDeviceInfo &info);
 
 #if 0
     static void set_devices(std::list<opencl::device *> devices)

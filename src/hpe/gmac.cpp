@@ -70,13 +70,31 @@ get_resource_manager()
 }
 
 GMAC_API unsigned APICALL
-gmacGetNumberOfAccelerators()
+gmacGetNumberOfDevices()
 {
     unsigned ret;
     enterGmac();
     gmac::trace::EnterCurrentFunction();
     ret = unsigned(get_resource_manager().get_number_of_devices());
     gmac::trace::ExitCurrentFunction();
+    exitGmac();
+    return ret;
+}
+
+GMAC_API gmacError_t APICALL
+gmacGetDeviceInfo(unsigned acc, GmacDeviceInfo *info)
+{
+    enterGmacExclusive();
+    gmac::trace::EnterCurrentFunction();
+    gmacError_t ret = gmacSuccess;
+    __impl::core::hpe::resource_manager &resourceManager = get_resource_manager();
+    if (acc < resourceManager.get_number_of_devices() && info != NULL) {
+    	ret = get_resource_manager().get_device_info(acc, *info);
+    } else {
+        ret = gmacErrorInvalidValue;
+    }
+    gmac::trace::ExitCurrentFunction();
+    thread::get_current_thread().set_last_error(ret);
     exitGmac();
     return ret;
 }
@@ -90,25 +108,6 @@ gmacGetCurrentAcceleratorId()
     gmac::trace::EnterCurrentFunction();
     ret = thread::get_current_thread().get_current_virtual_device().get_device().id().val;;
     gmac::trace::ExitCurrentFunction();
-    exitGmac();
-    return ret;
-}
-
-GMAC_API gmacError_t APICALL
-gmacGetAcceleratorInfo(unsigned acc, GmacAcceleratorInfo *info)
-{
-    enterGmacExclusive();
-    gmac::trace::EnterCurrentFunction();
-    gmacError_t ret = gmacSuccess;
-    __impl::core::hpe::resource_manager &resourceManager = get_resource_manager();
-    if (acc < resourceManager.get_number_of_devices() && info != NULL) {
-        Accelerator &accelerator = process.getAccelerator(acc);
-        accelerator.getAcceleratorInfo(*info);
-    } else {
-        ret = gmacErrorInvalidValue;
-    }
-    gmac::trace::ExitCurrentFunction();
-    thread::get_current_thread().set_last_error(ret);
     exitGmac();
     return ret;
 }
@@ -160,7 +159,7 @@ gmacCreateAddressSpace(GmacAddressSpaceId *aspaceId, int accId)
         (accId >= 0 && accId < int(get_resource_manager().get_number_of_devices()))) {
         address_space_ptr aspace = get_resource_manager().create_address_space(accId, ret);
         if (ret == gmacSuccess) {
-            ASSERTION(aspace);
+            ASSERTION(bool(aspace));
             *aspaceId = aspace->get_id();
         }
     } else {
@@ -496,7 +495,7 @@ gmacMemcpy(void *dst, const void *src, size_t size)
     // Locate memory regions (if any)
     __impl::core::address_space_ptr aspaceDst = getManager().owner(hostptr_t(dst), size);
     __impl::core::address_space_ptr aspaceSrc = getManager().owner(hostptr_t(src), size);
-    if (aspaceDst == NULL && aspaceSrc == NULL) {
+    if (!aspaceDst && !aspaceSrc) {
         exitGmac();
         return ::memcpy(dst, src, size);
     }
