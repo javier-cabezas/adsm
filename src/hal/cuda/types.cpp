@@ -141,7 +141,7 @@ context_t::context_t(CUcontext ctx, device &dev) :
     TRACE(LOCAL, "Creating context: %p", (*this)());
 }
 
-const code_repository &
+code_repository &
 context_t::get_code_repository()
 {
     code_repository *repository;

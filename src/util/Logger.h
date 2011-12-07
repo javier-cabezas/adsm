@@ -87,12 +87,12 @@ get_class_name(const char *mangled);
 
 #if defined(DEBUG)
 #   if defined(__GNUC__)
-#	    define TRACE(name, fmt, ...) __impl::util::Logger::__Trace(name, \
+#	    define TRACE(name, fmt, ...) do { __impl::util::Logger::__Trace(name, \
                                                                    __PRETTY_FUNCTION__, \
                                                                    __extract_file_name(__FILE__), __LINE__, \
                                                                    ::config::params::DebugUseRealTID? __impl::util::GetThreadId(): __impl::core::thread::get_debug_tid(), \
                                                                    fmt, \
-                                                                   ##__VA_ARGS__)
+                                                                   ##__VA_ARGS__); } while (0)
 #   elif defined(_MSC_VER)
 #	    define TRACE(name, fmt, ...) __impl::util::Logger::__Trace(name, \
                                                                    __FUNCTION__, \
@@ -158,6 +158,7 @@ private:
 #ifdef USE_CXX0X
     template <typename ...Types>
 	static void Log(const char *name, const char *tag, const char *fmt, Types ...list);
+	static void Log(const char *name, const char *tag, const char *fmt);
 #else // TODO: remove this as soon as the other platforms support variadic templates
 	static void Log(const char *name, const char *tag, const char *fmt, va_list list);
 #endif // __GNUC__
@@ -179,6 +180,7 @@ public:
 #ifdef USE_CXX0X
     template <typename ...Types>
     static void __Trace(const char *name, const char *funcName, const char *fileName, unsigned lineNumber, THREAD_T tid, const char *fmt, Types ...list);
+    static void __Trace(const char *name, const char *funcName, const char *fileName, unsigned lineNumber, THREAD_T tid, const char *fmt);
     template <typename ...Types>
     static void __Assertion(bool c, const char * cStr, const char *fmt, Types ...list);
 #else // TODO: remove this as soon as the other platforms support variadic templates

@@ -60,12 +60,10 @@ kernel::launch::get_arg_list()
 }
 
 inline
-kernel::launch *
+kernel::launch_ptr
 kernel::launch_config(vdevice &dev, hal::kernel_t::config &conf, hal::kernel_t::arg_list &args, hal::stream_t &stream, gmacError_t &err)
 {
-    launch *ret = NULL;
-
-    ret = new launch(*this, dev, conf, args, stream, err);
+    launch_ptr ret(new launch(*this, dev, conf, args, stream, err)); 
 
     return ret;
 }

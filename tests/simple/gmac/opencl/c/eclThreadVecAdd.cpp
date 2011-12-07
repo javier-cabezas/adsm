@@ -71,13 +71,21 @@ void *addVector(void *ptr)
 	printTime(&s, &t, "Run: ", "\n");
 
 	getTime(&s);
-	float error = 0;
+	float error = 0.f;
+	float sum_a = 0.f;
+	float sum_b = 0.f;
+	float sum_c = 0.f;
 	for(unsigned i = 0; i < vecSize; i++) {
-		error += (*c)[i] - (a[i] + b[i]);
+        sum_a += a[i];
+        sum_b += b[i];
+
+        sum_c += (*c)[i];
 	}
+
+    error = sum_c - (sum_a + sum_b);
 	getTime(&t);
 	printTime(&s, &t, "Check: ", "\n");
-	fprintf(stdout, "Error: %.02f\n", error);
+	fprintf(stdout, "Error: %.02f, %.02f = %.02f + %.02f\n", error, sum_c, sum_a, sum_b);
 
     eclReleaseKernel(kernel);
 

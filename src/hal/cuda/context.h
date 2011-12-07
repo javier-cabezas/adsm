@@ -82,7 +82,7 @@ public:
 
     ptr_t get_device_addr_from_pinned(hostptr_t addr);
 
-    const code_repository &get_code_repository();
+    code_repository &get_code_repository();
 
     void set();
 };

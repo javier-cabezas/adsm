@@ -115,10 +115,13 @@ protected:
      * \sa __impl::memory::Block::toHost
      * \sa __impl::memory::Block::toAccelerator
      */
-    gmacError_t coherenceOp(gmacError_t (protocol_interface::*op)(block_ptr));
+    hal::event_t coherenceOp(hal::event_t (protocol_interface::*op)(block_ptr, gmacError_t &),
+                             gmacError_t &err);
 
     template <typename T>
-    gmacError_t coherenceOp(gmacError_t (protocol_interface::*op)(block_ptr, T &), T &param);
+    hal::event_t coherenceOp(hal::event_t (protocol_interface::*op)(block_ptr, T &, gmacError_t &),
+                             T &param,
+                             gmacError_t &err);
 
 #if 0
     /**
@@ -258,7 +261,7 @@ public:
      * \param prot Access type of the previous execution on the accelerator
      * \return Error code
      */
-    gmacError_t acquire(GmacProtection &prot);
+    hal::event_t acquire(GmacProtection &prot, gmacError_t &err);
 
 #ifdef USE_VM
     /**
@@ -273,7 +276,7 @@ public:
      *
      * \return Error code
      */
-    gmacError_t release();
+    hal::event_t release(gmacError_t &err);
 
     /** Tells if the object has been released
      *
@@ -286,21 +289,21 @@ public:
      *
      * \return Error code
      */
-    gmacError_t releaseBlocks();
+    hal::event_t releaseBlocks(gmacError_t &err);
 
     /**
      * Ensures that the object host memory contains an updated copy of the data
      *
      * \return Error code
      */
-    gmacError_t toHost();
+    hal::event_t toHost(gmacError_t &err);
 
     /**
      * Ensures that the object accelerator memory contains an updated copy of the data
      *
      * \return Error code
      */
-    gmacError_t toAccelerator();
+    hal::event_t toAccelerator(gmacError_t &err);
 
 
     /**
@@ -319,7 +322,7 @@ public:
      * \param addr Host memory address causing the fault
      * \return Error code
      */
-    TESTABLE gmacError_t signal_read(hostptr_t addr);
+    TESTABLE hal::event_t signal_read(hostptr_t addr, gmacError_t &err);
 
     /**
      * Signal handler for faults caused due to memory writes
@@ -327,7 +330,7 @@ public:
      * \param addr Host memory address causing the fault
      * \return Error code
      */
-    TESTABLE gmacError_t signal_write(hostptr_t addr);
+    TESTABLE hal::event_t signal_write(hostptr_t addr, gmacError_t &err);
 
 #if 0
     /**

@@ -91,8 +91,7 @@ public:
     };
 
     class GMAC_LOCAL launch :
-        public hal::detail::kernel_t<backend_traits, implementation_traits>::launch,
-        public util::unique<launch> {
+        public hal::detail::kernel_t<backend_traits, implementation_traits>::launch {
  
         event_t execute(unsigned nevents, const cl_event *events, gmacError_t &err);
 
@@ -100,21 +99,15 @@ public:
         const void *params_[256];
     public:
         launch(kernel_t &parent, config &conf, arg_list &args, stream_t &stream);
-        ~launch()
-        {
-            TRACE(LOCAL, "Deleting launch "FMT_ID, this->get_print_id());
-        }
 
         event_t execute(list_event_detail &dependencies, gmacError_t &err);
         event_t execute(event_t event, gmacError_t &err);
         event_t execute(gmacError_t &err);
     };
 
-    typedef util::shared_ptr<launch> launch_ptr;
-
     kernel_t(cl_kernel func, const std::string &name);
 
-    launch_ptr launch_config(Parent::config &config, Parent::arg_list &args, stream_t &stream);
+    launch &launch_config(Parent::config &config, Parent::arg_list &args, stream_t &stream);
 };
 
 }}}

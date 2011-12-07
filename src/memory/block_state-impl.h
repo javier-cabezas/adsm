@@ -148,12 +148,12 @@ block_state<State>::get_device_addr() const
 }
 
 template<typename State>
-inline gmacError_t
-block_state<State>::toHost(unsigned blockOff, size_t count)
+inline hal::event_t
+block_state<State>::to_host(unsigned blockOff, size_t count, gmacError_t &err)
 {
-    gmacError_t ret = gmacSuccess;
+    hal::event_t ret;
 
-    ret = parent_.owner()->copy(hal::ptr_t(this->shadow_ + blockOff),
+    err = parent_.owner()->copy(hal::ptr_t(this->shadow_ + blockOff),
                                 get_device_addr() + blockOff,
                                 count);
 #if 0
@@ -172,14 +172,13 @@ block_state<State>::toHost(unsigned blockOff, size_t count)
 }
 
 template<typename State>
-inline gmacError_t
-block_state<State>::toAccelerator(unsigned blockOff, size_t count)
+inline hal::event_t
+block_state<State>::to_accelerator(unsigned blockOff, size_t count, gmacError_t &err)
 {
-    gmacError_t ret = gmacSuccess;
-
-    parent_.owner()->copy_async(get_device_addr() + blockOff,
-                                hal::ptr_t(shadow_ + blockOff),
-                                count, ret);
+    hal::event_t ret;
+    ret = parent_.owner()->copy_async(get_device_addr() + blockOff,
+                                      hal::ptr_t(shadow_ + blockOff),
+                                      count, err);
 #if 0
     // Fast path
     if (owners_.size() == 1) {

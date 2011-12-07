@@ -41,7 +41,10 @@ public:
 
 class GMAC_LOCAL _event_t :
     public hal::detail::_event_t<implementation_traits>,
-    public _event_common_t {
+    public _event_common_t,
+    public gmac::util::mutex<_event_t>,
+    public util::unique<_event_t> {
+
     friend class context_t;
     friend class event_t;
 
@@ -85,7 +88,6 @@ public:
     event_t(event_t &&event) :
         ptrEvent_(std::move(event.ptrEvent_))
     {
-        TRACE(LOCAL, "Per move!");
     }
 #endif
 
@@ -109,8 +111,10 @@ public:
     inline
     event_t &operator=(event_t &&event)
     {
-        TRACE(LOCAL, "= Per move!");
-        ptrEvent_ = std::move(event.ptrEvent_);
+        if (&event != this) {
+            ptrEvent_ = std::move(event.ptrEvent_);
+        }
+
         return *this;
     }
 #endif
@@ -141,7 +145,7 @@ public:
     }
 
     inline
-    void reset()
+    void invalidate()
     {
         ptrEvent_.reset();
     }
@@ -153,8 +157,18 @@ public:
     }
 
     inline
+    _event_t &operator*()
+    {
+        ASSERTION(ptrEvent_);
+
+        return (*ptrEvent_.get());
+    }
+
+    inline
     cl_event &operator()()
     {
+        ASSERTION(ptrEvent_);
+
         return (*ptrEvent_.get())();
     }
 

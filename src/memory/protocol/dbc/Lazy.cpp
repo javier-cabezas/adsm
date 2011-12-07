@@ -14,34 +14,34 @@ lazy_base::~lazy_base()
 {
 }
 
-gmacError_t
-lazy_base::signal_read(block_ptr_impl _block, hostptr_t addr)
+__impl::hal::event_t
+lazy_base::signal_read(block_ptr_impl _block, hostptr_t addr, gmacError_t &err)
 {
 	REQUIRES(_block);
 
     lazy_block_ptr_impl block = __impl::util::static_pointer_cast<lazy_block_impl>(_block);
     //REQUIRES(block.getState() == __impl::memory::protocol::lazy::Invalid);
 
-    gmacError_t ret = parent::signal_read(block, addr);
+    __impl::hal::event_t ret = parent::signal_read(block, addr, err);
 
     return ret;
 }
 
-gmacError_t
-lazy_base::signal_write(block_ptr_impl _block, hostptr_t addr)
+__impl::hal::event_t
+lazy_base::signal_write(block_ptr_impl _block, hostptr_t addr, gmacError_t &err)
 {
 	REQUIRES(_block);
 
 	lazy_block_ptr_impl block = __impl::util::static_pointer_cast<lazy_block_impl>(_block);
-    gmacError_t ret = parent::signal_write(block, addr);
+    __impl::hal::event_t ret = parent::signal_write(block, addr, err);
 
     ENSURES(block->getState() == __impl::memory::protocol::lazy_types::Dirty);
 
     return ret;
 }
 
-gmacError_t
-lazy_base::acquire(block_ptr_impl _block, GmacProtection &prot)
+__impl::hal::event_t
+lazy_base::acquire(block_ptr_impl _block, GmacProtection &prot, gmacError_t &err)
 {
 	REQUIRES(_block);
 
@@ -50,7 +50,7 @@ lazy_base::acquire(block_ptr_impl _block, GmacProtection &prot)
     REQUIRES(block->getState() == __impl::memory::protocol::lazy_types::ReadOnly ||
              block->getState() == __impl::memory::protocol::lazy_types::Invalid);
 
-    gmacError_t ret = parent::acquire(block, prot);
+    __impl::hal::event_t ret = parent::acquire(block, prot, err);
 
     ENSURES((prot != GMAC_PROT_READWRITE && prot != GMAC_PROT_WRITE) ||
             block->getState() == __impl::memory::protocol::lazy_types::Invalid);
@@ -58,12 +58,12 @@ lazy_base::acquire(block_ptr_impl _block, GmacProtection &prot)
     return ret;
 }
 
-gmacError_t
-lazy_base::release(block_ptr_impl _block)
+__impl::hal::event_t
+lazy_base::release(block_ptr_impl _block, gmacError_t &err)
 {
 	REQUIRES(_block);
 	lazy_block_ptr_impl block = __impl::util::static_pointer_cast<lazy_block_impl>(_block);
-    gmacError_t ret = parent::release(block);
+    __impl::hal::event_t ret = parent::release(block, err);
 
     ENSURES(block->getState() == __impl::memory::protocol::lazy_types::ReadOnly ||
             block->getState() == __impl::memory::protocol::lazy_types::Invalid);
@@ -71,22 +71,22 @@ lazy_base::release(block_ptr_impl _block)
     return ret;
 }
 
-gmacError_t
-lazy_base::releaseAll()
+__impl::hal::event_t
+lazy_base::releaseAll(gmacError_t &err)
 {
-    gmacError_t ret = parent::releaseAll();
+    __impl::hal::event_t ret = parent::releaseAll(err);
 
     ENSURES(parent::dbl_.size() == 0);
 
     return ret;
 }
 
-gmacError_t
-lazy_base::toHost(block_ptr_impl _block)
+__impl::hal::event_t
+lazy_base::toHost(block_ptr_impl _block, gmacError_t &err)
 {
 	REQUIRES(_block);
 	lazy_block_ptr_impl block = __impl::util::static_pointer_cast<lazy_block_impl>(_block);
-    gmacError_t ret = parent::toHost(block);
+    __impl::hal::event_t ret = parent::toHost(block, err);
 
     ENSURES(block->getState() != __impl::memory::protocol::lazy_types::Invalid);
 
@@ -104,10 +104,10 @@ lazy_base::memset(const block_ptr_impl block, size_t blockOffset, int v, size_t 
     return ret;
 }
 
-gmacError_t
-lazy_base::flushDirty()
+__impl::hal::event_t
+lazy_base::flushDirty(gmacError_t &err)
 {
-    gmacError_t ret = parent::flushDirty();
+    __impl::hal::event_t ret = parent::flushDirty(err);
 
     ENSURES(parent::dbl_.size() == 0);
 

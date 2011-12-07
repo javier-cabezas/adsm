@@ -37,14 +37,6 @@ buffer_t<I>::get_size() const
 
 template <typename I>
 inline
-void
-list_event<I>::add_event(typename I::event event) 
-{
-    Parent::push_back(event);
-}
-
-template <typename I>
-inline
 queue_event<I>::queue_event() :
     Lock("queue_event")
 {

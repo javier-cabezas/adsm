@@ -1,8 +1,16 @@
+#include "kernels/kernels.h"
+
 #include "types.h"
 
 #include "device.h"
 
 namespace __impl { namespace hal { namespace opencl {
+
+context_t::context_t(cl_context ctx, device &dev) :
+    Parent(ctx, dev)
+{
+    TRACE(LOCAL, "context<"FMT_ID">: creating context: ", get_print_id());
+}
 
 _event_t *
 context_t::get_new_event(bool async,_event_t::type t)
@@ -10,14 +18,26 @@ context_t::get_new_event(bool async,_event_t::type t)
     _event_t *ret = queueEvents_.pop();
     if (ret == NULL) {
         ret = new _event_t(async, t, *this);
-        TRACE(LOCAL, "Allocating new event %p", ret);
+        TRACE(LOCAL, "context<"FMT_ID">: allocating new event "FMT_ID,
+                     get_print_id(), ret->get_print_id());
     } else {
         ret->reset(async, t);
-        TRACE(LOCAL, "Reusing event %p", ret);
+        TRACE(LOCAL, "context<"FMT_ID">: reusing event "FMT_ID,
+                     get_print_id(), ret->get_print_id());
     }
 
     return ret;
 }
+
+void
+context_t::dispose_event(_event_t &event)
+{
+    TRACE(LOCAL, "context<"FMT_ID">: disposing event "FMT_ID,
+                 get_print_id(), event.get_print_id());
+    queueEvents_.push(event);
+}
+
+
 
 event_t 
 context_t::copy_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
@@ -81,14 +101,14 @@ context_t::copy_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stre
         TRACE(LOCAL, "H (%p) -> H (%p) copy ("FMT_SIZE" bytes) on stream: "FMT_ID, src.get_host_addr(), dst.get_host_addr(), count, stream.get_print_id());
 
         res = CL_SUCCESS;
-        memcpy(dst.get_host_addr(), src.get_host_addr(), count);
+        ::memcpy(dst.get_host_addr(), src.get_host_addr(), count);
     } else {
         FATAL("Unhandled case");
     }
 
     err = error(res);
     if (err != gmacSuccess) {
-        ret.reset();
+        ret.invalidate();
     } else {
         stream.set_last_event(ret);
     }
@@ -130,7 +150,7 @@ context_t::copy_backend(ptr_t dst, device_input &input, size_t count, stream_t &
 
         err = error(res);
         if (err != gmacSuccess) {
-            ret.reset();
+            ret.invalidate();
         } else {
             stream.set_last_event(ret);
         }
@@ -172,16 +192,18 @@ context_t::copy_backend(device_output &output, const ptr_t src, size_t count, st
                                         nevents, events, &ret());
 
 
-    bool ok = output.write(host, count);
+    if (err == gmacSuccess) {
+        bool ok = output.write(host, count);
 
-    if (ok) {
-        err = error(res);
-    } else {
-        err = gmacErrorIO;
+        if (ok) {
+            err = error(res);
+        } else {
+            err = gmacErrorIO;
+        }
     }
 
     if (err != gmacSuccess) {
-        ret.reset();
+        ret.invalidate();
     } else {
         stream.set_last_event(ret);
     }
@@ -243,14 +265,9 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
                      src.get_host_addr(),
                      dst.get_device_addr(),
                      count, stream.get_print_id());
-        //event_t last = stream.get_last_event();
-        //if (last.is_valid()) {
-        //    last.sync();
-        //}
-
         buffer_t *buffer = get_output_buffer(count, stream, ret);
 
-        memcpy(buffer->get_addr(), src.get_host_addr(), count);
+        ::memcpy(buffer->get_addr(), src.get_host_addr(), count);
 
         res = clEnqueueWriteBuffer(stream(), dst.get_device_addr(), CL_FALSE,
                                              dst.get_offset(), count,
@@ -267,11 +284,6 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
                      src.get_device_addr(),
                      dst.get_host_addr(),
                      count, stream.get_print_id());
-        event_t last = stream.get_last_event();
-        if (last.is_valid()) {
-            last.sync();
-        }
-
         buffer_t *buffer = get_input_buffer(count, stream, ret);
 
         res = clEnqueueReadBuffer(stream(), dst.get_device_addr(), CL_FALSE,
@@ -280,7 +292,7 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
                                             nevents, events, &ret());
 
         // Perform memcpy after asynchronous copy
-        ret.add_trigger(util::do_func(memcpy, buffer->get_addr(), src.get_host_addr(), count));
+        ret.add_trigger(util::do_func(::memcpy, buffer->get_addr(), src.get_host_addr(), count));
         // Release buffer after memcpy
         //ret.add_trigger(util::do_member(stream_t::put_buffer, &stream, buffer));
     } else if (dst.is_host_ptr() &&
@@ -291,12 +303,12 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
                      count, stream.get_print_id());
 
         res = CL_SUCCESS;
-        memcpy(dst.get_host_addr(), src.get_host_addr(), count);
+        ::memcpy(dst.get_host_addr(), src.get_host_addr(), count);
     }
 
     err = error(res);
     if (err != gmacSuccess) {
-        ret.reset();
+        ret.invalidate();
     } else {
         stream.set_last_event(ret);
     }
@@ -339,7 +351,7 @@ context_t::copy_async_backend(ptr_t dst, device_input &input, size_t count, stre
 
         err = error(res);
         if (err != gmacSuccess) {
-            ret.reset();
+            ret.invalidate();
         } else {
             stream.set_last_event(ret);
             ret.add_trigger(do_member(context_t::put_memory, this, mem, count));
@@ -379,16 +391,18 @@ context_t::copy_async_backend(device_output &output, const ptr_t src, size_t cou
                                         host,
                                         nevents, events, &ret());
 
-    bool ok = output.write(host, count);
+    if (err == gmacSuccess) {
+        bool ok = output.write(host, count);
 
-    if (ok) {
-        err = error(res);
-    } else {
-        err = gmacErrorIO;
+        if (ok) {
+            err = error(res);
+        } else {
+            err = gmacErrorIO;
+        }
     }
 
     if (err != gmacSuccess) {
-        ret.reset();
+        ret.invalidate();
     } else {
         stream.set_last_event(ret);
     }
@@ -405,75 +419,88 @@ context_t::copy_async_backend(device_output &output, const ptr_t src, size_t cou
 event_t 
 context_t::memset_backend(ptr_t dst, int c, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
-    FATAL("memset not implemented yet");
-    return event_t();
+    FATAL("Not implemented");
 #if 0
-    list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
+    kernel_t *kernel = get_code_repository().get_kernel(gmac_memset);
+    ASSERTION(kernel, "memset kernel not found");
 
-    if (dependencies != NULL) {
-        err = dependencies->sync();
+    kernel_t::arg_list args;
+    cl_mem devptr = dst.get_device_addr();
+    unsigned offset = unsigned(dst.get_offset());
+    unsigned ucount = unsigned(count);
 
-        if (err != gmacSuccess) {
-            return event_t();
-        }
-    }
+    gmacError_t err2;
+    err2 = args.set_arg(*kernel, &devptr, sizeof(cl_mem), 0);
+    ASSERTION(err2 == gmacSuccess, "error setting parameter for memset");
+    err2 = args.set_arg(*kernel, &offset, sizeof(unsigned), 1);
+    ASSERTION(err2 == gmacSuccess, "error setting parameter for memset");
+    err2 = args.set_arg(*kernel, &ucount, sizeof(unsigned), 2);
+    ASSERTION(err2 == gmacSuccess, "error setting parameter for memset");
 
-    set();
+    size_t global = count / 4;
+    kernel_t::config config(1, NULL, &global, NULL);
 
-    TRACE(LOCAL, "memset ("FMT_SIZE" bytes) on stream: %p", count, stream());
-    event_t ret(false, _event_t::Transfer, *this);
+    kernel_t::launch_ptr launch = kernel->launch_config(config, args, stream);
+#endif
 
-    ret.begin(stream);
-    CUresult res = cuMemsetD8(dst.get_device_addr(), (unsigned char)c, count);
-    ret.end();
-
-    err = error(res);
-
-    if (err != gmacSuccess) {
-        ret.reset();
+    event_t ret;
+#if 0
+    if (_dependencies) {
+        ret = launch->execute(*_dependencies, err2);
     } else {
-        stream.set_last_event(ret);
+        ret = launch->execute(err2);
     }
+
+    ASSERTION(err2 == gmacSuccess, "error launching memset");
+    err2 = ret.sync();
+    ASSERTION(err2 == gmacSuccess, "error launching memset");
+#endif
+
+    stream.set_last_event(ret);
+
+    err = gmacSuccess;
 
     return ret;
-#endif
 }
 
 event_t 
 context_t::memset_async_backend(ptr_t dst, int c, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
-    FATAL("memset_async not implemented yet");
-    return event_t();
-#if 0
-    list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
+    kernel_t *kernel = get_code_repository().get_kernel(gmac_memset);
+    ASSERTION(kernel, "memset kernel not found");
 
-    if (dependencies != NULL) {
-        err = dependencies->sync();
+    kernel_t::arg_list args;
+    cl_mem devptr = dst.get_device_addr();
+    unsigned offset = unsigned(dst.get_offset());
+    unsigned ucount = unsigned(count);
 
-        if (err != gmacSuccess) {
-            return event_t();
-        }
-    }
+    gmacError_t err2;
+    err2 = args.set_arg(*kernel, &devptr, sizeof(cl_mem), 0);
+    ASSERTION(err2 == gmacSuccess, "error setting parameter for memset");
+    err2 = args.set_arg(*kernel, &offset, sizeof(unsigned), 1);
+    ASSERTION(err2 == gmacSuccess, "error setting parameter for memset");
+    err2 = args.set_arg(*kernel, &ucount, sizeof(unsigned), 2);
+    ASSERTION(err2 == gmacSuccess, "error setting parameter for memset");
 
-    set();
+    size_t global = count / 4;
+    kernel_t::config config(1, NULL, &global, NULL);
 
-    TRACE(LOCAL, "memset_async ("FMT_SIZE" bytes) on stream: %p", count, stream());
-    event_t ret(true, _event_t::Transfer, *this);
+    kernel_t::launch_ptr launch = kernel->launch_config(config, args, stream);
 
-    ret.begin(stream);
-    CUresult res = cuMemsetD8Async(dst.get_device_addr(), (unsigned char)c, count, stream());
-    ret.end();
-
-    err = error(res);
-
-    if (err != gmacSuccess) {
-        ret.reset();
+    event_t ret;
+    if (_dependencies) {
+        // ret = launch->execute(*_dependencies, err2);
     } else {
-        stream.set_last_event(ret);
+        //ret = launch->execute(err2);
     }
+
+    ASSERTION(err2 == gmacSuccess, "error executing memset");
+    //err2 = ret.sync();
+    //ASSERTION(err2 == gmacSuccess, "error executing memset");
+
+    err = gmacSuccess;
 
     return ret;
-#endif
 }
 
 ptr_t
@@ -531,10 +558,13 @@ context_t::alloc_buffer(size_t size, GmacProtection hint, stream_t &stream, gmac
     cl_mem_flags flags = CL_MEM_ALLOC_HOST_PTR;
     if (hint == GMAC_PROT_WRITE) {
         flags |= CL_MEM_READ_ONLY;
+        TRACE(LOCAL, "alloc out buffer on context "FMT_ID, this->get_print_id());
     } else if (hint == GMAC_PROT_READ) {
         flags |= CL_MEM_WRITE_ONLY;
+        TRACE(LOCAL, "alloc in  buffer on context "FMT_ID, this->get_print_id());
     } else {
         flags |= CL_MEM_READ_WRITE;
+        TRACE(LOCAL, "alloc inout buffer on context "FMT_ID, this->get_print_id());
     }
 
     cl_mem devPtr = clCreateBuffer((*this)(), flags, size, NULL, &res);
@@ -550,6 +580,8 @@ context_t::alloc_buffer(size_t size, GmacProtection hint, stream_t &stream, gmac
             mapFlags |= CL_MAP_READ | CL_MAP_WRITE;
         }
 
+        TRACE(LOCAL, "mapping buffer on context "FMT_ID" using stream "FMT_ID, this->get_print_id(), stream.get_print_id());
+
         hostPtr = (hostptr_t) clEnqueueMapBuffer(stream(), devPtr, CL_TRUE, mapFlags, 0, size, 0, NULL, NULL, &res);
     }
 
@@ -557,6 +589,8 @@ context_t::alloc_buffer(size_t size, GmacProtection hint, stream_t &stream, gmac
     if (res == CL_SUCCESS) {
         ret = new buffer_t(hostptr_t(hostPtr), devPtr, size, *this);
     }
+
+    ASSERTION(res == CL_SUCCESS);
 
     err = error(res);
 
@@ -587,5 +621,24 @@ context_t::free_host_pinned(ptr_t ptr)
     return gmacErrorFeatureNotSupported;
 }
 
+code_repository &
+context_t::get_code_repository()
+{
+    code_repository *repository;
+    platform &plat = get_device().get_platform();
+    map_platform_repository::iterator it = Modules_.find(&plat);
+    if (it == Modules_.end()) {
+        gmacError_t err;
+        code_repository tmp = module_descriptor::create_modules(plat, err);
+        ASSERTION(err == gmacSuccess);
+        repository = &Modules_.insert(map_platform_repository::value_type(&plat, tmp)).first->second;
+    } else {
+        repository = &it->second;
+    }
+
+    return *repository;
+}
+
 }}}
+
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

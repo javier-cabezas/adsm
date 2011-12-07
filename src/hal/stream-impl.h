@@ -10,6 +10,7 @@ stream_t<B, I>::stream_t(typename B::stream stream, context_parent_t &context) :
     lockBuffer_("lock_buffer"),
     buffer_(NULL),
 #endif
+    gmac::util::spinlock<stream_t<B, I> >("stream_t"),
     stream_(stream),
     context_(context)
 {
@@ -37,6 +38,28 @@ const typename B::stream &
 stream_t<B, I>::operator()() const
 {
     return stream_;
+}
+
+template <typename B, typename I>
+inline
+void
+stream_t<B, I>::set_last_event(typename I::event event)
+{
+    this->lock();
+    lastEvent_ = event;
+    this->unlock();
+}
+
+template <typename B, typename I>
+inline
+typename I::event
+stream_t<B, I>::get_last_event()
+{
+    typename I::event ret;
+    this->lock();
+    ret = lastEvent_;
+    this->unlock();
+    return ret;
 }
 
 } // namespace detail

@@ -289,13 +289,14 @@ manager::acquireObjects(core::address_space_ptr aspace, const ListAddr &addrs)
 {
     trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
+    hal::event_t evt;
 
     memory::map_object &map = aspace->get_object_map();
     if (addrs.size() == 0) {
-        if (map.hasModifiedObjects() && map.releasedObjects()) {
+        if (map.releasedObjects()) {
             TRACE(LOCAL,"Acquiring Objects");
             GmacProtection prot = GMAC_PROT_READWRITE;
-            ret = map.forEachObject<GmacProtection>(&object::acquire, prot);
+            evt = map.forEachObject<GmacProtection>(&object::acquire, prot, ret);
             map.acquireObjects();
         }
     } else {
@@ -313,7 +314,7 @@ manager::acquireObjects(core::address_space_ptr aspace, const ListAddr &addrs)
             } else {
                 if (obj->is_released()) {
                     GmacProtection prot = it->second;
-                    ret = obj->acquire(prot);
+                    evt = obj->acquire(prot, ret);
                     ASSERTION(ret == gmacSuccess);
                     obj->decRef();
                 }
@@ -329,17 +330,18 @@ manager::releaseObjects(core::address_space_ptr aspace, const ListAddr &addrs)
 {
     trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
+    hal::event_t evt;
 
     memory::map_object &map = aspace->get_object_map();
     if (addrs.size() == 0) { // Release all objects
         TRACE(LOCAL,"Releasing Objects");
         if (map.hasModifiedObjects()) {
             // Mark objects as released
-            ret = map.forEachObject(&object::release);
+            evt = map.forEachObject(&object::release, ret);
             ASSERTION(ret == gmacSuccess);
             // Flush protocols
             // 1. Mode protocol
-            ret = map.getProtocol().releaseAll();
+            evt = map.getProtocol().releaseAll(ret);
             ASSERTION(ret == gmacSuccess);
 
             map.releaseObjects();
@@ -359,7 +361,7 @@ manager::releaseObjects(core::address_space_ptr aspace, const ListAddr &addrs)
             } else {
                 // Release all the blocks in the object
                 if (obj->is_released() == false) {
-                    ret = obj->releaseBlocks();
+                    evt = obj->releaseBlocks(ret);
                     ASSERTION(ret == gmacSuccess);
                     obj->decRef();
                 }
@@ -494,7 +496,8 @@ manager::signal_read(core::address_space_ptr aspace, hostptr_t addr)
         return false;
     }
     TRACE(LOCAL,"Read access for object %p: %p", obj->addr(), addr);
-    gmacError_t err = obj->signal_read(addr);
+    gmacError_t err;
+    obj->signal_read(addr, err);
     ASSERTION(err == gmacSuccess);
     obj->decRef();
     trace::ExitCurrentFunction();
@@ -523,7 +526,9 @@ manager::signal_write(core::address_space_ptr aspace, hostptr_t addr)
         return false;
     }
     TRACE(LOCAL,"Write access for object %p: %p", obj->addr(), addr);
-    if(obj->signal_write(addr) != gmacSuccess) ret = false;
+    gmacError_t err;
+    obj->signal_write(addr, err);
+    if (err != gmacSuccess) ret = false;
     obj->decRef();
     trace::ExitCurrentFunction();
     return ret;
@@ -717,10 +722,11 @@ gmacError_t
 manager::flushDirty(core::address_space_ptr aspace)
 {
     gmacError_t ret;
+    hal::event_t evt;
     TRACE(LOCAL,"Flushing Objects");
     // Release per-mode objects
     memory::map_object &map = aspace->get_object_map();
-    ret = map.getProtocol().flushDirty();
+    evt = map.getProtocol().flushDirty(ret);
 
     return ret;
 }

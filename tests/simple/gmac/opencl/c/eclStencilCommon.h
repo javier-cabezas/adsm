@@ -212,6 +212,7 @@ do_stencil(void * ptr)
         }
     }
 
+
     if (descr->gpus > 1) {
         barrier_wait(&barrier);
     }

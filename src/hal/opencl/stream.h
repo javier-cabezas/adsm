@@ -13,15 +13,17 @@ namespace __impl { namespace hal { namespace opencl {
 
 class GMAC_LOCAL stream_t :
     public hal::detail::stream_t<backend_traits, implementation_traits> {
+
     typedef hal::detail::stream_t<backend_traits, implementation_traits> Parent;
 
     event_t lastEvent_;
 
+    stream_t() = delete;
+    stream_t(const stream_t &stream) = delete;
+
+    stream_t &operator=(const stream_t &stream) = delete;
 public:
     stream_t(cl_command_queue stream, context_t &context);
-
-    event_t get_last_event();
-    void set_last_event(event_t event);
 
     context_t &get_context();
 

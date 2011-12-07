@@ -94,13 +94,15 @@ public:
         const arg_list &get_arg_list();
     };
 
+    typedef util::shared_ptr<launch> launch_ptr;
+
     typedef hal::kernel_t::config config;
 
     kernel(const hal::kernel_t &parent);
 
     const std::string &get_name() const { return hal::kernel_t::get_name(); }
 
-    launch *launch_config(vdevice &dev, hal::kernel_t::config &conf, hal::kernel_t::arg_list &args, hal::stream_t &stream, gmacError_t &err);
+    launch_ptr launch_config(vdevice &dev, hal::kernel_t::config &conf, hal::kernel_t::arg_list &args, hal::stream_t &stream, gmacError_t &err);
 };
 
 }}}

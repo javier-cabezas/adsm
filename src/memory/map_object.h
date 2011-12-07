@@ -155,14 +155,6 @@ public:
     virtual bool removeObject(object &obj);
 
     /**
-     * Tells if an object belongs to the map
-     *
-     * \param obj Object to be checked
-     * \return True if the object belongs to the map
-     */
-    bool hasObject(object &obj) const;
-
-    /**
      * Find the firs object in a memory range
      *
      * \param addr Starting address of the memory range where the object is
@@ -189,7 +181,7 @@ public:
      * \sa __impl::memory::object::toAccelerator
      * \return Error code
      */
-    gmacError_t forEachObject(gmacError_t (object::*f)(void));
+    hal::event_t forEachObject(hal::event_t (object::*f)(gmacError_t &), gmacError_t &err);
 
     /**
      * Execute an operation on all the objects in the map passing an argument
@@ -200,7 +192,7 @@ public:
      * \return Error code
      */
     template <typename T>
-    gmacError_t forEachObject(gmacError_t (object::*f)(T &), T &p);
+    hal::event_t forEachObject(hal::event_t (object::*f)(T &, gmacError_t &), T &p, gmacError_t &err);
 
 #ifdef DEBUG
     gmacError_t dumpObjects(const std::string &dir, std::string prefix, protocol::common::Statistic stat) const;

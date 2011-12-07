@@ -6,12 +6,24 @@
 namespace __impl { namespace hal { namespace opencl {
 
 inline
+list_event::~list_event()
+{
+    for (Parent::iterator it  = Parent::begin();
+                          it != Parent::end();
+                          it++) {
+        cl_int res = clReleaseEvent((*it)());
+        ASSERTION(res == CL_SUCCESS);
+    }
+}
+
+inline
 gmacError_t
 list_event::sync()
 {
     cl_event *evs = get_event_array();
 
     cl_int res = clWaitForEvents(Parent::size(), evs);
+    set_synced();
 
     return error(res);
 }
@@ -50,6 +62,18 @@ size_t
 list_event::size() const
 {
     return Parent::size(); 
+}
+
+inline
+void
+list_event::add_event(event_t event) 
+{
+    locker::lock(*event);
+    cl_event ev = event();
+    cl_int res = clRetainEvent(ev);
+    ASSERTION(res == CL_SUCCESS);
+    Parent::push_back(event);
+    locker::unlock(*event);
 }
 
 inline

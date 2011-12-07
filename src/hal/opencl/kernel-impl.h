@@ -10,11 +10,13 @@ kernel_t::kernel_t(cl_kernel func, const std::string &name) :
 }
 
 inline 
-kernel_t::launch &
+kernel_t::launch_ptr
 kernel_t::launch_config(Parent::config &conf, Parent::arg_list &args, stream_t &stream)
 {
-    return *(new launch(*this, (kernel_t::config &) conf,
-                               (kernel_t::arg_list &) args, stream));
+    launch_ptr ret(new launch(*this, (kernel_t::config &) conf,
+                              (kernel_t::arg_list &) args, stream));
+
+    return ret;
 }
 
 inline
@@ -95,25 +97,32 @@ kernel_t::launch::execute(unsigned nevents, const cl_event *events, gmacError_t 
 {
     cl_int res;
 
-    const size_t *dimsGlobal = get_config().get_dims_global();
-    const size_t *dimsGroup = get_config().get_dims_group();
+    const config &conf = get_config();
 
-    TRACE(LOCAL, "kernel launch on stream: %p", get_stream()());
+    const size_t *dimsGlobal = conf.get_dims_global();
+    const size_t *dimsGroup  = conf.get_dims_group();
+
+    TRACE(LOCAL, "kernel_launch<"FMT_ID">: launch on stream<"FMT_ID">",
+                 get_print_id(), get_stream().get_print_id());
     event_t ret(true, _event_t::Kernel, get_stream().get_context());
 
     ret.begin(get_stream());
-    res = clEnqueueNDRangeKernel(get_stream()(),
-                                 get_kernel()(),
-                                 get_config().get_ndims(),
+    cl_command_queue &stream = get_stream()();
+    const cl_kernel &kernel = get_kernel()();
+    cl_event  &ev     = ret();
+
+    res = clEnqueueNDRangeKernel(stream,
+                                 kernel,
+                                 conf.get_ndims(),
                                  NULL,
                                  dimsGlobal,
                                  dimsGroup,
-                                 nevents, events, &ret());
+                                 nevents, events, &ev);
 
     err = error(res);
 
     if (err != gmacSuccess) {
-        ret.reset();
+        ret.invalidate();
     } else {
         get_stream().set_last_event(ret);
     }

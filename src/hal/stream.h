@@ -97,7 +97,9 @@ public:
 
 template <typename B, typename I>
 class GMAC_LOCAL stream_t :
-    public util::gmac_base<stream_t<B, I> > {
+    public util::gmac_base<stream_t<B, I> >,
+    public gmac::util::spinlock<stream_t<B, I> > {
+
     typedef typename I::context context_parent_t;
     friend class I::context;
 
@@ -116,6 +118,8 @@ protected:
     typename B::stream stream_;
     context_parent_t &context_;
 
+    typename I::event lastEvent_;
+
     stream_t(typename B::stream stream, context_parent_t &context);
 
 public:
@@ -127,6 +131,9 @@ public:
     context_parent_t &get_context();
     typename B::stream &operator()();
     const typename B::stream &operator()() const;
+
+    typename I::event get_last_event();
+    void set_last_event(typename I::event event);
 
     virtual state query() = 0;
     virtual gmacError_t sync() = 0;
