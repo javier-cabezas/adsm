@@ -94,13 +94,13 @@ gmacError_t error(CUresult err)
         __GMAC_ERROR(CUDA_ERROR_OUT_OF_MEMORY, gmacErrorMemoryAllocation);
         __GMAC_ERROR(CUDA_ERROR_NOT_INITIALIZED, gmacErrorNotReady);
         __GMAC_ERROR(CUDA_ERROR_DEINITIALIZED, gmacErrorNotReady);
-        __GMAC_ERROR(CUDA_ERROR_NO_DEVICE, gmacErrorNoAccelerator);
-        __GMAC_ERROR(CUDA_ERROR_INVALID_DEVICE, gmacErrorInvalidAccelerator);
-        __GMAC_ERROR(CUDA_ERROR_INVALID_IMAGE, gmacErrorInvalidAcceleratorFunction);
+        __GMAC_ERROR(CUDA_ERROR_NO_DEVICE, gmacErrorNoDevice);
+        __GMAC_ERROR(CUDA_ERROR_INVALID_DEVICE, gmacErrorInvalidDevice);
+        __GMAC_ERROR(CUDA_ERROR_INVALID_IMAGE, gmacErrorInvalidDeviceFunction);
         __GMAC_ERROR(CUDA_ERROR_INVALID_CONTEXT, gmacErrorApiFailureBase);
         __GMAC_ERROR(CUDA_ERROR_CONTEXT_ALREADY_CURRENT, gmacErrorApiFailureBase);
         __GMAC_ERROR(CUDA_ERROR_ALREADY_MAPPED, gmacErrorMemoryAllocation);
-        __GMAC_ERROR(CUDA_ERROR_NO_BINARY_FOR_GPU, gmacErrorInvalidAcceleratorFunction);
+        __GMAC_ERROR(CUDA_ERROR_NO_BINARY_FOR_GPU, gmacErrorInvalidDeviceFunction);
         __GMAC_ERROR(CUDA_ERROR_ALREADY_ACQUIRED, gmacErrorApiFailureBase);
         __GMAC_ERROR(CUDA_ERROR_FILE_NOT_FOUND, gmacErrorApiFailureBase);
         __GMAC_ERROR(CUDA_ERROR_INVALID_HANDLE, gmacErrorApiFailureBase);

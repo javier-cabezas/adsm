@@ -14,7 +14,8 @@ typedef hal::detail::device<implementation_traits> hal_device;
 
 class GMAC_LOCAL device :
     public hal_device,
-    public util::unique<device> {
+    public util::unique<device>,
+    public gmac::util::mutex<device> {
     friend class context_t;
 
     typedef hal_device Parent;
@@ -23,6 +24,9 @@ protected:
 
     int major_;
     int minor_;
+
+    GmacDeviceInfo info_;
+    bool isInfoInitialized_;
 
 public:
     device(CUdevice cudaDevice, coherence_domain &coherenceDomain);
@@ -40,6 +44,8 @@ public:
     size_t get_free_memory() const;
 
     bool has_direct_copy(const Parent &dev) const;
+
+    gmacError_t get_info(GmacDeviceInfo &info);
 };
 
 }}}
