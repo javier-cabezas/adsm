@@ -93,24 +93,9 @@ public:
 
     gmacError_t get_info(GmacDeviceInfo &info);
 
-    platform &get_platform()
-    {
-        return platform_;
-    }
+    platform &get_platform();
 
-    const platform &get_platform() const
-    {
-        return platform_;
-    }
-
-#if 0
-    static void set_devices(std::list<opencl::device *> devices)
-    {
-        device::Devices_ = devices;
-    }
-
-    static std::list<opencl::device *> Devices_;
-#endif
+    const platform &get_platform() const;
 };
 
 }}}

@@ -157,6 +157,119 @@ event_t::event_t(bool async, _event_t::type t, context_t &context) :
 {
 }
 
+inline
+event_t::event_t()
+{
+}
+
+#ifdef USE_CXX0X
+inline
+event_t::event_t(event_t &&event) :
+    ptrEvent_(std::move(event.ptrEvent_))
+{
+}
+#endif
+
+inline
+event_t::event_t(const event_t &event) :
+    ptrEvent_(event.ptrEvent_)
+{
+}
+
+inline
+event_t &
+event_t::operator=(const event_t &event)
+{
+    if (&event != this) {
+        ptrEvent_ = event.ptrEvent_;
+    }
+
+    return *this;
+}
+
+#ifdef USE_CXX0X
+inline
+event_t &
+event_t::operator=(event_t &&event)
+{
+    if (&event != this) {
+        ptrEvent_ = std::move(event.ptrEvent_);
+    }
+
+    return *this;
+}
+#endif
+
+inline
+gmacError_t
+event_t::sync()
+{
+    ASSERTION(bool(ptrEvent_), "Using not valid pointer");
+
+    gmacError_t ret = ptrEvent_->sync();
+    return ret;
+}
+
+inline
+void
+event_t::set_synced()
+{
+    ASSERTION(bool(ptrEvent_), "Using not valid pointer");
+
+    ptrEvent_->set_synced();
+}
+
+inline
+void
+event_t::begin(stream_t &stream)
+{
+    ASSERTION(bool(ptrEvent_), "Using not valid pointer");
+
+    ptrEvent_->begin(stream);
+}
+
+inline
+void
+event_t::invalidate()
+{
+    ptrEvent_.reset();
+}
+
+inline
+bool
+event_t::is_valid() const
+{
+    return bool(ptrEvent_);
+}
+
+inline
+_event_t &
+event_t::operator*()
+{
+    ASSERTION(bool(ptrEvent_), "Using not valid pointer");
+
+    return (*ptrEvent_.get());
+}
+
+inline
+cl_event &
+event_t::operator()()
+{
+    ASSERTION(bool(ptrEvent_), "Using not valid pointer");
+
+    return (*ptrEvent_.get())();
+}
+
+template <typename F>
+inline
+void
+event_t::add_trigger(F fun)
+{
+    ASSERTION(bool(ptrEvent_));
+
+    ptrEvent_->add_trigger(fun);
+}
+
 }}}
 
 #endif /* GMAC_HAL_OPENCL_EVENT_IMPL_H_ */
