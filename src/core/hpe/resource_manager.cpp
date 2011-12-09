@@ -202,6 +202,15 @@ resource_manager::get_device_info(unsigned deviceId, GmacDeviceInfo &info)
 	return devices_[deviceId]->get_info(info);
 }
 
+gmacError_t
+resource_manager::get_device_free_mem(unsigned deviceId, size_t &freeMem)
+{
+	ASSERTION(size_t(deviceId) < devices_.size());
+	freeMem = devices_[deviceId]->get_free_memory();
+
+    return gmacSuccess;
+}
+
 }}}
 
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

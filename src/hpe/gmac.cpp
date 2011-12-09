@@ -99,14 +99,13 @@ gmacGetDeviceInfo(unsigned acc, GmacDeviceInfo *info)
     return ret;
 }
 
-#if 0
 GMAC_API unsigned APICALL
-gmacGetCurrentAcceleratorId()
+gmacGetCurrentDeviceId()
 {
     unsigned ret;
     enterGmac();
     gmac::trace::EnterCurrentFunction();
-    ret = thread::get_current_thread().get_current_virtual_device().get_device().id().val;;
+    ret = thread::get_current_thread().get_current_virtual_device().get_address_space()->get_hal_context().get_device().get_print_id();
     gmac::trace::ExitCurrentFunction();
     exitGmac();
     return ret;
@@ -117,22 +116,13 @@ gmacGetFreeMemory(unsigned acc, size_t *freeMemory)
 {
     enterGmacExclusive();
     gmac::trace::EnterCurrentFunction();
-    size_t total;
-    gmacError_t ret = gmacSuccess;
-    __impl::core::hpe::Process &process = getProcess();
-    if (acc < process.nAccelerators() && freeMemory != NULL) {
-        Accelerator &accelerator = process.getAccelerator(acc);
-        accelerator.getMemInfo(*freeMemory, total);
-    } else {
-        ret = gmacErrorInvalidValue;
-    }
+    gmacError_t ret = get_resource_manager().get_device_free_mem(acc, *freeMemory);
     gmac::trace::ExitCurrentFunction();
     thread::get_current_thread().set_last_error(ret);
     exitGmac();
     return ret;
 }
 
-#endif
 #if 0
 GMAC_API gmacError_t APICALL
 gmacMigrate(unsigned acc)
