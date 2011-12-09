@@ -111,7 +111,7 @@ public:
     inline
     gmacError_t sync()
     {
-        ASSERTION(ptrEvent_);
+        ASSERTION(bool(ptrEvent_));
 
         gmacError_t ret = ptrEvent_->sync();
         return ret;
@@ -120,7 +120,7 @@ public:
     inline
     void begin(stream_t &stream)
     {
-        ASSERTION(ptrEvent_);
+        ASSERTION(bool(ptrEvent_));
 
         ptrEvent_->begin(stream);
     }
@@ -128,7 +128,7 @@ public:
     inline
     void end()
     {
-        ASSERTION(ptrEvent_);
+        ASSERTION(bool(ptrEvent_));
 
         ptrEvent_->end();
     }
@@ -142,14 +142,14 @@ public:
     inline
     bool is_valid() const
     {
-        return ptrEvent_;
+        return bool(ptrEvent_);
     }
 
     template <typename F>
     inline
     void add_trigger(F fun)
     {
-        ASSERTION(ptrEvent_);
+        ASSERTION(bool(ptrEvent_));
 
         ptrEvent_->add_trigger(fun);
     }

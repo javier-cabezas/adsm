@@ -292,6 +292,18 @@ device::get_info(GmacDeviceInfo &info)
 	return gmacSuccess;
 }
 
+platform &
+device::get_platform()
+{
+    return platform_;
+}
+
+const platform &
+device::get_platform() const
+{
+    return platform_;
+}
+
 }}}
 
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

@@ -107,37 +107,11 @@ class GMAC_LOCAL code_repository :
 
     typedef std::list<module *> Parent;
 
-    void insert(module *m)
-    {
-        push_back(m);
-    }
+    void insert(module *m);
 
 public:
-    kernel_t *get_kernel(gmac_kernel_id_t key)
-    {
-        kernel_t *ret = NULL;
-        for (Parent::const_iterator it  = Parent::begin();
-                                    it != Parent::end();
-                                    it++) {
-            ret = (*it)->get_kernel(key);
-            if (ret != NULL) break;
-        }
-
-        return ret;
-    }
-
-    kernel_t *get_kernel(const std::string &name)
-    {
-        kernel_t *ret = NULL;
-        for (Parent::const_iterator it  = Parent::begin();
-                                    it != Parent::end();
-                                    it++) {
-            ret = (*it)->get_kernel(name);
-            if (ret != NULL) break;
-        }
-
-        return ret;
-    }
+    kernel_t *get_kernel(gmac_kernel_id_t key);
+    kernel_t *get_kernel(const std::string &name);
 };
 
 

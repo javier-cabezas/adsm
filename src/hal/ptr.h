@@ -45,190 +45,58 @@ protected:
     C *ctx_;
 
 public:
-    inline
-    _ptr_t(Ptr ptr, C *ctx) :
-        ptrDev_(ptr),
-        ctx_(ctx)
-    {
-    }
+    _ptr_t();
+    _ptr_t(Ptr ptr, C *ctx);
+    _ptr_t(typename Ptr::backend_type value, C *ctx);
+    explicit _ptr_t(hostptr_t ptr);
 
-    inline
-    _ptr_t(typename Ptr::backend_type value, C *ctx) :
-        ptrDev_(value),
-        ctx_(ctx)
-    {
-    }
+    _ptr_t(const _ptr_t &ptr);
 
-    inline
-    explicit _ptr_t(hostptr_t ptr) :
-        ptrDev_(0),
-        ptrHost_(ptr),
-        ctx_(NULL)
-    {
-    }
+    operator bool() const;
 
-    inline
-    _ptr_t() :
-        ptrDev_(0),
-        ptrHost_(0),
-        ctx_(NULL)
-    {
-    }
-
-    inline
-    _ptr_t(const _ptr_t &ptr) :
-        ptrDev_(ptr.ptrDev_),
-        ptrHost_(ptr.ptrHost_),
-        ctx_(ptr.ctx_)
-    {
-    }
-
-    inline
-    operator bool() const
-    {
-        return ctx_ != NULL || ptrHost_ != NULL;
-    }
-
-    inline _ptr_t &
-    operator=(const _ptr_t &ptr)
-    {
-        if (this != &ptr) {
-            ptrDev_ = ptr.ptrDev_;
-            ptrHost_ = ptr.ptrHost_;
-            ctx_  = ptr.ctx_;
-        }
-        return *this;
-    }
-
-    inline bool
-    operator==(const _ptr_t &ptr) const
-    {
-        bool ret;
-        if (ctx_ == NULL) {
-            ret = (ptrHost_ == ptr.ptrHost_);
-        } else {
-            ret = (ptrDev_ == ptr.ptrDev_);
-        }
-        return ret;
-    }
-
-    inline bool
-    operator==(long i) const
-    {
-        bool ret;
-        if (ctx_ == NULL) {
-            ret = (ptrHost_ == hostptr_t(i));
-        } else {
-            ret = (ptrDev_ == i);
-        }
-        return ret;
-    }
-
-    inline bool
-    operator!=(const _ptr_t &ptr) const
-    {
-        bool ret;
-        if (ctx_ == NULL) {
-            ret = (ptrHost_ != ptr.ptrHost_);
-        } else {
-            ret = (ptrDev_ != ptr.ptrDev_);
-        }
-        return ret;
-    }
-
-    inline bool
-    operator!=(long i) const
-    {
-        bool ret;
-        if (ctx_ == NULL) {
-            ret = (ptrHost_ != hostptr_t(i));
-        } else {
-            ret = (ptrDev_ != i);
-        }
-        return ret;
-
-    }
-
-    inline bool
-    operator<(const _ptr_t &ptr) const
-    {
-        bool ret;
-        if (ctx_ == NULL) {
-            return ptrHost_ < ptr.ptrHost_;
-        } else {
-            return ctx_ < ptr.ctx_ || (ctx_ == ptr.ctx_ && ptrDev_ < ptr.ptrDev_);
-        }
-        return ret;
-    }
-
+    _ptr_t &
+    operator=(const _ptr_t &ptr);
+    bool
+    operator==(const _ptr_t &ptr) const;
+    bool
+    operator==(long i) const;
+    bool
+    operator!=(const _ptr_t &ptr) const;
+    bool
+    operator!=(long i) const;
+    bool
+    operator<(const _ptr_t &ptr) const;
     template <typename T>
-    inline _ptr_t &
-    operator+=(const T &off)
-    {
-        if (ctx_ == NULL) {
-            ptrHost_ += off;
-        } else {
-            ptrDev_ += off;
-        }
-        return *this;
-    }
-
+    _ptr_t &
+    operator+=(const T &off);
     template <typename T>
-    inline const _ptr_t
-    operator+(const T &off) const
-    {
-        _ptr_t ret(*this);
-        ret += off;
-        return ret;
-    }
+    const _ptr_t
+    operator+(const T &off) const;
 
-    inline typename Ptr::backend_type
-    get_device_addr() const
-    {
-        ASSERTION(is_device_ptr());
-        return ptrDev_.get();
-    }
+    typename Ptr::backend_type
+    get_device_addr() const;
+    hostptr_t
+    get_host_addr() const;
 
-    inline hostptr_t
-    get_host_addr() const
-    {
-        ASSERTION(is_host_ptr());
-        return ptrHost_;
-    }
+    size_t
+    get_offset() const;
 
-    inline size_t
-    get_offset() const
-    {
-        ASSERTION(is_device_ptr());
-        return ptrDev_.offset();
-    }
+    C *
+    get_context();
 
-    inline C *
-    get_context()
-    {
-        return ctx_;
-    }
+    const C *
+    get_context() const;
 
-    inline const C *
-    get_context() const
-    {
-        return ctx_;
-    }
+    bool
+    is_host_ptr() const;
 
-    inline bool
-    is_host_ptr() const
-    {
-        return ctx_ == NULL;
-    }
-
-    inline bool
-    is_device_ptr() const
-    {
-        return ctx_ != NULL;
-    }
+    bool
+    is_device_ptr() const;
 };
 
 }}
+
+#include "ptr-impl.h"
 
 #endif /* PTR_H */
 
