@@ -9,6 +9,7 @@
 
 #include "hal/types-detail.h"
 
+#include "util/lock.h"
 #include "util/Logger.h"
 #include "util/unique.h"
 
@@ -42,11 +43,11 @@ public:
 class GMAC_LOCAL _event_t :
     public hal::detail::_event_t<implementation_traits>,
     public _event_common_t,
-    public gmac::util::mutex<_event_t>,
     public util::unique<_event_t> {
 
     friend class context_t;
     friend class event_t;
+    friend class list_event;
 
     typedef hal::detail::_event_t<implementation_traits> Parent;
 
@@ -139,12 +140,39 @@ public:
      */
     bool is_valid() const;
 
-    _event_t &operator*();
+    util::shared_ptr<_event_t> operator*();
 
     cl_event &operator()();
 
     template <typename F>
     void add_trigger(F fun);
+};
+
+typedef hal::detail::list_event<implementation_traits> list_event_detail;
+
+class GMAC_LOCAL list_event :
+    public list_event_detail,
+    protected std::list<util::shared_ptr<_event_t> >,
+    public util::locker_rw<hal::detail::_event_t<implementation_traits> > {
+    typedef std::list<util::shared_ptr<_event_t> > Parent;
+
+    friend class context_t;
+    friend class kernel_t;
+
+protected:
+    typedef util::locker_rw<hal::detail::_event_t<implementation_traits> > locker;
+    void set_synced();
+
+    cl_event *get_event_array(stream_t &stream, unsigned &nevents);
+    cl_event *get_event_array(unsigned &nevents);
+public:
+    ~list_event();
+
+    gmacError_t sync();
+
+    size_t size() const;
+
+    void add_event(event_t event);
 };
 
 }}}

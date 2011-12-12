@@ -13,6 +13,9 @@ namespace __impl { namespace hal {
 namespace detail {
 
 template <typename I>
+class list_event;
+
+template <typename I>
 class GMAC_LOCAL buffer_t {
 public:
     enum type {
@@ -53,20 +56,6 @@ public:
         return ret;
     }
 };
-
-template <typename I>
-class GMAC_LOCAL list_event :
-    protected std::list<typename I::event> {
-
-    typedef std::list<typename I::event> Parent;
-public:
-    static list_event empty;
-
-    void add_event(typename I::event event);
-};
-
-template <typename I>
-list_event<I> list_event<I>::empty;
 
 template <typename D, typename B, typename I>
 class GMAC_LOCAL code_repository

@@ -29,8 +29,7 @@ _event_common_t::get_stream()
 
 inline
 _event_t::_event_t(bool async, type t, context_t &context) :
-    Parent(async, t, context),
-    gmac::util::mutex<_event_t>("_event_t")
+    Parent(async, t, context)
 {
 }
 
@@ -39,7 +38,7 @@ gmacError_t
 _event_t::sync()
 {
     gmacError_t ret;
-    lock();
+    lock_write();
 
     if (synced_ == false) {
         TRACE(LOCAL, "event<"FMT_ID">: waiting for event", get_print_id());
@@ -81,13 +80,14 @@ _event_t::sync()
             timeEnd_    = timeBase_ + (end - queued) / 1000;
 
 #endif
-        } else abort();
-
-        synced_ = true;
-        ret = error(res);
-    } else {
-        ret = err_;
+            // Execute pending operations associated to the event
+            exec_triggers();
+            synced_ = true;
+        }
+        err_ = error(res);
     }
+
+    ret = err_;
 
     unlock();
 
@@ -98,7 +98,7 @@ inline
 void
 _event_t::set_synced()
 {
-    lock();
+    lock_write();
 
     if (synced_ == false) {
         TRACE(LOCAL, "event<"FMT_ID">: setting event as synced", get_print_id());
@@ -137,7 +137,10 @@ _event_t::set_synced()
         timeSubmit_ = timeBase_ + (submit - queued) / 1000;
         timeStart_  = timeBase_ + (start - queued) / 1000;
         timeEnd_    = timeBase_ + (end - queued) / 1000;
+        err_ = error(res);
 #endif
+        // Execute pending operations associated to the event
+        exec_triggers();
         synced_ = true;
     }
 
@@ -243,12 +246,12 @@ event_t::is_valid() const
 }
 
 inline
-_event_t &
+util::shared_ptr<_event_t>
 event_t::operator*()
 {
     ASSERTION(bool(ptrEvent_), "Using not valid pointer");
 
-    return (*ptrEvent_.get());
+    return ptrEvent_;
 }
 
 inline
