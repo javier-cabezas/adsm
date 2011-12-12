@@ -10,7 +10,8 @@ namespace detail {
 
 template <typename I>
 class GMAC_LOCAL _event_t :
-    public util::delayed_exec {
+    public util::delayed_exec,
+    public gmac::util::lock_rw<_event_t<I> > {
     friend class I::context;
     friend class I::kernel;
 
@@ -49,7 +50,7 @@ protected:
 public:
     virtual ~_event_t();
 
-    virtual gmacError_t sync();
+    virtual gmacError_t sync() = 0;
 
     context_parent_t &get_context();
 
@@ -62,6 +63,12 @@ public:
     hal::time_t get_time_end() const;
 
     bool is_synced() const;
+};
+
+template <typename I>
+class GMAC_LOCAL list_event {
+public:
+    virtual void add_event(typename I::event event) = 0;
 };
 
 }

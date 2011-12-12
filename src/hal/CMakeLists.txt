@@ -12,6 +12,7 @@ set(hal_SRC
     kernel.h
     kernel-impl.h
     ptr.h
+    ptr-impl.h
     stream.h
     stream-impl.h
     types.h

@@ -10,6 +10,7 @@ set(hal_cuda_SRC
     context.cpp
     event.h
     event-impl.h
+    event.cpp
     kernel.h
     kernel-impl.h
     module.h

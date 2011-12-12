@@ -73,6 +73,8 @@ protected:
              it++) {
             (**it)();
         }
+
+        remove_triggers();
     }
 
     void remove_triggers()
