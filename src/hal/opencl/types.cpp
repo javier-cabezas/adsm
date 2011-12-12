@@ -189,52 +189,6 @@ stream_t::sync()
     return error(ret);
 }
 
-void
-_event_t::reset(bool async, type t)
-{
-    // Locking is not needed
-    async_ = async;
-    type_ = t;
-    err_ = gmacSuccess;
-    synced_ = false;
-    state_ = None;
-    cl_int res = clReleaseEvent(event_);
-    ASSERTION(res == CL_SUCCESS);
-    
-    remove_triggers();
-}
-
-_event_t::state
-_event_t::get_state()
-{
-    lock();
-
-    if (state_ != End) {
-        cl_int status;
-        cl_int res = clGetEventInfo(event_,
-                                    CL_EVENT_COMMAND_EXECUTION_STATUS,
-                                    sizeof(cl_int),
-                                    &status, NULL);
-        if (res == CL_SUCCESS) {
-            if (status == CL_QUEUED) {
-                state_ = Queued;
-            } else if (status == CL_SUBMITTED) {
-                state_ = Submit;
-            } else if (status == CL_RUNNING) {
-                state_ = Start;
-            } else if (status == CL_COMPLETE) {
-                state_ = End;
-            } else {
-                FATAL("Unhandled value");
-            }
-        }
-    }
-
-    unlock();
-
-    return state_;
-}
-
 }}}
 
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

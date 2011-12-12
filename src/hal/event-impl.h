@@ -6,6 +6,7 @@ namespace __impl { namespace hal { namespace detail {
 template <typename I>
 inline
 _event_t<I>::_event_t(bool async, type t, context_parent_t &context) :
+    gmac::util::lock_rw<_event_t>("_event_t"),
     context_(context),
     async_(async),
     synced_(async? false: true),
@@ -19,6 +20,7 @@ template <typename I>
 inline
 _event_t<I>::~_event_t()
 {
+    printf("Hello\n");
 }
 
 template <typename I>
@@ -27,19 +29,6 @@ typename I::context &
 _event_t<I>::get_context()
 {
     return context_;
-}
-
-template <typename I>
-inline
-gmacError_t
-_event_t<I>::sync()
-{
-    if (err_ == gmacSuccess) {
-        // Execute triggers
-        exec_triggers();
-    }
-
-    return err_;
 }
 
 template <typename I>

@@ -172,7 +172,7 @@ object::memcpyObjectToObject(object &dstObj, size_t dstOffset, size_t srcOffset,
     size_t left = size;
     while (left > 0) {
         size_t copySize = left < dstObj.blockEnd(dstOffset)? left: dstObj.blockEnd(dstOffset);
-        // Single copy from the source to fill the buffer
+        // Single copy from the source to copy the block
         if (copySize <= blockEnd(srcOffset)) {
             TRACE(LOCAL, "FP: Copying1: "FMT_SIZE" bytes", copySize);
             event = protocol_.copyBlockToBlock(*j, dstOffset % blockSize(),
@@ -180,7 +180,7 @@ object::memcpyObjectToObject(object &dstObj, size_t dstOffset, size_t srcOffset,
             ASSERTION(ret == gmacSuccess);
             ++i;
         }
-        else { // Two copies from the source to fill the buffer
+        else { // Two copies from the source to copy the block
             TRACE(LOCAL, "FP: Copying2: "FMT_SIZE" bytes", copySize);
             size_t firstCopySize = blockEnd(srcOffset);
             size_t secondCopySize = copySize - firstCopySize;

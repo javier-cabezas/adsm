@@ -131,5 +131,5 @@ int main(int argc, char *argv[])
 
     fclose(fO);
     free(orig);
-    return error;
+    return error != 0.f;
 }

@@ -50,9 +50,10 @@ kernel_t::launch::execute(list_event_detail &_dependencies, gmacError_t &err)
     event_t ret;
     list_event &dependencies = reinterpret_cast<list_event &>(_dependencies);
 
-    cl_event *evs = dependencies.get_event_array();
+    unsigned nelems;
+    cl_event *evs = dependencies.get_event_array(get_stream(), nelems);
 
-    ret = execute(unsigned(dependencies.size()), evs, err);
+    ret = execute(nelems, evs, err);
 
     if (err == gmacSuccess) {
         dependencies.set_synced();
