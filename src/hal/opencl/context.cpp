@@ -47,8 +47,7 @@ context_t::copy_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stre
 
     if (_dependencies != NULL) {
         list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
-        nevents = dependencies->size();
-        events  = dependencies->get_event_array();
+        events = dependencies->get_event_array(stream, nevents);
     }
 
     event_t ret(false, _event_t::Transfer, *this);
@@ -128,8 +127,7 @@ context_t::copy_backend(ptr_t dst, device_input &input, size_t count, stream_t &
 
     if (_dependencies != NULL) {
         list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
-        nevents = dependencies->size();
-        events  = dependencies->get_event_array();
+        events = dependencies->get_event_array(stream, nevents);
     }
 
     TRACE(LOCAL, "IO -> D copy ("FMT_SIZE" bytes) on stream: "FMT_ID, count, stream.get_print_id());
@@ -173,8 +171,7 @@ context_t::copy_backend(device_output &output, const ptr_t src, size_t count, st
 
     if (_dependencies != NULL) {
         list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
-        nevents = dependencies->size();
-        events  = dependencies->get_event_array();
+        events = dependencies->get_event_array(stream, nevents);
     }
 
     TRACE(LOCAL, "D -> IO copy ("FMT_SIZE" bytes) on stream: "FMT_ID, count, stream.get_print_id());
@@ -225,8 +222,7 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
 
     if (_dependencies != NULL) {
         list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
-        nevents = dependencies->size();
-        events  = dependencies->get_event_array();
+        events = dependencies->get_event_array(stream, nevents);
     }
 
     event_t ret(true, _event_t::Transfer, *this);
@@ -328,8 +324,7 @@ context_t::copy_async_backend(ptr_t dst, device_input &input, size_t count, stre
 
     if (_dependencies != NULL) {
         list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
-        nevents = dependencies->size();
-        events  = dependencies->get_event_array();
+        events = dependencies->get_event_array(stream, nevents);
     }
 
     TRACE(LOCAL, "IO -> D async copy ("FMT_SIZE" bytes) on stream: "FMT_ID, count, stream.get_print_id());
@@ -374,8 +369,7 @@ context_t::copy_async_backend(device_output &output, const ptr_t src, size_t cou
 
     if (_dependencies != NULL) {
         list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
-        nevents = dependencies->size();
-        events  = dependencies->get_event_array();
+        events = dependencies->get_event_array(stream, nevents);
     }
 
     TRACE(LOCAL, "D -> IO async copy ("FMT_SIZE" bytes) on stream: "FMT_ID, count, stream.get_print_id());

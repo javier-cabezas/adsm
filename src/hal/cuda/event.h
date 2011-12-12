@@ -38,7 +38,9 @@ protected:
 
 class GMAC_LOCAL _event_t :
     public hal::detail::_event_t<implementation_traits>,
-    public _event_common_t {
+    public _event_common_t,
+    public util::unique<_event_t> {
+
     friend class context_t;
     friend class event_t;
 
@@ -50,6 +52,8 @@ protected:
     _event_t(bool async, Parent::type t, context_t &context);
 public:
     gmacError_t sync();
+
+    void set_synced();
 
     state get_state();
 };
@@ -153,6 +157,22 @@ public:
 
         ptrEvent_->add_trigger(fun);
     }
+};
+
+typedef hal::detail::list_event<implementation_traits> list_event_detail;
+
+class GMAC_LOCAL list_event :
+    public list_event_detail,
+    protected std::list<event_t> {
+    typedef std::list<event_t> Parent;
+
+public:
+    list_event() { printf("Creating event list\n"); }
+    gmacError_t sync();
+
+    void add_event(event_t event); 
+
+    size_t size() const;
 };
 
 }}}

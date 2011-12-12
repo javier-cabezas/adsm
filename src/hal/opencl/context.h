@@ -12,13 +12,14 @@
 #include "hal/types-detail.h"
 
 #include "util/gmac_base.h"
-#include "util/lock.h"
 
 namespace __impl { namespace hal {
     
 namespace opencl {
 
 class context_t;
+
+class list_event;
 
 class GMAC_LOCAL buffer_t :
     public hal::detail::buffer_t<implementation_traits> {
@@ -35,30 +36,6 @@ public:
 };
 
 class code_repository;
-
-typedef hal::detail::list_event<implementation_traits> list_event_detail;
-
-class GMAC_LOCAL list_event :
-    public list_event_detail,
-    public util::locker<_event_t> {
-    typedef list_event_detail Parent;
-    friend class context_t;
-    friend class kernel_t;
-
-protected:
-    typedef util::locker<_event_t> locker;
-    void set_synced();
-
-    cl_event *get_event_array();
-public:
-    ~list_event();
-
-    gmacError_t sync();
-
-    size_t size() const;
-
-    void add_event(event_t event);
-};
 
 class GMAC_LOCAL context_t :
     public hal::detail::context_t<device, backend_traits, implementation_traits>,
