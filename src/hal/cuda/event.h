@@ -38,7 +38,9 @@ protected:
 
 class GMAC_LOCAL _event_t :
     public hal::detail::_event_t<implementation_traits>,
-    public _event_common_t {
+    public _event_common_t,
+    public util::unique<_event_t> {
+
     friend class context_t;
     friend class event_t;
 
@@ -50,6 +52,8 @@ protected:
     _event_t(bool async, Parent::type t, context_t &context);
 public:
     gmacError_t sync();
+
+    void set_synced();
 
     state get_state();
 };
@@ -111,7 +115,7 @@ public:
     inline
     gmacError_t sync()
     {
-        ASSERTION(ptrEvent_);
+        ASSERTION(bool(ptrEvent_));
 
         gmacError_t ret = ptrEvent_->sync();
         return ret;
@@ -120,7 +124,7 @@ public:
     inline
     void begin(stream_t &stream)
     {
-        ASSERTION(ptrEvent_);
+        ASSERTION(bool(ptrEvent_));
 
         ptrEvent_->begin(stream);
     }
@@ -128,7 +132,7 @@ public:
     inline
     void end()
     {
-        ASSERTION(ptrEvent_);
+        ASSERTION(bool(ptrEvent_));
 
         ptrEvent_->end();
     }
@@ -142,17 +146,33 @@ public:
     inline
     bool is_valid() const
     {
-        return ptrEvent_;
+        return bool(ptrEvent_);
     }
 
     template <typename F>
     inline
     void add_trigger(F fun)
     {
-        ASSERTION(ptrEvent_);
+        ASSERTION(bool(ptrEvent_));
 
         ptrEvent_->add_trigger(fun);
     }
+};
+
+typedef hal::detail::list_event<implementation_traits> list_event_detail;
+
+class GMAC_LOCAL list_event :
+    public list_event_detail,
+    protected std::list<event_t> {
+    typedef std::list<event_t> Parent;
+
+public:
+    list_event() { printf("Creating event list\n"); }
+    gmacError_t sync();
+
+    void add_event(event_t event); 
+
+    size_t size() const;
 };
 
 }}}

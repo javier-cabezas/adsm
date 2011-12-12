@@ -58,28 +58,62 @@ gmacError_t
 _event_t::sync()
 {
     gmacError_t ret;
+    lock_write();
+
     if (synced_ == false) {
         get_stream().get_context().set();
 
-        TRACE(LOCAL, "Waiting for event: %p", eventEnd_);
+        TRACE(LOCAL, "event<"FMT_ID">: waiting for event", get_print_id());
         CUresult res = cuEventSynchronize(eventEnd_);
         if (res == CUDA_SUCCESS) {
+#ifdef USE_TRACE
             float mili;
             res = cuEventElapsedTime(&mili, eventStart_, eventEnd_);
             if (res == CUDA_SUCCESS) {
                 timeQueued_ = timeSubmit_ = timeStart_ = timeBase_;
                 timeEnd_ = timeQueued_ + time_t(mili * 1000.f);
             }
+#endif
+            // Execute pending operations associated to the event
+            exec_triggers();
+            synced_ = true;
         }
-        synced_ = true;
-        // Execute pending operations associated to the event
-        exec_triggers();
-        ret = error(res);
-    } else {
-        ret = err_;
+        err_ = error(res);
     }
 
+    ret = err_;
+
+    unlock();
+
     return ret;
+}
+
+inline
+void
+_event_t::set_synced()
+{
+    lock_write();
+
+    if (synced_ == false) {
+        TRACE(LOCAL, "event<"FMT_ID">: setting event as synced", get_print_id());
+#ifdef USE_TRACE
+        get_stream().get_context().set();
+
+        float mili;
+        cl_int res;
+        res = cuEventElapsedTime(&mili, eventStart_, eventEnd_);
+        if (res == CUDA_SUCCESS) {
+            timeQueued_ = timeSubmit_ = timeStart_ = timeBase_;
+            timeEnd_ = timeQueued_ + time_t(mili * 1000.f);
+        }
+        err_ = error(res);
+#endif
+        // Execute pending operations associated to the event
+        exec_triggers();
+        synced_ = true;
+    }
+
+    unlock();
 }
 
 inline

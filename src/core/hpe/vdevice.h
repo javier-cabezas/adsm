@@ -248,8 +248,6 @@ public:
 
     util::shared_ptr<address_space> get_address_space();
     util::shared_ptr<const address_space> get_address_space() const;
-
-    const hal::device &get_device();
 };
 
 }}}

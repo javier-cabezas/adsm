@@ -33,18 +33,6 @@ public:
 
 class code_repository;
 
-typedef hal::detail::list_event<implementation_traits> list_event_detail;
-
-class GMAC_LOCAL list_event :
-    public list_event_detail {
-    typedef list_event_detail Parent;
-
-public:
-    gmacError_t sync();
-
-    size_t size() const;
-};
-
 class GMAC_LOCAL context_t :
     public hal::detail::context_t<device, backend_traits, implementation_traits>,
     util::unique<context_t, GmacAddressSpaceId> {

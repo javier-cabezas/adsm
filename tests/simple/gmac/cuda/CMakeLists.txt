@@ -93,9 +93,9 @@ add_executable(gmacThreading ${threading} gmacThreading.cu)
 target_link_libraries(gmacThreading test-common gmac-cuda)
 
 # gmacSharedVecAdd
-cuda_compile(sharedVecAdd gmacSharedVecAdd.cu)
-add_executable(gmacSharedVecAdd ${sharedVecAdd}  gmacSharedVecAdd.cu)
-target_link_libraries(gmacSharedVecAdd test-common gmac-cuda)
+# cuda_compile(sharedVecAdd gmacSharedVecAdd.cu)
+# add_executable(gmacSharedVecAdd ${sharedVecAdd}  gmacSharedVecAdd.cu)
+# target_link_libraries(gmacSharedVecAdd test-common gmac-cuda)
 
 # gmacFileVecAdd
 cuda_compile(fileVecAdd gmacFileVecAdd.cu)
@@ -113,9 +113,9 @@ add_executable(gmacMatrixMul ${matrixMul}  gmacMatrixMul.cu)
 target_link_libraries(gmacMatrixMul test-common gmac-cuda)
 
 # gmacSharedMatrixMul
-cuda_compile(sharedMatrixMul gmacSharedMatrixMul.cu)
-add_executable(gmacSharedMatrixMul ${sharedMatrixMul}  gmacSharedMatrixMul.cu)
-target_link_libraries(gmacSharedMatrixMul test-common gmac-cuda)
+# cuda_compile(sharedMatrixMul gmacSharedMatrixMul.cu)
+# add_executable(gmacSharedMatrixMul ${sharedMatrixMul}  gmacSharedMatrixMul.cu)
+# target_link_libraries(gmacSharedMatrixMul test-common gmac-cuda)
 
 # gmacRandomAccess
 cuda_compile(randomAccess gmacRandomAccess.cu)

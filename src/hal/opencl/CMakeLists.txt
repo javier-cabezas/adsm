@@ -10,6 +10,7 @@ set(hal_opencl_SRC
     device.cpp
     event.h
     event-impl.h
+    event.cpp
     kernel.h
     kernel-impl.h
     kernel.cpp
