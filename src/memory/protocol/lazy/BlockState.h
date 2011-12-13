@@ -201,8 +201,8 @@ public:
     bool hasState(ProtocolState state) const;
 #endif
 
-    hal::event_t syncToAccelerator(gmacError_t &err);
-    hal::event_t syncToHost(gmacError_t &err);     
+    hal::event_ptr syncToAccelerator(gmacError_t &err);
+    hal::event_ptr syncToHost(gmacError_t &err);     
 
     void read(const hostptr_t addr);
     void write(const hostptr_t addr);

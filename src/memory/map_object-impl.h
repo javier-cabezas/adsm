@@ -6,10 +6,10 @@
 namespace __impl { namespace memory {
 
 inline
-hal::event_t
-map_object::forEachObject(hal::event_t (object::*f)(gmacError_t &), gmacError_t &err)
+hal::event_ptr
+map_object::forEachObject(hal::event_ptr (object::*f)(gmacError_t &), gmacError_t &err)
 {
-    hal::event_t ret;
+    hal::event_ptr ret;
     iterator i;
     lock_read();
     for(i = begin(); i != end(); i++) {
@@ -24,10 +24,10 @@ map_object::forEachObject(hal::event_t (object::*f)(gmacError_t &), gmacError_t 
 }
 
 template <typename P1>
-hal::event_t
-map_object::forEachObject(hal::event_t (object::*f)(P1 &, gmacError_t &), P1 &p1, gmacError_t &err)
+hal::event_ptr
+map_object::forEachObject(hal::event_ptr (object::*f)(P1 &, gmacError_t &), P1 &p1, gmacError_t &err)
 {
-    hal::event_t ret;
+    hal::event_ptr ret;
     const_iterator i;
     lock_read();
     for(i = begin(); i != end(); i++) {

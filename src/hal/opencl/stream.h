@@ -16,7 +16,7 @@ class GMAC_LOCAL stream_t :
 
     typedef hal::detail::stream_t<backend_traits, implementation_traits> Parent;
 
-    event_t lastEvent_;
+    event_ptr lastEvent_;
 
     stream_t() = delete;
     stream_t(const stream_t &stream) = delete;

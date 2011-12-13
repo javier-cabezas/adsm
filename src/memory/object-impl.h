@@ -39,6 +39,53 @@ object::getDumps(protocol::common::Statistic stat)
 }
 #endif
 
+inline void
+object::set_last_event(hal::event_ptr event)
+{
+    if (!event) return;
+
+    switch (event->get_type()) {
+    case hal::event_ptr::type::TransferToHost:
+        lastToHost_ = event;
+        break;
+    case hal::event_ptr::type::TransferToDevice:
+        lastToDevice_ = event;
+        break;
+    case hal::event_ptr::type::TransferHost:
+        lastHost_ = event;
+        break;
+    case hal::event_ptr::type::TransferDevice:
+        lastDevice_ = event;
+        break;
+    case hal::event_ptr::type::Kernel:
+        lastKernel_ = event;
+        break;
+    case hal::event_ptr::type::Invalid:
+        break;
+    }
+
+    last_ = event;
+}
+
+inline hal::event_ptr
+object::get_last_event(hal::event_ptr::type type) const
+{
+    switch (type) {
+    case hal::event_ptr::type::TransferToHost:
+        return lastToHost_;
+    case hal::event_ptr::type::TransferToDevice:
+        return lastToDevice_;
+    case hal::event_ptr::type::TransferHost:
+        return lastHost_;
+    case hal::event_ptr::type::TransferDevice:
+        return lastDevice_;
+    case hal::event_ptr::type::Kernel:
+        return lastKernel_;
+    case hal::event_ptr::type::Invalid:
+        return hal::event_ptr();
+    }
+}
+
 inline
 protocol_interface &
 object::getProtocol()
@@ -89,39 +136,43 @@ object::size() const
 }
 
 template <typename T>
-hal::event_t
-object::coherenceOp(hal::event_t (protocol_interface::*op)(block_ptr, T &, gmacError_t &),
+hal::event_ptr
+object::coherenceOp(hal::event_ptr (protocol_interface::*op)(block_ptr, T &, gmacError_t &),
                     T &param,
                     gmacError_t &err)
 {
-    hal::event_t ret;
+    hal::event_ptr ret;
     vector_block::const_iterator i;
     for(i = blocks_.begin(); i != blocks_.end(); i++) {
         ret = (protocol_.*op)(*i, param, err);
         if(err != gmacSuccess) break;
+        set_last_event(ret);
     }
     return ret;
 }
 
-inline hal::event_t
+inline hal::event_ptr
 object::acquire(GmacProtection &prot, gmacError_t &err)
 {
     lock_write();
-    hal::event_t ret;
+    hal::event_ptr ret;
     TRACE(LOCAL, "Acquiring object %p?", addr_);
     if (released_ == true) {
         TRACE(LOCAL, "Acquiring object %p", addr_);
         ret = coherenceOp<GmacProtection>(&protocol_interface::acquire, prot, err);
+        if (err == gmacSuccess) {
+            set_last_event(ret);
+        }
     }
     released_ = false;
     unlock();
     return ret;
 }
 
-inline hal::event_t 
+inline hal::event_ptr 
 object::release(gmacError_t &err)
 {
-    hal::event_t ret;
+    hal::event_ptr ret;
     lock_write();
     released_ = true;
     unlock();
@@ -139,11 +190,11 @@ object::is_released() const
     return ret;
 }
 
-inline hal::event_t
+inline hal::event_ptr
 object::releaseBlocks(gmacError_t &err)
 {
     lock_write();
-    hal::event_t ret;
+    hal::event_ptr ret;
 
     TRACE(LOCAL, "Releasing object %p?", addr_);
     if (released_ == false) {
@@ -177,25 +228,33 @@ object::forEachBlock(gmacError_t (protocol_interface::*op)(block_ptr, P1 &, P2),
     for(i = blocks_.begin(); i != blocks_.end(); i++) {
         //ret = ((*i)->*f)(p1, p2);
         ret = (protocol_.*op)(*i, p1, p2);
+        // TODO remove this if the code is no longer executed
+        abort();
     }
     unlock();
     return ret;
 }
 
-inline hal::event_t 
+inline hal::event_ptr 
 object::toHost(gmacError_t &err)
 {
     lock_read();
-    hal::event_t ret= coherenceOp(&protocol_interface::toHost, err);
+    hal::event_ptr ret = coherenceOp(&protocol_interface::toHost, err);
+    if (err == gmacSuccess) {
+        set_last_event(ret);
+    }
     unlock();
     return ret;
 }
 
-inline hal::event_t
+inline hal::event_ptr
 object::toAccelerator(gmacError_t &err)
 {
     lock_read();
-    hal::event_t ret = coherenceOp(&protocol_interface::release, err);
+    hal::event_ptr ret = coherenceOp(&protocol_interface::release, err);
+    if (err == gmacSuccess) {
+        set_last_event(ret);
+    }
     unlock();
     return ret;
 }

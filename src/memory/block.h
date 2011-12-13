@@ -115,8 +115,8 @@ protected:
      * Ensures that the host memory has a valid and accessible copy of the data
      * \return Error code
      */
-    virtual hal::event_t to_accelerator(unsigned blockOff, size_t count, gmacError_t &err) = 0;
-    hal::event_t to_accelerator(gmacError_t &err)
+    virtual hal::event_ptr to_accelerator(unsigned blockOff, size_t count, gmacError_t &err) = 0;
+    hal::event_ptr to_accelerator(gmacError_t &err)
     {
         return to_accelerator(0, size_, err);
     }
@@ -125,7 +125,7 @@ protected:
      * Ensures that the host memory has a valid and accessible copy of the data
      * \return Error code
      */
-    hal::event_t to_host(gmacError_t &err)
+    hal::event_ptr to_host(gmacError_t &err)
     {
         return to_host(0, size_, err);
     }
@@ -136,7 +136,7 @@ protected:
      * \param count Size (in bytes)
      * \return Error code
      */
-    virtual hal::event_t to_host(unsigned blockOff, size_t count, gmacError_t &err) = 0;
+    virtual hal::event_ptr to_host(unsigned blockOff, size_t count, gmacError_t &err) = 0;
 
 public:
     /**

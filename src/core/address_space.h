@@ -86,13 +86,13 @@ public:
     virtual gmacError_t copy(hal::ptr_t dst, hal::device_input &input, size_t count) = 0;
     virtual gmacError_t copy(hal::device_output &output, const hal::ptr_t dst, size_t count) = 0;
 
-    virtual hal::event_t copy_async(hal::ptr_t dst, const hal::ptr_t src, size_t count, gmacError_t &err) = 0;
+    virtual hal::event_ptr copy_async(hal::ptr_t dst, const hal::ptr_t src, size_t count, gmacError_t &err) = 0;
 
-    virtual hal::event_t copy_async(hal::ptr_t dst, hal::device_input &input, size_t count, gmacError_t &err) = 0;
-    virtual hal::event_t copy_async(hal::device_output &output, const hal::ptr_t src, size_t count, gmacError_t &err) = 0;
+    virtual hal::event_ptr copy_async(hal::ptr_t dst, hal::device_input &input, size_t count, gmacError_t &err) = 0;
+    virtual hal::event_ptr copy_async(hal::device_output &output, const hal::ptr_t src, size_t count, gmacError_t &err) = 0;
 
     virtual gmacError_t memset(hal::ptr_t addr, int c, size_t size) = 0;
-    virtual hal::event_t memset_async(hal::ptr_t addr, int c, size_t size, gmacError_t &err) = 0;
+    virtual hal::event_ptr memset_async(hal::ptr_t addr, int c, size_t size, gmacError_t &err) = 0;
 
     memory::map_object &get_object_map();
     const memory::map_object &get_object_map() const;

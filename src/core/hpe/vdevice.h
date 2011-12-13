@@ -189,7 +189,7 @@ public:
      * \param launch Reference to a KernelLaunch object
      * \return An event that represents the kernel execution
      */
-    hal::event_t execute(kernel::launch_ptr launch, gmacError_t &err);
+    hal::event_ptr execute(kernel::launch_ptr launch, gmacError_t &err);
 
     /**
      * Waits for kernel execution

@@ -181,7 +181,7 @@ public:
      * \sa __impl::memory::object::toAccelerator
      * \return Error code
      */
-    hal::event_t forEachObject(hal::event_t (object::*f)(gmacError_t &), gmacError_t &err);
+    hal::event_ptr forEachObject(hal::event_ptr (object::*f)(gmacError_t &), gmacError_t &err);
 
     /**
      * Execute an operation on all the objects in the map passing an argument
@@ -192,7 +192,7 @@ public:
      * \return Error code
      */
     template <typename T>
-    hal::event_t forEachObject(hal::event_t (object::*f)(T &, gmacError_t &), T &p, gmacError_t &err);
+    hal::event_ptr forEachObject(hal::event_ptr (object::*f)(T &, gmacError_t &), T &p, gmacError_t &err);
 
 #ifdef DEBUG
     gmacError_t dumpObjects(const std::string &dir, std::string prefix, protocol::common::Statistic stat) const;

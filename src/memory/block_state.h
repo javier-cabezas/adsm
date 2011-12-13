@@ -88,9 +88,6 @@ public:
                  size_t size,
                  typename State::ProtocolState init);
 
-    /// Default destructor
-    virtual ~block_state();
-
     /**
      * Get memory block owner
      *
@@ -114,14 +111,14 @@ public:
      */
     accptr_t get_device_addr() const;
 
-    hal::event_t to_accelerator(unsigned blockOff, size_t count, gmacError_t &err);
-    hal::event_t to_accelerator(gmacError_t &err)
+    hal::event_ptr to_accelerator(unsigned blockOff, size_t count, gmacError_t &err);
+    hal::event_ptr to_accelerator(gmacError_t &err)
     {
         return to_accelerator(0, size_, err);
     }
 
-    hal::event_t to_host(unsigned blockOff, size_t count, gmacError_t &err);
-    hal::event_t to_host(gmacError_t &err)
+    hal::event_ptr to_host(unsigned blockOff, size_t count, gmacError_t &err);
+    hal::event_ptr to_host(gmacError_t &err)
     {
         return to_host(0, size_, err);
     }

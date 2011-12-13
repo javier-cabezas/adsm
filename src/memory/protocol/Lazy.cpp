@@ -65,12 +65,12 @@ bool lazy_base::needUpdate(const block_ptr b) const
     return false;
 }
 
-hal::event_t
+hal::event_ptr
 lazy_base::signal_read(block_ptr b, hostptr_t addr, gmacError_t &err)
 {
     trace::EnterCurrentFunction();
     lazy_types::block_ptr block = util::static_pointer_cast<lazy_types::Block>(b);
-    hal::event_t ret;
+    hal::event_ptr ret;
     err = gmacSuccess;
 
     block->read(addr);
@@ -96,12 +96,12 @@ exit_func:
     return ret;
 }
 
-hal::event_t
+hal::event_ptr
 lazy_base::signal_write(block_ptr b, hostptr_t addr, gmacError_t &err)
 {
     trace::EnterCurrentFunction();
     lazy_types::block_ptr block = util::static_pointer_cast<lazy_types::Block>(b);
-    hal::event_t ret;
+    hal::event_ptr ret;
     err = gmacSuccess;
 
     block->write(addr);
@@ -128,10 +128,10 @@ exit_func:
     return ret;
 }
 
-hal::event_t
+hal::event_ptr
 lazy_base::acquire(block_ptr b, GmacProtection &prot, gmacError_t &err)
 {
-    hal::event_t ret;
+    hal::event_ptr ret;
     err = gmacSuccess;
     lazy_types::block_ptr block = util::static_pointer_cast<lazy_types::Block>(b);
     switch(block->getState()) {
@@ -186,11 +186,11 @@ gmacError_t lazy_base::acquireWithBitmap(block_ptr b)
 }
 #endif
 
-hal::event_t
+hal::event_ptr
 lazy_base::mapToAccelerator(block_ptr b, gmacError_t &err)
 {
     err = gmacSuccess;
-    hal::event_t ret;
+    hal::event_ptr ret;
     lazy_types::block_ptr block = util::static_pointer_cast<lazy_types::Block>(b);
     ASSERTION(block->getState() == lazy_types::HostOnly);
     TRACE(LOCAL,"Mapping block to accelerator %p", block->addr());
@@ -199,12 +199,12 @@ lazy_base::mapToAccelerator(block_ptr b, gmacError_t &err)
     return ret;
 }
 
-hal::event_t
+hal::event_ptr
 lazy_base::unmapFromAccelerator(block_ptr b, gmacError_t &err)
 {
     lazy_types::block_ptr block = util::static_pointer_cast<lazy_types::Block>(b);
     TRACE(LOCAL,"Unmapping block from accelerator %p", block->addr());
-    hal::event_t ret;
+    hal::event_ptr ret;
     err = gmacSuccess;
     switch(block->getState()) {
     case lazy_types::HostOnly:
@@ -240,14 +240,14 @@ lazy_base::addDirty(lazy_types::block_ptr block)
     while (dbl_.size() > limit_) {
         list_block::locked_block b = dbl_.front();
         gmacError_t err;
-        hal::event_t evt = release(*b, err);
+        hal::event_ptr evt = release(*b, err);
         ASSERTION(err == gmacSuccess);
     }
     unlock();
     return;
 }
 
-hal::event_t
+hal::event_ptr
 lazy_base::releaseAll(gmacError_t &err)
 {
     // We need to make sure that this operations is done before we
@@ -262,7 +262,7 @@ lazy_base::releaseAll(gmacError_t &err)
     // If the list of objects to be released is empty, assume a complete flush
     TRACE(LOCAL, "Releasing all blocks");
 
-    hal::event_t ret;
+    hal::event_ptr ret;
     while(dbl_.empty() == false) {
     	list_block::locked_block b = dbl_.front();
         ret = release(*b, err);
@@ -273,7 +273,7 @@ lazy_base::releaseAll(gmacError_t &err)
     return ret;
 }
 
-hal::event_t lazy_base::flushDirty(gmacError_t &err)
+hal::event_ptr lazy_base::flushDirty(gmacError_t &err)
 {
     return releaseAll(err);
 }
@@ -295,12 +295,12 @@ gmacError_t lazy_base::releasedAll()
 }
 #endif
 
-hal::event_t
+hal::event_ptr
 lazy_base::release(block_ptr b, gmacError_t &err)
 {
     lazy_types::block_ptr block = util::static_pointer_cast<lazy_types::Block>(b);
     TRACE(LOCAL,"Releasing block %p", block->addr());
-    hal::event_t ret;
+    hal::event_ptr ret;
     err = gmacSuccess;
     switch(block->getState()) {
     case lazy_types::Dirty:
@@ -320,19 +320,19 @@ lazy_base::release(block_ptr b, gmacError_t &err)
     return ret;
 }
 
-hal::event_t lazy_base::deleteBlock(block_ptr block, gmacError_t &err)
+hal::event_ptr lazy_base::deleteBlock(block_ptr block, gmacError_t &err)
 {
-    hal::event_t ret;
+    hal::event_ptr ret;
     dbl_.remove(block);
     err = gmacSuccess;
     return ret;
 }
 
-hal::event_t
+hal::event_ptr
 lazy_base::toHost(block_ptr b, gmacError_t &err)
 {
     TRACE(LOCAL,"Sending block to host: %p", b->addr());
-    hal::event_t ret;
+    hal::event_ptr ret;
     err = gmacSuccess;
     lazy_types::block_ptr block = util::static_pointer_cast<lazy_types::Block>(b);
     switch(block->getState()) {
@@ -357,91 +357,10 @@ lazy_base::toHost(block_ptr b, gmacError_t &err)
     return ret;
 }
 
-#if 0
-gmacError_t lazy_base::toAccelerator(block_ptr b)
-{
-    TRACE(LOCAL,"Sending block to accelerator: %p", b->addr());
-    gmacError_t ret = gmacSuccess;
-    lazy_types::block_ptr block = util::smart_ptr<lazy_types::block>::static_pointer_cast(b);
-    switch(block->getState()) {
-    case lazy_types::Dirty:
-        TRACE(LOCAL,"Dirty block");
-        if(block->protect(GMAC_PROT_READ) < 0)
-            FATAL("Unable to set memory permissions");
-        ret = block->syncToAccelerator();
-        if(ret != gmacSuccess) break;
-        block->setState(lazy_types::ReadOnly);
-        break;
-    case lazy_types::Invalid:
-        TRACE(LOCAL,"Invalid block");
-        break;
-    case lazy_types::ReadOnly:
-        TRACE(LOCAL,"ReadOnly block");
-        break;
-    case lazy_types::HostOnly:
-        TRACE(LOCAL,"HostOnly block");
-        break;
-    }
-    return ret;
-}
-
-gmacError_t lazy_base::copyToBuffer(block_ptr b, core::io_buffer &buffer, size_t size,
-                                   size_t bufferOff, size_t blockOff)
-{
-    gmacError_t ret = gmacSuccess;
-    const lazy_types::block_ptr block = dynamic_cast<const lazy_types::block_ptr>(b);
-    switch(block.getState()) {
-    case lazy_types::Invalid:
-        ret = block.copyToBuffer(buffer, bufferOff, blockOff, size, lazy_types::block::ACCELERATOR);
-        break;
-    case lazy_types::ReadOnly:
-    case lazy_types::Dirty:
-    case lazy_types::HostOnly:
-        ret = block.copyToBuffer(buffer, bufferOff, blockOff, size, lazy_types::block::HOST);
-        break;
-    }
-    return ret;
-}
-
-gmacError_t lazy_base::copyFromBuffer(block_ptr b, core::io_buffer &buffer, size_t size,
-                                     size_t bufferOff, size_t blockOff)
-{
-    gmacError_t ret = gmacSuccess;
-    lazy_types::block_ptr block = dynamic_cast<lazy_types::block_ptr>(b);
-    switch(block.getState()) {
-    case lazy_types::Invalid:
-        ret = block.copyFromBuffer(blockOff, buffer, bufferOff, size, lazy_types::block::ACCELERATOR);
-        break;
-    case lazy_types::ReadOnly:
-#ifdef USE_OPENCL
-        // WARNING: copying to host first because the io_buffer address can change in copyToAccelerator
-        // if we do not wait
-        ::memcpy(block.get_shadow() + blockOff, buffer.addr() + bufferOff, size);
-        ret = block.owner().copy(block.get_device_addr() + ptroff_t(blockOff),
-                                 buffer, bufferOff, size);
-        ret = block.copyFromBuffer(blockOff, buffer, bufferOff, size, lazy_types::block::ACCELERATOR);
-        if(ret != gmacSuccess) break;
-#else
-        ret = block.copyFromBuffer(blockOff, buffer, bufferOff, size, lazy_types::block::ACCELERATOR);
-        if(ret != gmacSuccess) break;
-        ret = block.copyFromBuffer(blockOff, buffer, bufferOff, size, lazy_types::block::HOST);
-        if(ret != gmacSuccess) break;
-#endif
-        /* block.setState(lazy::Invalid); */
-        break;
-    case lazy_types::Dirty:
-    case lazy_types::HostOnly:
-        ret = block.copyFromBuffer(blockOff, buffer, bufferOff, size, lazy_types::block::HOST);
-        break;
-    }
-    return ret;
-}
-#endif
-
-hal::event_t
+hal::event_ptr
 lazy_base::memset(const block_ptr b, size_t blockOffset, int v, size_t count, gmacError_t &err)
 {
-    hal::event_t ret;
+    hal::event_ptr ret;
     err = gmacSuccess;
 
     const lazy_types::block_ptr block = util::static_pointer_cast<lazy_types::Block>(b);
@@ -471,7 +390,7 @@ lazy_base::isInAccelerator(block_ptr b)
 }
 #endif
 
-hal::event_t
+hal::event_ptr
 lazy_base::copyBlockToBlock(block_ptr d, size_t dstOff, block_ptr s, size_t srcOff, size_t count, gmacError_t &err)
 {
     lazy_types::block_ptr dst = util::static_pointer_cast<lazy_types::Block>(d);
@@ -479,7 +398,7 @@ lazy_base::copyBlockToBlock(block_ptr d, size_t dstOff, block_ptr s, size_t srcO
 
     err = gmacSuccess;
 
-    hal::event_t ret;
+    hal::event_ptr ret;
 
     if ((src->getState() == lazy_types::Invalid || src->getState() == lazy_types::ReadOnly) &&
          dst->getState() == lazy_types::Invalid) {
@@ -560,7 +479,7 @@ lazy_base::copyBlockToBlock(block_ptr d, size_t dstOff, block_ptr s, size_t srcO
     return ret;
 }
 
-hal::event_t
+hal::event_ptr
 lazy_base::copyToBlock(block_ptr d, size_t dstOff,
                       hostptr_t src,
                       size_t count, gmacError_t &err)
@@ -569,7 +488,7 @@ lazy_base::copyToBlock(block_ptr d, size_t dstOff,
 
     err = gmacSuccess;
 
-    hal::event_t ret;
+    hal::event_ptr ret;
 
     if (dst->getState() == lazy_types::Invalid) {
         TRACE(LOCAL, "-> I");
@@ -593,7 +512,7 @@ lazy_base::copyToBlock(block_ptr d, size_t dstOff,
     return ret;
 }
 
-hal::event_t
+hal::event_ptr
 lazy_base::copyFromBlock(hostptr_t dst,
                          block_ptr s, size_t srcOff,
                          size_t count, gmacError_t &err)
@@ -602,7 +521,7 @@ lazy_base::copyFromBlock(hostptr_t dst,
 
     err = gmacSuccess;
 
-    hal::event_t ret;
+    hal::event_ptr ret;
 
     if (src->getState() == lazy_types::Invalid) {
         TRACE(LOCAL, "I ->");
@@ -626,7 +545,7 @@ lazy_base::copyFromBlock(hostptr_t dst,
     return ret;
 }
 
-hal::event_t
+hal::event_ptr
 lazy_base::to_io_device(hal::device_output &output,
                        block_ptr s, size_t srcOff,
                        size_t count, gmacError_t &err)
@@ -635,7 +554,7 @@ lazy_base::to_io_device(hal::device_output &output,
 
     err = gmacSuccess;
 
-    hal::event_t ret;
+    hal::event_ptr ret;
 
     if (src->getState() == lazy_types::Invalid) {
         TRACE(LOCAL, "I ->");
@@ -657,7 +576,7 @@ lazy_base::to_io_device(hal::device_output &output,
     return ret;
 }
 
-hal::event_t
+hal::event_ptr
 lazy_base::from_io_device(block_ptr d, size_t dstOff,
                          hal::device_input &input,
                          size_t count, gmacError_t &err)
@@ -666,7 +585,7 @@ lazy_base::from_io_device(block_ptr d, size_t dstOff,
 
     err = gmacSuccess;
 
-    hal::event_t ret;
+    hal::event_ptr ret;
 
     if (dst->getState() == lazy_types::Invalid) {
         TRACE(LOCAL, "-> I");

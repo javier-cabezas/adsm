@@ -44,10 +44,10 @@ kernel_t::arg_list::set_arg(kernel_t &k, const void *arg, size_t size, unsigned 
 }
 
 inline
-event_t
+event_ptr
 kernel_t::launch::execute(list_event_detail &_dependencies, gmacError_t &err)
 {
-    event_t ret;
+    event_ptr ret;
     list_event &dependencies = reinterpret_cast<list_event &>(_dependencies);
 
     unsigned nelems;
@@ -65,20 +65,20 @@ kernel_t::launch::execute(list_event_detail &_dependencies, gmacError_t &err)
 }
 
 inline
-event_t
-kernel_t::launch::execute(event_t event, gmacError_t &err)
+event_ptr
+kernel_t::launch::execute(event_ptr event, gmacError_t &err)
 {
-	event_t ret;
+	event_ptr ret;
 
-    if (event.is_valid() == false) {
+    if (event) {
 		ret = execute(err);
 	} else {
-		cl_event &ev = event();
+		cl_event &ev = (*event)();
 
     	ret = execute(1, &ev, err);
 
     	if (err == gmacSuccess) {
-        	event.set_synced();
+        	event->set_synced();
     	}
 	}
 
@@ -86,14 +86,14 @@ kernel_t::launch::execute(event_t event, gmacError_t &err)
 }
 
 inline
-event_t
+event_ptr
 kernel_t::launch::execute(gmacError_t &err)
 {
     return execute(0, NULL, err);
 }
 
 inline
-event_t
+event_ptr
 kernel_t::launch::execute(unsigned nevents, const cl_event *events, gmacError_t &err)
 {
     cl_int res;
@@ -105,12 +105,12 @@ kernel_t::launch::execute(unsigned nevents, const cl_event *events, gmacError_t 
 
     TRACE(LOCAL, "kernel_launch<"FMT_ID">: launch on stream<"FMT_ID">",
                  get_print_id(), get_stream().get_print_id());
-    event_t ret(true, _event_t::Kernel, get_stream().get_context());
+    event_ptr ret(true, _event_t::Kernel, get_stream().get_context());
 
-    ret.begin(get_stream());
+    ret->begin(get_stream());
     cl_command_queue &stream = get_stream()();
-    const cl_kernel &kernel = get_kernel()();
-    cl_event  &ev     = ret();
+    const cl_kernel &kernel  = get_kernel()();
+    cl_event  &ev            = (*ret)();
 
     res = clEnqueueNDRangeKernel(stream,
                                  kernel,
@@ -123,7 +123,7 @@ kernel_t::launch::execute(unsigned nevents, const cl_event *events, gmacError_t 
     err = error(res);
 
     if (err != gmacSuccess) {
-        ret.invalidate();
+        ret.reset();
     } else {
         get_stream().set_last_event(ret);
     }

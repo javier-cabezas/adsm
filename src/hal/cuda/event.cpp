@@ -39,7 +39,7 @@ list_event::sync()
     for (Parent::iterator it  = Parent::begin();
             it != Parent::end();
             it++) {
-        ret = (*it).sync();
+        ret = (*it)->sync();
         if (ret != gmacSuccess) break;
     }
 
@@ -47,7 +47,7 @@ list_event::sync()
 }
 
 void
-list_event::add_event(event_t event) 
+list_event::add_event(event_ptr event) 
 {
     Parent::push_back(event);
 }
