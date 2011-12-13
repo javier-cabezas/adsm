@@ -1,4 +1,4 @@
-#include "Lazy.h"
+#include "lazy.h"
 
 #include "config/config.h"
 
@@ -21,7 +21,7 @@ namespace __impl { namespace memory { namespace protocol {
 
 
 lazy_base::lazy_base(bool eager) :
-    Lock("LazyBase"),
+    Lock("lazy_base"),
     eager_(eager),
     limit_(1)
 {

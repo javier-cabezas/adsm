@@ -41,8 +41,8 @@ WITH THE SOFTWARE.  */
 #include "memory/protocol.h"
 #include "util/lock.h"
 
-#include "common/BlockList.h"
-#include "lazy/BlockState.h"
+#include "common/list_block.h"
+#include "lazy/block_state.h"
 
 namespace __impl {
 
@@ -168,7 +168,7 @@ public:
 }}}
 
 #ifdef USE_DBC
-#include "dbc/LazyBase.h"
+#include "dbc/lazy_base.h"
 #endif
 
 #endif

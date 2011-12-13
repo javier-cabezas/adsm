@@ -37,9 +37,9 @@ WITH THE SOFTWARE.  */
 #include "memory/block.h"
 #include "util/ReusableObject.h"
 
-#include "memory/protocol/common/BlockState.h"
+#include "memory/protocol/common/block_state.h"
 
-#include "LazyTypes.h"
+#include "lazy_types.h"
 
 namespace __impl {
 namespace memory {
@@ -220,7 +220,7 @@ public:
 
 }}}}
 
-#include "BlockState-impl.h"
+#include "block_state-impl.h"
 
 #endif // GMAC_MEMORY_PROTOCOL_LAZY_BLOCKSTATE_H_
 

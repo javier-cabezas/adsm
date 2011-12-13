@@ -41,7 +41,7 @@ WITH THE SOFTWARE.  */
 #include "util/lock.h"
 #include "util/NonCopyable.h"
 
-#include "protocol/common/BlockState.h"
+#include "protocol/common/block_state.h"
 
 namespace __impl {
 

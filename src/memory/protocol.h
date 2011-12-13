@@ -41,7 +41,7 @@ WITH THE SOFTWARE.  */
 #include "hal/types.h"
 #include "include/gmac/types.h"
 
-#include "memory/protocol/common/BlockState.h"
+#include "memory/protocol/common/block_state.h"
 
 namespace __impl {
 

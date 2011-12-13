@@ -8,7 +8,7 @@
 #ifdef USE_VM
 //#include "protocol/Gather.h"
 #endif
-#include "protocol/Lazy.h"
+#include "protocol/lazy.h"
 
 #if defined(__GNUC__)
 #include <strings.h>
