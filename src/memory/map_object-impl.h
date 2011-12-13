@@ -13,7 +13,7 @@ map_object::for_each_object(hal::event_ptr (object::*f)(gmacError_t &), gmacErro
     iterator i;
     lock_read();
     for(i = begin(); i != end(); i++) {
-        ret = (i->second->*f)(err);
+        ret = ((*i->second).*f)(err);
         if(err != gmacSuccess) {
             unlock();
             return ret;
@@ -31,7 +31,7 @@ map_object::for_each_object(hal::event_ptr (object::*f)(P1 &, gmacError_t &), P1
     const_iterator i;
     lock_read();
     for(i = begin(); i != end(); i++) {
-        ret = (i->second->*f)(p1, err);
+        ret = ((*i->second).*f)(p1, err);
         if (err != gmacSuccess) {
             unlock();
             return ret;
@@ -66,7 +66,7 @@ gmacError_t map_object::dumpObjects(const std::string &dir, std::string prefix, 
 inline
 gmacError_t map_object::dumpObject(const std::string &dir, std::string prefix, protocols::common::Statistic stat, hostptr_t ptr) const
 {
-    object *obj = getObject(ptr, 1);
+    object_ptr obj = get_object(ptr, 1);
     lock_read();
     ASSERTION(obj != NULL);
     std::stringstream name;

@@ -63,9 +63,7 @@ class block;
  * divided into blocks, which are the unit of coherence
  */
 class GMAC_LOCAL object :
-    protected gmac::util::lock_rw<object>,
-    public util::Reference {
-
+    protected gmac::util::lock_rw<object> {
     typedef gmac::util::lock_rw<object> Lock;
 
     // DBC_FORCE_TEST(object)
@@ -176,10 +174,10 @@ protected:
      */
     object(protocol &protocol, hostptr_t addr, size_t size);
 
+public:
     //! Default destructor
     virtual ~object();
 
-public:
 #ifdef DEBUG
     unsigned getId() const;
     unsigned getDumps(protocols::common::Statistic stat);

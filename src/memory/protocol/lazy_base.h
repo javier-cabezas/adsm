@@ -88,7 +88,7 @@ protected:
     list_block dbl_;
 
     /// Add a new block to the Dirty Block List
-    void addDirty(lazy_types::block_ptr block);
+    void add_dirty(lazy_types::block_ptr block);
 
     /** Default constructor
      *
@@ -120,11 +120,11 @@ public:
     TESTABLE hal::event_ptr release_all(gmacError_t &err);
     //gmacError_t releasedAll();
 
-    hal::event_ptr map_to_device(block_ptr block, gmacError_t &err);
+    TESTABLE hal::event_ptr map_to_device(block_ptr block, gmacError_t &err);
 
-    hal::event_ptr unmap_from_device(block_ptr block, gmacError_t &err);
+    TESTABLE hal::event_ptr unmap_from_device(block_ptr block, gmacError_t &err);
 
-    hal::event_ptr remove_block(block_ptr block, gmacError_t &err);
+    TESTABLE hal::event_ptr remove_block(block_ptr block, gmacError_t &err);
 
     TESTABLE hal::event_ptr to_host(block_ptr block, gmacError_t &err);
 

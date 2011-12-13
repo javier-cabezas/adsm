@@ -59,9 +59,9 @@ TEST_F(AddressSpaceTest, object) {
 	ASSERT_TRUE(aSpace != NULL);
 	ASSERT_TRUE(aSpace->addObject(*object));
 	ASSERT_TRUE(aSpace->hasObject(*object));
-	ASSERT_EQ(object, aSpace->getObject(ptr, Size_));
+	ASSERT_EQ(object, aSpace->get_object(ptr, Size_));
     
 	ASSERT_TRUE(aSpace->removeObject(*object));
 	ASSERT_FALSE(aSpace->hasObject(*object));
-	ASSERT_NE(object, aSpace->getObject(ptr, Size_)); 
+	ASSERT_NE(object, aSpace->get_object(ptr, Size_)); 
 }

@@ -82,6 +82,40 @@ lazy_base::release_all(gmacError_t &err)
 }
 
 __impl::hal::event_ptr
+lazy_base::map_to_device(block_ptr_impl _block, gmacError_t &err)
+{
+	REQUIRES(bool(_block));
+	lazy_block_ptr_impl block = __impl::util::static_pointer_cast<lazy_block_impl>(_block);
+	__impl::hal::event_ptr ret = parent::map_to_device(block, err);
+
+	ENSURES(block->getState() == __impl::memory::protocols::lazy_types::Dirty);
+
+	return ret;
+}
+
+__impl::hal::event_ptr
+lazy_base::unmap_from_device(block_ptr_impl _block, gmacError_t &err)
+{
+	REQUIRES(bool(_block));
+	lazy_block_ptr_impl block = __impl::util::static_pointer_cast<lazy_block_impl>(_block);
+	__impl::hal::event_ptr ret = parent::unmap_from_device(block, err);
+
+	ENSURES(block->getState() == __impl::memory::protocols::lazy_types::Dirty ||
+			block->getState() == __impl::memory::protocols::lazy_types::ReadOnly);
+
+	return ret;
+}
+
+__impl::hal::event_ptr
+lazy_base::remove_block(block_ptr_impl block, gmacError_t &err)
+{
+	REQUIRES(bool(block));
+	__impl::hal::event_ptr ret = parent::remove_block(block, err);
+
+	return ret;
+}
+
+__impl::hal::event_ptr
 lazy_base::to_host(block_ptr_impl _block, gmacError_t &err)
 {
 	REQUIRES(bool(_block));

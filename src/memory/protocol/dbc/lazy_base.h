@@ -63,6 +63,12 @@ public:
 
     __impl::hal::event_ptr release_all(gmacError_t &err);
 
+    __impl::hal::event_ptr map_to_device(block_ptr_impl block, gmacError_t &err);
+
+    __impl::hal::event_ptr unmap_from_device(block_ptr_impl block, gmacError_t &err);
+
+    __impl::hal::event_ptr remove_block(block_ptr_impl block, gmacError_t &err);
+
     __impl::hal::event_ptr to_host(block_ptr_impl block, gmacError_t &err);
 
     __impl::hal::event_ptr memset(block_ptr_impl block, size_t blockOffset, int v, size_t size,
