@@ -48,7 +48,6 @@ lazy_types::State lazy_base::state(GmacProtection prot) const
 
 void lazy_base::delete_object(object &obj)
 {
-    obj.decRef();
 }
 
 bool lazy_base::needs_update(const block_ptr b) const
@@ -120,7 +119,7 @@ lazy_base::signal_write(block_ptr b, hostptr_t addr, gmacError_t &err)
     }
     block->setState(lazy_types::Dirty, addr);
     block->unprotect();
-    addDirty(block);
+    add_dirty(block);
     TRACE(LOCAL,"Setting block %p to dirty state", block->addr());
     //ret = addDirty(block);
 exit_func:
@@ -195,7 +194,7 @@ lazy_base::map_to_device(block_ptr b, gmacError_t &err)
     ASSERTION(block->getState() == lazy_types::HostOnly);
     TRACE(LOCAL,"Mapping block to accelerator %p", block->addr());
     block->setState(lazy_types::Dirty);
-    addDirty(block);
+    add_dirty(block);
     return ret;
 }
 
@@ -223,7 +222,7 @@ lazy_base::unmap_from_device(block_ptr b, gmacError_t &err)
 }
 
 void
-lazy_base::addDirty(lazy_types::block_ptr block)
+lazy_base::add_dirty(lazy_types::block_ptr block)
 {
     lock();
     dbl_.push(block);

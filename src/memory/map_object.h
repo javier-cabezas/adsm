@@ -47,15 +47,17 @@ namespace __impl {
 
 namespace memory {
 class object;
+typedef util::shared_ptr<object> object_ptr;
+
 class protocol;
 
 //! A map of objects that is not bound to any Mode
 class GMAC_LOCAL map_object :
     protected gmac::util::lock_rw<map_object>,
-    protected std::map<const hostptr_t, object *>,
+    protected std::map<const hostptr_t, object_ptr>,
     public util::NonCopyable {
 protected:
-    typedef std::map<const hostptr_t, object *> Parent;
+    typedef std::map<const hostptr_t, object_ptr> Parent;
     typedef gmac::util::lock_rw<map_object> Lock;
 
 #if 0
@@ -87,7 +89,7 @@ protected:
      * found
      * \return First object inside the memory range. NULL if no object is found
      */
-    object *mapFind(const hostptr_t addr, size_t size) const;
+    object_ptr map_find(const hostptr_t addr, size_t size) const;
 public:
     /**
      * Default constructor
@@ -134,7 +136,7 @@ public:
      * Insert an object in the map
      *
      * \param obj Object to insert in the map
-     * \return True if the object was successfuly inserted
+     * \return True if the object was successfully inserted
      */
     bool add_object(object &obj);
 
@@ -142,12 +144,12 @@ public:
      * Remove an object from the map
      *
      * \param obj Object to remove from the map
-     * \return True if the object was successfuly removed
+     * \return True if the object was successfully removed
      */
     bool remove_object(object &obj);
 
     /**
-     * Find the firs object in a memory range
+     * Find the first object in a memory range
      *
      * \param addr Starting address of the memory range where the object is
      * located
@@ -155,14 +157,14 @@ public:
      * located
      * \return First object within the memory range. NULL if no object is found
      */
-    virtual object *getObject(const hostptr_t addr, size_t size = 0) const;
+    virtual object_ptr get_object(const hostptr_t addr, size_t size = 0) const;
 
     /**
      * Get the amount of memory consumed by all objects in the map
      *
      * \return Size (in bytes) of the memory consumed by all objects in the map
      */
-    size_t memorySize() const;
+    size_t get_memory_size() const;
 
     /**
      * Execute an operation on all the objects in the map

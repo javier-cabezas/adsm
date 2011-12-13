@@ -52,7 +52,7 @@ TEST_F(ModeTest, MemoryObject) {
     ASSERT_TRUE(addr != 0);
     obj->decRef();
 
-    object *ref = map.getObject(addr);
+    object *ref = map.get_object(addr);
     ASSERT_TRUE(ref != NULL);
     ASSERT_EQ(obj, ref);
     map.removeObject(*obj);
@@ -78,10 +78,10 @@ TEST_F(ModeTest, MemoryObjectMap){
     for(size_t s = 0; s < size_; s++) {
        ptr[s] = (s & 0xff);
     }
-	size_t size_all = map.memorySize();
+	size_t size_all = map.get_memory_size();
 	ASSERT_EQ(size_, size_all);
 	ASSERT_TRUE(map.addObject(*obj2));
-	size_all = map.memorySize();
+	size_all = map.get_memory_size();
 	ASSERT_EQ(size_*2, size_all);
 	ASSERT_TRUE(map.has_modified_objects());
 	ASSERT_EQ(gmacSuccess, map.releaseObjects());

@@ -23,7 +23,6 @@ Lazy<T>::create_object(size_t size, hostptr_t cpuPtr,
     object *ret = new T(*this, cpuPtr, size, lazy_base::state(prot), err);
     if(ret == NULL) return ret;
     if(err != gmacSuccess) {
-        ret->decRef();
         return NULL;
     }
     memory_ops::protect(ret->addr(), ret->size(), prot);

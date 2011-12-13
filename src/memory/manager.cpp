@@ -38,32 +38,32 @@ manager::map(core::address_space_ptr aspace, hostptr_t *addr, size_t size, int f
 
     memory::map_object &map = aspace->get_object_map();
 
-    object *object;
+    object *newObject;
+    object_ptr ptr;
     if (*addr != NULL) {
-        object = map.getObject(*addr);
-        if(object != NULL) {
+        ptr = map.get_object(*addr);
+        if(ptr) {
             // TODO: Remove this limitation
-            ASSERTION(object->size() == size);
-            ret = object->addOwner(aspace);
+            ASSERTION(ptr->size() == size);
+            ret = ptr->addOwner(aspace);
             goto done;
         }
     }
 
     // Create new shared object. We set the memory as invalid to avoid stupid data transfers
     // to non-initialized objects
-    object = map.getProtocol().create_object(size, NULL, GMAC_PROT_READ, 0);
-    if(object == NULL) {
+    newObject = map.getProtocol().create_object(size, NULL, GMAC_PROT_READ, 0);
+    if (newObject == NULL) {
         trace::ExitCurrentFunction();
         return gmacErrorMemoryAllocation;
     }
-    object->addOwner(aspace);
-    *addr = object->addr();
+    newObject->addOwner(aspace);
+    *addr = newObject->addr();
 
     // Insert object into memory maps
-    map.add_object(*object);
+    map.add_object(*newObject);
 
 done:
-    object->decRef();
     trace::ExitCurrentFunction();
     return ret;
 }
@@ -91,11 +91,10 @@ manager::unmap(core::address_space_ptr aspace, hostptr_t addr, size_t size)
 
     memory::map_object &map = aspace->get_object_map();
 
-    object *object = map.getObject(addr);
-    if(object != NULL)  {
-        object->removeOwner(aspace);
-        map.remove_object(*object);
-        object->decRef();
+    object_ptr ptr = map.get_object(addr);
+    if (ptr)  {
+        ptr->removeOwner(aspace);
+        map.remove_object(*ptr);
     } else {
         object_host_mapped *hostMappedObject = object_host_mapped::get(addr);
         if(hostMappedObject == NULL) {
@@ -127,13 +126,13 @@ gmacError_t manager::alloc(core::address_space_ptr aspace, hostptr_t *addr, size
 
     // Create new shared object. We set the memory as invalid to avoid stupid data transfers
     // to non-initialized objects
-    object *object = map.getProtocol().create_object(size, NULL, GMAC_PROT_READ, 0);
-    if(object == NULL) {
+    object *newObject = map.getProtocol().create_object(size, NULL, GMAC_PROT_READ, 0);
+    if(newObject == NULL) {
         trace::ExitCurrentFunction();
         return gmacErrorMemoryAllocation;
     }
-    object->addOwner(aspace);
-    *addr = object->addr();
+    newObject->addOwner(aspace);
+    *addr = newObject->addr();
 
     // Insert object into the global memory map
     std::pair<map_allocation::iterator, bool> res = mapAllocations_.insert(map_allocation::value_type(*addr + size, aspace));
@@ -141,8 +140,7 @@ gmacError_t manager::alloc(core::address_space_ptr aspace, hostptr_t *addr, size
     ASSERTION(res.second == true, "Object already registered");
 
     // Insert object into memory maps
-    map.add_object(*object);
-    object->decRef();
+    map.add_object(*newObject);
     trace::ExitCurrentFunction();
     return gmacSuccess;
 }
@@ -200,10 +198,9 @@ gmacError_t manager::free(core::address_space_ptr aspace, hostptr_t addr)
 
     memory::map_object &map = aspace->get_object_map();
 
-    object *object = map.getObject(addr);
-    if(object != NULL)  {
-        map.remove_object(*object);
-        object->decRef();
+    object_ptr ptr = map.get_object(addr);
+    if(ptr)  {
+        map.remove_object(*ptr);
 
         map_allocation::iterator it = mapAllocations_.upper_bound(addr);
         ASSERTION(it != mapAllocations_.end(), "Object not registered");
@@ -232,8 +229,8 @@ manager::getAllocSize(core::address_space_ptr aspace, const hostptr_t addr, gmac
 
     memory::map_object &map = aspace->get_object_map();
 
-    object *obj = map.getObject(addr);
-    if (obj == NULL) {
+    object_ptr obj = map.get_object(addr);
+    if (!obj) {
         object_host_mapped *hostMappedObject = object_host_mapped::get(addr);
         if (hostMappedObject != NULL) {
             ret = hostMappedObject->size();
@@ -242,7 +239,6 @@ manager::getAllocSize(core::address_space_ptr aspace, const hostptr_t addr, gmac
         }
     } else {
         ret = obj->size();
-        obj->decRef();
     }
     trace::ExitCurrentFunction();
     return ret;
@@ -254,9 +250,9 @@ manager::translate(core::address_space_ptr aspace, const hostptr_t addr)
     trace::EnterCurrentFunction();
     memory::map_object &map = aspace->get_object_map();
 
-    object *obj = map.getObject(addr);
+    object_ptr obj = map.get_object(addr);
     accptr_t ret(0);
-    if(obj == NULL) {
+    if(!obj) {
         object_host_mapped *object = object_host_mapped::get(addr);
         if(object != NULL) {
             ret = object->get_device_addr(aspace, addr);
@@ -264,7 +260,6 @@ manager::translate(core::address_space_ptr aspace, const hostptr_t addr)
         }
     } else {
         ret = obj->get_device_addr(addr);
-        obj->decRef();
     }
     trace::ExitCurrentFunction();
     return ret;
@@ -303,8 +298,8 @@ manager::acquireObjects(core::address_space_ptr aspace, const list_addr &addrs)
         TRACE(LOCAL,"Acquiring call Objects");
         std::list<object_access_info>::const_iterator it;
         for (it = addrs.begin(); it != addrs.end(); it++) {
-            object *obj = map.getObject(it->first);
-            if (obj == NULL) {
+            object_ptr obj = map.get_object(it->first);
+            if (!obj) {
                 object_host_mapped *hostMappedObject = object_host_mapped::get(it->first);
                 ASSERTION(hostMappedObject != NULL, "Address not found");
 #ifdef USE_OPENCL
@@ -316,7 +311,6 @@ manager::acquireObjects(core::address_space_ptr aspace, const list_addr &addrs)
                     GmacProtection prot = it->second;
                     evt = obj->acquire(prot, ret);
                     ASSERTION(ret == gmacSuccess);
-                    obj->decRef();
                 }
             }
         }
@@ -350,8 +344,8 @@ manager::releaseObjects(core::address_space_ptr aspace, const list_addr &addrs)
         TRACE(LOCAL,"Releasing call Objects");
         list_addr::const_iterator it;
         for (it = addrs.begin(); it != addrs.end(); it++) {
-            object *obj = map.getObject(it->first);
-            if (obj == NULL) {
+            object_ptr obj = map.get_object(it->first);
+            if (!obj) {
                 object_host_mapped *hostMappedObject = object_host_mapped::get(it->first);
                 ASSERTION(hostMappedObject != NULL, "Address not found");
 #ifdef USE_OPENCL
@@ -363,7 +357,6 @@ manager::releaseObjects(core::address_space_ptr aspace, const list_addr &addrs)
                 if (obj->is_released() == false) {
                     evt = obj->releaseBlocks(ret);
                     ASSERTION(ret == gmacSuccess);
-                    obj->decRef();
                 }
             }
         }
@@ -406,7 +399,7 @@ gmacError_t manager::toIOBuffer(core::address_space_ptr current, core::io_buffer
 #endif
 
         memory::map_object &map = aspace->get_object_map();
-        object *obj = map.getObject(addr + off);
+        object *obj = map.get_object(addr + off);
         if (!obj) {
             trace::ExitCurrentFunction();
             return gmacErrorInvalidValue;
@@ -451,7 +444,7 @@ gmacError_t manager::fromIOBuffer(core::address_space_ptr current, hostptr_t add
         }
 #endif
         memory::map_object &map = aspace->get_object_map();
-        object *obj = map.getObject(addr + off);
+        object *obj = map.get_object(addr + off);
         if (!obj) {
             trace::ExitCurrentFunction();
             return gmacErrorInvalidValue;
@@ -490,8 +483,8 @@ manager::signal_read(core::address_space_ptr aspace, hostptr_t addr)
 #endif
 
     bool ret = true;
-    object *obj = map.getObject(addr);
-    if(obj == NULL) {
+    object_ptr obj = map.get_object(addr);
+    if(!obj) {
         trace::ExitCurrentFunction();
         return false;
     }
@@ -499,7 +492,6 @@ manager::signal_read(core::address_space_ptr aspace, hostptr_t addr)
     gmacError_t err;
     obj->signal_read(addr, err);
     ASSERTION(err == gmacSuccess);
-    obj->decRef();
     trace::ExitCurrentFunction();
     return ret;
 }
@@ -520,8 +512,8 @@ manager::signal_write(core::address_space_ptr aspace, hostptr_t addr)
     }
 #endif
 
-    object *obj = map.getObject(addr);
-    if(obj == NULL) {
+    object_ptr obj = map.get_object(addr);
+    if(!obj) {
         trace::ExitCurrentFunction();
         return false;
     }
@@ -529,7 +521,6 @@ manager::signal_write(core::address_space_ptr aspace, hostptr_t addr)
     gmacError_t err;
     obj->signal_write(addr, err);
     if (err != gmacSuccess) ret = false;
-    obj->decRef();
     trace::ExitCurrentFunction();
     return ret;
 }
@@ -558,14 +549,13 @@ manager::memset(core::address_space_ptr aspace, hostptr_t s, int c, size_t size)
     gmacError_t ret = gmacSuccess;
 
     memory::map_object &map = aspaceOwner->get_object_map();
-    object *obj = map.getObject(s);
+    object_ptr obj = map.get_object(s);
     ASSERTION(obj != NULL);
     // Check for a fast path -- probably the user is just
     // initializing a single object or a portion of an object
     if(obj->addr() <= s && obj->end() >= (s + size)) {
         size_t objSize = (size < obj->size()) ? size : obj->size();
         ret = obj->memset(s - obj->addr(), c, objSize);
-        obj->decRef();
         trace::ExitCurrentFunction();
         return ret;
     }
@@ -575,7 +565,7 @@ manager::memset(core::address_space_ptr aspace, hostptr_t s, int c, size_t size)
     size_t left = size;
     while(left > 0) {
         // If there is no object, initialize the remaining host memory
-        if(obj == NULL) {
+        if(!obj) {
             ::memset(s, c, left);
             left = 0; // This will finish the loop
         } else {
@@ -598,12 +588,11 @@ manager::memset(core::address_space_ptr aspace, hostptr_t s, int c, size_t size)
             if(ret != gmacSuccess) break;
             left -= objSize; // Account for the bytes initialized by the object
             s += objSize;  // Advance the pointer
-            obj->decRef();  // Release the object (it will not be needed anymore)
         }
         // Get the next object in the memory range that remains to be initialized
         if (left > 0) {
             memory::map_object &map = aspaceOwner->get_object_map();
-            obj = map.getObject(s);
+            obj = map.get_object(s);
         }
     }
 
@@ -645,8 +634,8 @@ manager::memcpy(core::address_space_ptr aspace, hostptr_t dst, const hostptr_t s
         return gmacSuccess;
     }
 
-    object *dstObject = NULL;
-    object *srcObject = NULL;
+    object_ptr dstObject;
+    object_ptr srcObject;
 
     memory::map_object *mapDst = NULL;
     memory::map_object *mapSrc = NULL;
@@ -654,11 +643,11 @@ manager::memcpy(core::address_space_ptr aspace, hostptr_t dst, const hostptr_t s
     // Get initial objects
     if(aspaceDst) {
         mapDst = &aspaceDst->get_object_map();
-        dstObject = mapDst->getObject(dst, size);
+        dstObject = mapDst->get_object(dst, size);
     }
     if(aspaceSrc) {
         mapSrc = &aspaceSrc->get_object_map();
-        srcObject = mapSrc->getObject(src, size);
+        srcObject = mapSrc->get_object(src, size);
     }
 
     gmacError_t ret = gmacSuccess;
@@ -668,17 +657,15 @@ manager::memcpy(core::address_space_ptr aspace, hostptr_t dst, const hostptr_t s
     while(left > 0) {
         // Get next objects involved, if necessary
         if(aspaceDst && dstObject && dstObject->end() < (dst + offset)) {
-            dstObject->decRef();
-            dstObject = mapDst->getObject(dst + offset, left);
+            dstObject = mapDst->get_object(dst + offset, left);
         }
         if(aspaceSrc && srcObject && srcObject->end() < (src + offset)) {
-            srcObject->decRef();
-            srcObject = mapSrc->getObject(src + offset, left);
+            srcObject = mapSrc->get_object(src + offset, left);
         }
 
         // Get the number of host-to-host memory we have to copy
-        size_t dstHostMemory = hostMemory(dst + offset, left, dstObject);
-        size_t srcHostMemory = hostMemory(src + offset, left, srcObject);
+        size_t dstHostMemory = hostMemory(dst + offset, left, dstObject.get());
+        size_t srcHostMemory = hostMemory(src + offset, left, srcObject.get());
 
         if(dstHostMemory != 0 && srcHostMemory != 0) { // Host-to-host memory copy
             copySize = (dstHostMemory < srcHostMemory) ? dstHostMemory : srcHostMemory;
@@ -710,9 +697,6 @@ manager::memcpy(core::address_space_ptr aspace, hostptr_t dst, const hostptr_t s
         offset += copySize;
         left -= copySize;
     }
-
-    if(dstObject != NULL) dstObject->decRef();
-    if(srcObject != NULL) srcObject->decRef();
 
     trace::ExitCurrentFunction();
     return ret;
@@ -746,7 +730,7 @@ manager::from_io_device(core::address_space_ptr aspace, hostptr_t addr,
             return gmacErrorInvalidValue;
         }
         memory::map_object &map = aspace->get_object_map();
-        object *obj = map.getObject(addr + off);
+        object_ptr obj = map.get_object(addr + off);
         if (!obj) {
             trace::ExitCurrentFunction();
             return gmacErrorInvalidValue;
@@ -756,7 +740,6 @@ manager::from_io_device(core::address_space_ptr aspace, hostptr_t addr,
         size_t c = objCount <= count - off? objCount: count - off;
         size_t objOff = addr - obj->addr();
         ret = obj->from_io_device(objOff, input, c);
-        obj->decRef();
         if(ret != gmacSuccess) {
             trace::ExitCurrentFunction();
             return ret;
@@ -783,7 +766,7 @@ manager::to_io_device(hal::device_output &output, core::address_space_ptr aspace
             return gmacErrorInvalidValue;
         }
         memory::map_object &map = aspace->get_object_map();
-        object *obj = map.getObject(addr + off);
+        object_ptr obj = map.get_object(addr + off);
         if (!obj) {
             trace::ExitCurrentFunction();
             return gmacErrorInvalidValue;
@@ -794,7 +777,6 @@ manager::to_io_device(hal::device_output &output, core::address_space_ptr aspace
         size_t objOff = addr - obj->addr();
         // Handle objects with no memory in the accelerator
         ret = obj->to_io_device(output, objOff, c);
-        obj->decRef();
         if(ret != gmacSuccess) {
             trace::ExitCurrentFunction();
             return ret;

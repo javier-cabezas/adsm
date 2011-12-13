@@ -13,7 +13,6 @@ namespace __impl { namespace memory {
 
 inline object::object(protocol &protocol, hostptr_t addr, size_t size) :
     Lock("object"),
-    util::Reference("Object"),
     protocol_(protocol),
     addr_(addr),
     size_(size),

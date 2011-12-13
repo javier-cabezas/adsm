@@ -34,15 +34,17 @@ map_object::statsInit()
 }
 #endif
 
-object *
-map_object::mapFind(const hostptr_t addr, size_t size) const
+object_ptr
+map_object::map_find(const hostptr_t addr, size_t size) const
 {
     map_object::const_iterator i;
-    object *ret = NULL;
+    object_ptr ret;
     lock_read();
     const uint8_t *limit = (const uint8_t *)addr + size;
     i = upper_bound(addr);
-    if(i != end() && i->second->addr() <= limit) ret = i->second;
+    if(i != end() && i->second->addr() <= limit) {
+    	ret = object_ptr(i->second);
+    }
     unlock();
     return ret;
 }
@@ -69,16 +71,13 @@ map_object::~map_object()
 void
 map_object::cleanUp()
 {
-    const_iterator i;
     lock_write();
-    for(i = begin(); i != end(); i++) {
-        // Decrement reference count of pointed objects to allow later destruction
-        i->second->decRef();
-    }
+    clear();
     unlock();
 }
 
-size_t map_object::size() const
+size_t
+map_object::size() const
 {
     lock_read();
     size_t ret = Parent::size();
@@ -100,18 +99,20 @@ map_object::getProcess() const
 }
 #endif
 
-bool map_object::add_object(object &obj)
+bool
+map_object::add_object(object &obj)
 {
     lock_write();
     TRACE(LOCAL, "Insert object: %p", obj.addr());
-    std::pair<iterator, bool> ret = Parent::insert(value_type(obj.end(), &obj));
-    if(ret.second == true) obj.incRef();
+    object_ptr ptr(&obj);
+    std::pair<iterator, bool> ret = Parent::insert(value_type(obj.end(), ptr));
     modifiedObjects_unlocked();
     unlock();
     return ret.second;
 }
 
-bool map_object::remove_object(object &obj)
+bool
+map_object::remove_object(object &obj)
 {
     lock_write();
     iterator i = find(obj.end());
@@ -131,7 +132,6 @@ bool map_object::remove_object(object &obj)
 #endif
 
         TRACE(LOCAL, "Remove object: %p", obj.addr());
-        obj.decRef();
         Parent::erase(i);
     } else {
         TRACE(LOCAL, "CANNOT Remove object: %p from map with "FMT_SIZE" elems", obj.addr(), Parent::size());
@@ -140,16 +140,15 @@ bool map_object::remove_object(object &obj)
     return ret;
 }
 
-object *map_object::getObject(const hostptr_t addr, size_t size) const
+object_ptr
+map_object::get_object(const hostptr_t addr, size_t size) const
 {
-    // Lock already acquired in mapFind
-    object *ret = NULL;
-    ret = mapFind(addr, size);
-    if(ret != NULL) ret->incRef();
-    return ret;
+    // Lock already acquired in map_find
+    return map_find(addr, size);
 }
 
-size_t map_object::memorySize() const
+size_t
+map_object::get_memory_size() const
 {
     size_t total = 0;
     const_iterator i;
@@ -161,7 +160,8 @@ size_t map_object::memorySize() const
     return total;
 }
 
-gmacError_t map_object::release_objects()
+gmacError_t
+map_object::release_objects()
 {
     lock_write();
 #ifdef DEBUG
