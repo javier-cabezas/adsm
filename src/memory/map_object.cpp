@@ -100,7 +100,7 @@ map_object::getProcess() const
 }
 #endif
 
-bool map_object::addObject(object &obj)
+bool map_object::add_object(object &obj)
 {
     lock_write();
     TRACE(LOCAL, "Insert object: %p", obj.addr());
@@ -111,7 +111,7 @@ bool map_object::addObject(object &obj)
     return ret.second;
 }
 
-bool map_object::removeObject(object &obj)
+bool map_object::remove_object(object &obj)
 {
     lock_write();
     iterator i = find(obj.end());
@@ -123,10 +123,10 @@ bool map_object::removeObject(object &obj)
             std::stringstream ss(std::stringstream::out);
             ss << dump << "-" << "remove";
 
-            dumpObject(StatsDir_, ss.str(), memory::protocol::common::PAGE_FAULTS_READ, obj.addr());
-            dumpObject(StatsDir_, ss.str(), memory::protocol::common::PAGE_FAULTS_WRITE, obj.addr());
-            dumpObject(StatsDir_, ss.str(), memory::protocol::common::PAGE_TRANSFERS_TO_HOST, obj.addr());
-            dumpObject(StatsDir_, ss.str(), memory::protocol::common::PAGE_TRANSFERS_TO_ACCELERATOR, obj.addr());
+            dumpObject(StatsDir_, ss.str(), memory::protocols::common::PAGE_FAULTS_READ, obj.addr());
+            dumpObject(StatsDir_, ss.str(), memory::protocols::common::PAGE_FAULTS_WRITE, obj.addr());
+            dumpObject(StatsDir_, ss.str(), memory::protocols::common::PAGE_TRANSFERS_TO_HOST, obj.addr());
+            dumpObject(StatsDir_, ss.str(), memory::protocols::common::PAGE_TRANSFERS_TO_ACCELERATOR, obj.addr());
         }
 #endif
 
@@ -161,7 +161,7 @@ size_t map_object::memorySize() const
     return total;
 }
 
-gmacError_t map_object::releaseObjects()
+gmacError_t map_object::release_objects()
 {
     lock_write();
 #ifdef DEBUG
@@ -170,10 +170,10 @@ gmacError_t map_object::releaseObjects()
         std::stringstream ss(std::stringstream::out);
         ss << dump << "-" << "release";
 
-        dumpObjects(StatsDir_, ss.str(), memory::protocol::common::PAGE_FAULTS_READ);
-        dumpObjects(StatsDir_, ss.str(), memory::protocol::common::PAGE_FAULTS_WRITE);
-        dumpObjects(StatsDir_, ss.str(), memory::protocol::common::PAGE_TRANSFERS_TO_HOST);
-        dumpObjects(StatsDir_, ss.str(), memory::protocol::common::PAGE_TRANSFERS_TO_ACCELERATOR);
+        dumpObjects(StatsDir_, ss.str(), memory::protocols::common::PAGE_FAULTS_READ);
+        dumpObjects(StatsDir_, ss.str(), memory::protocols::common::PAGE_FAULTS_WRITE);
+        dumpObjects(StatsDir_, ss.str(), memory::protocols::common::PAGE_TRANSFERS_TO_HOST);
+        dumpObjects(StatsDir_, ss.str(), memory::protocols::common::PAGE_TRANSFERS_TO_ACCELERATOR);
     }
 #endif
     releasedObjects_ = true;
@@ -182,7 +182,7 @@ gmacError_t map_object::releaseObjects()
 }
 
 gmacError_t
-map_object::acquireObjects()
+map_object::acquire_objects()
 {
     lock_write();
     modifiedObjects_ = false;

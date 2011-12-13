@@ -5,7 +5,7 @@
 
 namespace __impl { namespace util { 
 
-inline THREAD_T GetThreadId()
+inline THREAD_T get_thread_id()
 {
 	return GetCurrentThreadId();
 }

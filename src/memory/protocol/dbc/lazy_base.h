@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010, 2011 University of Illinois
+/* Copyright (c) 2009-2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -36,22 +36,22 @@ WITH THE SOFTWARE.  */
 
 #include "config/dbc/types.h"
 
-namespace __dbc { namespace memory { namespace protocol {
+namespace __dbc { namespace memory { namespace protocols {
 
 class GMAC_LOCAL lazy_base :
-    public __impl::memory::protocol::lazy_base,
+    public __impl::memory::protocols::lazy_base,
     public virtual Contract {
-    DBC_TESTED(__impl::memory::protocol::lazy_base)
+    DBC_TESTED(__impl::memory::protocols::lazy_base)
 
 protected:
     lazy_base(bool eager);
     virtual ~lazy_base();
 
-    typedef __impl::memory::protocol::lazy_base parent;
+    typedef __impl::memory::protocols::lazy_base parent;
     typedef __impl::memory::block_ptr block_ptr_impl;
     typedef __impl::memory::object object_impl;
-    typedef __impl::memory::protocol::lazy_types::State state_impl;
-    typedef __impl::memory::protocol::lazy_types::Block lazy_block_impl;
+    typedef __impl::memory::protocols::lazy_types::State state_impl;
+    typedef __impl::memory::protocols::lazy_types::Block lazy_block_impl;
     typedef __impl::util::shared_ptr<lazy_block_impl> lazy_block_ptr_impl;
 
 public:
@@ -61,16 +61,16 @@ public:
     __impl::hal::event_ptr acquire(block_ptr_impl obj, GmacProtection &prot, gmacError_t &err);
     __impl::hal::event_ptr release(block_ptr_impl block, gmacError_t &err);
 
-    __impl::hal::event_ptr releaseAll(gmacError_t &err);
+    __impl::hal::event_ptr release_all(gmacError_t &err);
 
-    __impl::hal::event_ptr toHost(block_ptr_impl block, gmacError_t &err);
+    __impl::hal::event_ptr to_host(block_ptr_impl block, gmacError_t &err);
 
     __impl::hal::event_ptr memset(block_ptr_impl block, size_t blockOffset, int v, size_t size,
                                 gmacError_t &err);
 
-    __impl::hal::event_ptr flushDirty(gmacError_t &err);
+    __impl::hal::event_ptr flush_dirty(gmacError_t &err);
 
-    __impl::hal::event_ptr copyBlockToBlock(block_ptr_impl d, size_t dstOffset, block_ptr_impl s, size_t srcOffset, size_t count, gmacError_t &err);
+    __impl::hal::event_ptr copy_block_to_block(block_ptr_impl d, size_t dstOffset, block_ptr_impl s, size_t srcOffset, size_t count, gmacError_t &err);
 };
 
 }}}

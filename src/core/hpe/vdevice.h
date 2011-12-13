@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010, 2011 University of Illinois
+/* Copyright (c) 2009-2011sity of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -82,7 +82,7 @@ class GMAC_LOCAL vdevice :
 protected:
     process &proc_;
 
-    util::shared_ptr<address_space> aspace_;
+    address_space_ptr aspace_;
 
     hal::stream_t &streamLaunch_;
 #ifdef USE_VM
@@ -115,7 +115,7 @@ public:
      * \param streamLaunch Stream to which enqueue kernel launch
     */
     vdevice(process &proc,
-            util::shared_ptr<address_space> aspace,
+            address_space_ptr aspace,
             hal::stream_t &streamLaunch);
 
 #if 0
@@ -246,8 +246,7 @@ public:
     memory::map_object &get_object_map();
     const memory::map_object &get_object_map() const;
 
-    util::shared_ptr<address_space> get_address_space();
-    util::shared_ptr<const address_space> get_address_space() const;
+    address_space_ptr get_address_space() const;
 };
 
 }}}

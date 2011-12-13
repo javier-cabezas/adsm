@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010, 2011 University of Illinois
+/* Copyright (c) 2009-2011sity of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -50,32 +50,33 @@ namespace memory { namespace allocator {
 class GMAC_LOCAL slab : public memory::allocator_interface {
 protected:
     class GMAC_LOCAL map_address :
-    	public std::map<hostptr_t, cache *>, gmac::util::lock_rw<map_address> {
-    	typedef gmac::util::lock_rw<map_address> Lock;
+    	public std::map<hostptr_t, cache *>,
+    	gmac::util::lock_rw<map_address> {
+    	typedef gmac::util::lock_rw<map_address> lock;
     protected:
         friend class slab;
     public:
-        map_address() : Lock("memory::Slab") {}
+        map_address() : lock("memory::slab::map_address") {}
     };
 
-    typedef std::map<long_t, cache *> CacheMap;
+    typedef std::map<long_t, cache *> map_cache;
 
     class GMAC_LOCAL map_aspace :
-    	public std::map<util::shared_ptr<core::address_space>, CacheMap>,
+    	public std::map<core::address_space_ptr, map_cache>,
     	gmac::util::lock_rw<map_aspace> {
         friend class slab;
 
-        typedef gmac::util::lock_rw<map_aspace> Lock;
+        typedef gmac::util::lock_rw<map_aspace> lock;
     public:
-        map_aspace() : Lock("memory::Slab") {}
+        map_aspace() : lock("memory::slab::map_aspace") {}
     };
 
     map_address addresses_;
     map_aspace aspaces_; // Per-context cache map
 
-    cache &createCache(util::shared_ptr<core::address_space> aspace, CacheMap &map, long_t key, size_t size);
-    cache &get(util::shared_ptr<core::address_space> current, long_t key, size_t size);
-    void cleanup(util::shared_ptr<core::address_space> current);
+    cache &create_cache(core::address_space_ptr aspace, map_cache &map, long_t key, size_t size);
+    cache &get(core::address_space_ptr current, long_t key, size_t size);
+    void cleanup(core::address_space_ptr current);
 
     manager &manager_;
 
@@ -83,8 +84,8 @@ protected:
 public:
     slab(manager &manager);
 
-    virtual hostptr_t alloc(util::shared_ptr<core::address_space> current, const size_t size, const hostptr_t addr);
-    virtual bool free(util::shared_ptr<core::address_space> current, const hostptr_t addr);
+    virtual hostptr_t alloc(core::address_space_ptr current, const size_t size, const hostptr_t addr);
+    virtual bool free(core::address_space_ptr current, const hostptr_t addr);
 };
 
 }}}

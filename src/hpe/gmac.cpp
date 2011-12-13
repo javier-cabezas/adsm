@@ -370,7 +370,7 @@ gmacLaunch(__impl::core::hpe::kernel::launch_ptr launch)
     address_space_ptr aspace = dev.get_address_space();
     manager &manager = getManager();
     TRACE(GLOBAL, "Flush the memory used in the kernel");
-    const std::list<__impl::memory::ObjectInfo> &objects = launch->get_arg_list().get_objects();
+    const std::list<__impl::memory::object_access_info> &objects = launch->get_arg_list().get_objects();
     // If the launch object does not contain objects, assume all the objects
     // in the mode are released
     ret = manager.releaseObjects(aspace, objects);
@@ -540,7 +540,7 @@ GMAC_API gmacError_t APICALL
 __gmacFlushDirty()
 {
     enterGmac();
-    gmacError_t ret = getManager().flushDirty(thread::get_current_thread().get_current_virtual_device());
+    gmacError_t ret = getManager().flush_dirty(thread::get_current_thread().get_current_virtual_device());
     thread::get_current_thread().set_last_error(ret);
     exitGmac();
     return ret;

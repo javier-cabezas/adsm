@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010, 2011 University of Illinois
+/* Copyright (c) 2009-2011sity of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -46,7 +46,7 @@ namespace memory {
 
 template <typename State> class StateBlock;
 
-namespace protocol {
+namespace protocols {
 namespace lazy_types {
 
 #if defined(USE_SUBBLOCK_TRACKING) || defined(USE_VM)

@@ -3,7 +3,7 @@
 
 #include "memory/BlockGroup.h"
 
-namespace __impl { namespace memory { namespace protocol_interface {
+namespace __impl { namespace memory { namespace protocol {
 
 template<typename T>
 inline Gather<T>::Gather(size_t limit) :
@@ -15,7 +15,7 @@ inline Gather<T>::~Gather()
 {}
 
 template<typename T>
-inline memory::object *Gather<T>::createObject(size_t size, hostptr_t cpuPtr, 
+inline memory::object *Gather<T>::create_object(size_t size, hostptr_t cpuPtr, 
                                                GmacProtection prot, unsigned flags)
 {
     // TODO: get mode as parameter

@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009-2011 Universityrsity of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -53,11 +53,11 @@ void mpiInit(void) GMAC_LOCAL;
 namespace __impl { 
 
 namespace memory {
-class protocol_interface;
+class protocol;
 
 void Init(void);
 #define GLOBAL_PROTOCOL 0x1
-protocol_interface *ProtocolInit(unsigned flags);
+protocol *ProtocolInit(unsigned flags);
 void Fini(void);
 }
 

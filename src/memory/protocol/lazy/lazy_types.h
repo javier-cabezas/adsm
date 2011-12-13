@@ -38,7 +38,7 @@ namespace __impl {
 namespace memory {
 template <typename State> class block_state;
 
-namespace protocol {
+namespace protocols {
 
 namespace lazy_types {
 class BlockState;

@@ -10,7 +10,7 @@ address_space::get_context()
 {
     context *context = thread::get_current_thread().get_context(*this);
     if (context == NULL) {
-        context = proc_.get_resource_manager().create_context(util::GetThreadId(), *this);
+        context = proc_.get_resource_manager().create_context(util::get_thread_id(), *this);
         ASSERTION(context != NULL);
     }
 
@@ -24,7 +24,7 @@ address_space::address_space(hal::context_t &context,
                              hal::stream_t &streamToHost,
                              hal::stream_t &streamAccelerator,
                              process &proc) :
-    Lock("address_space"),
+    lock("address_space"),
     ctx_(context),
     streamLaunch_(streamLaunch),
     streamToAccelerator_(streamToAccelerator),

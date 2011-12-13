@@ -9,7 +9,7 @@
 
 namespace __impl { namespace memory {
 
-ListAddr AllAddresses;
+list_addr AllAddresses;
 
 manager::manager(core::process &proc) :
     proc_(proc),
@@ -51,7 +51,7 @@ manager::map(core::address_space_ptr aspace, hostptr_t *addr, size_t size, int f
 
     // Create new shared object. We set the memory as invalid to avoid stupid data transfers
     // to non-initialized objects
-    object = map.getProtocol().createObject(size, NULL, GMAC_PROT_READ, 0);
+    object = map.getProtocol().create_object(size, NULL, GMAC_PROT_READ, 0);
     if(object == NULL) {
         trace::ExitCurrentFunction();
         return gmacErrorMemoryAllocation;
@@ -60,7 +60,7 @@ manager::map(core::address_space_ptr aspace, hostptr_t *addr, size_t size, int f
     *addr = object->addr();
 
     // Insert object into memory maps
-    map.addObject(*object);
+    map.add_object(*object);
 
 done:
     object->decRef();
@@ -94,7 +94,7 @@ manager::unmap(core::address_space_ptr aspace, hostptr_t addr, size_t size)
     object *object = map.getObject(addr);
     if(object != NULL)  {
         object->removeOwner(aspace);
-        map.removeObject(*object);
+        map.remove_object(*object);
         object->decRef();
     } else {
         object_host_mapped *hostMappedObject = object_host_mapped::get(addr);
@@ -127,7 +127,7 @@ gmacError_t manager::alloc(core::address_space_ptr aspace, hostptr_t *addr, size
 
     // Create new shared object. We set the memory as invalid to avoid stupid data transfers
     // to non-initialized objects
-    object *object = map.getProtocol().createObject(size, NULL, GMAC_PROT_READ, 0);
+    object *object = map.getProtocol().create_object(size, NULL, GMAC_PROT_READ, 0);
     if(object == NULL) {
         trace::ExitCurrentFunction();
         return gmacErrorMemoryAllocation;
@@ -141,7 +141,7 @@ gmacError_t manager::alloc(core::address_space_ptr aspace, hostptr_t *addr, size
     ASSERTION(res.second == true, "Object already registered");
 
     // Insert object into memory maps
-    map.addObject(*object);
+    map.add_object(*object);
     object->decRef();
     trace::ExitCurrentFunction();
     return gmacSuccess;
@@ -176,9 +176,9 @@ gmacError_t manager::globalAlloc(core::address_space_ptr aspace, hostptr_t *addr
             return ret;
         }
     }
-    protocol_interface *protocol_interface = proc_.getProtocol();
-    if(protocol_interface == NULL) return gmacErrorInvalidValue;
-    object *object = protocol_interface->createObject(size, NULL, GMAC_PROT_NONE, 0);
+    protocol *protocol = proc_.getProtocol();
+    if(protocol == NULL) return gmacErrorInvalidValue;
+    object *object = protocol->create_object(size, NULL, GMAC_PROT_NONE, 0);
     *addr = object->addr();
     if(*addr == NULL) {
         object->decRef();
@@ -202,7 +202,7 @@ gmacError_t manager::free(core::address_space_ptr aspace, hostptr_t addr)
 
     object *object = map.getObject(addr);
     if(object != NULL)  {
-        map.removeObject(*object);
+        map.remove_object(*object);
         object->decRef();
 
         map_allocation::iterator it = mapAllocations_.upper_bound(addr);
@@ -285,7 +285,7 @@ manager::owner(hostptr_t addr, size_t size)
 }
 
 gmacError_t
-manager::acquireObjects(core::address_space_ptr aspace, const ListAddr &addrs)
+manager::acquireObjects(core::address_space_ptr aspace, const list_addr &addrs)
 {
     trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
@@ -293,15 +293,15 @@ manager::acquireObjects(core::address_space_ptr aspace, const ListAddr &addrs)
 
     memory::map_object &map = aspace->get_object_map();
     if (addrs.size() == 0) {
-        if (map.releasedObjects()) {
+        if (map.released_objects()) {
             TRACE(LOCAL,"Acquiring Objects");
             GmacProtection prot = GMAC_PROT_READWRITE;
-            evt = map.forEachObject<GmacProtection>(&object::acquire, prot, ret);
-            map.acquireObjects();
+            evt = map.for_each_object<GmacProtection>(&object::acquire, prot, ret);
+            map.acquire_objects();
         }
     } else {
         TRACE(LOCAL,"Acquiring call Objects");
-        std::list<ObjectInfo>::const_iterator it;
+        std::list<object_access_info>::const_iterator it;
         for (it = addrs.begin(); it != addrs.end(); it++) {
             object *obj = map.getObject(it->first);
             if (obj == NULL) {
@@ -326,7 +326,7 @@ manager::acquireObjects(core::address_space_ptr aspace, const ListAddr &addrs)
 }
 
 gmacError_t
-manager::releaseObjects(core::address_space_ptr aspace, const ListAddr &addrs)
+manager::releaseObjects(core::address_space_ptr aspace, const list_addr &addrs)
 {
     trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
@@ -335,20 +335,20 @@ manager::releaseObjects(core::address_space_ptr aspace, const ListAddr &addrs)
     memory::map_object &map = aspace->get_object_map();
     if (addrs.size() == 0) { // Release all objects
         TRACE(LOCAL,"Releasing Objects");
-        if (map.hasModifiedObjects()) {
+        if (map.has_modified_objects()) {
             // Mark objects as released
-            evt = map.forEachObject(&object::release, ret);
+            evt = map.for_each_object(&object::release, ret);
             ASSERTION(ret == gmacSuccess);
             // Flush protocols
             // 1. Mode protocol
-            evt = map.getProtocol().releaseAll(ret);
+            evt = map.getProtocol().release_all(ret);
             ASSERTION(ret == gmacSuccess);
 
-            map.releaseObjects();
+            map.release_objects();
         }
     } else { // Release given objects
         TRACE(LOCAL,"Releasing call Objects");
-        ListAddr::const_iterator it;
+        list_addr::const_iterator it;
         for (it = addrs.begin(); it != addrs.end(); it++) {
             object *obj = map.getObject(it->first);
             if (obj == NULL) {
@@ -374,7 +374,7 @@ manager::releaseObjects(core::address_space_ptr aspace, const ListAddr &addrs)
         ret = map.getProtocol().releasedAll();
         ASSERTION(ret == gmacSuccess);
 
-        map.releaseObjects();
+        map.release_objects();
 #endif
     }
     trace::ExitCurrentFunction();
@@ -397,11 +397,11 @@ gmacError_t manager::toIOBuffer(core::address_space_ptr current, core::io_buffer
         }
 
 #ifdef USE_VM
-        CFATAL(aspace->releasedObjects() == false, "Acquiring bitmap on released objects");
+        CFATAL(aspace->released_objects() == false, "Acquiring bitmap on released objects");
         vm::Bitmap &bitmap = aspace->getBitmap();
         if (bitmap.isReleased()) {
             bitmap.acquire();
-            aspace->forEachObject(&object::acquireWithBitmap);
+            aspace->for_each_object(&object::acquireWithBitmap);
         }
 #endif
 
@@ -443,11 +443,11 @@ gmacError_t manager::fromIOBuffer(core::address_space_ptr current, hostptr_t add
             return gmacErrorInvalidValue;
         }
 #ifdef USE_VM
-        CFATAL(aspace->releasedObjects() == false, "Acquiring bitmap on released objects");
+        CFATAL(aspace->released_objects() == false, "Acquiring bitmap on released objects");
         vm::Bitmap &bitmap = mode->getBitmap();
         if (bitmap.isReleased()) {
             bitmap.acquire();
-            mode->forEachObject(&object::acquireWithBitmap);
+            mode->for_each_object(&object::acquireWithBitmap);
         }
 #endif
         memory::map_object &map = aspace->get_object_map();
@@ -481,11 +481,11 @@ manager::signal_read(core::address_space_ptr aspace, hostptr_t addr)
     memory::map_object &map = aspace->get_object_map();
 
 #ifdef USE_VM
-    CFATAL(map.releasedObjects() == false, "Acquiring bitmap on released objects");
+    CFATAL(map.released_objects() == false, "Acquiring bitmap on released objects");
     vm::Bitmap &bitmap = map.getBitmap();
     if (bitmap.isReleased()) {
         bitmap.acquire();
-        map.forEachObject(&object::acquireWithBitmap);
+        map.for_each_object(&object::acquireWithBitmap);
     }
 #endif
 
@@ -512,11 +512,11 @@ manager::signal_write(core::address_space_ptr aspace, hostptr_t addr)
     memory::map_object &map = aspace->get_object_map();
 
 #ifdef USE_VM
-    CFATAL(map.releasedObjects() == false, "Acquiring bitmap on released objects");
+    CFATAL(map.released_objects() == false, "Acquiring bitmap on released objects");
     vm::Bitmap &bitmap = map.getBitmap();
     if (bitmap.isReleased()) {
         bitmap.acquire();
-        map.forEachObject(&object::acquireWithBitmap);
+        map.for_each_object(&object::acquireWithBitmap);
     }
 #endif
 
@@ -547,11 +547,11 @@ manager::memset(core::address_space_ptr aspace, hostptr_t s, int c, size_t size)
     }
 
 #ifdef USE_VM
-    CFATAL(aspaceOwner->releasedObjects() == false, "Acquiring bitmap on released objects");
+    CFATAL(aspaceOwner->released_objects() == false, "Acquiring bitmap on released objects");
     vm::Bitmap &bitmap = aspaceOwner->getBitmap();
     if (bitmap.isReleased()) {
         bitmap.acquire();
-        aspaceOwner->forEachObject(&object::acquireWithBitmap);
+        aspaceOwner->for_each_object(&object::acquireWithBitmap);
     }
 #endif
 
@@ -726,7 +726,7 @@ manager::flushDirty(core::address_space_ptr aspace)
     TRACE(LOCAL,"Flushing Objects");
     // Release per-mode objects
     memory::map_object &map = aspace->get_object_map();
-    evt = map.getProtocol().flushDirty(ret);
+    evt = map.getProtocol().flush_dirty(ret);
 
     return ret;
 }

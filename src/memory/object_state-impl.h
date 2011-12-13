@@ -12,7 +12,7 @@ inline void object_state<State>::modifiedObject()
 {
     ASSERTION(bool(ownerShortcut_));
 
-    ownerShortcut_->get_object_map().modifiedObjects();
+    ownerShortcut_->get_object_map().modified_objects();
 #if 0
     AcceleratorMap::iterator i;
     for(i = acceleratorAddr_.begin(); i != acceleratorAddr_.end(); i++) {
@@ -20,7 +20,7 @@ inline void object_state<State>::modifiedObject()
         std::list<core::address_space *>::iterator j;
         for(j = i->second.begin(); j != i->second.end(); j++) {
             ObjectMap &map = (*j)->getAddressSpace();
-            map.modifiedObjects();
+            map.modified_objects();
         }
     }
 #endif
@@ -70,7 +70,7 @@ object_state<State>::repopulateBlocks(core::address_space &aspace)
 }
 
 template<typename State>
-object_state<State>::object_state(protocol_interface &protocol,
+object_state<State>::object_state(protocol &protocol,
                               hostptr_t hostAddr,
                               size_t size,
                               typename State::ProtocolState init,
@@ -176,9 +176,9 @@ object_state<State>::removeOwner(core::address_space_const_ptr owner)
     ASSERTION(ownerShortcut_ == owner);
 
     gmacError_t ret;
-    hal::event_ptr evt = coherenceOp(&protocol_interface::deleteBlock, ret);
+    hal::event_ptr evt = coherenceOp(&protocol::remove_block, ret);
     ASSERTION(ret == gmacSuccess);
-    evt = coherenceOp(&protocol_interface::unmapFromAccelerator, ret);
+    evt = coherenceOp(&protocol::unmap_from_device, ret);
     ASSERTION(ret == gmacSuccess);
     ownerShortcut_->unmap(addr_, size_);
 
@@ -222,7 +222,7 @@ object_state<State>::unmapFromAccelerator()
     if (ownerShortcut_) {
         lock_write();
         // Remove blocks from the coherence domain
-        hal::event_ptr evt = coherenceOp(&protocol_interface::unmapFromAccelerator, ret);
+        hal::event_ptr evt = coherenceOp(&protocol::unmap_from_device, ret);
 
         // Free accelerator memory
         if (ret == gmacSuccess) {
