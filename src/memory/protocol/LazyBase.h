@@ -38,7 +38,7 @@ WITH THE SOFTWARE.  */
 #include "include/gmac/types.h"
 
 #include "memory/handler.h"
-#include "memory/Protocol.h"
+#include "memory/protocol.h"
 #include "util/lock.h"
 
 #include "common/BlockList.h"

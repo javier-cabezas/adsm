@@ -9,8 +9,9 @@
 
 #include "hal/types-detail.h"
 
+#include "trace/logger.h"
+
 #include "util/lock.h"
-#include "util/Logger.h"
 #include "util/unique.h"
 
 namespace __impl { namespace hal { namespace opencl {

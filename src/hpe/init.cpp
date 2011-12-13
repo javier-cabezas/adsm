@@ -14,12 +14,12 @@
 #include "memory/allocator.h"
 #include "memory/handler.h"
 #include "memory/manager.h"
-#include "memory/Memory.h"
-#include "memory/allocator/Slab.h"
+#include "memory/memory.h"
+#include "memory/allocator/slab.h"
 
 #include "util/Parameter.h"
-#include "util/Logger.h"
 
+#include "trace/logger.h"
 #include "trace/Tracer.h"
 
 #include "init.h"

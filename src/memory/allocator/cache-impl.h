@@ -1,7 +1,7 @@
 #ifndef GMAC_MEMORY_ALLOCATOR_CACHE_IPP_
 #define GMAC_MEMORY_ALLOCATOR_CACHE_IPP_
 
-#include "memory/Memory.h"
+#include "memory/memory.h"
 
 namespace __impl { namespace memory { namespace allocator {
 

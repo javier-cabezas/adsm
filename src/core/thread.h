@@ -34,8 +34,8 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_CORE_THREAD_H_
 #define GMAC_CORE_THREAD_H_
 
-#include "util/Atomics.h"
-#include "util/Private.h"
+#include "util/atomics.h"
+#include "util/private.h"
 
 namespace __impl { namespace core {
 

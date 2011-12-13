@@ -4,10 +4,10 @@
 #include <fstream>
 #include <sstream>
 
-#include "Protocol.h"
+#include "protocol.h"
 #include "block.h"
 
-#include "util/Logger.h"
+#include "trace/logger.h"
 
 namespace __impl { namespace memory {
 

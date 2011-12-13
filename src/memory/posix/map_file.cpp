@@ -1,20 +1,20 @@
-#include "memory/windows/FileMap.h"
+#include "memory/posix/map_file.h"
 
 namespace __impl { namespace memory {
 
 map_file::map_file() :
-	gmac::util::lock_rw("FileMap")
+	Lock("map_file")
 { }
 
 map_file::~map_file()
 { }
 
-bool map_file::insert(HANDLE handle, hostptr_t address, size_t size)
+bool map_file::insert(int fd, hostptr_t address, size_t size)
 {
 	hostptr_t key = address + size;
 	lock_write();
 	std::pair<Parent::iterator, bool> ret = Parent::insert(
-		Parent::value_type(key, map_file_entry(handle, address, size)));
+		Parent::value_type(key, map_file_entry(fd, address, size)));
 	unlock();
 	return ret.second;
 }
@@ -23,7 +23,7 @@ bool map_file::remove(hostptr_t address)
 {
 	bool ret = true;
 	lock_write();
-	Parent::const_iterator i = Parent::upper_bound(address);
+	Parent::iterator i = Parent::upper_bound(address);
 	if(i != Parent::end()) Parent::erase(i);
 	else ret = false;
 	unlock();
@@ -32,7 +32,7 @@ bool map_file::remove(hostptr_t address)
 
 const map_file_entry map_file::find(hostptr_t address) const
 {
-	map_file_entry ret(NULL, NULL, 0);
+	map_file_entry ret(-1, NULL, 0);
 	lock_read();
 	Parent::const_iterator i = Parent::upper_bound(address);
 	if(i != Parent::end()) {

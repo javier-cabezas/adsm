@@ -1,10 +1,10 @@
-#include "Cache.h"
+#include "cache.h"
 
 #include "core/address_space.h"
 #include "memory/manager.h"
 
 #include "util/Parameter.h"
-#include "util/Private.h"
+#include "util/private.h"
 
 namespace __impl { namespace memory { namespace allocator {
 

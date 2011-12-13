@@ -1,6 +1,6 @@
 #include <cassert>
 
-#include "Semaphore.h"
+#include "semaphore.h"
 
 namespace __impl { namespace util {
 

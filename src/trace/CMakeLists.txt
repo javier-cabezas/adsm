@@ -8,6 +8,9 @@ endif(USE_TRACE_PARAVER)
 set(trace_SRC
     Console.h
     Console.cpp
+    logger.h
+    logger-impl.h
+    logger.cpp
     Paraver.h
     Paraver.cpp
     Tracer.h

@@ -22,8 +22,8 @@
 #ifndef GMAC_CORE_THREAD_IMPL_H_
 #define GMAC_CORE_THREAD_IMPL_H_
 
-#include "util/Logger.h"
-#include "util/Private.h"
+#include "trace/logger.h"
+#include "util/private.h"
 
 namespace __impl { namespace core {
 

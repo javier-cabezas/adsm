@@ -3,8 +3,8 @@
 #include <cstdarg>
 #include <cassert>
 
-#include "Logger.h"
-#include "Private.h"
+#include "logger.h"
+#include "util/private.h"
 
 #include <typeinfo>
 #if defined(__GNUC__)
@@ -54,9 +54,9 @@ static char *strcasestr(const char *haystack, const char *needle)
 }
 #endif
 
-namespace __impl { namespace util {
+namespace __impl { namespace trace {
 
-Private<char> Logger::Buffer_;
+util::Private<char> Logger::Buffer_;
 Atomic Logger::Ready_ = 0;
 
 #ifdef DEBUG
@@ -73,11 +73,11 @@ static void fini()
 
 void Logger::Init()
 {
-    Private<char>::init(Buffer_);
+    util::Private<char>::init(Buffer_);
 	Buffer_.set(new char[BufferSize_]);
 #ifdef DEBUG
     Tags_ = new std::list<std::string>();
-    Level_ = new Parameter<const char *>(&DebugString_, "Logger::DebugString_", "none", "GMAC_DEBUG");
+    Level_ = new util::Parameter<const char *>(&DebugString_, "Logger::DebugString_", "none", "GMAC_DEBUG");
     char *tmp = new char[strlen(DebugString_) + 1];
     memcpy(tmp, DebugString_, strlen(DebugString_) + 1);
 	char *next = NULL;

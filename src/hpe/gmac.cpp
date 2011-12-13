@@ -15,9 +15,6 @@
 #include "config/config.h"
 #include "config/order.h"
 
-#include "util/Atomics.h"
-#include "util/Logger.h"
-
 #include "core/hpe/address_space.h"
 #include "core/hpe/kernel.h"
 #include "core/hpe/process.h"
@@ -32,7 +29,10 @@
 #include "memory/protocol/common/BlockState.h"
 #endif
 
+#include "trace/logger.h"
 #include "trace/Tracer.h"
+
+#include "util/atomics.h"
 
 #if defined(GMAC_DLL)
 #include "init.h"

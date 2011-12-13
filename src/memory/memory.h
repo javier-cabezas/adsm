@@ -36,8 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 #include "include/gmac/types.h"
-
-#include "util/Logger.h"
+#include "trace/logger.h"
 
 namespace __impl { namespace memory {
 

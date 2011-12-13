@@ -48,7 +48,7 @@ WITH THE SOFTWARE.  */
 
 #include "util/NonCopyable.h"
 #include "util/Reference.h"
-#include "util/Private.h"
+#include "util/private.h"
 
 #include "kernel.h"
 

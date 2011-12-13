@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2010 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,12 +31,32 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_UTIL_SEMAPHORE_H_
-#define GMAC_UTIL_SEMAPHORE_H_
+#ifndef GMAC_UTIL_SINGLETON_H_
+#define GMAC_UTIL_SINGLETON_H_
 
-#if defined(POSIX)
-#include "util/posix/Semaphore.h"
-#elif defined(WINDOWS)
-#include "util/windows/Semaphore.h"
-#endif
-#endif
+#include "config/common.h"
+
+/*
+ *
+ */
+namespace __impl { namespace util {
+
+template <typename T>
+class GMAC_LOCAL Singleton {
+private:
+	static T *Singleton_;
+protected:
+    Singleton();
+	virtual ~Singleton();
+
+    static T *getInstance();
+public:
+
+	void destroy();
+};
+
+}}
+
+#include "singleton-impl.h"
+
+#endif /* SINGLETON_H_ */

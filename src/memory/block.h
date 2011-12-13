@@ -38,12 +38,12 @@ WITH THE SOFTWARE.  */
 #include "config/config.h"
 
 #include "include/gmac/types.h"
-#include "memory/Protocol.h"
+#include "memory/protocol.h"
+#include "trace/logger.h"
 #include "util/lock.h"
-#include "util/Logger.h"
 #include "util/Reference.h"
 
-#include "util/UniquePtr.h"
+#include "util/smart_ptr.h"
 
 /** Description for __impl. */
 namespace __impl {

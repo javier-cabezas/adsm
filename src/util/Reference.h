@@ -36,7 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 
-#include "Atomics.h"
+#include "atomics.h"
 
 namespace __impl { namespace util {
 

@@ -53,7 +53,7 @@ namespace __impl {
     }
 }
 
-#include "util/Private.h"
+#include "util/private.h"
 
 extern __impl::util::Private<bool> isRunTimeThread_;
 

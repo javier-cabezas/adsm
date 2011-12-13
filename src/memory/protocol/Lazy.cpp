@@ -2,7 +2,7 @@
 
 #include "config/config.h"
 
-#include "memory/Memory.h"
+#include "memory/memory.h"
 
 #include "trace/Tracer.h"
 

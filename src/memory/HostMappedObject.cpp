@@ -1,11 +1,9 @@
 #include "core/address_space.h"
-#include "memory/Memory.h"
+#include "memory/memory.h"
 #include "memory/HostMappedObject.h"
-#include "util/Logger.h"
+#include "trace/logger.h"
 
 namespace __impl { namespace memory {
-
-
 
 bool set_object_host_mapped::insert(object_host_mapped *object)
 {
