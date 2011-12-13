@@ -55,9 +55,9 @@ TEST_F(ProcessTest, GlobalMemory) {
     ASSERT_TRUE(proc != NULL);
 
     const size_t size = 4 * 1024 * 1024;
-    protocol_interface *protocol_interface = proc->getProtocol();
-    ASSERT_TRUE(protocol_interface != NULL);
-    object *object = protocol_interface->createObject(proc->getResourceManager(), size, NULL, GMAC_PROT_READ, 0);
+    protocol *protocol = proc->getProtocol();
+    ASSERT_TRUE(protocol != NULL);
+    object *object = protocol->create_object(proc->getResourceManager(), size, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
     ASSERT_EQ(gmacSuccess, proc->globalMalloc(*object));
     ASSERT_TRUE(object->addr() != NULL);

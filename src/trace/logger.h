@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009-2011 Universityrsity of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -92,14 +92,14 @@ get_class_name(const char *mangled);
 #	    define TRACE(name, fmt, ...) do { __impl::trace::Logger::__Trace(name, \
                                                                    __PRETTY_FUNCTION__, \
                                                                    __extract_file_name(__FILE__), __LINE__, \
-                                                                   ::config::params::DebugUseRealTID? __impl::util::GetThreadId(): __impl::core::thread::get_debug_tid(), \
+                                                                   ::config::params::DebugUseRealTID? __impl::util::get_thread_id(): __impl::core::thread::get_debug_tid(), \
                                                                    fmt, \
                                                                    ##__VA_ARGS__); } while (0)
 #   elif defined(_MSC_VER)
 #	    define TRACE(name, fmt, ...) __impl::trace::Logger::__Trace(name, \
                                                                    __FUNCTION__, \
                                                                    __extract_file_name(__FILE__), __LINE__, \
-                                                                   ::config::params::DebugUseRealTID? __impl::util::GetThreadId(): __impl::core::thread::get_debug_tid(), \
+                                                                   ::config::params::DebugUseRealTID? __impl::util::get_thread_id(): __impl::core::thread::get_debug_tid(), \
                                                                    fmt, \
                                                                    ##__VA_ARGS__)
 #   endif
@@ -131,7 +131,7 @@ void dummy_assertion(bool /*b*/, ...)
 #define MESSAGE(fmt, ...) { if (::config::params::Verbose) __impl::trace::Logger::__Message("<GMAC> "fmt"\n", ##__VA_ARGS__); }
 #endif
 
-#define WARNING(fmt, ...) __impl::trace::Logger::__Warning("("FMT_TID")" fmt, __impl::util::GetThreadId(), ##__VA_ARGS__)
+#define WARNING(fmt, ...) __impl::trace::Logger::__Warning("("FMT_TID")" fmt, __impl::util::get_thread_id(), ##__VA_ARGS__)
 #define FATAL(fmt, ...) __impl::trace::Logger::__Fatal(fmt, ##__VA_ARGS__)
 #define CFATAL(c, ...) __impl::trace::Logger::__CFatal(c, "Condition '"#c"' failed", LOCATION_STRING)
 

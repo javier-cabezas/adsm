@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010, 2011 University of Illinois
+/* Copyright (c) 2009-2011sity of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -56,7 +56,7 @@ class block;
 
 template <typename State> class StateBlock;
 
-namespace protocol {
+namespace protocols {
 /**
  * A lazy memory coherence protocol.
  *
@@ -65,7 +65,7 @@ namespace protocol {
  * release operation. Data is transferred from accelerator memory to host memory
  * lazily, whenever it is needed by the application
  */
-class GMAC_LOCAL lazy_base : public protocol_interface, handler,
+class GMAC_LOCAL lazy_base : public protocol, handler,
                             private gmac::util::mutex<lazy_base> {
     DBC_FORCE_TEST(lazy_base)
     typedef gmac::util::mutex<lazy_base> Lock;
@@ -101,9 +101,9 @@ protected:
 
 public:
     // Protocol Interface
-    void deleteObject(object &obj);
+    void delete_object(object &obj);
 
-    bool needUpdate(const block_ptr block) const;
+    bool needs_update(const block_ptr block) const;
 
     TESTABLE hal::event_ptr signal_read(block_ptr block, hostptr_t addr, gmacError_t &err);
 
@@ -117,16 +117,16 @@ public:
     hal::event_ptr acquireWithBitmap(block_ptr block, gmacError_t &err);
 #endif
 
-    TESTABLE hal::event_ptr releaseAll(gmacError_t &err);
+    TESTABLE hal::event_ptr release_all(gmacError_t &err);
     //gmacError_t releasedAll();
 
-    hal::event_ptr mapToAccelerator(block_ptr block, gmacError_t &err);
+    hal::event_ptr map_to_device(block_ptr block, gmacError_t &err);
 
-    hal::event_ptr unmapFromAccelerator(block_ptr block, gmacError_t &err);
+    hal::event_ptr unmap_from_device(block_ptr block, gmacError_t &err);
 
-    hal::event_ptr deleteBlock(block_ptr block, gmacError_t &err);
+    hal::event_ptr remove_block(block_ptr block, gmacError_t &err);
 
-    TESTABLE hal::event_ptr toHost(block_ptr block, gmacError_t &err);
+    TESTABLE hal::event_ptr to_host(block_ptr block, gmacError_t &err);
 
 #if 0
     hal::event_ptr toAccelerator(block_ptr block, gmacError_t &err);
@@ -141,16 +141,16 @@ public:
     TESTABLE hal::event_ptr memset(block_ptr block, size_t blockOffset, int v, size_t size,
                                  gmacError_t &err);
 
-    TESTABLE hal::event_ptr flushDirty(gmacError_t &err);
+    TESTABLE hal::event_ptr flush_dirty(gmacError_t &err);
 
     //bool isInAccelerator(block_ptr block);
-    hal::event_ptr copyBlockToBlock(block_ptr d, size_t dstOffset, block_ptr s, size_t srcOffset, size_t count, gmacError_t &err);
+    hal::event_ptr copy_block_to_block(block_ptr d, size_t dstOffset, block_ptr s, size_t srcOffset, size_t count, gmacError_t &err);
 
-    hal::event_ptr copyToBlock(block_ptr dst, size_t dstOffset,
+    hal::event_ptr copy_to_block(block_ptr dst, size_t dstOffset,
                              hostptr_t src,
                              size_t count, gmacError_t &err);
 
-    hal::event_ptr copyFromBlock(hostptr_t dst,
+    hal::event_ptr copy_from_block(hostptr_t dst,
                                block_ptr src, size_t srcOffset,
                                size_t count, gmacError_t &err);
 

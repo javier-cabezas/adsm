@@ -59,7 +59,7 @@ uint32_t buddy::round(register uint32_t x) const
     return x;
 }
 
-off_t buddy::getFromList(uint8_t i)
+off_t buddy::get_from_list(uint8_t i)
 {
     if(i > index_) {
         TRACE(LOCAL,"Requested size (%d) larger than available I/O memory", 1 << i);
@@ -76,7 +76,7 @@ off_t buddy::getFromList(uint8_t i)
 
     /* No spare chunks, try splitting a bigger one */
     TRACE(LOCAL,"Asking for chunk of %d bytes (%d)", 1 << (i + 1), i + 1);
-    off_t larger = getFromList(i + 1);
+    off_t larger = get_from_list(i + 1);
     if(larger == -1) return -1; /* Not enough memory */
     TRACE(LOCAL,"Spliting chunk 0x%x from size %d into two halves", larger, (1 << (i + 1)));
     off_t mid = larger + (1 << i);
@@ -84,7 +84,7 @@ off_t buddy::getFromList(uint8_t i)
     return larger;
 }
 
-void buddy::putToList(off_t addr, uint8_t i)
+void buddy::put_to_list(off_t addr, uint8_t i)
 {
     if(i == index_) {
         _tree[i].push_back(addr);
@@ -100,7 +100,7 @@ void buddy::putToList(off_t addr, uint8_t i)
             continue;
         TRACE(LOCAL,"Merging 0x%x and 0x%x into a %d chunk", addr, *buddy, 1 << (i + 1));
         list.erase(buddy);
-        return putToList((addr & mask), i + 1);        
+        return put_to_list((addr & mask), i + 1);        
     }
     TRACE(LOCAL,"Inserting 0x%x into %d chunk list", addr, 1 << i);
     list.push_back(addr);
@@ -114,7 +114,7 @@ hostptr_t buddy::get(size_t &size)
     uint32_t realSize = (uint32_t) 1 << i;
     TRACE(LOCAL,"Request for %d bytes of I/O memory", realSize);
     lock();
-    off_t off = getFromList(i);
+    off_t off = get_from_list(i);
     unlock();
     if(off < 0) return NULL;
     TRACE(LOCAL,"Returning address at offset %d", off);
@@ -128,7 +128,7 @@ void buddy::put(hostptr_t addr, size_t size)
     off_t off = off_t(addr - addr_);
     TRACE(LOCAL,"Releasing %d bytes at offset %d of I/O memory", size, off);
     lock();
-    putToList(off, i);
+    put_to_list(off, i);
     unlock();
 }
 

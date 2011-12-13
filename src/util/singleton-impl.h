@@ -5,30 +5,30 @@
 
 namespace __impl { namespace util {
 
-template<typename T> T *Singleton<T>::Singleton_ = NULL;
+template<typename T> T *singleton<T>::Singleton_ = NULL;
 
 template<typename T>
-inline Singleton<T>::Singleton()
+inline singleton<T>::singleton()
 {
     CFATAL(Singleton_ == NULL, "Double initialization of singleton class");
     Singleton_ = static_cast<T *>(this);
 }
 
 template <typename T>
-inline Singleton<T>::~Singleton()
+inline singleton<T>::~singleton()
 {
 }
 
 template <typename T>
-inline void Singleton<T>::destroy()
+inline void singleton<T>::destroy()
 {
 	ASSERTION(Singleton_ != NULL);
-	delete static_cast<Singleton<T> *>(Singleton_);
+	delete static_cast<singleton<T> *>(Singleton_);
 	Singleton_ = NULL;
 }
 
 template <typename T>
-inline T *Singleton<T>::getInstance()
+inline T *singleton<T>::getInstance()
 {
 	return Singleton_;
 }

@@ -3,7 +3,7 @@
 
 #include "memory/protocol/lazy/lazy_types.h"
 
-namespace __dbc { namespace memory { namespace protocol {
+namespace __dbc { namespace memory { namespace protocols {
 
 template <typename T>
 Lazy<T>::Lazy(bool eager) :

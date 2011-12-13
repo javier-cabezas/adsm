@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010, 2011 University of Illinois
+/* Copyright (c) 2009-2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -36,15 +36,15 @@ WITH THE SOFTWARE.  */
 
 #include "config/dbc/types.h"
 
-namespace __dbc { namespace memory { namespace protocol {
+namespace __dbc { namespace memory { namespace protocols {
 
 template <typename T>
 class GMAC_LOCAL Lazy :
-    public __impl::memory::protocol::Lazy<T>,
+    public __impl::memory::protocols::Lazy<T>,
     public virtual Contract {
-    DBC_TESTED(__impl::memory::protocol::Lazy<T>)
+    DBC_TESTED(__impl::memory::protocols::Lazy<T>)
 
-    typedef __impl::memory::protocol::Lazy<T> parent;
+    typedef __impl::memory::protocols::Lazy<T> parent;
 
 protected:
 public:

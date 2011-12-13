@@ -42,12 +42,12 @@ WITH THE SOFTWARE.  */
 namespace __impl { namespace util {
 
 template <typename T>
-class GMAC_LOCAL Singleton {
+class GMAC_LOCAL singleton {
 private:
 	static T *Singleton_;
 protected:
-    Singleton();
-	virtual ~Singleton();
+    singleton();
+	virtual ~singleton();
 
     static T *getInstance();
 public:

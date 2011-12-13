@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010, 2011 University of Illinois
+/* Copyright (c) 2009-2011sity of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -41,7 +41,7 @@ WITH THE SOFTWARE.  */
 #include "hal/types.h"
 
 namespace __impl {
-namespace memory { namespace protocol { namespace common {
+namespace memory { namespace protocols { namespace common {
 
 enum Statistic {
     PAGE_FAULTS_READ              = 0,

@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009-2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -42,7 +42,7 @@ namespace __impl { namespace util {
 /*
     \return ID of the calling thread
 */
-THREAD_T GetThreadId();
+THREAD_T get_thread_id();
 
 //! Return the current process ID
 /*

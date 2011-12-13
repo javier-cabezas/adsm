@@ -60,8 +60,8 @@ TEST_F(ObjectTest, Creation)
     ASSERT_TRUE(Process_ != NULL);
     Mode &mode = Thread::getCurrentVirtualDevice();
     __impl::memory::ObjectMap &map = mode.getAddressSpace();
-    __impl::memory::protocol_interface &proto = map.getProtocol();
-    object *object = proto.createObject(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_READ, 0);
+    __impl::memory::protocol &proto = map.getProtocol();
+    object *object = proto.create_object(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
     ASSERT_TRUE(object->addr() != NULL);
     ASSERT_TRUE(object->end() != NULL);
@@ -77,7 +77,7 @@ TEST_F(ObjectTest, Blocks)
     ASSERT_TRUE(Process_ != NULL);
     Mode &mode = Thread::getCurrentVirtualDevice();
     __impl::memory::ObjectMap &map = mode.getAddressSpace();
-    object *object = map.getProtocol().createObject(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_READ, 0);
+    object *object = map.getProtocol().create_object(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
     hostptr_t start = object->addr();
     ASSERT_TRUE(start != NULL);
@@ -100,7 +100,7 @@ TEST_F(ObjectTest, Coherence)
     ASSERT_TRUE(Process_ != NULL);
     Mode &mode = Thread::getCurrentVirtualDevice();
     __impl::memory::ObjectMap &map = mode.getAddressSpace();
-    object *object = map.getProtocol().createObject(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_READ, 0);
+    object *object = map.getProtocol().create_object(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
     object->addOwner(mode);
     map.addObject(*object);
@@ -129,7 +129,7 @@ TEST_F(ObjectTest, IOBuffer)
     ASSERT_TRUE(Process_ != NULL);
     Mode &mode = Thread::getCurrentVirtualDevice();
     __impl::memory::ObjectMap &map = mode.getAddressSpace();
-    object *object = map.getProtocol().createObject(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_READ, 0);
+    object *object = map.getProtocol().create_object(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
     object->addOwner(mode);
     map.addObject(*object);

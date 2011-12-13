@@ -5,17 +5,17 @@
 
 namespace __impl { namespace memory { namespace allocator {
 
-cache &slab::createCache(core::address_space_ptr aspace, CacheMap &map, long_t key, size_t size)
+cache &slab::create_cache(core::address_space_ptr aspace, map_cache &map, long_t key, size_t size)
 {
     cache *cache = new __impl::memory::allocator::cache(manager_, aspace, size);
-    std::pair<CacheMap::iterator, bool> ret = map.insert(CacheMap::value_type(key, cache));
+    std::pair<map_cache::iterator, bool> ret = map.insert(map_cache::value_type(key, cache));
     ASSERTION(ret.second == true);
     return *cache;
 }
 
 cache &slab::get(core::address_space_ptr current, long_t key, size_t size)
 {
-    CacheMap *map = NULL;
+    map_cache *map = NULL;
     map_aspace::iterator i;
     aspaces_.lock_read();
     i = aspaces_.find(current);
@@ -23,15 +23,15 @@ cache &slab::get(core::address_space_ptr current, long_t key, size_t size)
     aspaces_.unlock();
     if(map == NULL) {
         aspaces_.lock_write();
-        cache &ret = createCache(current, aspaces_[current], key, size);
+        cache &ret = create_cache(current, aspaces_[current], key, size);
         aspaces_.unlock();
         return ret;
     }
     else {
-        CacheMap::iterator j;
+        map_cache::iterator j;
         j = map->find(key);
         if(j == map->end())
-            return createCache(current, *map, key, size);
+            return create_cache(current, *map, key, size);
         else
             return *j->second;
     }
@@ -44,7 +44,7 @@ void slab::cleanup(core::address_space_ptr current)
     i = aspaces_.find(current);
     aspaces_.unlock();
     if(i == aspaces_.end()) return;
-    CacheMap::iterator j;
+    map_cache::iterator j;
     for(j = i->second.begin(); j != i->second.end(); j++) {
         delete j->second;
     }
@@ -63,7 +63,7 @@ hostptr_t slab::alloc(core::address_space_ptr current, size_t size, hostptr_t ad
     addresses_.lock_write();
     addresses_.insert(map_address::value_type(ret, &cache));
     addresses_.unlock();
-    TRACE(LOCAL,"Retuning address %p", ret);
+    TRACE(LOCAL,"Returning address %p", ret);
     return ret;
 }
 

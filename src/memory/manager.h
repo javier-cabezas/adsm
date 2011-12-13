@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010, 2011 University of Illinois
+/* Copyright (c) 2009-2011sity of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -52,17 +52,17 @@ class io_buffer;
 namespace memory {
 
 class object;
-class protocol_interface;
+class protocol;
 
-typedef std::pair<hostptr_t, GmacProtection> ObjectInfo;
-typedef std::list<ObjectInfo> ListAddr;
-extern ListAddr AllAddresses;
+typedef std::pair<hostptr_t, GmacProtection> object_access_info;
+typedef std::list<object_access_info> list_addr;
+extern list_addr AllAddresses;
 
 //! Memory Manager Interface
 
 //! Memory Managers orchestate the data transfers between host and accelerator memories
 class GMAC_LOCAL manager :
-    public __impl::util::Singleton<gmac::memory::manager> {
+    public __impl::util::singleton<gmac::memory::manager> {
     DBC_FORCE_TEST(manager)
 protected:
     /** Process where the memory manager is being used */
@@ -176,7 +176,7 @@ public:
      * objects are acquired
      * \return Error code
      */
-    gmacError_t acquireObjects(core::address_space_ptr aspace, const ListAddr &addrs = AllAddresses);
+    gmacError_t acquireObjects(core::address_space_ptr aspace, const list_addr &addrs = AllAddresses);
 
     /**
      * Release the CPU ownership of all objects bound to the current execution
@@ -186,7 +186,7 @@ public:
      * objects are released
      * \return Error code
      */
-    gmacError_t releaseObjects(core::address_space_ptr aspace, const ListAddr &addrs = AllAddresses);
+    gmacError_t releaseObjects(core::address_space_ptr aspace, const list_addr &addrs = AllAddresses);
 
     /**
      * Notify a memory fault caused by a load operation

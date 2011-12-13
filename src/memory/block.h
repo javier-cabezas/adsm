@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010, 2011 University of Illinois
+/* Copyright (c) 2009-2011sity of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -163,7 +163,7 @@ public:
      * \param stat Statistic to be dumped
      * \return Error code
      */
-    gmacError_t dump(std::ostream &param, protocol::common::Statistic stat);
+    gmacError_t dump(std::ostream &param, protocols::common::Statistic stat);
 
     hostptr_t get_shadow() const;
 };

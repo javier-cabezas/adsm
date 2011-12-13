@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010, 2011 University of Illinois
+/* Copyright (c) 2009-2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -61,8 +61,8 @@ protected:
     typedef std::map<uint8_t, List> Tree;
 
     Tree _tree;
-    TESTABLE off_t getFromList(uint8_t i);
-    TESTABLE void putToList(off_t addr, uint8_t i);
+    TESTABLE off_t get_from_list(uint8_t i);
+    TESTABLE void put_to_list(off_t addr, uint8_t i);
 public:
     buddy(hostptr_t addr, size_t size);
     ~buddy();

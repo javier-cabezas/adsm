@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010, 2011 University of Illinois
+/* Copyright (c) 2009-2011sity of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -73,11 +73,11 @@ protected:
 #ifdef DEBUG
     static Atomic Id_;
     unsigned id_;
-    std::map<protocol::common::Statistic, unsigned> dumps_;
+    std::map<protocols::common::Statistic, unsigned> dumps_;
 #endif
 
     /** Memory coherence protocol used by the object */
-    protocol_interface &protocol_;
+    protocol &protocol_;
 
     /// Object host memory address
     hostptr_t addr_;
@@ -92,7 +92,7 @@ protected:
     /// Tells whether the object has been released or not
     bool released_;
 
-    /// Last toHost event
+    /// Last to_host event
     hal::event_ptr lastToHost_;
 
     /// Last toDevice event
@@ -126,14 +126,14 @@ protected:
      *
      * \param op Coherence operation to be performed
      * \return Error code
-     * \sa __impl::memory::Block::toHost
+     * \sa __impl::memory::Block::to_host
      * \sa __impl::memory::Block::toAccelerator
      */
-    hal::event_ptr coherenceOp(hal::event_ptr (protocol_interface::*op)(block_ptr, gmacError_t &),
+    hal::event_ptr coherenceOp(hal::event_ptr (protocol::*op)(block_ptr, gmacError_t &),
                              gmacError_t &err);
 
     template <typename T>
-    hal::event_ptr coherenceOp(hal::event_ptr (protocol_interface::*op)(block_ptr, T &, gmacError_t &),
+    hal::event_ptr coherenceOp(hal::event_ptr (protocol::*op)(block_ptr, T &, gmacError_t &),
                              T &param,
                              gmacError_t &err);
 
@@ -152,7 +152,7 @@ protected:
      * \sa __impl::memory::Block::copyFromHost(core::io_buffer &, size_t, size_t, size_t) const
      * \sa __impl::memory::Block::copyFromAccelerator(core::io_buffer &, size_t, size_t, size_t) const
      */
-    TESTABLE gmacError_t memoryOp(protocol_interface::MemoryOp op,
+    TESTABLE gmacError_t memoryOp(protocol::MemoryOp op,
                                   core::io_buffer &buffer, size_t size, size_t bufferOffset, size_t objectOffset);
 #endif
 
@@ -165,7 +165,7 @@ protected:
      * \sa __impl::memory::Block::dump
      */
     template <typename T, typename S>
-    gmacError_t forEachBlock(gmacError_t (protocol_interface::*f)(block_ptr, T &, S), T &t, S s);
+    gmacError_t forEachBlock(gmacError_t (protocol::*f)(block_ptr, T &, S), T &t, S s);
 
     /**
      * Default constructor
@@ -174,7 +174,7 @@ protected:
      * \param addr Host memory address where the object begins
      * \param size Size (in bytes) of the memory object
      */
-    object(protocol_interface &protocol, hostptr_t addr, size_t size);
+    object(protocol &protocol, hostptr_t addr, size_t size);
 
     //! Default destructor
     virtual ~object();
@@ -182,7 +182,7 @@ protected:
 public:
 #ifdef DEBUG
     unsigned getId() const;
-    unsigned getDumps(protocol::common::Statistic stat);
+    unsigned getDumps(protocols::common::Statistic stat);
 #endif
 
 
@@ -190,7 +190,7 @@ public:
      * Get the protocol that is managing the block
      * \return Memory protocol
      */
-    protocol_interface &getProtocol();
+    protocol &getProtocol();
 
     /**
      * Get the starting host memory address of the object
@@ -328,7 +328,7 @@ public:
      *   \sa __impl::memory::protcol::common::Statistitc
      * \return Error code
      */
-    gmacError_t dump(std::ostream &param, protocol::common::Statistic stat);
+    gmacError_t dump(std::ostream &param, protocols::common::Statistic stat);
 
     /**
      * Signal handler for faults caused due to memory reads

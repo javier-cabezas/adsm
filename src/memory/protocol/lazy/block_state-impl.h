@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010, 2011 University of Illinois
+/* Copyright (c) 2009-2011sity of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -50,7 +50,7 @@ WITH THE SOFTWARE.  */
 
 namespace __impl {
 namespace memory {
-namespace protocol {
+namespace protocols {
 namespace lazy_types {
 
 inline
@@ -416,7 +416,7 @@ BlockState::syncToHost(gmacError_t &err)
     TRACE(LOCAL, "Transfer block to host: %p", block().addr());
 
 #ifndef USE_VM
-    hal::event_ptr ret = block().toHost(err);
+    hal::event_ptr ret = block().to_host(err);
 #ifdef DEBUG
     for (unsigned i = 0; i < subBlockState_.size(); i++) { 
         transfersToHost_[i]++;
@@ -458,7 +458,7 @@ BlockState::syncToHost(gmacError_t &err)
     }
 
     if (inGroup) {
-        ret = block().toHost(groupStart * SubBlockSize_,
+        ret = block().to_host(groupStart * SubBlockSize_,
                             SubBlockSize_ * (groupEnd - groupStart + 1),
                             err);
     }
@@ -679,7 +679,7 @@ BlockState::dump(std::ostream &stream, common::Statistic stat)
 
 namespace __impl {
 namespace memory {
-namespace protocol {
+namespace protocols {
 namespace lazy_types {
 
 inline

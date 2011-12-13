@@ -15,7 +15,7 @@ object::~object()
 }
 
 gmacError_t
-object::memoryOp(__impl::memory::protocol_interface::MemoryOp op, __impl::core::io_buffer &buffer, size_t size, size_t bufferOffset, size_t objectOffset)
+object::memoryOp(__impl::memory::protocol::MemoryOp op, __impl::core::io_buffer &buffer, size_t size, size_t bufferOffset, size_t objectOffset)
 {
     // PRECONDITIONS
     REQUIRES(size > 0);

@@ -73,7 +73,7 @@ protected:
 
     void modifiedObject();
 public:
-    object_state(protocol_interface &protocol, hostptr_t cpuAddr, size_t size, typename State::ProtocolState init, gmacError_t &err);
+    object_state(protocol &protocol, hostptr_t cpuAddr, size_t size, typename State::ProtocolState init, gmacError_t &err);
     virtual ~object_state();
 
     accptr_t get_device_addr(const hostptr_t addr) const;

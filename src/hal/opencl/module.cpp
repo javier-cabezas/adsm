@@ -110,7 +110,7 @@ module::module(const module_descriptor &descriptor, platform &plat, gmacError_t 
 
             delete []kernels;
 
-            kernelMaps_.insert(map_thread::value_type(util::GetThreadId(), map));
+            kernelMaps_.insert(map_thread::value_type(util::get_thread_id(), map));
         }
     } else {
         size_t len;
@@ -165,7 +165,7 @@ module::get_kernel(const std::string &name)
         TRACE(LOCAL, "... not found");
     } else {
         cl_int res;
-        map_thread::iterator it = kernelMaps_.find(util::GetThreadId());
+        map_thread::iterator it = kernelMaps_.find(util::get_thread_id());
         if (it == kernelMaps_.end()) {
             cl_kernel *kernels = new cl_kernel[kernels_.size()];
             res = clCreateKernelsInProgram(program_, kernels_.size(), kernels, NULL);
@@ -187,7 +187,7 @@ module::get_kernel(const std::string &name)
                 map.insert(map_kernel::value_type(name, t));
             }
 
-            kernelMaps_.insert(map_thread::value_type(util::GetThreadId(), map));
+            kernelMaps_.insert(map_thread::value_type(util::get_thread_id(), map));
         } else {
             map_kernel &kernels = it->second;
             map_kernel::iterator it2 = kernels.find(name);

@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009-2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -45,17 +45,9 @@ WITH THE SOFTWARE.  */
 
 namespace __impl {
 
-namespace core {
-class Mode;
-#if 0
-class Process;
-#endif
-namespace hpe { class AddressSpace; }
-}
-
 namespace memory {
 class object;
-class protocol_interface;
+class protocol;
 
 //! A map of objects that is not bound to any Mode
 class GMAC_LOCAL map_object :
@@ -69,7 +61,7 @@ protected:
 #if 0
     core::Process &parent_;
 #endif
-    protocol_interface &protocol_;
+    protocol &protocol_;
 
     bool modifiedObjects_;
     bool releasedObjects_;
@@ -144,7 +136,7 @@ public:
      * \param obj Object to insert in the map
      * \return True if the object was successfuly inserted
      */
-    virtual bool addObject(object &obj);
+    bool add_object(object &obj);
 
     /**
      * Remove an object from the map
@@ -152,7 +144,7 @@ public:
      * \param obj Object to remove from the map
      * \return True if the object was successfuly removed
      */
-    virtual bool removeObject(object &obj);
+    bool remove_object(object &obj);
 
     /**
      * Find the firs object in a memory range
@@ -177,11 +169,11 @@ public:
      *
      * \param f Operation to be executed
      * \sa __impl::memory::object::acquire
-     * \sa __impl::memory::object::toHost
+     * \sa __impl::memory::object::to_host
      * \sa __impl::memory::object::toAccelerator
      * \return Error code
      */
-    hal::event_ptr forEachObject(hal::event_ptr (object::*f)(gmacError_t &), gmacError_t &err);
+    hal::event_ptr for_each_object(hal::event_ptr (object::*f)(gmacError_t &), gmacError_t &err);
 
     /**
      * Execute an operation on all the objects in the map passing an argument
@@ -192,11 +184,11 @@ public:
      * \return Error code
      */
     template <typename T>
-    hal::event_ptr forEachObject(hal::event_ptr (object::*f)(T &, gmacError_t &), T &p, gmacError_t &err);
+    hal::event_ptr for_each_object(hal::event_ptr (object::*f)(T &, gmacError_t &), T &p, gmacError_t &err);
 
 #ifdef DEBUG
-    gmacError_t dumpObjects(const std::string &dir, std::string prefix, protocol::common::Statistic stat) const;
-    gmacError_t dumpObject(const std::string &dir, std::string prefix, protocol::common::Statistic stat, hostptr_t ptr) const;
+    gmacError_t dumpObjects(const std::string &dir, std::string prefix, protocols::common::Statistic stat) const;
+    gmacError_t dumpObject(const std::string &dir, std::string prefix, protocols::common::Statistic stat, hostptr_t ptr) const;
 #endif
 
     /**
@@ -204,17 +196,17 @@ public:
      * \return Boolean that tells if objects of the mode have been already
      * invalidated
      */
-    bool hasModifiedObjects() const;
+    bool has_modified_objects() const;
 
     /**
      * Notifies the mode that one (or several) of its objects have been validated
      */
-    void modifiedObjects();
+    void modified_objects();
 
     /**
      * Notifies the mode that one (or several) of its objects has been invalidated
      */
-    void invalidateObjects();
+    void invalidate_objects();
 
     /**
      * Tells if the objects of the mode have been already released to the
@@ -222,25 +214,25 @@ public:
      * \return Boolean that tells if objects of the mode have been already
      * released to the accelerator
      */
-    bool releasedObjects() const;
+    bool released_objects() const;
 
     /**
      * Releases the ownership of the objects of the mode to the accelerator
      * and waits for pending transfers
      */
-    gmacError_t releaseObjects();
+    gmacError_t release_objects();
 
     /**
      * Waits for kernel execution and acquires the ownership of the objects
      * of the mode from the accelerator
      */
-    gmacError_t acquireObjects();
+    gmacError_t acquire_objects();
 
     /**
      * Gets a reference to the memory protocol used by the mode
      * \return A reference to the memory protocol used by the mode
      */
-    protocol_interface &getProtocol();
+    protocol &getProtocol();
 
 #ifdef USE_VM
     memory::vm::Bitmap &getBitmap();

@@ -17,7 +17,7 @@
 #define MIN min
 #endif
 
-namespace __impl { namespace memory { namespace protocol {
+namespace __impl { namespace memory { namespace protocols {
 
 
 lazy_base::lazy_base(bool eager) :
@@ -46,12 +46,12 @@ lazy_types::State lazy_base::state(GmacProtection prot) const
 }
 
 
-void lazy_base::deleteObject(object &obj)
+void lazy_base::delete_object(object &obj)
 {
     obj.decRef();
 }
 
-bool lazy_base::needUpdate(const block_ptr b) const
+bool lazy_base::needs_update(const block_ptr b) const
 {
     const lazy_types::block_ptr block = util::static_pointer_cast<lazy_types::Block>(b);
     switch(block->getState()) {
@@ -187,7 +187,7 @@ gmacError_t lazy_base::acquireWithBitmap(block_ptr b)
 #endif
 
 hal::event_ptr
-lazy_base::mapToAccelerator(block_ptr b, gmacError_t &err)
+lazy_base::map_to_device(block_ptr b, gmacError_t &err)
 {
     err = gmacSuccess;
     hal::event_ptr ret;
@@ -200,7 +200,7 @@ lazy_base::mapToAccelerator(block_ptr b, gmacError_t &err)
 }
 
 hal::event_ptr
-lazy_base::unmapFromAccelerator(block_ptr b, gmacError_t &err)
+lazy_base::unmap_from_device(block_ptr b, gmacError_t &err)
 {
     lazy_types::block_ptr block = util::static_pointer_cast<lazy_types::Block>(b);
     TRACE(LOCAL,"Unmapping block from accelerator %p", block->addr());
@@ -248,7 +248,7 @@ lazy_base::addDirty(lazy_types::block_ptr block)
 }
 
 hal::event_ptr
-lazy_base::releaseAll(gmacError_t &err)
+lazy_base::release_all(gmacError_t &err)
 {
     // We need to make sure that this operations is done before we
     // let other modes to proceed
@@ -273,9 +273,9 @@ lazy_base::releaseAll(gmacError_t &err)
     return ret;
 }
 
-hal::event_ptr lazy_base::flushDirty(gmacError_t &err)
+hal::event_ptr lazy_base::flush_dirty(gmacError_t &err)
 {
-    return releaseAll(err);
+    return release_all(err);
 }
 
 #if 0
@@ -320,7 +320,7 @@ lazy_base::release(block_ptr b, gmacError_t &err)
     return ret;
 }
 
-hal::event_ptr lazy_base::deleteBlock(block_ptr block, gmacError_t &err)
+hal::event_ptr lazy_base::remove_block(block_ptr block, gmacError_t &err)
 {
     hal::event_ptr ret;
     dbl_.remove(block);
@@ -329,7 +329,7 @@ hal::event_ptr lazy_base::deleteBlock(block_ptr block, gmacError_t &err)
 }
 
 hal::event_ptr
-lazy_base::toHost(block_ptr b, gmacError_t &err)
+lazy_base::to_host(block_ptr b, gmacError_t &err)
 {
     TRACE(LOCAL,"Sending block to host: %p", b->addr());
     hal::event_ptr ret;
@@ -391,7 +391,7 @@ lazy_base::isInAccelerator(block_ptr b)
 #endif
 
 hal::event_ptr
-lazy_base::copyBlockToBlock(block_ptr d, size_t dstOff, block_ptr s, size_t srcOff, size_t count, gmacError_t &err)
+lazy_base::copy_block_to_block(block_ptr d, size_t dstOff, block_ptr s, size_t srcOff, size_t count, gmacError_t &err)
 {
     lazy_types::block_ptr dst = util::static_pointer_cast<lazy_types::Block>(d);
     lazy_types::block_ptr src = util::static_pointer_cast<lazy_types::Block>(s);
@@ -480,7 +480,7 @@ lazy_base::copyBlockToBlock(block_ptr d, size_t dstOff, block_ptr s, size_t srcO
 }
 
 hal::event_ptr
-lazy_base::copyToBlock(block_ptr d, size_t dstOff,
+lazy_base::copy_to_block(block_ptr d, size_t dstOff,
                       hostptr_t src,
                       size_t count, gmacError_t &err)
 {
@@ -513,7 +513,7 @@ lazy_base::copyToBlock(block_ptr d, size_t dstOff,
 }
 
 hal::event_ptr
-lazy_base::copyFromBlock(hostptr_t dst,
+lazy_base::copy_from_block(hostptr_t dst,
                          block_ptr s, size_t srcOff,
                          size_t count, gmacError_t &err)
 {

@@ -66,10 +66,10 @@ void process::initThread(bool userThread, THREAD_T tidParent)
 
         // Set the private per-thread variables
         thread *t = new thread(*this);
-        ASSERTION(mapThreads_.find(util::GetThreadId()) == mapThreads_.end(),
+        ASSERTION(mapThreads_.find(util::get_thread_id()) == mapThreads_.end(),
                 "Thread already registered");
 
-        mapThreads_.insert(map_thread::value_type(util::GetThreadId(), t));
+        mapThreads_.insert(map_thread::value_type(util::get_thread_id(), t));
 
         gmacError_t err = resourceManager_.init_thread(*t, parent);
         ASSERTION(err == gmacSuccess);
@@ -82,7 +82,7 @@ void process::finiThread(bool userThread)
     //if (Thread::hasCurrentVirtualDevice() != false) removevdevice(Thread::getCurrentVirtualDevice());
 
     if (userThread) {
-        map_thread::iterator it = mapThreads_.find(util::GetThreadId());
+        map_thread::iterator it = mapThreads_.find(util::get_thread_id());
         ASSERTION(it != mapThreads_.end(), "Thread not registered");
         mapThreads_.erase(it);
 

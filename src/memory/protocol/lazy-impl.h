@@ -3,11 +3,11 @@
 
 #include "memory/object_state.h"
 
-namespace __impl { namespace memory { namespace protocol {
+namespace __impl { namespace memory { namespace protocols {
 
 template<typename T>
 inline Lazy<T>::Lazy(bool eager) :
-    gmac::memory::protocol::lazy_base(eager)
+    gmac::memory::protocols::lazy_base(eager)
 {}
 
 template<typename T>
@@ -16,7 +16,7 @@ inline Lazy<T>::~Lazy()
 
 template<typename T>
 memory::object *
-Lazy<T>::createObject(size_t size, hostptr_t cpuPtr,
+Lazy<T>::create_object(size_t size, hostptr_t cpuPtr,
                       GmacProtection prot, unsigned flags)
 {
     gmacError_t err;

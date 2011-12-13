@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010, 2011 University of Illinois
+/* Copyright (c) 2009-2011sity of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -36,11 +36,11 @@ WITH THE SOFTWARE.  */
 
 #include "lazy_base.h"
 
-namespace __impl { namespace memory { namespace protocol {
+namespace __impl { namespace memory { namespace protocols {
 
 template <typename T>
 class GMAC_LOCAL Lazy :
-	public gmac::memory::protocol::lazy_base {
+	public gmac::memory::protocols::lazy_base {
     DBC_FORCE_TEST(Lazy<T>)
 
 public:
@@ -55,7 +55,7 @@ public:
     virtual ~Lazy();
 
     // Protocol Interface
-    memory::object *createObject(size_t size, hostptr_t cpuPtr, GmacProtection prot, unsigned flags);
+    memory::object *create_object(size_t size, hostptr_t cpuPtr, GmacProtection prot, unsigned flags);
 };
 
 }}}

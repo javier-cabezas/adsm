@@ -6,7 +6,7 @@
 #include "memory/block.h"
 #include "memory/vm/Model.h"
 
-namespace __impl { namespace memory { namespace protocol {
+namespace __impl { namespace memory { namespace protocols {
 
 
 inline

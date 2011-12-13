@@ -35,7 +35,7 @@ WITH THE SOFTWARE.  */
 #define GMAC_MEMORY_PROTOCOL_COMMON_BLOCKSTATE_IMPL_H_
 
 namespace __impl {
-namespace memory { namespace protocol { namespace common {
+namespace memory { namespace protocols { namespace common {
 
 template <typename T>
 inline

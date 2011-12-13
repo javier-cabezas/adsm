@@ -7,7 +7,7 @@ namespace __impl { namespace memory {
 
 inline
 hal::event_ptr
-map_object::forEachObject(hal::event_ptr (object::*f)(gmacError_t &), gmacError_t &err)
+map_object::for_each_object(hal::event_ptr (object::*f)(gmacError_t &), gmacError_t &err)
 {
     hal::event_ptr ret;
     iterator i;
@@ -25,7 +25,7 @@ map_object::forEachObject(hal::event_ptr (object::*f)(gmacError_t &), gmacError_
 
 template <typename P1>
 hal::event_ptr
-map_object::forEachObject(hal::event_ptr (object::*f)(P1 &, gmacError_t &), P1 &p1, gmacError_t &err)
+map_object::for_each_object(hal::event_ptr (object::*f)(P1 &, gmacError_t &), P1 &p1, gmacError_t &err)
 {
     hal::event_ptr ret;
     const_iterator i;
@@ -44,14 +44,14 @@ map_object::forEachObject(hal::event_ptr (object::*f)(P1 &, gmacError_t &), P1 &
 
 #ifdef DEBUG
 inline
-gmacError_t map_object::dumpObjects(const std::string &dir, std::string prefix, protocol::common::Statistic stat) const
+gmacError_t map_object::dumpObjects(const std::string &dir, std::string prefix, protocols::common::Statistic stat) const
 {
     lock_read();
     const_iterator i;
     for(i = begin(); i != end(); i++) {
         object &obj = *(i->second);
         std::stringstream name;
-        name << dir << prefix << "#" << obj.getId() << "-" << obj.getDumps(stat) << "_" << protocol::common::StatisticName[stat];
+        name << dir << prefix << "#" << obj.getId() << "-" << obj.getDumps(stat) << "_" << protocols::common::StatisticName[stat];
 
         std::ofstream out(name.str().c_str(), std::ios_base::trunc);
         ASSERTION(out.good());
@@ -64,13 +64,13 @@ gmacError_t map_object::dumpObjects(const std::string &dir, std::string prefix, 
 }
 
 inline
-gmacError_t map_object::dumpObject(const std::string &dir, std::string prefix, protocol::common::Statistic stat, hostptr_t ptr) const
+gmacError_t map_object::dumpObject(const std::string &dir, std::string prefix, protocols::common::Statistic stat, hostptr_t ptr) const
 {
     object *obj = getObject(ptr, 1);
     lock_read();
     ASSERTION(obj != NULL);
     std::stringstream name;
-    name << dir << prefix << "#" << obj->getId() << "-" << obj->getDumps(stat) << "_" << protocol::common::StatisticName[stat];
+    name << dir << prefix << "#" << obj->getId() << "-" << obj->getDumps(stat) << "_" << protocols::common::StatisticName[stat];
 
     std::ofstream out(name.str().c_str(), std::ios_base::trunc);
     ASSERTION(out.good());
@@ -84,7 +84,7 @@ gmacError_t map_object::dumpObject(const std::string &dir, std::string prefix, p
 
 inline
 bool
-map_object::hasModifiedObjects() const
+map_object::has_modified_objects() const
 {
     lock_read();
     bool ret = modifiedObjects_;
@@ -94,7 +94,7 @@ map_object::hasModifiedObjects() const
 
 inline
 void
-map_object::invalidateObjects()
+map_object::invalidate_objects()
 {
     lock_write();
     modifiedObjects_ = false;
@@ -111,7 +111,7 @@ map_object::modifiedObjects_unlocked()
 
 inline
 void
-map_object::modifiedObjects()
+map_object::modified_objects()
 {
     lock_write();
     modifiedObjects_unlocked();
@@ -120,7 +120,7 @@ map_object::modifiedObjects()
 
 inline
 bool
-map_object::releasedObjects() const
+map_object::released_objects() const
 {
     lock_read();
     bool ret = releasedObjects_;
@@ -129,7 +129,7 @@ map_object::releasedObjects() const
 }
 
 inline
-protocol_interface &
+protocol &
 map_object::getProtocol()
 {
     return protocol_;

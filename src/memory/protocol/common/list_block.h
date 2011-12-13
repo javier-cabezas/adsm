@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010, 2011 University of Illinois
+/* Copyright (c) 2009-2011sity of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -52,7 +52,7 @@ namespace core {
 namespace memory {
 class block;
 
-namespace protocol {
+namespace protocols {
 
 //! FIFO list of blocks
 class GMAC_LOCAL list_block :

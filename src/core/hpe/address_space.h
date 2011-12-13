@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010, 2011 University of Illinois
+/* Copyright (c) 2009-2011sity of Illinois
  Universitat Politecnica de Catalunya
  All rights reserved.
 
@@ -68,7 +68,7 @@ class GMAC_LOCAL address_space :
     friend class resource_manager;
     friend class vdevice;
 
-    typedef gmac::util::mutex<address_space> Lock;
+    typedef gmac::util::mutex<address_space> lock;
 
     hal::context_t &ctx_;
 

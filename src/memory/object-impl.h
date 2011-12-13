@@ -11,7 +11,7 @@
 
 namespace __impl { namespace memory {
 
-inline object::object(protocol_interface &protocol, hostptr_t addr, size_t size) :
+inline object::object(protocol &protocol, hostptr_t addr, size_t size) :
     Lock("object"),
     util::Reference("Object"),
     protocol_(protocol),
@@ -32,7 +32,7 @@ object::getId() const
 }
 
 inline unsigned
-object::getDumps(protocol::common::Statistic stat)
+object::getDumps(protocols::common::Statistic stat)
 {
     if (dumps_.find(stat) == dumps_.end()) dumps_[stat] = 0;
     return dumps_[stat];
@@ -87,7 +87,7 @@ object::get_last_event(hal::event_ptr::type type) const
 }
 
 inline
-protocol_interface &
+protocol &
 object::getProtocol()
 {
     return protocol_;
@@ -137,7 +137,7 @@ object::size() const
 
 template <typename T>
 hal::event_ptr
-object::coherenceOp(hal::event_ptr (protocol_interface::*op)(block_ptr, T &, gmacError_t &),
+object::coherenceOp(hal::event_ptr (protocol::*op)(block_ptr, T &, gmacError_t &),
                     T &param,
                     gmacError_t &err)
 {
@@ -159,7 +159,7 @@ object::acquire(GmacProtection &prot, gmacError_t &err)
     TRACE(LOCAL, "Acquiring object %p?", addr_);
     if (released_ == true) {
         TRACE(LOCAL, "Acquiring object %p", addr_);
-        ret = coherenceOp<GmacProtection>(&protocol_interface::acquire, prot, err);
+        ret = coherenceOp<GmacProtection>(&protocol::acquire, prot, err);
         if (err == gmacSuccess) {
             set_last_event(ret);
         }
@@ -199,7 +199,7 @@ object::releaseBlocks(gmacError_t &err)
     TRACE(LOCAL, "Releasing object %p?", addr_);
     if (released_ == false) {
         TRACE(LOCAL, "Releasing object %p", addr_);
-        ret = coherenceOp(&protocol_interface::release, err);
+        ret = coherenceOp(&protocol::release, err);
     }
 
     released_ = true;
@@ -212,7 +212,7 @@ inline gmacError_t
 object::acquireWithBitmap()
 {
     lock_read();
-    gmacError_t ret = coherenceOp(&protocol_interface::acquireWithBitmap);
+    gmacError_t ret = coherenceOp(&protocol::acquireWithBitmap);
     unlock();
     return ret;
 }
@@ -220,7 +220,7 @@ object::acquireWithBitmap()
 
 template <typename P1, typename P2>
 gmacError_t
-object::forEachBlock(gmacError_t (protocol_interface::*op)(block_ptr, P1 &, P2), P1 &p1, P2 p2)
+object::forEachBlock(gmacError_t (protocol::*op)(block_ptr, P1 &, P2), P1 &p1, P2 p2)
 {
     lock_read();
     gmacError_t ret = gmacSuccess;
@@ -239,7 +239,7 @@ inline hal::event_ptr
 object::toHost(gmacError_t &err)
 {
     lock_read();
-    hal::event_ptr ret = coherenceOp(&protocol_interface::toHost, err);
+    hal::event_ptr ret = coherenceOp(&protocol::to_host, err);
     if (err == gmacSuccess) {
         set_last_event(ret);
     }
@@ -251,7 +251,7 @@ inline hal::event_ptr
 object::toAccelerator(gmacError_t &err)
 {
     lock_read();
-    hal::event_ptr ret = coherenceOp(&protocol_interface::release, err);
+    hal::event_ptr ret = coherenceOp(&protocol::release, err);
     if (err == gmacSuccess) {
         set_last_event(ret);
     }
@@ -265,7 +265,7 @@ object::copyToBuffer(core::io_buffer &buffer, size_t size,
                      size_t bufferOffset, size_t objectOffset)
 {
     lock_read();
-    gmacError_t ret = memoryOp(&protocol_interface::copyToBuffer, buffer, size,
+    gmacError_t ret = memoryOp(&protocol::copyToBuffer, buffer, size,
                                bufferOffset, objectOffset);
     unlock();
     return ret;
@@ -275,7 +275,7 @@ inline gmacError_t object::copyFromBuffer(core::io_buffer &buffer, size_t size,
                                           size_t bufferOffset, size_t objectOffset)
 {
     lock_read();
-    gmacError_t ret = memoryOp(&protocol_interface::copyFromBuffer, buffer, size,
+    gmacError_t ret = memoryOp(&protocol::copyFromBuffer, buffer, size,
                                bufferOffset, objectOffset);
     unlock();
     return ret;
@@ -288,7 +288,7 @@ inline gmacError_t object::copyObjectToObject(object &dst, size_t dstOff,
 {
     dst.lock_write();
     src.lock_write();
-        gmacError_t ret = memoryOp(&protocol_interface::copyFromBuffer, buffer, size,
+        gmacError_t ret = memoryOp(&protocol::copyFromBuffer, buffer, size,
         bufferOffset, objectOffset);
     dst.unlock();
     src.unlock();

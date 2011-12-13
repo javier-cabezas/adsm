@@ -44,7 +44,7 @@ namespace __impl { namespace memory {
 
 //! Class that allocates small chunks of shared memory
 class GMAC_LOCAL allocator_interface :
-	public __impl::util::Singleton<allocator_interface> {
+	public __impl::util::singleton<allocator_interface> {
 public:
     /**
      *  Alloc shared memory
@@ -54,14 +54,14 @@ public:
      * NULL to let the allocator choose the host memory address.
      * \return Host memory address where the data was allocated
      */
-    virtual hostptr_t alloc(util::shared_ptr<core::address_space> current, const size_t size, const hostptr_t addr = NULL) = 0;
+    virtual hostptr_t alloc(core::address_space_ptr current, const size_t size, const hostptr_t addr = NULL) = 0;
 
     /**
      * Release shared memory
      * \param current Execution mode where the data is released
      * \param addr Host memory address of the chunk of data to be release
      */
-    virtual bool free(util::shared_ptr<core::address_space> current, const hostptr_t addr) = 0;
+    virtual bool free(core::address_space_ptr current, const hostptr_t addr) = 0;
 };
 
 }}
