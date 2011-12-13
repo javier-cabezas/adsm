@@ -31,39 +31,59 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_PROTOCOL_LAZY_H_
-#define GMAC_MEMORY_PROTOCOL_LAZY_H_
+#ifndef GMAC_MEMORY_PROTOCOL_COMMON_BLOCKSTATE_H_
+#define GMAC_MEMORY_PROTOCOL_COMMON_BLOCKSTATE_H_
 
-#include "LazyBase.h"
+#include <ostream>
 
-namespace __impl { namespace memory { namespace protocol {
+#include "config/common.h"
+
+#include "hal/types.h"
+
+namespace __impl {
+namespace memory { namespace protocol { namespace common {
+
+enum Statistic {
+    PAGE_FAULTS_READ              = 0,
+    PAGE_FAULTS_WRITE             = 1,
+    PAGE_TRANSFERS_TO_ACCELERATOR = 2,
+    PAGE_TRANSFERS_TO_HOST        = 3
+};
+extern const char *StatisticName[];
 
 template <typename T>
-class GMAC_LOCAL Lazy :
-	public gmac::memory::protocol::lazy_base {
-    DBC_FORCE_TEST(Lazy<T>)
+class GMAC_LOCAL BlockState {
+public:
+    typedef T ProtocolState;
+    T state_;
+
+    unsigned faultsCacheWrite_;
+    unsigned faultsCacheRead_;
 
 public:
-    /**
-     * Default constructor
-     *
-     * \param eager Tells if the protocol uses eager update
-     */
-    explicit Lazy(bool eager);
+    BlockState(ProtocolState state);
 
-    /// Default destructor
-    virtual ~Lazy();
+    virtual hal::event_ptr syncToAccelerator(gmacError_t &err) = 0;
+    virtual hal::event_ptr syncToHost(gmacError_t &err) = 0;
 
-    // Protocol Interface
-    memory::object *createObject(size_t size, hostptr_t cpuPtr, GmacProtection prot, unsigned flags);
+    virtual bool is(ProtocolState state) const = 0;
+
+    ProtocolState getState() const;
+    virtual void setState(ProtocolState state, hostptr_t addr = NULL) = 0;
+
+    unsigned getCacheWriteFaults() const;
+    unsigned getCacheReadFaults() const;
+
+    void resetCacheWriteFaults();
+    void resetCacheReadFaults();
+
+    virtual gmacError_t dump(std::ostream &stream, Statistic stat) = 0;
 };
 
-}}}
+}}}}
 
-#include "Lazy-impl.h"
+#include "block_state-impl.h"
 
-#ifdef USE_DBC
-#include "dbc/Lazy.h"
-#endif
+#endif /* BLOCKINFO_H */
 
-#endif
+/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

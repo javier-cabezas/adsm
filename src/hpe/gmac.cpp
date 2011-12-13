@@ -26,7 +26,7 @@
 #include "memory/manager.h"
 #include "memory/allocator.h"
 #ifdef DEBUG
-#include "memory/protocol/common/BlockState.h"
+#include "memory/protocol/common/block_state.h"
 #endif
 
 #include "trace/logger.h"
