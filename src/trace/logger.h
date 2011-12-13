@@ -31,8 +31,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_UTIL_LOGGER_H_
-#define GMAC_UTIL_LOGGER_H_
+#ifndef GMAC_TRACE_LOGGER_H_
+#define GMAC_TRACE_LOGGER_H_
 
 #include <stdlib.h>
 #include <string.h>
@@ -46,8 +46,8 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 #include "config/config.h"
 #include "include/gmac/types.h"
-#include "util/Thread.h"
-#include "util/UniquePtr.h"
+#include "util/thread.h"
+#include "util/smart_ptr.h"
 
 
 #if defined(__GNUC__)
@@ -89,21 +89,21 @@ get_class_name(const char *mangled);
 
 #if defined(DEBUG)
 #   if defined(__GNUC__)
-#	    define TRACE(name, fmt, ...) do { __impl::util::Logger::__Trace(name, \
+#	    define TRACE(name, fmt, ...) do { __impl::trace::Logger::__Trace(name, \
                                                                    __PRETTY_FUNCTION__, \
                                                                    __extract_file_name(__FILE__), __LINE__, \
                                                                    ::config::params::DebugUseRealTID? __impl::util::GetThreadId(): __impl::core::thread::get_debug_tid(), \
                                                                    fmt, \
                                                                    ##__VA_ARGS__); } while (0)
 #   elif defined(_MSC_VER)
-#	    define TRACE(name, fmt, ...) __impl::util::Logger::__Trace(name, \
+#	    define TRACE(name, fmt, ...) __impl::trace::Logger::__Trace(name, \
                                                                    __FUNCTION__, \
                                                                    __extract_file_name(__FILE__), __LINE__, \
                                                                    ::config::params::DebugUseRealTID? __impl::util::GetThreadId(): __impl::core::thread::get_debug_tid(), \
                                                                    fmt, \
                                                                    ##__VA_ARGS__)
 #   endif
-#   define ASSERTION(c, ...) __impl::util::Logger::__Assertion(c, "Assertion '"#c"' failed", LOCATION_STRING, ##__VA_ARGS__)
+#   define ASSERTION(c, ...) __impl::trace::Logger::__Assertion(c, "Assertion '"#c"' failed", LOCATION_STRING, ##__VA_ARGS__)
 #else
 
 static inline
@@ -123,32 +123,32 @@ void dummy_assertion(bool /*b*/, ...)
 #ifdef DEBUG
 #define MESSAGE(fmt, ...) do {                                        \
                             if (::config::params::Verbose) { \
-                                __impl::util::Logger::__Message("<GMAC> "fmt"\n", ##__VA_ARGS__); \
+                                __impl::trace::Logger::__Message("<GMAC> "fmt"\n", ##__VA_ARGS__); \
                                 TRACE(GLOBAL, fmt, ##__VA_ARGS__);    \
                             }                                         \
                           } while (0)
 #else
-#define MESSAGE(fmt, ...) { if (::config::params::Verbose) __impl::util::Logger::__Message("<GMAC> "fmt"\n", ##__VA_ARGS__); }
+#define MESSAGE(fmt, ...) { if (::config::params::Verbose) __impl::trace::Logger::__Message("<GMAC> "fmt"\n", ##__VA_ARGS__); }
 #endif
 
-#define WARNING(fmt, ...) __impl::util::Logger::__Warning("("FMT_TID")" fmt, __impl::util::GetThreadId(), ##__VA_ARGS__)
-#define FATAL(fmt, ...) __impl::util::Logger::__Fatal(fmt, ##__VA_ARGS__)
-#define CFATAL(c, ...) __impl::util::Logger::__CFatal(c, "Condition '"#c"' failed", LOCATION_STRING)
+#define WARNING(fmt, ...) __impl::trace::Logger::__Warning("("FMT_TID")" fmt, __impl::util::GetThreadId(), ##__VA_ARGS__)
+#define FATAL(fmt, ...) __impl::trace::Logger::__Fatal(fmt, ##__VA_ARGS__)
+#define CFATAL(c, ...) __impl::trace::Logger::__CFatal(c, "Condition '"#c"' failed", LOCATION_STRING)
 
-#include "util/Atomics.h"
+#include "util/atomics.h"
 #include "util/Parameter.h"
-#include "util/Private.h"
+#include "util/private.h"
 
-namespace __impl { namespace util {
+namespace __impl { namespace trace {
 
 class GMAC_LOCAL Logger {
 private:    
 	static Atomic Ready_;
-	static Private<char> Buffer_;
+	static util::Private<char> Buffer_;
     static const size_t BufferSize_ = 1024;
 
 #ifdef DEBUG
-    typedef Parameter<const char *> Level;
+    typedef util::Parameter<const char *> Level;
     typedef std::list<std::string> Tags;
 
     static const char *DebugString_;
@@ -209,6 +209,6 @@ public:
 // Needs to be here
 #include "core/thread.h"
 
-#include "Logger-impl.h"
+#include "logger-impl.h"
 
 #endif

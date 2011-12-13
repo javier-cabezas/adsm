@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,32 +31,43 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_UTIL_SINGLETON_H_
-#define GMAC_UTIL_SINGLETON_H_
+#ifndef GMAC_UTIL_WINDOWS_PRIVATE_H_
+#define GMAC_UTIL_WINDOWS_PRIVATE_H_
 
-#include "config/common.h"
+#include "config/config.h"
 
-/*
- *
- */
+#include <windows.h>
+
 namespace __impl { namespace util {
-
-template <typename T>
-class GMAC_LOCAL Singleton {
-private:
-	static T *Singleton_;
+// A class for thread private variables
+template <typename T = void>
+class GMAC_LOCAL Private {
 protected:
-    Singleton();
-	virtual ~Singleton();
-
-    static T *getInstance();
+    //! Key to identify the variable in the TLS
+    DWORD key_;
+    
 public:
+    //! Default destructor
+	virtual ~Private();
 
-	void destroy();
+    //! Initialize the private variable
+    static void init(Private &var);
+
+    //! Set the private varible contents
+    /*!
+        \param value New value for the private variable
+    */
+    void set(const void *value);
+
+    //! Get the private variable contents
+    /*!
+        \return Pointer to the contents of the variable
+    */
+    T * get();
 };
 
 }}
 
-#include "Singleton-impl.h"
+#include "private-impl.h"
 
-#endif /* SINGLETON_H_ */
+#endif

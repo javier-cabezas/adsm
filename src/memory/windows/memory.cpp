@@ -1,5 +1,5 @@
-#include "memory/Memory.h"
-#include "memory/windows/FileMap.h"
+#include "memory/memory.h"
+#include "memory/windows/map_file.h"
 #include "core/Mode.h"
 
 namespace __impl { namespace memory {

@@ -1,4 +1,4 @@
-#include "Semaphore.h"
+#include "semaphore.h"
 #include <cassert>
 
 namespace __impl { namespace util {

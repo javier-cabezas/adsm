@@ -39,7 +39,7 @@ WITH THE SOFTWARE.  */
 #ifdef USE_VM
 #include "memory/vm/Bitmap.h"
 #endif
-#include "util/Atomics.h"
+#include "util/atomics.h"
 #include "util/lock.h"
 #include "util/NonCopyable.h"
 #include "util/Reference.h"

@@ -1,8 +1,7 @@
 #ifndef GMAC_UTIL_SINGLETON_IMPL_H_
 #define GMAC_UTIL_SINGLETON_IMPL_H_
 
-#include "Singleton.h"
-#include "util/Logger.h"
+#include "trace/logger.h"
 
 namespace __impl { namespace util {
 

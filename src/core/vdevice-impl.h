@@ -3,7 +3,7 @@
 
 #include "config/order.h"
 #include "memory/object.h"
-#include "memory/Protocol.h"
+#include "memory/protocol.h"
 #include "trace/Tracer.h"
 
 namespace __impl { namespace core {

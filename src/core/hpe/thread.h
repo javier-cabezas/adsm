@@ -36,7 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include "core/thread.h"
 #include "hal/types.h"
-#include "util/Private.h"
+#include "util/private.h"
 
 #include "kernel.h"
 

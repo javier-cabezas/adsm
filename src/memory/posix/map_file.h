@@ -31,29 +31,46 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_UTIL_POSIX_PRIVATE_H_
-#define GMAC_UTIL_POSIX_PRIVATE_H_
+#ifndef GMAC_MEMORY_POSIX_FILEMAP_H_
+#define GMAC_MEMORY_POSIX_FILEMAP_H_
 
-#include <pthread.h>
+#include "config/common.h"
+#include "trace/logger.h"
+#include "util/lock.h"
 
-#include "config/config.h"
+namespace __impl { namespace memory {
 
-namespace __impl { namespace util {
-
-template <typename T = void>
-class GMAC_API Private {
+class GMAC_LOCAL map_file_entry {
 protected:
-    pthread_key_t key_;
-    
+    int fd_;
+	hostptr_t address_;
+	size_t size_;
 public:
-    static void init(Private &var);
+	map_file_entry(int fd, hostptr_t address, size_t size) :
+	    fd_(fd), address_(address), size_(size) {};
+	virtual ~map_file_entry() {};
 
-    void set(const T *value);
-    T * get();
+	inline int fd() const { return fd_; }
+	inline hostptr_t address() const { return address_; }
+	inline size_t size() const { return size_; }
+};
+
+class GMAC_LOCAL map_file :
+	protected std::map<hostptr_t, map_file_entry>,
+	public gmac::util::lock_rw<map_file> {
+protected:
+	typedef std::map<hostptr_t, map_file_entry> Parent;
+	typedef gmac::util::lock_rw<map_file> Lock;
+
+public:
+	map_file();
+	virtual ~map_file();
+
+	bool insert(int fd, hostptr_t address, size_t size);
+	bool remove(hostptr_t address);
+	const map_file_entry find(hostptr_t address) const;
 };
 
 }}
-
-#include "Private-impl.h"
 
 #endif

@@ -2,7 +2,7 @@
 #define GMAC_HAL_TYPES_EVENT_H_
 
 #include "util/delayed_exec.h"
-#include "util/UniquePtr.h"
+#include "util/smart_ptr.h"
 
 namespace __impl { namespace hal {
 

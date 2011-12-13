@@ -1,7 +1,7 @@
 #ifndef GMAC_TRACE_TRACER_IMPL_H_
 #define GMAC_TRACE_TRACER_IMPL_H_
 
-#include "util/Thread.h"
+#include "util/thread.h"
 
 namespace __impl { namespace trace {
 

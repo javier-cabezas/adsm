@@ -1,5 +1,5 @@
-#include "memory/Memory.h"
-#include "memory/posix/FileMap.h"
+#include "memory/memory.h"
+#include "memory/posix/map_file.h"
 #include "core/address_space.h"
 
 #include <stdio.h>

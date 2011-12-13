@@ -39,7 +39,7 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 #include "config/order.h"
 #include "util/loader.h"
-#include "util/Singleton.h"
+#include "util/singleton.h"
 
 namespace __impl {
 

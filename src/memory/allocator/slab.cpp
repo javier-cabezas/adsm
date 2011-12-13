@@ -1,4 +1,4 @@
-#include "Slab.h"
+#include "slab.h"
 
 #include "config/common.h"
 #include "core/address_space.h"

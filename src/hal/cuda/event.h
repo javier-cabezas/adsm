@@ -7,7 +7,8 @@
 
 #include "hal/types-detail.h"
 
-#include "util/Logger.h"
+#include "trace/logger.h"
+
 #include "util/unique.h"
 
 namespace __impl { namespace hal {

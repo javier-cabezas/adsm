@@ -1,7 +1,7 @@
 #include "manager.h"
 #include "allocator.h"
 
-#include "allocator/Slab.h"
+#include "allocator/slab.h"
 
 #include "memory/object_state.h"
 

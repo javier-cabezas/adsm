@@ -3,7 +3,7 @@
 
 #include <sstream>
 
-namespace __impl { namespace util {
+namespace __impl { namespace trace {
 #ifdef DEBUG
 
 #ifdef USE_CXX0X

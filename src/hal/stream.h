@@ -4,9 +4,9 @@
 #include <algorithm>
 #include <queue>
 
+#include "trace/logger.h"
 #include "util/gmac_base.h"
 #include "util/lock.h"
-#include "util/Logger.h"
 
 namespace __impl { namespace hal {
 

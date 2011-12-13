@@ -16,7 +16,7 @@ set(memory_SRC
     manager.h
     manager-impl.h
     manager.cpp
-    Memory.h
+    memory.h
     object.h
     object-impl.h
     object.cpp
@@ -25,15 +25,15 @@ set(memory_SRC
     map_object.h
     map_object-impl.h
     map_object.cpp
-    Protocol.h
-    Protocol.cpp
+    protocol.h
+    protocol.cpp
     memory.cpp
-    allocator/Cache.h
-    allocator/Cache-impl.h
-    allocator/Cache.cpp
-    allocator/Slab.h
-    allocator/Slab-impl.h
-    allocator/Slab.cpp
+    allocator/cache.h
+    allocator/cache-impl.h
+    allocator/cache.cpp
+    allocator/slab.h
+    allocator/slab-impl.h
+    allocator/slab.cpp
     protocol/BlockList.h
     protocol/BlockList-impl.h
     protocol/Gather.h

@@ -39,11 +39,11 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 #include "include/gmac/types.h"
 
-#include "util/Atomics.h"
+#include "util/atomics.h"
 #include "util/lock.h"
 #include "util/locked_iterator.h"
 #include "util/Reference.h"
-#include "memory/Protocol.h"
+#include "memory/protocol.h"
 
 namespace __impl {
 

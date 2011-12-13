@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009, 2010, 2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,46 +31,82 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_POSIX_FILEMAP_H_
-#define GMAC_MEMORY_POSIX_FILEMAP_H_
+#ifndef GMAC_MEMORY_ALLOCATOR_CACHE_H_
+#define GMAC_MEMORY_ALLOCATOR_CACHE_H_
+
+#include <list>
+#include <map>
 
 #include "config/common.h"
-#include "util/Logger.h"
+#include "memory/manager.h"
 #include "util/lock.h"
 
-namespace __impl { namespace memory {
+namespace __impl { namespace memory { namespace allocator {
 
-class GMAC_LOCAL map_file_entry {
+typedef std::list<hostptr_t> ObjectList;
+
+/**
+ * Arenas used by the caches of the slab allocator
+ * \sa Cache
+ * \sa Slab
+ */
+class GMAC_LOCAL arena {
 protected:
-    int fd_;
-	hostptr_t address_;
-	size_t size_;
-public:
-	map_file_entry(int fd, hostptr_t address, size_t size) :
-	    fd_(fd), address_(address), size_(size) {};
-	virtual ~map_file_entry() {};
+    hostptr_t ptr_;
+    size_t size_;
 
-	inline int fd() const { return fd_; }
-	inline hostptr_t address() const { return address_; }
-	inline size_t size() const { return size_; }
-};
+    ObjectList objects_;
 
-class GMAC_LOCAL map_file :
-	protected std::map<hostptr_t, map_file_entry>,
-	public gmac::util::lock_rw<map_file> {
-protected:
-	typedef std::map<hostptr_t, map_file_entry> Parent;
-	typedef gmac::util::lock_rw<map_file> Lock;
+    manager &manager_;
+    util::shared_ptr<core::address_space> aspace_;
 
 public:
-	map_file();
-	virtual ~map_file();
+    arena(manager &manager, util::shared_ptr<core::address_space> aspace, size_t objSize);
+    ~arena();
 
-	bool insert(int fd, hostptr_t address, size_t size);
-	bool remove(hostptr_t address);
-	const map_file_entry find(hostptr_t address) const;
+    inline hostptr_t address() const { return ptr_; }
+    hostptr_t key() const;
+    const ObjectList &objects() const;
+
+    bool valid() const;
+    bool full() const;
+    bool empty() const;
+
+    hostptr_t get();
+    void put(hostptr_t obj);
 };
 
-}}
+/**
+ * Caches, composed of arenas, used by the slab allocator
+ * \sa Arena
+ * \sa Slab
+ */
+class GMAC_LOCAL cache :
+    protected gmac::util::mutex<cache> {
+    typedef gmac::util::mutex<cache> Lock;
+protected:
+    size_t objectSize;
+    size_t arenaSize;
+
+    typedef std::map<hostptr_t, arena *> map_arena;
+    map_arena arenas;
+
+    manager &manager_;
+    util::shared_ptr<core::address_space> aspace_;
+public:
+    cache(manager &manager, util::shared_ptr<core::address_space> aspace, size_t size);
+    virtual ~cache();
+
+    static cache &get(long key, size_t size);
+    static void cleanup();
+
+    hostptr_t get();
+    void put(hostptr_t obj);
+
+};
+
+}}}
+
+#include "cache-impl.h"
 
 #endif

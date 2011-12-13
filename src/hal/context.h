@@ -4,9 +4,9 @@
 #include <list>
 #include <queue>
 
+#include "trace/logger.h"
 #include "util/lock.h"
 #include "util/locked_counter.h"
-#include "util/Logger.h"
 
 namespace __impl { namespace hal {
 

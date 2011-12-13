@@ -1,7 +1,7 @@
 #ifdef USE_DBC
 
 #include "memory/protocol/Lazy.h"
-#include "util/UniquePtr.h"
+#include "util/smart_ptr.h"
 
 namespace __dbc { namespace memory { namespace protocol {
 

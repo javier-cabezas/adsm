@@ -4,7 +4,7 @@
 
 #include "map_object.h"
 #include "object.h"
-#include "Protocol.h"
+#include "protocol.h"
 
 namespace __impl { namespace memory {
 

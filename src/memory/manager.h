@@ -36,7 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 #include "include/gmac/types.h"
-#include "util/Singleton.h"
+#include "util/singleton.h"
 #include "util/stl/locked_map.h"
 
 #include "core/address_space.h"

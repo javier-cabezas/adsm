@@ -2,7 +2,7 @@
 
 #include "core/address_space.h"
 
-#include "Memory.h"
+#include "memory.h"
 #include "object.h"
 
 namespace __impl { namespace memory {
