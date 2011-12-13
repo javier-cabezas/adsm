@@ -289,7 +289,7 @@ manager::acquireObjects(core::address_space_ptr aspace, const ListAddr &addrs)
 {
     trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
-    hal::event_t evt;
+    hal::event_ptr evt;
 
     memory::map_object &map = aspace->get_object_map();
     if (addrs.size() == 0) {
@@ -330,7 +330,7 @@ manager::releaseObjects(core::address_space_ptr aspace, const ListAddr &addrs)
 {
     trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
-    hal::event_t evt;
+    hal::event_ptr evt;
 
     memory::map_object &map = aspace->get_object_map();
     if (addrs.size() == 0) { // Release all objects
@@ -722,7 +722,7 @@ gmacError_t
 manager::flushDirty(core::address_space_ptr aspace)
 {
     gmacError_t ret;
-    hal::event_t evt;
+    hal::event_ptr evt;
     TRACE(LOCAL,"Flushing Objects");
     // Release per-mode objects
     memory::map_object &map = aspace->get_object_map();

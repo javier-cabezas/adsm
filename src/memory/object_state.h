@@ -49,6 +49,9 @@ namespace core {
 
 namespace memory {
 
+template <typename T>
+class block_state;
+
 template<typename State>
 class GMAC_LOCAL object_state :
     util::gmac_base<object_state<State> >,

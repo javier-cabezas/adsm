@@ -19,7 +19,7 @@ namespace __impl { namespace hal {
     typedef hal::cuda::code_repository code_repository;
     typedef hal::cuda::context_t context_t;
     typedef hal::cuda::stream_t stream_t;
-    typedef hal::cuda::event_t event_t;
+    typedef hal::cuda::event_ptr event_ptr;
 
     typedef hal::cuda::buffer_t buffer_t;
 
@@ -42,7 +42,7 @@ namespace __impl { namespace hal {
     typedef hal::opencl::code_repository code_repository;
     typedef hal::opencl::context_t context_t;
     typedef hal::opencl::stream_t stream_t;
-    typedef hal::opencl::event_t event_t;
+    typedef hal::opencl::event_ptr event_ptr;
 
     typedef hal::opencl::buffer_t buffer_t;
 

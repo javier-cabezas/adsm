@@ -63,8 +63,8 @@ public:
 public:
     BlockState(ProtocolState state);
 
-    virtual hal::event_t syncToAccelerator(gmacError_t &err) = 0;
-    virtual hal::event_t syncToHost(gmacError_t &err) = 0;
+    virtual hal::event_ptr syncToAccelerator(gmacError_t &err) = 0;
+    virtual hal::event_ptr syncToHost(gmacError_t &err) = 0;
 
     virtual bool is(ProtocolState state) const = 0;
 

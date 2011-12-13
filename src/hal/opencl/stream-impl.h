@@ -16,9 +16,9 @@ stream_t::query()
 {
     Parent::state ret = Running;
 
-    if (lastEvent_.is_valid()) {
+    if (lastEvent_) {
         cl_int val;
-        cl_int res = clGetEventInfo(lastEvent_(), 
+        cl_int res = clGetEventInfo((*lastEvent_)(), 
                                     CL_EVENT_COMMAND_EXECUTION_STATUS,
                                     sizeof(cl_int),
                                     &val,

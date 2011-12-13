@@ -346,10 +346,10 @@ BlockState::getSubBlockSize() const
 }
 
 inline
-hal::event_t
+hal::event_ptr
 BlockState::syncToAccelerator(gmacError_t &err)
 {
-    hal::event_t ret;
+    hal::event_ptr ret;
     err = gmacSuccess;
 
     unsigned groupStart = 0, groupEnd = 0;
@@ -410,13 +410,13 @@ BlockState::syncToAccelerator(gmacError_t &err)
 }
 
 inline
-hal::event_t
+hal::event_ptr
 BlockState::syncToHost(gmacError_t &err)
 {
     TRACE(LOCAL, "Transfer block to host: %p", block().addr());
 
 #ifndef USE_VM
-    hal::event_t ret = block().toHost(err);
+    hal::event_ptr ret = block().toHost(err);
 #ifdef DEBUG
     for (unsigned i = 0; i < subBlockState_.size(); i++) { 
         transfersToHost_[i]++;
@@ -725,7 +725,7 @@ BlockState::setState(ProtocolState state, hostptr_t /* addr */)
 }
 
 inline
-hal::event_t
+hal::event_ptr
 BlockState::syncToAccelerator(gmacError_t &err)
 {
     TRACE(LOCAL, "Transfer block to accelerator: %p", block().addr());
@@ -737,7 +737,7 @@ BlockState::syncToAccelerator(gmacError_t &err)
 }
 
 inline
-hal::event_t
+hal::event_ptr
 BlockState::syncToHost(gmacError_t &err)
 {
     TRACE(LOCAL, "Transfer block to host: %p", block().addr());

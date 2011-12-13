@@ -16,7 +16,7 @@ object::~object()
     vector_block::iterator i;
     lock_write();
     gmacError_t err;
-    hal::event_t evt;
+    hal::event_ptr evt;
     evt = coherenceOp(&protocol_interface::deleteBlock, err);
     ASSERTION(err == gmacSuccess);
     blocks_.clear();
@@ -38,10 +38,10 @@ object::get_block(size_t objectOffset, size_t *blockOffset) const
 			                     blocks_);
 }
 
-hal::event_t
-object::coherenceOp(hal::event_t (protocol_interface::*f)(block_ptr, gmacError_t &), gmacError_t &err)
+hal::event_ptr
+object::coherenceOp(hal::event_ptr (protocol_interface::*f)(block_ptr, gmacError_t &), gmacError_t &err)
 {
-    hal::event_t ret;
+    hal::event_ptr ret;
     for(const_locked_iterator i = get_block(0, NULL); i != blocks_.end(); ++i) {
         ret = (protocol_.*f)(*i, err);
         if(err != gmacSuccess) break;
@@ -52,7 +52,7 @@ object::coherenceOp(hal::event_t (protocol_interface::*f)(block_ptr, gmacError_t
 gmacError_t
 object::to_io_device(hal::device_output &output, size_t objOff, size_t count)
 {
-    hal::event_t event;
+    hal::event_ptr event;
     gmacError_t ret = gmacSuccess;
     size_t blockOffset = 0;
     size_t off = 0;
@@ -75,7 +75,7 @@ object::to_io_device(hal::device_output &output, size_t objOff, size_t count)
 gmacError_t
 object::from_io_device(size_t objOff, hal::device_input &input, size_t count)
 {
-    hal::event_t event;
+    hal::event_ptr event;
     gmacError_t ret = gmacSuccess;
     size_t blockOffset = 0;
     size_t off = 0;
@@ -119,7 +119,7 @@ gmacError_t object::memoryOp(protocol_interface::MemoryOp op,
 
 gmacError_t object::memset(size_t offset, int v, size_t size)
 {
-	hal::event_t event;
+	hal::event_ptr event;
     gmacError_t ret = gmacSuccess;
     size_t blockOffset = 0;
     const_locked_iterator i = get_block(offset, &blockOffset);
@@ -137,7 +137,7 @@ gmacError_t object::memset(size_t offset, int v, size_t size)
 gmacError_t
 object::memcpyToObject(size_t objOff, const hostptr_t src, size_t size)
 {
-    hal::event_t event;
+    hal::event_ptr event;
     gmacError_t ret = gmacSuccess;
     size_t blockOffset = 0;
     size_t off = 0;
@@ -163,7 +163,7 @@ object::memcpyObjectToObject(object &dstObj, size_t dstOffset, size_t srcOffset,
     trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
 
-    hal::event_t event;
+    hal::event_ptr event;
 
     const_locked_iterator i = get_block(srcOffset);
     TRACE(LOCAL, "FP: %p "FMT_SIZE, dstObj.addr() + dstOffset, size);
@@ -201,8 +201,8 @@ object::memcpyObjectToObject(object &dstObj, size_t dstOffset, size_t srcOffset,
         ++j;
     }
 
-    if (event.is_valid()) {
-        ret = event.sync();
+    if (event) {
+        ret = event->sync();
     }
 
 #if 0
@@ -308,7 +308,7 @@ object::memcpyObjectToObject(object &dstObj, size_t dstOffset, size_t srcOffset,
 gmacError_t
 object::memcpyFromObject(hostptr_t dst, size_t objOff, size_t size)
 {
-    hal::event_t event;
+    hal::event_ptr event;
     gmacError_t ret = gmacSuccess;
     size_t blockOffset = 0;
     size_t off = 0;
@@ -389,10 +389,10 @@ object::memcpyFromObject(hostptr_t dst, size_t objOff, size_t size)
 #endif
 }
 
-hal::event_t
+hal::event_ptr
 object::signal_read(hostptr_t addr, gmacError_t &err)
 {
-    hal::event_t ret;
+    hal::event_ptr ret;
     lock_read();
     /// \todo is this validate necessary?
     //validate();
@@ -404,10 +404,10 @@ object::signal_read(hostptr_t addr, gmacError_t &err)
     return ret;
 }
 
-hal::event_t
+hal::event_ptr
 object::signal_write(hostptr_t addr, gmacError_t &err)
 {
-    hal::event_t ret;
+    hal::event_ptr ret;
     lock_read();
     modifiedObject();
     const_locked_iterator i = get_block(addr - addr_);

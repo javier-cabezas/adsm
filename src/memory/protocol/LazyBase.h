@@ -105,31 +105,31 @@ public:
 
     bool needUpdate(const block_ptr block) const;
 
-    TESTABLE hal::event_t signal_read(block_ptr block, hostptr_t addr, gmacError_t &err);
+    TESTABLE hal::event_ptr signal_read(block_ptr block, hostptr_t addr, gmacError_t &err);
 
-    TESTABLE hal::event_t signal_write(block_ptr block, hostptr_t addr, gmacError_t &err);
+    TESTABLE hal::event_ptr signal_write(block_ptr block, hostptr_t addr, gmacError_t &err);
 
-    TESTABLE hal::event_t acquire(block_ptr block, GmacProtection &prot, gmacError_t &err);
+    TESTABLE hal::event_ptr acquire(block_ptr block, GmacProtection &prot, gmacError_t &err);
 
-    TESTABLE hal::event_t release(block_ptr block, gmacError_t &err);
+    TESTABLE hal::event_ptr release(block_ptr block, gmacError_t &err);
 
 #ifdef USE_VM
-    hal::event_t acquireWithBitmap(block_ptr block, gmacError_t &err);
+    hal::event_ptr acquireWithBitmap(block_ptr block, gmacError_t &err);
 #endif
 
-    TESTABLE hal::event_t releaseAll(gmacError_t &err);
+    TESTABLE hal::event_ptr releaseAll(gmacError_t &err);
     //gmacError_t releasedAll();
 
-    hal::event_t mapToAccelerator(block_ptr block, gmacError_t &err);
+    hal::event_ptr mapToAccelerator(block_ptr block, gmacError_t &err);
 
-    hal::event_t unmapFromAccelerator(block_ptr block, gmacError_t &err);
+    hal::event_ptr unmapFromAccelerator(block_ptr block, gmacError_t &err);
 
-    hal::event_t deleteBlock(block_ptr block, gmacError_t &err);
+    hal::event_ptr deleteBlock(block_ptr block, gmacError_t &err);
 
-    TESTABLE hal::event_t toHost(block_ptr block, gmacError_t &err);
+    TESTABLE hal::event_ptr toHost(block_ptr block, gmacError_t &err);
 
 #if 0
-    hal::event_t toAccelerator(block_ptr block, gmacError_t &err);
+    hal::event_ptr toAccelerator(block_ptr block, gmacError_t &err);
 
     TESTABLE gmacError_t copyToBuffer(block_ptr block, core::io_buffer &buffer, size_t size,
                                       size_t bufferOffset, size_t blockOffset);
@@ -138,27 +138,27 @@ public:
                                         size_t bufferOffset, size_t blockOffset);
 #endif
 
-    TESTABLE hal::event_t memset(block_ptr block, size_t blockOffset, int v, size_t size,
+    TESTABLE hal::event_ptr memset(block_ptr block, size_t blockOffset, int v, size_t size,
                                  gmacError_t &err);
 
-    TESTABLE hal::event_t flushDirty(gmacError_t &err);
+    TESTABLE hal::event_ptr flushDirty(gmacError_t &err);
 
     //bool isInAccelerator(block_ptr block);
-    hal::event_t copyBlockToBlock(block_ptr d, size_t dstOffset, block_ptr s, size_t srcOffset, size_t count, gmacError_t &err);
+    hal::event_ptr copyBlockToBlock(block_ptr d, size_t dstOffset, block_ptr s, size_t srcOffset, size_t count, gmacError_t &err);
 
-    hal::event_t copyToBlock(block_ptr dst, size_t dstOffset,
+    hal::event_ptr copyToBlock(block_ptr dst, size_t dstOffset,
                              hostptr_t src,
                              size_t count, gmacError_t &err);
 
-    hal::event_t copyFromBlock(hostptr_t dst,
+    hal::event_ptr copyFromBlock(hostptr_t dst,
                                block_ptr src, size_t srcOffset,
                                size_t count, gmacError_t &err);
 
-    hal::event_t to_io_device(hal::device_output &output,
+    hal::event_ptr to_io_device(hal::device_output &output,
                               block_ptr src, size_t srcffset,
                               size_t count, gmacError_t &err);
 
-    hal::event_t from_io_device(block_ptr dst, size_t dstOffset,
+    hal::event_ptr from_io_device(block_ptr dst, size_t dstOffset,
                                 hal::device_input &input,
                                 size_t count, gmacError_t &err);
 

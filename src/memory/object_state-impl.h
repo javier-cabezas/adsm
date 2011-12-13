@@ -117,22 +117,6 @@ object_state<State>::object_state(protocol_interface &protocol,
 template<typename State>
 object_state<State>::~object_state()
 {
-#if 0
-    AcceleratorMap::iterator i;
-    for (i = acceleratorAddr_.begin(); i != acceleratorAddr_.end(); i++) {
-        std::list<core::address_space *> aspaces = i->second;
-        if (aspaces.size() > 0) {
-            aspaces.front()->unmap(addr_, size_);
-        }
-#ifdef USE_VM
-        std::list<core::address_space *>::iterator j;
-        for (j = i->second->begin(); j != i->second->end; j++) {
-            vm::Bitmap &bitmap = (*j)->getBitmap();
-            bitmap.unregisterRange(acceleratorAddr_, size_);
-        }
-#endif
-    }
-#endif
     if (ownerShortcut_) ownerShortcut_->unmap(addr_, size_);
     if (shadow_ != NULL) memory_ops::unshadow(shadow_, size_);
     if (addr_ != NULL && hasUserMemory_ == false) memory_ops::unmap(addr_, size_);
@@ -144,21 +128,6 @@ inline accptr_t
 object_state<State>::get_device_addr(const hostptr_t addr) const
 {
     return deviceAddr_ + (addr - addr_);
-#if 0
-    map_aspace::const_iterator m;
-    if (owners_.size() == 1) {
-        m = owners_.begin();
-        ret = m->second + (addr - this->addr_);
-    } else {
-        m = owners_.find(&current);
-        if (m != owners_.end()) {
-            ret = m->second + (addr - this->addr_);
-        }
-    }
-
-    //StateBlock<State>::unlock();
-    return ret;
-#endif
 }
 
 template<typename State>
@@ -166,21 +135,6 @@ inline accptr_t
 object_state<State>::get_device_addr() const
 {
     return get_device_addr(addr_);
-#if 0
-    map_aspace::const_iterator m;
-    if (owners_.size() == 1) {
-        m = owners_.begin();
-        ret = m->second + (addr - this->addr_);
-    } else {
-        m = owners_.find(&current);
-        if (m != owners_.end()) {
-            ret = m->second + (addr - this->addr_);
-        }
-    }
-
-    //StateBlock<State>::unlock();
-    return ret;
-#endif
 }
 
 template<typename State>
@@ -190,23 +144,6 @@ object_state<State>::owner()
     ASSERTION(bool(ownerShortcut_));
 
     return ownerShortcut_;
-#if 0
-    core::address_space *ret;
-    lock_read();
-    if (owners_.size() == 1) {
-        ret = ownerShortcut_;
-    } else {
-        map_aspace::const_iterator m;
-        m = owners_.find(&current);
-        if (m == owners_.end()) {
-            ret = owners_.begin()->first;
-        } else {
-            ret = m->first;
-        }
-    }
-    unlock();
-    return *ret;
-#endif
 }
 
 template<typename State>
@@ -229,34 +166,6 @@ object_state<State>::addOwner(core::address_space_ptr owner)
     TRACE(LOCAL, "Add owner %p Object @ %p with device addr: %p", owner.get(), addr_, deviceAddr_.get_device_addr());
 
     return ret;
-#if 0
-    accptr_t acceleratorAddr = accptr_t(0);
-
-    gmacError_t ret = mallocAccelerator(aspace, addr_, size_, acceleratorAddr);
-    if (ret != gmacSuccess) return ret;
-
-    lock_write();
-
-    AcceleratorMap::iterator it = acceleratorAddr_.find(acceleratorAddr);
-    if (it == acceleratorAddr_.end()) {
-        acceleratorAddr_.insert(AcceleratorMap::value_type(acceleratorAddr, std::list<core::address_space *>()));
-        AcceleratorMap::iterator it = acceleratorAddr_.find(acceleratorAddr);
-        it->second.push_back(&aspace);
-    } else {
-        it->second.push_back(&aspace);
-    }
-
-    ASSERTION(owners_.find(&aspace) == owners_.end());
-    owners_.insert(map_aspace::value_type(&aspace, addr));
-
-    if (owners_.size() == 1) {
-        ownerShortcut_ = &aspace;
-    } else {
-        ownerShortcut_ = NULL;
-    }
-    unlock();
-    return gmacSuccess;
-#endif
 }
 
 // TODO: move checks to DBC
@@ -267,15 +176,11 @@ object_state<State>::removeOwner(core::address_space_const_ptr owner)
     ASSERTION(ownerShortcut_ == owner);
 
     gmacError_t ret;
-    hal::event_t evt = coherenceOp(&protocol_interface::deleteBlock, ret);
+    hal::event_ptr evt = coherenceOp(&protocol_interface::deleteBlock, ret);
     ASSERTION(ret == gmacSuccess);
     evt = coherenceOp(&protocol_interface::unmapFromAccelerator, ret);
     ASSERTION(ret == gmacSuccess);
     ownerShortcut_->unmap(addr_, size_);
-
-#if 0
-    acceleratorAddr_.clear();
-#endif
 
     // Clean-up
     blocks_.clear();
@@ -283,74 +188,6 @@ object_state<State>::removeOwner(core::address_space_const_ptr owner)
     ownerShortcut_.reset();
 
     return gmacSuccess;
-#if 0
-    lock_write();
-
-    TRACE(LOCAL, "Remove owner %p Object @ %p: %u -> %u", &aspace, addr_, owners_.size(), owners_.size() - 1);
-
-    ASSERTION(owners_.size() > 0);
-
-    map_aspace::iterator m;
-    m = owners_.find(&aspace);
-    ASSERTION(m != owners_.end());
-    owners_.erase(m);
-
-    if (owners_.size() == 0) {
-        ASSERTION(acceleratorAddr_.size() == 1);
-
-        gmacError_t ret = coherenceOp(&protocol_interface::deleteBlock);
-        ASSERTION(ret == gmacSuccess);
-        ret = coherenceOp(&protocol_interface::unmapFromAccelerator);
-        ASSERTION(ret == gmacSuccess);
-        ownerShortcut_->unmap(addr_, size_);
-
-        acceleratorAddr_.clear();
-
-        // Clean-up
-        vector_block::iterator i;
-        for(i = blocks_.begin(); i != blocks_.end(); i++) {
-            i->second->decRef();
-        }
-        blocks_.clear();
-
-        ownerShortcut_ = NULL;
-    } else {
-        AcceleratorMap::iterator i;
-        bool ownerFound = false;
-        for (i = acceleratorAddr_.begin(); i != acceleratorAddr_.end(); i++) {
-            std::list<core::address_space *> &list = i->second;
-            std::list<core::address_space *>::iterator j = std::find(list.begin(), list.end(), &aspace);
-            if (j != list.end()) {
-                list.erase(j);
-                if (list.size() == 0) {
-                    acceleratorAddr_.erase(i);
-                    aspace.unmap(addr_, size_);
-                }
-                ownerFound = true;
-                break;
-            }
-        }
-        ASSERTION(ownerFound == true);
-
-#if 0
-        for (vector_block::iterator j = blocks_.begin(); j != blocks_.end(); j++) {
-            block_state<State> &block = dynamic_cast<block_state<State> &>(*j->second);
-            block.removeOwner(aspace);
-        }
-#endif
-
-        if (owners_.size() == 1) {
-            ASSERTION(acceleratorAddr_.size() == 1);
-            i = acceleratorAddr_.begin();
-            std::list<core::address_space *> &list = i->second;
-            ASSERTION(list.size() == 1);
-            ownerShortcut_ = list.front();
-        }
-    }
-
-    unlock();
-    return gmacSuccess;
-#endif
 }
 
 // TODO Receive a aspace
@@ -373,54 +210,6 @@ object_state<State>::mapToAccelerator()
     unlock();
 
     return ret;
-#if 0
-    if (ret == gmacSuccess) {
-        ASSERTION(acceleratorAddr_.size() == 1);
-        acceleratorAddr_.clear();
-        acceleratorAddr_.insert(AcceleratorMap::value_type(newAcceleratorAddr, std::list<core::address_space *>()));
-        AcceleratorMap::iterator it = acceleratorAddr_.find(newAcceleratorAddr);
-        it->second.push_back(ownerShortcut_);
-
-        // Recreate accelerator blocks
-        repopulateBlocks(*ownerShortcut_);
-        // Add blocks to the coherence domain
-        ret = coherenceOp(&protocol_interface::mapToAccelerator);
-
-        deviceAddr_ = newDeviceAddr_;
-    }
-
-    unlock();
-
-    gmacError_t ret;
-
-    lock_write();
-
-    if (owners_ == 1) {
-        // Allocate accelerator memory in the new aspace
-        accptr_t newAcceleratorAddr(0);
-
-        ret = mallocAccelerator(*ownerShortcut_, addr_, size_, newAcceleratorAddr);
-
-        if (ret == gmacSuccess) {
-            ASSERTION(acceleratorAddr_.size() == 1);
-            acceleratorAddr_.clear();
-            acceleratorAddr_.insert(AcceleratorMap::value_type(newAcceleratorAddr, std::list<core::address_space *>()));
-            AcceleratorMap::iterator it = acceleratorAddr_.find(newAcceleratorAddr);
-            it->second.push_back(ownerShortcut_);
-            
-            // Recreate accelerator blocks
-            repopulateBlocks(newAcceleratorAddr, *ownerShortcut_);
-            // Add blocks to the coherence domain
-            ret = coherenceOp(&protocol_interface::mapToAccelerator);
-        }
-    } else {
-        // Not supported for now
-        return gmacErrorFeatureNotSupported;
-    }
-
-    unlock();
-    return ret;
-#endif
 }
 
 // TODO Receive a aspace
@@ -433,7 +222,7 @@ object_state<State>::unmapFromAccelerator()
     if (ownerShortcut_) {
         lock_write();
         // Remove blocks from the coherence domain
-        hal::event_t evt = coherenceOp(&protocol_interface::unmapFromAccelerator, ret);
+        hal::event_ptr evt = coherenceOp(&protocol_interface::unmapFromAccelerator, ret);
 
         // Free accelerator memory
         if (ret == gmacSuccess) {
@@ -444,23 +233,6 @@ object_state<State>::unmapFromAccelerator()
     }
 
     return ret;
-#if 0
-    // Not supported for now
-    if (owners_.size() == 1) {
-        // Remove blocks from the coherence domain
-        ret = coherenceOp(&protocol_interface::unmapFromAccelerator);
-
-        // Free accelerator memory
-        if (ret == gmacSuccess) {
-            ret = ownerShortcut_->unmap(addr_, size_);
-            ASSERTION(ret == gmacSuccess, "Error unmapping object from accelerator");
-        }
-    } else {
-        ret = gmacErrorFeatureNotSupported;
-    }
-    unlock();
-    return ret;
-#endif
 }
 
 }}

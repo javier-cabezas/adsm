@@ -118,7 +118,7 @@ protected:
     typename B::stream stream_;
     context_parent_t &context_;
 
-    typename I::event lastEvent_;
+    typename I::event_ptr lastEvent_;
 
     stream_t(typename B::stream stream, context_parent_t &context);
 
@@ -132,8 +132,8 @@ public:
     typename B::stream &operator()();
     const typename B::stream &operator()() const;
 
-    typename I::event get_last_event();
-    void set_last_event(typename I::event event);
+    typename I::event_ptr get_last_event();
+    void set_last_event(typename I::event_ptr event);
 
     virtual state query() = 0;
     virtual gmacError_t sync() = 0;

@@ -93,10 +93,24 @@ protected:
     bool released_;
 
     /// Last toHost event
-    hal::event_t lastToHost_;
+    hal::event_ptr lastToHost_;
 
     /// Last toDevice event
-    hal::event_t lastToDevice_;
+    hal::event_ptr lastToDevice_;
+
+    /// Last host <-> host event
+    hal::event_ptr lastHost_;
+
+    /// Last device <-> device event
+    hal::event_ptr lastDevice_;
+
+    /// Last launch event
+    hal::event_ptr lastKernel_;
+
+    /// Last event
+    hal::event_ptr last_;
+
+    void set_last_event(hal::event_ptr event);
 
     /**
      * Returns the block corresponding to a given offset from the begining of the object
@@ -115,11 +129,11 @@ protected:
      * \sa __impl::memory::Block::toHost
      * \sa __impl::memory::Block::toAccelerator
      */
-    hal::event_t coherenceOp(hal::event_t (protocol_interface::*op)(block_ptr, gmacError_t &),
+    hal::event_ptr coherenceOp(hal::event_ptr (protocol_interface::*op)(block_ptr, gmacError_t &),
                              gmacError_t &err);
 
     template <typename T>
-    hal::event_t coherenceOp(hal::event_t (protocol_interface::*op)(block_ptr, T &, gmacError_t &),
+    hal::event_ptr coherenceOp(hal::event_ptr (protocol_interface::*op)(block_ptr, T &, gmacError_t &),
                              T &param,
                              gmacError_t &err);
 
@@ -261,7 +275,7 @@ public:
      * \param prot Access type of the previous execution on the accelerator
      * \return Error code
      */
-    hal::event_t acquire(GmacProtection &prot, gmacError_t &err);
+    hal::event_ptr acquire(GmacProtection &prot, gmacError_t &err);
 
 #ifdef USE_VM
     /**
@@ -276,7 +290,7 @@ public:
      *
      * \return Error code
      */
-    hal::event_t release(gmacError_t &err);
+    hal::event_ptr release(gmacError_t &err);
 
     /** Tells if the object has been released
      *
@@ -289,21 +303,21 @@ public:
      *
      * \return Error code
      */
-    hal::event_t releaseBlocks(gmacError_t &err);
+    hal::event_ptr releaseBlocks(gmacError_t &err);
 
     /**
      * Ensures that the object host memory contains an updated copy of the data
      *
      * \return Error code
      */
-    hal::event_t toHost(gmacError_t &err);
+    hal::event_ptr toHost(gmacError_t &err);
 
     /**
      * Ensures that the object accelerator memory contains an updated copy of the data
      *
      * \return Error code
      */
-    hal::event_t toAccelerator(gmacError_t &err);
+    hal::event_ptr toAccelerator(gmacError_t &err);
 
 
     /**
@@ -322,7 +336,7 @@ public:
      * \param addr Host memory address causing the fault
      * \return Error code
      */
-    TESTABLE hal::event_t signal_read(hostptr_t addr, gmacError_t &err);
+    TESTABLE hal::event_ptr signal_read(hostptr_t addr, gmacError_t &err);
 
     /**
      * Signal handler for faults caused due to memory writes
@@ -330,36 +344,9 @@ public:
      * \param addr Host memory address causing the fault
      * \return Error code
      */
-    TESTABLE hal::event_t signal_write(hostptr_t addr, gmacError_t &err);
-
-#if 0
-    /**
-     * Copies the data from the object to an I/O buffer
-     *
-     * \param buffer I/O buffer where the data will be copied
-     * \param size Size (in bytes) of the data to be copied
-     * \param bufferOffset Offset (in bytes) from the begining of the I/O buffer to start copying the data to
-     * \param objectOffset Offset (in bytes) from the begining og the object to start copying data from
-     * \return Error code
-     */
-    TESTABLE gmacError_t copyToBuffer(core::io_buffer &buffer, size_t size,
-                                      size_t bufferOffset = 0, size_t objectOffset = 0);
-
-    /**
-     * Copies the data from an I/O buffer to the object
-     *
-     * \param buffer I/O buffer where the data will be copied from
-     * \param size Size (in bytes) of the data to be copied
-     * \param bufferOffset Offset (in bytes) from the begining of the I/O buffer to start copying the data from
-     * \param objectOffset Offset (in bytes) from the begining og the object to start copying data to
-     * \return Error code
-     */
-    TESTABLE gmacError_t copyFromBuffer(core::io_buffer &buffer, size_t size,
-                                        size_t bufferOffset = 0, size_t objectOffset = 0);
-#endif
+    TESTABLE hal::event_ptr signal_write(hostptr_t addr, gmacError_t &err);
 
     gmacError_t to_io_device(hal::device_output &output, size_t objOff, size_t count);
-
     gmacError_t from_io_device(size_t objOff, hal::device_input &input, size_t count);
 
     /**
@@ -424,6 +411,8 @@ public:
      */
     gmacError_t memcpyFromObject(hostptr_t dst,
                                  size_t objOffset, size_t count);
+    
+    hal::event_ptr get_last_event(hal::event_ptr::type type) const;
 };
 
 }}

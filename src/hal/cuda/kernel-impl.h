@@ -44,10 +44,10 @@ kernel_t::arg_list::push_arg(const void *arg, size_t size)
 }
 
 inline
-event_t
+event_ptr
 kernel_t::launch::execute(list_event_detail &_dependencies, gmacError_t &err)
 {
-    event_t ret;
+    event_ptr ret;
     list_event &dependencies = reinterpret_cast<list_event &>(_dependencies);
     err = dependencies.sync();
 
@@ -59,11 +59,11 @@ kernel_t::launch::execute(list_event_detail &_dependencies, gmacError_t &err)
 }
 
 inline
-event_t
-kernel_t::launch::execute(event_t event, gmacError_t &err)
+event_ptr
+kernel_t::launch::execute(event_ptr event, gmacError_t &err)
 {
-    event_t ret;
-    err = event.sync();
+    event_ptr ret;
+    err = event->sync();
 
     if (err == gmacSuccess) {
         ret = execute(err);
@@ -73,7 +73,7 @@ kernel_t::launch::execute(event_t event, gmacError_t &err)
 }
 
 inline
-event_t
+event_ptr
 kernel_t::launch::execute(gmacError_t &err)
 {
     get_stream().get_context().set();
@@ -84,9 +84,9 @@ kernel_t::launch::execute(gmacError_t &err)
     dim3 dimsGroup = get_config().get_dims_group();
 
     TRACE(LOCAL, "kernel launch on stream: %p", get_stream()());
-    event_t ret(true, _event_t::Kernel, get_stream().get_context());
+    event_ptr ret(true, _event_t::Kernel, get_stream().get_context());
 
-    ret.begin(get_stream());
+    ret->begin(get_stream());
     res = cuLaunchKernel(get_kernel()(), dimsGlobal.x,
                                          dimsGlobal.y,
                                          dimsGlobal.z,
@@ -97,7 +97,7 @@ kernel_t::launch::execute(gmacError_t &err)
                                          get_stream()(),
                                          (void **) get_arg_list().params_,
                                          NULL);
-    ret.end();
+    ret->end();
     err = error(res);
 
     if (err != gmacSuccess) {
