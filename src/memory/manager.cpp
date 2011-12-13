@@ -2,9 +2,9 @@
 #include "core/process.h"
 
 #include "memory/handler.h"
-#include "memory/HostMappedObject.h"
 #include "memory/manager.h"
 #include "memory/object.h"
+#include "memory/object_mapped.h"
 #include "memory/map_object.h"
 
 namespace __impl { namespace memory {

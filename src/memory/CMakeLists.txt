@@ -10,9 +10,9 @@ set(memory_SRC
     block_state-impl.h
     handler.h
     handler.cpp
-    HostMappedObject.h
-    HostMappedObject-impl.h
-    HostMappedObject.cpp
+    object_mapped.h
+    object_mapped-impl.h
+    object_mapped.cpp
     manager.h
     manager-impl.h
     manager.cpp

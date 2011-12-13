@@ -1,6 +1,8 @@
 #include "core/address_space.h"
+
 #include "memory/memory.h"
-#include "memory/HostMappedObject.h"
+#include "memory/object_mapped.h"
+
 #include "trace/logger.h"
 
 namespace __impl { namespace memory {
