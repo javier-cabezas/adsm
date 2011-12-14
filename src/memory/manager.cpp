@@ -52,7 +52,7 @@ manager::map(core::address_space_ptr aspace, hostptr_t *addr, size_t size, int f
 
     // Create new shared object. We set the memory as invalid to avoid stupid data transfers
     // to non-initialized objects
-    newObject = map.getProtocol().create_object(size, NULL, GMAC_PROT_READ, 0);
+    newObject = map.get_protocol().create_object(size, NULL, GMAC_PROT_READ, 0);
     if (newObject == NULL) {
         trace::ExitCurrentFunction();
         return gmacErrorMemoryAllocation;
@@ -123,7 +123,7 @@ gmacError_t manager::alloc(core::address_space_ptr aspace, hostptr_t *addr, size
 
     // Create new shared object. We set the memory as invalid to avoid stupid data transfers
     // to non-initialized objects
-    object *newObject = map.getProtocol().create_object(size, NULL, GMAC_PROT_READ, 0);
+    object *newObject = map.get_protocol().create_object(size, NULL, GMAC_PROT_READ, 0);
     if(newObject == NULL) {
         trace::ExitCurrentFunction();
         return gmacErrorMemoryAllocation;
@@ -283,7 +283,7 @@ manager::acquireObjects(core::address_space_ptr aspace, const list_addr &addrs)
         if (map.released_objects()) {
             TRACE(LOCAL,"Acquiring Objects");
             GmacProtection prot = GMAC_PROT_READWRITE;
-            evt = map.for_each_object<GmacProtection>(&object::acquire, ret, prot);
+            evt = map.acquire_objects(prot, ret);
             map.acquire_objects();
         }
     } else {
@@ -322,11 +322,11 @@ manager::releaseObjects(core::address_space_ptr aspace, const list_addr &addrs)
         TRACE(LOCAL,"Releasing Objects");
         if (map.has_modified_objects()) {
             // Mark objects as released
-            evt = map.for_each_object<bool>(&object::release, ret, false);
+            evt = map.release_objects(false, ret);
             ASSERTION(ret == gmacSuccess);
             // Flush protocols
             // 1. Mode protocol
-            evt = map.getProtocol().release_all(ret);
+            evt = map.get_protocol().release_all(ret);
             ASSERTION(ret == gmacSuccess);
 
             map.release_objects();
@@ -700,7 +700,7 @@ manager::flushDirty(core::address_space_ptr aspace)
     TRACE(LOCAL,"Flushing Objects");
     // Release per-mode objects
     memory::map_object &map = aspace->get_object_map();
-    evt = map.getProtocol().flush_dirty(ret);
+    evt = map.get_protocol().flush_dirty(ret);
 
     return ret;
 }

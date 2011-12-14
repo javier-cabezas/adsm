@@ -130,10 +130,8 @@ protected:
     hal::event_ptr coherence_op(hal::event_ptr (protocol::*op)(block_ptr, gmacError_t &),
                                 gmacError_t &err);
 
-    template <typename... Args>
-    hal::event_ptr coherence_op(hal::event_ptr (protocol::*op)(block_ptr, Args..., gmacError_t &),
-                                gmacError_t &err,
-                                Args... args);
+    template <typename F>
+    hal::event_ptr coherence_op(F f);
 
     /**
      * Default constructor

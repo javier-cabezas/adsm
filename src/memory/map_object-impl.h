@@ -7,6 +7,43 @@ namespace __impl { namespace memory {
 
 inline
 hal::event_ptr
+map_object::acquire_objects(GmacProtection prot, gmacError_t &err)
+{
+    hal::event_ptr ret;
+    iterator i;
+    lock_read();
+    for(i = begin(); i != end(); i++) {
+        ret = (*i->second).release(prot, err);
+        if(err != gmacSuccess) {
+            unlock();
+            return ret;
+        }
+    }
+    unlock();
+    return ret;
+}
+
+inline
+hal::event_ptr
+map_object::release_objects(bool flushDirty, gmacError_t &err)
+{
+    hal::event_ptr ret;
+    iterator i;
+    lock_read();
+    for(i = begin(); i != end(); i++) {
+        ret = (*i->second).release(flushDirty, err);
+        if(err != gmacSuccess) {
+            unlock();
+            return ret;
+        }
+    }
+    unlock();
+    return ret;
+}
+
+#if 0
+inline
+hal::event_ptr
 map_object::for_each_object(hal::event_ptr (object::*f)(gmacError_t &), gmacError_t &err)
 {
     hal::event_ptr ret;
@@ -22,6 +59,7 @@ map_object::for_each_object(hal::event_ptr (object::*f)(gmacError_t &), gmacErro
     unlock();
     return ret;
 }
+#endif
 
 #if 0
 template <typename P1>
@@ -43,15 +81,18 @@ map_object::for_each_object(hal::event_ptr (object::*f)(P1, gmacError_t &), P1 p
 }
 #endif
 
-template <typename... Args>
+#if 0
+template <typename F, typename... Args>
 hal::event_ptr
-map_object::for_each_object(hal::event_ptr (object::*f)(Args..., gmacError_t &), gmacError_t &err, Args... args)
+map_object::for_each_object(F f, gmacError_t &err, Args... args)
 {
     hal::event_ptr ret;
     const_iterator i;
     lock_read();
     for(i = begin(); i != end(); i++) {
-        ret = ((*i->second).*f)(args..., err);
+        F tmp = f;
+        std::bind(tmp, *i->second, args..., err);
+        ret = tmp();
         if (err != gmacSuccess) {
             unlock();
             return ret;
@@ -60,6 +101,7 @@ map_object::for_each_object(hal::event_ptr (object::*f)(Args..., gmacError_t &),
     unlock();
     return ret;
 }
+#endif
 
 #ifdef DEBUG
 inline
@@ -149,7 +191,7 @@ map_object::released_objects() const
 
 inline
 protocol &
-map_object::getProtocol()
+map_object::get_protocol()
 {
     return protocol_;
 }

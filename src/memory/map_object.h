@@ -34,6 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_MEMORY_ARENA_H_
 #define GMAC_MEMORY_ARENA_H_
 
+#include <functional>
 #include <map>
 #include <set>
 
@@ -166,6 +167,7 @@ public:
      */
     size_t get_memory_size() const;
 
+#if 0
     /**
      * Execute an operation on all the objects in the map
      *
@@ -176,7 +178,13 @@ public:
      * \return Error code
      */
     hal::event_ptr for_each_object(hal::event_ptr (object::*f)(gmacError_t &), gmacError_t &err);
+#endif
 
+    hal::event_ptr acquire_objects(GmacProtection prot, gmacError_t &err);
+
+    hal::event_ptr release_objects(bool flushDirty, gmacError_t &err);
+
+#if 0
     /**
      * Execute an operation on all the objects in the map passing an argument
      * \param f Operation to be executed
@@ -185,8 +193,9 @@ public:
      * \sa __impl::memory::object::realloc
      * \return Error code
      */
-    template <typename... Args>
-    hal::event_ptr for_each_object(hal::event_ptr (object::*f)(Args..., gmacError_t &), gmacError_t &err, Args... args);
+    template <typename F, typename... Args>
+    hal::event_ptr for_each_object(F f, gmacError_t &err, Args... args);
+#endif
 
 #ifdef DEBUG
     gmacError_t dumpObjects(const std::string &dir, std::string prefix, protocols::common::Statistic stat) const;
@@ -234,7 +243,7 @@ public:
      * Gets a reference to the memory protocol used by the mode
      * \return A reference to the memory protocol used by the mode
      */
-    protocol &getProtocol();
+    protocol &get_protocol();
 
 #ifdef USE_VM
     memory::vm::Bitmap &getBitmap();

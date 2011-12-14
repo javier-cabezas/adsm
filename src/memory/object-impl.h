@@ -134,18 +134,15 @@ object::size() const
     return size_;
 }
 
-template <typename... Args>
+template <typename F>
 hal::event_ptr
-object::coherence_op(hal::event_ptr (protocol::*op)(block_ptr, Args..., gmacError_t &),
-                     gmacError_t &err,
-                     Args... args)
+object::coherence_op(F f)
 {
     hal::event_ptr ret;
     for(const_locked_iterator i  = get_block(0, NULL);
                               i != blocks_.end();
     		                ++i) {
-        ret = (protocol_.*op)(*i, args..., err);
-        if (err != gmacSuccess) break;
+        ret = f(*i);
         set_last_event(ret);
     }
     return ret;
@@ -173,7 +170,15 @@ object::acquire(GmacProtection prot, gmacError_t &err)
     TRACE(LOCAL, "Acquiring object %p?", addr_);
     if (released_) {
         TRACE(LOCAL, "Acquiring object %p", addr_);
-        ret = coherence_op<GmacProtection>(&protocol::acquire, err, prot);
+
+        ret = coherence_op([&protocol_, prot, &err](block_ptr ptr) -> hal::event_ptr
+                           {
+                               hal::event_ptr evt;
+                               if (err == gmacSuccess) {
+                                   evt = protocol_.acquire(ptr, prot, err);
+                               }
+                               return evt;
+                           });
         if (err == gmacSuccess) {
             set_last_event(ret);
         }
