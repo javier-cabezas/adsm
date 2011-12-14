@@ -8,7 +8,7 @@
 namespace __impl { namespace memory {
 
 template<typename State>
-inline void object_state<State>::modifiedObject()
+inline void object_state<State>::modified_object()
 {
     ASSERTION(bool(ownerShortcut_));
 
@@ -157,7 +157,7 @@ object_state<State>::owner() const
 
 template<typename State>
 inline gmacError_t
-object_state<State>::addOwner(core::address_space_ptr owner)
+object_state<State>::add_owner(core::address_space_ptr owner)
 {
     ASSERTION(!ownerShortcut_);
     ownerShortcut_ = owner;
@@ -171,14 +171,14 @@ object_state<State>::addOwner(core::address_space_ptr owner)
 // TODO: move checks to DBC
 template<typename State>
 inline gmacError_t
-object_state<State>::removeOwner(core::address_space_const_ptr owner)
+object_state<State>::remove_owner(core::address_space_const_ptr owner)
 {
     ASSERTION(ownerShortcut_ == owner);
 
     gmacError_t ret;
-    hal::event_ptr evt = coherenceOp(&protocol::remove_block, ret);
+    hal::event_ptr evt = coherence_op(&protocol::remove_block, ret);
     ASSERTION(ret == gmacSuccess);
-    evt = coherenceOp(&protocol::unmap_from_device, ret);
+    evt = coherence_op(&protocol::unmap_from_device, ret);
     ASSERTION(ret == gmacSuccess);
     ownerShortcut_->unmap(addr_, size_);
 
@@ -193,7 +193,7 @@ object_state<State>::removeOwner(core::address_space_const_ptr owner)
 // TODO Receive a aspace
 template<typename State>
 inline gmacError_t
-object_state<State>::mapToAccelerator()
+object_state<State>::map_to_device()
 {
     ASSERTION(bool(ownerShortcut_));
 
@@ -215,14 +215,14 @@ object_state<State>::mapToAccelerator()
 // TODO Receive a aspace
 template <typename State>
 inline gmacError_t
-object_state<State>::unmapFromAccelerator()
+object_state<State>::unmap_from_device()
 {
     gmacError_t ret;
 
     if (ownerShortcut_) {
         lock_write();
         // Remove blocks from the coherence domain
-        hal::event_ptr evt = coherenceOp(&protocol::unmap_from_device, ret);
+        hal::event_ptr evt = coherence_op(&protocol::unmap_from_device, ret);
 
         // Free accelerator memory
         if (ret == gmacSuccess) {

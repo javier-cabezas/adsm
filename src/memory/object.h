@@ -127,13 +127,13 @@ protected:
      * \sa __impl::memory::Block::to_host
      * \sa __impl::memory::Block::toAccelerator
      */
-    hal::event_ptr coherenceOp(hal::event_ptr (protocol::*op)(block_ptr, gmacError_t &),
-                             gmacError_t &err);
+    hal::event_ptr coherence_op(hal::event_ptr (protocol::*op)(block_ptr, gmacError_t &),
+                                gmacError_t &err);
 
     template <typename T>
-    hal::event_ptr coherenceOp(hal::event_ptr (protocol::*op)(block_ptr, T &, gmacError_t &),
-                             T &param,
-                             gmacError_t &err);
+    hal::event_ptr coherence_op(hal::event_ptr (protocol::*op)(block_ptr, T &, gmacError_t &),
+                                T &param,
+                                gmacError_t &err);
 
 #if 0
     /**
@@ -163,7 +163,7 @@ protected:
      * \sa __impl::memory::Block::dump
      */
     template <typename T, typename S>
-    gmacError_t forEachBlock(gmacError_t (protocol::*f)(block_ptr, T &, S), T &t, S s);
+    gmacError_t for_each_block(gmacError_t (protocol::*f)(block_ptr, T &, S), T &t, S s);
 
     /**
      * Default constructor
@@ -188,7 +188,7 @@ public:
      * Get the protocol that is managing the block
      * \return Memory protocol
      */
-    protocol &getProtocol();
+    protocol &get_protocol();
 
     /**
      * Get the starting host memory address of the object
@@ -223,7 +223,7 @@ public:
      *
      * \return Block size used by the object
      */
-    size_t blockSize() const;
+    size_t get_block_size() const;
 
     /**
      * Get the size (in bytes) of the object
@@ -233,7 +233,7 @@ public:
     size_t size() const;
 
     /// Ensure the owner(s) invalidate memory when acquiring objects
-    virtual void modifiedObject() = 0;
+    virtual void modified_object() = 0;
 
     /**
      * Get the accelerator memory address where a host memory address from the object is mapped
@@ -258,14 +258,14 @@ public:
      * \param owner The new owner of the mode
      * \return Wether it was possible to add the owner or not
      */
-    virtual gmacError_t addOwner(core::address_space_ptr owner) = 0;
+    virtual gmacError_t add_owner(core::address_space_ptr owner) = 0;
 
     /**
      * Remove an owner from the object
      *
      * \param owner The owner to be removed
      */
-    virtual gmacError_t removeOwner(core::address_space_const_ptr owner) = 0;
+    virtual gmacError_t remove_owner(core::address_space_const_ptr owner) = 0;
 
     /**
      * Acquire the ownership of the object for the CPU
@@ -301,21 +301,21 @@ public:
      *
      * \return Error code
      */
-    hal::event_ptr releaseBlocks(gmacError_t &err);
+    hal::event_ptr release_blocks(gmacError_t &err);
 
     /**
      * Ensures that the object host memory contains an updated copy of the data
      *
      * \return Error code
      */
-    hal::event_ptr toHost(gmacError_t &err);
+    hal::event_ptr to_host(gmacError_t &err);
 
     /**
      * Ensures that the object accelerator memory contains an updated copy of the data
      *
      * \return Error code
      */
-    hal::event_ptr toAccelerator(gmacError_t &err);
+    hal::event_ptr to_device(gmacError_t &err);
 
 
     /**
@@ -365,7 +365,7 @@ public:
      * this method the memory object will always remain in host memory
      * \return Error code
      */
-    virtual gmacError_t mapToAccelerator() = 0;
+    virtual gmacError_t map_to_device() = 0;
 
     //! Removes the object to the coherence domain.
     /*!
@@ -373,7 +373,7 @@ public:
         this method the object coherency is managed by the library
         \return Error code
     */
-    virtual gmacError_t unmapFromAccelerator() = 0;
+    virtual gmacError_t unmap_from_device() = 0;
 
     /**
      * Copies data from host memory to an object
@@ -383,8 +383,8 @@ public:
      * \param count Size (in bytes) of the data to be copied
      * \return Error code
      */
-    gmacError_t memcpyToObject(size_t objOffset,
-                               const hostptr_t src, size_t count);
+    gmacError_t memcpy_to_object(size_t objOffset,
+                                 const hostptr_t src, size_t count);
 
     /** Copy data from object to object
      * \param dstObj Destination object
@@ -395,9 +395,9 @@ public:
      * \param count Size (in bytes) of the data to be copied
      * \return Error code
      */
-    gmacError_t memcpyObjectToObject(object &dstObj, size_t dstOffset,
-                                     size_t srcOffset,
-                                     size_t count);
+    gmacError_t memcpy_object_to_object(object &dstObj, size_t dstOffset,
+                                        size_t srcOffset,
+                                        size_t count);
 
     /**
      * Copies data from an object to host memory
@@ -407,8 +407,8 @@ public:
      * \param count Size (in bytes) of the data to be copied
      * \return Error code
      */
-    gmacError_t memcpyFromObject(hostptr_t dst,
-                                 size_t objOffset, size_t count);
+    gmacError_t memcpy_from_object(hostptr_t dst,
+                                   size_t objOffset, size_t count);
     
     hal::event_ptr get_last_event(hal::event_ptr::type type) const;
 };

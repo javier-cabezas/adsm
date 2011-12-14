@@ -67,7 +67,7 @@ TEST_F(ObjectMapTest, Coherence) {
     ObjectMap &map = mode->getAddressSpace();
 	ASSERT_TRUE(&map != NULL);	
 
-	protocol &proto = map.getProtocol();
+	protocol &proto = map.get_protocol();
 	ASSERT_TRUE(&proto != NULL);
 	
     object *obj1 = proto.create_object(*mode, Size_, NULL, GMAC_PROT_READ, 0);

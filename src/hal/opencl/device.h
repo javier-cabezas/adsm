@@ -23,37 +23,15 @@ class GMAC_LOCAL platform {
     cl_context ctx_;
 
 public:
-    platform(cl_platform_id id, cl_context ctx) :
-        openclPlatformId_(id),
-        ctx_(ctx)
-    {
-    }
+    platform(cl_platform_id id, cl_context ctx);
 
-    cl_platform_id
-    get_cl_platform_id() const
-    {
-        return openclPlatformId_;
-    }
+    cl_platform_id get_cl_platform_id() const;
 
-    void
-    add_device(device &d)
-    {
-        devices_.push_back(&d);
-    }
-
-    inline unsigned
-    get_ndevices()
-    {
-        return devices_.size();
-    }
+    void add_device(device &d);
+    unsigned get_ndevices();
 
     cl_device_id *get_cl_device_array();
-
-    inline cl_context
-    get_context()
-    {
-        return ctx_;
-    }
+    cl_context get_context();
 };
 
 class GMAC_LOCAL device :
@@ -94,7 +72,6 @@ public:
     gmacError_t get_info(GmacDeviceInfo &info);
 
     platform &get_platform();
-
     const platform &get_platform() const;
 };
 

@@ -45,7 +45,7 @@ TEST_F(ModeTest, MemoryObject) {
 	ASSERT_TRUE(Process_ != NULL);
 
     __impl::memory::ObjectMap &map = Mode_->getAddressSpace();
-    object *obj = map.getProtocol().create_object(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_READ, 0);
+    object *obj = map.get_protocol().create_object(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(obj != NULL);
     map.addObject(*obj);
     const hostptr_t addr = obj->addr();
@@ -65,9 +65,9 @@ TEST_F(ModeTest, MemoryObjectMap){
 	ASSERT_TRUE(Process_ != NULL);
 
 	__impl::memory::ObjectMap &map = Mode_->getAddressSpace();
-	object *obj = map.getProtocol().create_object(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_WRITE, 0);
+	object *obj = map.get_protocol().create_object(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_WRITE, 0);
 	ASSERT_TRUE(obj != NULL);
-	object *obj2 = map.getProtocol().create_object(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_WRITE, 0);
+	object *obj2 = map.get_protocol().create_object(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_WRITE, 0);
     ASSERT_TRUE(obj2 != NULL);
 	ASSERT_FALSE(map.hasObject(*obj));
     ASSERT_TRUE(map.addObject(*obj));

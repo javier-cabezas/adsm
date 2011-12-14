@@ -99,7 +99,7 @@ public:
      * \return A reference to the protocol used by the process for the global
      * objects
      */
-    virtual memory::protocol *getProtocol() = 0;
+    virtual memory::protocol *get_protocol() = 0;
 
     /**
      * Inserts an object into the orphan (objects without owner) list

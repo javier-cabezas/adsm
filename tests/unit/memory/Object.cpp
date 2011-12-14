@@ -60,7 +60,7 @@ TEST_F(ObjectTest, Creation)
     ASSERT_TRUE(Process_ != NULL);
     Mode &mode = Thread::getCurrentVirtualDevice();
     __impl::memory::ObjectMap &map = mode.getAddressSpace();
-    __impl::memory::protocol &proto = map.getProtocol();
+    __impl::memory::protocol &proto = map.get_protocol();
     object *object = proto.create_object(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
     ASSERT_TRUE(object->addr() != NULL);
@@ -77,18 +77,18 @@ TEST_F(ObjectTest, Blocks)
     ASSERT_TRUE(Process_ != NULL);
     Mode &mode = Thread::getCurrentVirtualDevice();
     __impl::memory::ObjectMap &map = mode.getAddressSpace();
-    object *object = map.getProtocol().create_object(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_READ, 0);
+    object *object = map.get_protocol().create_object(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
     hostptr_t start = object->addr();
     ASSERT_TRUE(start != NULL);
     hostptr_t end = object->end();
     ASSERT_TRUE(end != NULL);
-    size_t blockSize = object->blockSize();
-    ASSERT_GT(blockSize, 0U);
+    size_t get_block_size = object->get_block_size();
+    ASSERT_GT(get_block_size, 0U);
 
-    for(size_t offset = 0; offset < object->size(); offset += blockSize) {
+    for(size_t offset = 0; offset < object->size(); offset += get_block_size) {
         EXPECT_EQ(0, object->blockBase(offset));
-        EXPECT_EQ(blockSize, object->blockEnd(offset));
+        EXPECT_EQ(get_block_size, object->blockEnd(offset));
     }
 
     map.removeObject(*object);
@@ -100,9 +100,9 @@ TEST_F(ObjectTest, Coherence)
     ASSERT_TRUE(Process_ != NULL);
     Mode &mode = Thread::getCurrentVirtualDevice();
     __impl::memory::ObjectMap &map = mode.getAddressSpace();
-    object *object = map.getProtocol().create_object(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_READ, 0);
+    object *object = map.get_protocol().create_object(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
-    object->addOwner(mode);
+    object->add_owner(mode);
     map.addObject(*object);
 
     hostptr_t ptr = object->addr();
@@ -110,7 +110,7 @@ TEST_F(ObjectTest, Coherence)
        ptr[s] = (s & 0xff);
     }
     ASSERT_EQ(gmacSuccess, object->release());
-    ASSERT_EQ(gmacSuccess, object->toAccelerator());
+    ASSERT_EQ(gmacSuccess, object->to_device());
 
     GmacProtection prot = GMAC_PROT_READWRITE;
     ASSERT_EQ(gmacSuccess, object->acquire(prot));
@@ -129,9 +129,9 @@ TEST_F(ObjectTest, IOBuffer)
     ASSERT_TRUE(Process_ != NULL);
     Mode &mode = Thread::getCurrentVirtualDevice();
     __impl::memory::ObjectMap &map = mode.getAddressSpace();
-    object *object = map.getProtocol().create_object(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_READ, 0);
+    object *object = map.get_protocol().create_object(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
-    object->addOwner(mode);
+    object->add_owner(mode);
     map.addObject(*object);
 
     __impl::core::IOBuffer &buffer = mode.createIOBuffer(Size_, GMAC_PROT_READWRITE);

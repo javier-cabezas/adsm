@@ -50,17 +50,19 @@ namespace core {
 namespace memory {
 
 class object_host_mapped;
+typedef util::shared_ptr<object_host_mapped> object_host_mapped_ptr;
+
 //! A set of Host-mapped memory blocks
 /*! This class is actually a map, because we need to easily locate blocks
     using host memory addresses
 */
 class GMAC_LOCAL set_object_host_mapped :
-protected std::map<void *, object_host_mapped *>,
+protected std::map<void *, object_host_mapped_ptr>,
     public gmac::util::lock_rw<set_object_host_mapped> {
 protected:
     friend class object_host_mapped;
 
-    typedef std::map<void *, object_host_mapped *> Parent;
+    typedef std::map<void *, object_host_mapped_ptr> Parent;
     typedef gmac::util::lock_rw<set_object_host_mapped> Lock;
 
     //! Inster a host mapped object in the set
@@ -68,14 +70,14 @@ protected:
         \param object Host  mapped object to be inserted
         \return True if the block was inserted
     */
-    bool insert(object_host_mapped *object);
+    bool add_object(object_host_mapped &object);
 
     //! Find a host mapped object that contains a memory address
     /*!
         \param addr Host memory address within the host mapped object
         \return Host mapped object containing the memory address. NULL if not found
     */
-    object_host_mapped *get(hostptr_t addr) const;
+    object_host_mapped_ptr get_object(hostptr_t addr) const;
 public:
     //! Default constructor
     set_object_host_mapped();
@@ -92,8 +94,7 @@ public:
 };
 
 //! A memory object that only resides in host memory, but that is accessible from the accelerator
-class GMAC_LOCAL object_host_mapped :
-    public util::Reference {
+class GMAC_LOCAL object_host_mapped {
 protected:
     //! Starting host memory address of the object
     hal::ptr_t addr_;
@@ -163,7 +164,7 @@ public:
      * \param addr Host memory address within the object
      * \return Host mapped object cotainig the host memory address. NULL if not found
      */
-    static object_host_mapped *get(const hostptr_t addr);
+    static object_host_mapped_ptr get_object(const hostptr_t addr);
 };
 
 }}

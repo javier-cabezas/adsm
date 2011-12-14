@@ -7,29 +7,28 @@
 
 namespace __impl { namespace memory {
 
-bool set_object_host_mapped::insert(object_host_mapped *object)
+bool set_object_host_mapped::add_object(object_host_mapped &obj)
 {
-    if(object == NULL) return false;
-    uint8_t *key = (uint8_t *)object->addr() + object->size();
+    uint8_t *key = (uint8_t *)obj.addr() + obj.size();
     lock_write();
+    object_host_mapped_ptr ptr(&obj);
     std::pair<Parent::iterator, bool> ret =
-        Parent::insert(Parent::value_type(key, object));
+        Parent::insert(Parent::value_type(key, ptr));
     unlock();
     return ret.second;
 }
 
-object_host_mapped *set_object_host_mapped::get(hostptr_t addr) const
+object_host_mapped_ptr set_object_host_mapped::get_object(hostptr_t addr) const
 {
-    object_host_mapped *object = NULL;
+    object_host_mapped_ptr obj;
     lock_read();
     Parent::const_iterator i = Parent::upper_bound(addr);
     bool ret = (i != end()) && (addr >= i->second->addr());
     if(ret) {
-        object = i->second;
-        object->incRef();
+        obj = i->second;
     }
     unlock();
-    return object;
+    return obj;
 }
 
 bool set_object_host_mapped::remove(hostptr_t addr)
@@ -45,7 +44,6 @@ bool set_object_host_mapped::remove(hostptr_t addr)
 set_object_host_mapped object_host_mapped::set_;
 
 object_host_mapped::object_host_mapped(core::address_space_ptr aspace, size_t size) :
-    util::Reference("HostMappedObject"),
     size_(size),
     owner_(aspace)
 {
@@ -53,7 +51,7 @@ object_host_mapped::object_host_mapped(core::address_space_ptr aspace, size_t si
     // Allocate memory (if necessary)
     addr_ = alloc(owner_, err);
     if(err != gmacSuccess) return;
-    set_.insert(this);
+    set_.add_object(*this);
     TRACE(LOCAL, "Creating Host Mapped Object @ %p) ", addr_.get_host_addr());
 }
 

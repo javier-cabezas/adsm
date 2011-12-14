@@ -36,6 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include <utility>
 
+#include "smart_ptr.h"
 #include "lock.h"
 
 namespace __impl { namespace util {
