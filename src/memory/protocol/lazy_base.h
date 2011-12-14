@@ -129,7 +129,7 @@ public:
     TESTABLE hal::event_ptr to_host(block_ptr block, gmacError_t &err);
 
 #if 0
-    hal::event_ptr toAccelerator(block_ptr block, gmacError_t &err);
+    hal::event_ptr to_device(block_ptr block, gmacError_t &err);
 
     TESTABLE gmacError_t copyToBuffer(block_ptr block, core::io_buffer &buffer, size_t size,
                                       size_t bufferOffset, size_t blockOffset);

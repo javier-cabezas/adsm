@@ -55,7 +55,7 @@ TEST_F(ProcessTest, GlobalMemory) {
     ASSERT_TRUE(proc != NULL);
 
     const size_t size = 4 * 1024 * 1024;
-    protocol *protocol = proc->getProtocol();
+    protocol *protocol = proc->get_protocol();
     ASSERT_TRUE(protocol != NULL);
     object *object = protocol->create_object(proc->getResourceManager(), size, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);

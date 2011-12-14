@@ -34,6 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_UTIL_REFERENCE_H_
 #define GMAC_UTIL_REFERENCE_H_
 
+#if 0
 #include "config/common.h"
 
 #include "atomics.h"
@@ -68,5 +69,6 @@ public:
 }}
 
 #include "Reference-impl.h"
+#endif
 
 #endif

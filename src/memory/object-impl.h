@@ -87,7 +87,7 @@ object::get_last_event(hal::event_ptr::type type) const
 
 inline
 protocol &
-object::getProtocol()
+object::get_protocol()
 {
     return protocol_;
 }
@@ -109,20 +109,20 @@ object::end() const
 inline ssize_t
 object::blockBase(size_t offset) const
 {
-    return -1 * (offset % blockSize());
+    return -1 * (offset % get_block_size());
 }
 
 inline size_t
 object::blockEnd(size_t offset) const
 {
-    if (offset + blockBase(offset) + blockSize() > size_)
+    if (offset + blockBase(offset) + get_block_size() > size_)
         return size_ - offset;
     else
-        return size_t(ssize_t(blockSize()) + blockBase(offset));
+        return size_t(ssize_t(get_block_size()) + blockBase(offset));
 }
 
 inline size_t
-object::blockSize() const
+object::get_block_size() const
 {
     return BlockSize_;
 }
@@ -136,9 +136,9 @@ object::size() const
 
 template <typename T>
 hal::event_ptr
-object::coherenceOp(hal::event_ptr (protocol::*op)(block_ptr, T &, gmacError_t &),
-                    T &param,
-                    gmacError_t &err)
+object::coherence_op(hal::event_ptr (protocol::*op)(block_ptr, T &, gmacError_t &),
+                     T &param,
+                     gmacError_t &err)
 {
     hal::event_ptr ret;
     vector_block::const_iterator i;
@@ -158,7 +158,7 @@ object::acquire(GmacProtection &prot, gmacError_t &err)
     TRACE(LOCAL, "Acquiring object %p?", addr_);
     if (released_ == true) {
         TRACE(LOCAL, "Acquiring object %p", addr_);
-        ret = coherenceOp<GmacProtection>(&protocol::acquire, prot, err);
+        ret = coherence_op<GmacProtection>(&protocol::acquire, prot, err);
         if (err == gmacSuccess) {
             set_last_event(ret);
         }
@@ -190,7 +190,7 @@ object::is_released() const
 }
 
 inline hal::event_ptr
-object::releaseBlocks(gmacError_t &err)
+object::release_blocks(gmacError_t &err)
 {
     lock_write();
     hal::event_ptr ret;
@@ -198,7 +198,7 @@ object::releaseBlocks(gmacError_t &err)
     TRACE(LOCAL, "Releasing object %p?", addr_);
     if (released_ == false) {
         TRACE(LOCAL, "Releasing object %p", addr_);
-        ret = coherenceOp(&protocol::release, err);
+        ret = coherence_op(&protocol::release, err);
     }
 
     released_ = true;
@@ -211,7 +211,7 @@ inline gmacError_t
 object::acquireWithBitmap()
 {
     lock_read();
-    gmacError_t ret = coherenceOp(&protocol::acquireWithBitmap);
+    gmacError_t ret = coherence_op(&protocol::acquireWithBitmap);
     unlock();
     return ret;
 }
@@ -219,7 +219,7 @@ object::acquireWithBitmap()
 
 template <typename P1, typename P2>
 gmacError_t
-object::forEachBlock(gmacError_t (protocol::*op)(block_ptr, P1 &, P2), P1 &p1, P2 p2)
+object::for_each_block(gmacError_t (protocol::*op)(block_ptr, P1 &, P2), P1 &p1, P2 p2)
 {
     lock_read();
     gmacError_t ret = gmacSuccess;
@@ -235,10 +235,10 @@ object::forEachBlock(gmacError_t (protocol::*op)(block_ptr, P1 &, P2), P1 &p1, P
 }
 
 inline hal::event_ptr 
-object::toHost(gmacError_t &err)
+object::to_host(gmacError_t &err)
 {
     lock_read();
-    hal::event_ptr ret = coherenceOp(&protocol::to_host, err);
+    hal::event_ptr ret = coherence_op(&protocol::to_host, err);
     if (err == gmacSuccess) {
         set_last_event(ret);
     }
@@ -247,10 +247,10 @@ object::toHost(gmacError_t &err)
 }
 
 inline hal::event_ptr
-object::toAccelerator(gmacError_t &err)
+object::to_device(gmacError_t &err)
 {
     lock_read();
-    hal::event_ptr ret = coherenceOp(&protocol::release, err);
+    hal::event_ptr ret = coherence_op(&protocol::release, err);
     if (err == gmacSuccess) {
         set_last_event(ret);
     }

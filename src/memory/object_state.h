@@ -71,7 +71,7 @@ protected:
 
     gmacError_t repopulateBlocks(core::address_space &aspace);
 
-    void modifiedObject();
+    void modified_object();
 public:
     object_state(protocol &protocol, hostptr_t cpuAddr, size_t size, typename State::ProtocolState init, gmacError_t &err);
     virtual ~object_state();
@@ -82,11 +82,11 @@ public:
     core::address_space_ptr owner();
     core::address_space_const_ptr owner() const;
 
-    gmacError_t addOwner(core::address_space_ptr owner);
-    gmacError_t removeOwner(core::address_space_const_ptr owner);
+    gmacError_t add_owner(core::address_space_ptr owner);
+    gmacError_t remove_owner(core::address_space_const_ptr owner);
 
-    gmacError_t mapToAccelerator();
-    gmacError_t unmapFromAccelerator();
+    gmacError_t map_to_device();
+    gmacError_t unmap_from_device();
 
     static gmacError_t split(object_state &group, size_t offset, size_t size);
 };

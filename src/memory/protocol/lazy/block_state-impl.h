@@ -380,7 +380,7 @@ BlockState::syncToAccelerator(gmacError_t &err)
             } else {
                 size_t sizeTransfer = SubBlockSize_ * (groupEnd - groupStart + 1);
                 if (sizeTransfer > block().size()) sizeTransfer = block().size();
-                ret = block().toAccelerator(groupStart * SubBlockSize_, sizeTransfer, err);
+                ret = block().to_device(groupStart * SubBlockSize_, sizeTransfer, err);
 #ifdef DEBUG
                 for (unsigned j = groupStart; j <= groupEnd; j++) { 
                     transfersToAccelerator_[j]++;
@@ -396,7 +396,7 @@ BlockState::syncToAccelerator(gmacError_t &err)
     if (inGroup) {
         size_t sizeTransfer = SubBlockSize_ * (groupEnd - groupStart + 1);
         if (sizeTransfer > block().size()) sizeTransfer = block().size();
-        ret = block().toAccelerator(groupStart * SubBlockSize_, sizeTransfe, err);
+        ret = block().to_device(groupStart * SubBlockSize_, sizeTransfe, err);
                                     
 #ifdef DEBUG
         for (unsigned j = groupStart; j <= groupEnd; j++) { 

@@ -5,6 +5,30 @@
 
 namespace __impl { namespace hal { namespace opencl {
 
+platform::platform(cl_platform_id id, cl_context ctx) :
+    openclPlatformId_(id),
+    ctx_(ctx)
+{
+}
+
+cl_platform_id
+platform::get_cl_platform_id() const
+{
+    return openclPlatformId_;
+}
+
+void
+platform::add_device(device &d)
+{
+    devices_.push_back(&d);
+}
+
+unsigned
+platform::get_ndevices()
+{
+    return devices_.size();
+}
+
 cl_device_id *
 platform::get_cl_device_array()
 {
@@ -19,6 +43,11 @@ platform::get_cl_device_array()
     return deviceIds;
 }
 
+cl_context
+platform::get_context()
+{
+    return ctx_;
+}
 
 device::device(platform &p,
                cl_device_id openclDeviceId,

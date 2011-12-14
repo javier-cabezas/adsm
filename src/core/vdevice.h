@@ -57,7 +57,6 @@ class Process;
  * thread has one mode per accelerator type in the system
  */
 class GMAC_LOCAL vdevice :
-    public util::Reference,
     public util::NonCopyable,
     public util::unique<vdevice, GmacVirtualDeviceId> {
 protected:

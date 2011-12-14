@@ -67,7 +67,7 @@ public:
 
     bool addSubBlock(block &b, unsigned index);
     bool removeSubBlock(const block &b, unsigned index);
-    void toAccelerator();
+    void to_device();
 };
 
 class GMAC_LOCAL GatherBuffers : public gmac::util::Lock {
@@ -152,7 +152,7 @@ public:
 
         gmacError_t to_host(block &block);
 
-    gmacError_t toAccelerator(block &block);
+    gmacError_t to_device(block &block);
 
         gmacError_t copyToBuffer(const block &block, core::IOBuffer &buffer, size_t size,
                 size_t bufferOffset, size_t blockOffset) const;

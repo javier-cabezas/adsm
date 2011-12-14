@@ -29,7 +29,7 @@ set(util_SRC
     Reference-impl.h
     ReusableObject.h
     semaphore.h
-    SharedPtr.h
+    Shared.h
     singleton.h
     singleton-impl.h
     thread.h

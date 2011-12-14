@@ -47,9 +47,9 @@ inline void object_host_mapped::remove(hostptr_t addr)
     set_.remove(addr);
 }
 
-inline object_host_mapped *object_host_mapped::get(const hostptr_t addr)
+inline object_host_mapped_ptr object_host_mapped::get_object(const hostptr_t addr)
 {
-    return set_.get(addr);
+    return set_.get_object(addr);
 }
 
 }}

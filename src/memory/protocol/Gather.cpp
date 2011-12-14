@@ -253,7 +253,7 @@ void GatherBase::addDirty(block &block)
     if(limit_ == size_t(-1)) return;
     while(dbl_.size() > limit_) {
         block *b = dbl_.pop();
-        b->coherenceOp(&protocol::release);
+        b->coherence_op(&protocol::release);
     }
     return;
 }
@@ -265,7 +265,7 @@ gmacError_t GatherBase::releaseObjects()
     lock(); 
     while(dbl_.empty() == false) {
         block *b = dbl_.pop();
-        b->coherenceOp(&protocol::release);
+        b->coherence_op(&protocol::release);
     }
     unlock();
     return gmacSuccess;
@@ -306,7 +306,7 @@ gmacError_t GatherBase::release(block &b)
                 float(b.getSubBlocks()) * util::params::ParamGatherRatio) {
                 //ret = block.toGatherBuffer();
             } else {
-                ret = block.toAccelerator();
+                ret = block.to_device();
                 if(ret != gmacSuccess) break;
                 if(memory_ops::protect(block.addr(), block.size(), GMAC_PROT_READ) < 0)
                     FATAL("Unable to set memory permissions");
@@ -354,7 +354,7 @@ gmacError_t GatherBase::to_host(block &b)
     return ret;
 }
 
-gmacError_t GatherBase::toAccelerator(block &b)
+gmacError_t GatherBase::to_device(block &b)
 {
     TRACE(LOCAL,"Sending block to accelerator: %p", b.addr());
     gmacError_t ret = gmacSuccess;
@@ -362,7 +362,7 @@ gmacError_t GatherBase::toAccelerator(block &b)
     switch(block.state()) {
         case Dirty:
             TRACE(LOCAL,"Dirty block");
-            ret = block.toAccelerator();
+            ret = block.to_device();
             if(ret != gmacSuccess) break;
             if(memory_ops::protect(block.addr(), block.size(), GMAC_PROT_READ) < 0)
                 FATAL("Unable to set memory permissions");
