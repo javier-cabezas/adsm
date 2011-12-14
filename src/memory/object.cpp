@@ -160,9 +160,9 @@ object::memcpy_object_to_object(object &dstObj, size_t dstOffset, size_t srcOffs
     TRACE(LOCAL, "FP: %p vs %p "FMT_SIZE, (*j)->addr(), dstObj.addr() + dstOffset, size);
     size_t left = size;
     while (left > 0) {
-        size_t copySize = left < dstObj.blockEnd(dstOffset)? left: dstObj.blockEnd(dstOffset);
+        size_t copySize = left < dstObj.get_block_end(dstOffset)? left: dstObj.get_block_end(dstOffset);
         // Single copy from the source to copy the block
-        if (copySize <= blockEnd(srcOffset)) {
+        if (copySize <= get_block_end(srcOffset)) {
             TRACE(LOCAL, "FP: Copying1: "FMT_SIZE" bytes", copySize);
             event = protocol_.copy_block_to_block(*j, dstOffset % get_block_size(),
                                                *i, srcOffset % get_block_size(), copySize, ret);
@@ -171,7 +171,7 @@ object::memcpy_object_to_object(object &dstObj, size_t dstOffset, size_t srcOffs
         }
         else { // Two copies from the source to copy the block
             TRACE(LOCAL, "FP: Copying2: "FMT_SIZE" bytes", copySize);
-            size_t firstCopySize = blockEnd(srcOffset);
+            size_t firstCopySize = get_block_end(srcOffset);
             size_t secondCopySize = copySize - firstCopySize;
 
             event = protocol_.copy_block_to_block(*j, dstOffset % get_block_size(),
@@ -211,7 +211,7 @@ object::memcpy_object_to_object(object &dstObj, size_t dstOffset, size_t srcOffs
     size_t left = size;
 
     // Adjust the first copy to deal with a single block
-    size_t copySize = size < dstObj.blockEnd(dstOffset)? size: dstObj.blockEnd(dstOffset);
+    size_t copySize = size < dstObj.get_block_end(dstOffset)? size: dstObj.get_block_end(dstOffset);
 
     size_t bufSize = size < dstObj.get_block_size()? size: dstObj.get_block_size();
     active = owner().create_io_buffer(bufSize, GMAC_PROT_READWRITE);
@@ -224,12 +224,12 @@ object::memcpy_object_to_object(object &dstObj, size_t dstOffset, size_t srcOffs
     }
 
     // Single copy from the source to fill the buffer
-    if (copySize <= blockEnd(srcOffset)) {
+    if (copySize <= get_block_end(srcOffset)) {
         ret = copyToBuffer(*active, copySize, 0, srcOffset);
         ASSERTION(ret == gmacSuccess);
     }
     else { // Two copies from the source to fill the buffer
-        size_t firstCopySize = blockEnd(srcOffset);
+        size_t firstCopySize = get_block_end(srcOffset);
         size_t secondCopySize = copySize - firstCopySize;
         ASSERTION(bufSize >= firstCopySize + secondCopySize);
 
@@ -258,12 +258,12 @@ object::memcpy_object_to_object(object &dstObj, size_t dstOffset, size_t srcOffs
 
             // Request the next copy
             // Single copy from the source to fill the buffer
-            if (copySize <= blockEnd(srcOffset)) {
+            if (copySize <= get_block_end(srcOffset)) {
                 ret = copyToBuffer(*passive, copySize, 0, srcOffset);
                 ASSERTION(ret == gmacSuccess);
             }
             else { // Two copies from the source to fill the buffer
-                size_t firstCopySize = blockEnd(srcOffset);
+                size_t firstCopySize = get_block_end(srcOffset);
                 size_t secondCopySize = copySize - firstCopySize;
                 ASSERTION(bufSize >= firstCopySize + secondCopySize);
 
@@ -328,7 +328,7 @@ object::memcpy_from_object(hostptr_t dst, size_t objOff, size_t size)
     size_t left = size;
 
     // Adjust the first copy to deal with a single block
-    size_t copySize = size < blockEnd(objOff)? size: blockEnd(objOff);
+    size_t copySize = size < get_block_end(objOff)? size: get_block_end(objOff);
 
     size_t bufSize = size < get_block_size()? size: get_block_size();
     active = owner().create_io_buffer(bufSize, GMAC_PROT_READ);
