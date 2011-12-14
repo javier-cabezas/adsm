@@ -128,7 +128,7 @@ exit_func:
 }
 
 hal::event_ptr
-lazy_base::acquire(block_ptr b, GmacProtection &prot, gmacError_t &err)
+lazy_base::acquire(block_ptr b, GmacProtection prot, gmacError_t &err)
 {
     hal::event_ptr ret;
     err = gmacSuccess;

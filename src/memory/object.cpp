@@ -38,17 +38,6 @@ object::get_block(size_t objectOffset, size_t *blockOffset) const
 			                     blocks_);
 }
 
-hal::event_ptr
-object::coherence_op(hal::event_ptr (protocol::*f)(block_ptr, gmacError_t &), gmacError_t &err)
-{
-    hal::event_ptr ret;
-    for(const_locked_iterator i = get_block(0, NULL); i != blocks_.end(); ++i) {
-        ret = (protocol_.*f)(*i, err);
-        if(err != gmacSuccess) break;
-    }
-    return ret;
-}
-
 gmacError_t
 object::to_io_device(hal::device_output &output, size_t objOff, size_t count)
 {
@@ -426,7 +415,14 @@ object::dump(std::ostream &out, protocols::common::Statistic stat)
     std::ostringstream oss;
     oss << (void *) addr();
     out << oss.str() << " ";
-    gmacError_t ret = for_each_block(&protocol::dump, out, stat);
+    gmacError_t ret = gmacSuccess;
+    std::for_each(blocks_.begin(),
+    		      blocks_.end(), [&protocol_, &out, stat, &ret](block_ptr ptr)
+    		                     {
+    	                             if (ret == gmacSuccess) {
+    	                            	 ret = protocol_.dump(ptr, out, stat);
+    	                             }
+    		                     });
     out << std::endl;
     unlock();
     if (dumps_.find(stat) == dumps_.end()) dumps_[stat] = 0;

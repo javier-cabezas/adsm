@@ -7,20 +7,20 @@
 
 namespace __impl { namespace memory {
 
-bool set_object_host_mapped::add_object(object_host_mapped &obj)
+bool set_object_mapped::add_object(object_mapped &obj)
 {
     uint8_t *key = (uint8_t *)obj.addr() + obj.size();
     lock_write();
-    object_host_mapped_ptr ptr(&obj);
+    object_mapped_ptr ptr(&obj);
     std::pair<Parent::iterator, bool> ret =
         Parent::insert(Parent::value_type(key, ptr));
     unlock();
     return ret.second;
 }
 
-object_host_mapped_ptr set_object_host_mapped::get_object(hostptr_t addr) const
+object_mapped_ptr set_object_mapped::get_object(hostptr_t addr) const
 {
-    object_host_mapped_ptr obj;
+    object_mapped_ptr obj;
     lock_read();
     Parent::const_iterator i = Parent::upper_bound(addr);
     bool ret = (i != end()) && (addr >= i->second->addr());
@@ -31,7 +31,7 @@ object_host_mapped_ptr set_object_host_mapped::get_object(hostptr_t addr) const
     return obj;
 }
 
-bool set_object_host_mapped::remove(hostptr_t addr)
+bool set_object_mapped::remove(hostptr_t addr)
 {
     lock_write();
     Parent::iterator i = Parent::upper_bound(addr);
@@ -41,9 +41,9 @@ bool set_object_host_mapped::remove(hostptr_t addr)
     return ret;
 }
 
-set_object_host_mapped object_host_mapped::set_;
+set_object_mapped object_mapped::set_;
 
-object_host_mapped::object_host_mapped(core::address_space_ptr aspace, size_t size) :
+object_mapped::object_mapped(core::address_space_ptr aspace, size_t size) :
     size_(size),
     owner_(aspace)
 {
@@ -56,14 +56,14 @@ object_host_mapped::object_host_mapped(core::address_space_ptr aspace, size_t si
 }
 
 
-object_host_mapped::~object_host_mapped()
+object_mapped::~object_mapped()
 {
     if(addr_) free(owner_);
     TRACE(LOCAL, "Destroying Host Mapped Object @ %p", addr_.get_host_addr());
 }
 
 accptr_t
-object_host_mapped::get_device_addr(core::address_space_ptr current, const hostptr_t addr) const
+object_mapped::get_device_addr(core::address_space_ptr current, const hostptr_t addr) const
 {
     //ASSERTION(current == owner_);
     accptr_t ret = accptr_t(0);
@@ -76,7 +76,7 @@ object_host_mapped::get_device_addr(core::address_space_ptr current, const hostp
 }
 
 hal::ptr_t
-object_host_mapped::alloc(core::address_space_ptr aspace, gmacError_t &err)
+object_mapped::alloc(core::address_space_ptr aspace, gmacError_t &err)
 {
     hal::ptr_t ret;
     //ret = Memory::map(NULL, size_, GMAC_PROT_READWRITE);
@@ -85,14 +85,14 @@ object_host_mapped::alloc(core::address_space_ptr aspace, gmacError_t &err)
 }
 
 void
-object_host_mapped::free(core::address_space_ptr aspace)
+object_mapped::free(core::address_space_ptr aspace)
 {
     //Memory::unmap(addr_, size_);
     aspace->free_host_pinned(addr_);
 }
 
 accptr_t
-object_host_mapped::getAccPtr(core::address_space_ptr aspace) const
+object_mapped::getAccPtr(core::address_space_ptr aspace) const
 {
 #if 0
     gmacError_t err;

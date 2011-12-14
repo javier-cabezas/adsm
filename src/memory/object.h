@@ -130,40 +130,10 @@ protected:
     hal::event_ptr coherence_op(hal::event_ptr (protocol::*op)(block_ptr, gmacError_t &),
                                 gmacError_t &err);
 
-    template <typename T>
-    hal::event_ptr coherence_op(hal::event_ptr (protocol::*op)(block_ptr, T &, gmacError_t &),
-                                T &param,
+    template <typename... Args>
+    hal::event_ptr coherence_op(hal::event_ptr (protocol::*op)(block_ptr, Args..., gmacError_t &),
+                                Args... args,
                                 gmacError_t &err);
-
-#if 0
-    /**
-     * Execute a memory operation involving an I/O buffer on all the blocks of the object
-     *
-     * \param op Memory operation to be executed
-     * \param buffer I/O buffer used in the memory operation
-     * \param size Size (in bytes) of the memory operation
-     * \param bufferOffset Offset (in bytes) from the begining of the buffer to start performing the operation
-     * \param objectOffset Offset (in bytes) from the beginning of the block to start performing the operation
-     * \return Error code
-     * \sa __impl::memory::Block::copyToHost(core::io_buffer &, size_t, size_t, size_t) const
-     * \sa __impl::memory::Block::copyToAccelerator(core::io_buffer &, size_t, size_t, size_t) const
-     * \sa __impl::memory::Block::copyFromHost(core::io_buffer &, size_t, size_t, size_t) const
-     * \sa __impl::memory::Block::copyFromAccelerator(core::io_buffer &, size_t, size_t, size_t) const
-     */
-    TESTABLE gmacError_t memoryOp(protocol::MemoryOp op,
-                                  core::io_buffer &buffer, size_t size, size_t bufferOffset, size_t objectOffset);
-#endif
-
-    /**
-     * Execute an operation on all the blocks of the object
-     * \param f Operation to be performed
-     * \param t Parameter to be passed
-     * \param s Parameter to be passed
-     * \return Error code
-     * \sa __impl::memory::Block::dump
-     */
-    template <typename T, typename S>
-    gmacError_t for_each_block(gmacError_t (protocol::*f)(block_ptr, T &, S), T &t, S s);
 
     /**
      * Default constructor
@@ -273,7 +243,7 @@ public:
      * \param prot Access type of the previous execution on the accelerator
      * \return Error code
      */
-    hal::event_ptr acquire(GmacProtection &prot, gmacError_t &err);
+    hal::event_ptr acquire(GmacProtection prot, gmacError_t &err);
 
 #ifdef USE_VM
     /**
@@ -288,20 +258,13 @@ public:
      *
      * \return Error code
      */
-    hal::event_ptr release(gmacError_t &err);
+    hal::event_ptr release(bool flushDirty, gmacError_t &err);
 
     /** Tells if the object has been released
      *
      * \return A boolean that tells if the object has been released
      */
     bool is_released() const;
-
-    /** Releases the ownership of the object for the CPU and notifies the
-     * protocol that all the blocks are released
-     *
-     * \return Error code
-     */
-    hal::event_ptr release_blocks(gmacError_t &err);
 
     /**
      * Ensures that the object host memory contains an updated copy of the data

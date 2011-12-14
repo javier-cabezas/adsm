@@ -109,7 +109,7 @@ public:
 
     TESTABLE hal::event_ptr signal_write(block_ptr block, hostptr_t addr, gmacError_t &err);
 
-    TESTABLE hal::event_ptr acquire(block_ptr block, GmacProtection &prot, gmacError_t &err);
+    TESTABLE hal::event_ptr acquire(block_ptr block, GmacProtection prot, gmacError_t &err);
 
     TESTABLE hal::event_ptr release(block_ptr block, gmacError_t &err);
 
