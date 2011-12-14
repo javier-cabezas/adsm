@@ -87,8 +87,8 @@ TEST_F(ObjectTest, Blocks)
     ASSERT_GT(get_block_size, 0U);
 
     for(size_t offset = 0; offset < object->size(); offset += get_block_size) {
-        EXPECT_EQ(0, object->blockBase(offset));
-        EXPECT_EQ(get_block_size, object->blockEnd(offset));
+        EXPECT_EQ(0, object->get_block_base(offset));
+        EXPECT_EQ(get_block_size, object->get_block_end(offset));
     }
 
     map.removeObject(*object);

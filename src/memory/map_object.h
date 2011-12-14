@@ -186,7 +186,7 @@ public:
      * \return Error code
      */
     template <typename... Args>
-    hal::event_ptr for_each_object(hal::event_ptr (object::*f)(Args..., gmacError_t &), Args... args, gmacError_t &err);
+    hal::event_ptr for_each_object(hal::event_ptr (object::*f)(Args..., gmacError_t &), gmacError_t &err, Args... args);
 
 #ifdef DEBUG
     gmacError_t dumpObjects(const std::string &dir, std::string prefix, protocols::common::Statistic stat) const;

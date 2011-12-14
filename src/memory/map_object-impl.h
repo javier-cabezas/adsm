@@ -45,7 +45,7 @@ map_object::for_each_object(hal::event_ptr (object::*f)(P1, gmacError_t &), P1 p
 
 template <typename... Args>
 hal::event_ptr
-map_object::for_each_object(hal::event_ptr (object::*f)(Args..., gmacError_t &), Args... args, gmacError_t &err)
+map_object::for_each_object(hal::event_ptr (object::*f)(Args..., gmacError_t &), gmacError_t &err, Args... args)
 {
     hal::event_ptr ret;
     const_iterator i;

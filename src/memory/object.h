@@ -132,8 +132,8 @@ protected:
 
     template <typename... Args>
     hal::event_ptr coherence_op(hal::event_ptr (protocol::*op)(block_ptr, Args..., gmacError_t &),
-                                Args... args,
-                                gmacError_t &err);
+                                gmacError_t &err,
+                                Args... args);
 
     /**
      * Default constructor
@@ -179,14 +179,14 @@ public:
      *
      * \return Offset to the beginning of the block that contains the address
      */
-    TESTABLE ssize_t blockBase(size_t offset) const;
+    TESTABLE ssize_t get_block_base(size_t offset) const;
 
     /**
      * Get the offset to the end of the block that contains the address
      *
      * \return Offset to the end of the block that contains the address
      */
-    TESTABLE size_t blockEnd(size_t offset) const;
+    TESTABLE size_t get_block_end(size_t offset) const;
 
     /**
      * Get the block size used by the object

@@ -107,18 +107,18 @@ object::end() const
 }
 
 inline ssize_t
-object::blockBase(size_t offset) const
+object::get_block_base(size_t offset) const
 {
     return -1 * (offset % get_block_size());
 }
 
 inline size_t
-object::blockEnd(size_t offset) const
+object::get_block_end(size_t offset) const
 {
-    if (offset + blockBase(offset) + get_block_size() > size_)
+    if (offset + get_block_base(offset) + get_block_size() > size_)
         return size_ - offset;
     else
-        return size_t(ssize_t(get_block_size()) + blockBase(offset));
+        return size_t(ssize_t(get_block_size()) + get_block_base(offset));
 }
 
 inline size_t
@@ -137,8 +137,8 @@ object::size() const
 template <typename... Args>
 hal::event_ptr
 object::coherence_op(hal::event_ptr (protocol::*op)(block_ptr, Args..., gmacError_t &),
-                     Args... args,
-                     gmacError_t &err)
+                     gmacError_t &err,
+                     Args... args)
 {
     hal::event_ptr ret;
     for(const_locked_iterator i  = get_block(0, NULL);
@@ -173,7 +173,7 @@ object::acquire(GmacProtection prot, gmacError_t &err)
     TRACE(LOCAL, "Acquiring object %p?", addr_);
     if (released_) {
         TRACE(LOCAL, "Acquiring object %p", addr_);
-        ret = coherence_op<GmacProtection>(&protocol::acquire, prot, err);
+        ret = coherence_op<GmacProtection>(&protocol::acquire, err, prot);
         if (err == gmacSuccess) {
             set_last_event(ret);
         }
@@ -220,25 +220,6 @@ object::acquireWithBitmap()
 }
 #endif
 
-#if 0
-template <typename P1, typename P2>
-gmacError_t
-object::for_each_block(gmacError_t (protocol::*op)(block_ptr, P1 &, P2), P1 &p1, P2 p2)
-{
-    lock_read();
-    gmacError_t ret = gmacSuccess;
-    vector_block::iterator i;
-    for(i = blocks_.begin(); i != blocks_.end(); i++) {
-        //ret = ((*i)->*f)(p1, p2);
-        ret = (protocol_.*op)(*i, p1, p2);
-        // TODO remove this if the code is no longer executed
-        abort();
-    }
-    unlock();
-    return ret;
-}
-#endif
-
 inline hal::event_ptr 
 object::to_host(gmacError_t &err)
 {
@@ -262,43 +243,6 @@ object::to_device(gmacError_t &err)
     unlock();
     return ret;
 }
-
-#if 0
-inline gmacError_t
-object::copyToBuffer(core::io_buffer &buffer, size_t size,
-                     size_t bufferOffset, size_t objectOffset)
-{
-    lock_read();
-    gmacError_t ret = memoryOp(&protocol::copyToBuffer, buffer, size,
-                               bufferOffset, objectOffset);
-    unlock();
-    return ret;
-}
-
-inline gmacError_t object::copyFromBuffer(core::io_buffer &buffer, size_t size,
-                                          size_t bufferOffset, size_t objectOffset)
-{
-    lock_read();
-    gmacError_t ret = memoryOp(&protocol::copyFromBuffer, buffer, size,
-                               bufferOffset, objectOffset);
-    unlock();
-    return ret;
-}
-#endif
-
-#if 0
-inline gmacError_t object::copyObjectToObject(object &dst, size_t dstOff,
-                                              object &src, size_t srcOff, size_t count)
-{
-    dst.lock_write();
-    src.lock_write();
-        gmacError_t ret = memoryOp(&protocol::copyFromBuffer, buffer, size,
-        bufferOffset, objectOffset);
-    dst.unlock();
-    src.unlock();
-    return ret;
-}
-#endif
 
 }}
 
