@@ -96,12 +96,12 @@ manager::unmap(core::address_space_ptr aspace, hostptr_t addr, size_t size)
         ptr->remove_owner(aspace);
         map.remove_object(*ptr);
     } else {
-        object_host_mapped_ptr hostMappedObject = object_host_mapped::get_object(addr);
+        object_mapped_ptr hostMappedObject = object_mapped::get_object(addr);
         if(hostMappedObject) {
             trace::ExitCurrentFunction();
             return gmacErrorInvalidValue;
         }
-        object_host_mapped::remove(addr);
+        object_mapped::remove(addr);
     }
     trace::ExitCurrentFunction();
     return ret;
@@ -146,7 +146,7 @@ gmacError_t manager::hostMappedAlloc(core::address_space_ptr aspace, hostptr_t *
 {
     TRACE(LOCAL, "New host-mapped allocation");
     trace::EnterCurrentFunction();
-    object_host_mapped* obj = new object_host_mapped(aspace, size);
+    object_mapped* obj = new object_mapped(aspace, size);
     *addr = obj->addr();
     if(*addr == NULL) {
         trace::ExitCurrentFunction();
@@ -202,12 +202,12 @@ gmacError_t manager::free(core::address_space_ptr aspace, hostptr_t addr)
         ASSERTION(it != mapAllocations_.end(), "Object not registered");
         mapAllocations_.erase(it);
     } else {
-        object_host_mapped_ptr hostMappedObject = object_host_mapped::get_object(addr);
+        object_mapped_ptr hostMappedObject = object_mapped::get_object(addr);
         if(hostMappedObject) {
             trace::ExitCurrentFunction();
             return gmacErrorInvalidValue;
         }
-        object_host_mapped::remove(addr);
+        object_mapped::remove(addr);
     }
     trace::ExitCurrentFunction();
     return ret;
@@ -224,7 +224,7 @@ manager::getAllocSize(core::address_space_ptr aspace, const hostptr_t addr, gmac
 
     object_ptr obj = map.get_object(addr);
     if (!obj) {
-        object_host_mapped_ptr hostMappedObject = object_host_mapped::get_object(addr);
+        object_mapped_ptr hostMappedObject = object_mapped::get_object(addr);
         if (hostMappedObject) {
             ret = hostMappedObject->size();
         } else {
@@ -246,7 +246,7 @@ manager::translate(core::address_space_ptr aspace, const hostptr_t addr)
     object_ptr obj = map.get_object(addr);
     accptr_t ret(0);
     if(!obj) {
-        object_host_mapped_ptr object = object_host_mapped::get_object(addr);
+        object_mapped_ptr object = object_mapped::get_object(addr);
         if(object) {
             ret = object->get_device_addr(aspace, addr);
         }
@@ -292,7 +292,7 @@ manager::acquireObjects(core::address_space_ptr aspace, const list_addr &addrs)
         for (it = addrs.begin(); it != addrs.end(); it++) {
             object_ptr obj = map.get_object(it->first);
             if (!obj) {
-                object_host_mapped_ptr hostMappedObject = object_host_mapped::get_object(it->first);
+                object_mapped_ptr hostMappedObject = object_mapped::get_object(it->first);
                 ASSERTION(bool(hostMappedObject), "Address not found");
 #ifdef USE_OPENCL
                 hostMappedObject->acquire(aspace);
@@ -322,7 +322,7 @@ manager::releaseObjects(core::address_space_ptr aspace, const list_addr &addrs)
         TRACE(LOCAL,"Releasing Objects");
         if (map.has_modified_objects()) {
             // Mark objects as released
-            evt = map.for_each_object(&object::release, ret);
+            evt = map.for_each_object<bool>(&object::release, false, ret);
             ASSERTION(ret == gmacSuccess);
             // Flush protocols
             // 1. Mode protocol
@@ -337,7 +337,7 @@ manager::releaseObjects(core::address_space_ptr aspace, const list_addr &addrs)
         for (it = addrs.begin(); it != addrs.end(); it++) {
             object_ptr obj = map.get_object(it->first);
             if (!obj) {
-                object_host_mapped_ptr hostMappedObject = object_host_mapped::get_object(it->first);
+                object_mapped_ptr hostMappedObject = object_mapped::get_object(it->first);
                 ASSERTION(bool(hostMappedObject), "Address not found");
 #ifdef USE_OPENCL
                 hostMappedObject->release(aspace);
@@ -345,7 +345,7 @@ manager::releaseObjects(core::address_space_ptr aspace, const list_addr &addrs)
             } else {
                 // Release all the blocks in the object
                 if (obj->is_released() == false) {
-                    evt = obj->release_blocks(ret);
+                    evt = obj->release(true, ret);
                     ASSERTION(ret == gmacSuccess);
                 }
             }

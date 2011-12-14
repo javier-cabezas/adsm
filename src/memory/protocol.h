@@ -120,7 +120,7 @@ public:
      * \warning This method assumes that the block is not modified during its
      * execution
      */
-    virtual hal::event_ptr acquire(block_ptr block, GmacProtection &prot, gmacError_t &err) = 0;
+    virtual hal::event_ptr acquire(block_ptr block, GmacProtection prot, gmacError_t &err) = 0;
 #ifdef USE_VM
     virtual hal::event_ptr acquireWithBitmap(block_ptr block, gmacError_t &err) = 0;
 #endif

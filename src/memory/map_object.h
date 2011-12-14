@@ -185,8 +185,8 @@ public:
      * \sa __impl::memory::object::realloc
      * \return Error code
      */
-    template <typename T>
-    hal::event_ptr for_each_object(hal::event_ptr (object::*f)(T &, gmacError_t &), T &p, gmacError_t &err);
+    template <typename... Args>
+    hal::event_ptr for_each_object(hal::event_ptr (object::*f)(Args..., gmacError_t &), Args... args, gmacError_t &err);
 
 #ifdef DEBUG
     gmacError_t dumpObjects(const std::string &dir, std::string prefix, protocols::common::Statistic stat) const;

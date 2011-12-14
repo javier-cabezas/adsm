@@ -23,9 +23,10 @@ map_object::for_each_object(hal::event_ptr (object::*f)(gmacError_t &), gmacErro
     return ret;
 }
 
+#if 0
 template <typename P1>
 hal::event_ptr
-map_object::for_each_object(hal::event_ptr (object::*f)(P1 &, gmacError_t &), P1 &p1, gmacError_t &err)
+map_object::for_each_object(hal::event_ptr (object::*f)(P1, gmacError_t &), P1 p1, gmacError_t &err)
 {
     hal::event_ptr ret;
     const_iterator i;
@@ -40,7 +41,25 @@ map_object::for_each_object(hal::event_ptr (object::*f)(P1 &, gmacError_t &), P1
     unlock();
     return ret;
 }
+#endif
 
+template <typename... Args>
+hal::event_ptr
+map_object::for_each_object(hal::event_ptr (object::*f)(Args..., gmacError_t &), Args... args, gmacError_t &err)
+{
+    hal::event_ptr ret;
+    const_iterator i;
+    lock_read();
+    for(i = begin(); i != end(); i++) {
+        ret = ((*i->second).*f)(args..., err);
+        if (err != gmacSuccess) {
+            unlock();
+            return ret;
+        }
+    }
+    unlock();
+    return ret;
+}
 
 #ifdef DEBUG
 inline
