@@ -23,19 +23,31 @@ object::~object()
     unlock();
 }
 
-object::const_locked_iterator
+object::const_locking_iterator
 object::get_block(size_t objectOffset, size_t *blockOffset) const
 {
 	if (objectOffset > size()) {
-		return const_locked_iterator(blocks_.end(), blocks_);
+		return const_locking_iterator(blocks_.end(), blocks_);
 	}
 
 	if (blockOffset != NULL) {
 		*blockOffset = objectOffset % config::params::BlockSize;
 	}
 
-	return const_locked_iterator(blocks_.begin() + (objectOffset / config::params::BlockSize),
+	return const_locking_iterator(blocks_.begin() + (objectOffset / config::params::BlockSize),
 			                     blocks_);
+}
+
+object::const_locking_iterator
+object::begin() const
+{
+    return const_locking_iterator(blocks_.begin(), blocks_);
+}
+
+object::const_locking_iterator
+object::end() const
+{
+    return const_locking_iterator(blocks_.end(), blocks_);
 }
 
 gmacError_t
@@ -45,8 +57,8 @@ object::to_io_device(hal::device_output &output, size_t objOff, size_t count)
     gmacError_t ret = gmacSuccess;
     size_t blockOffset = 0;
     size_t off = 0;
-    const_locked_iterator i = get_block(objOff, &blockOffset);
-    for(; count > 0 && i != blocks_.end(); ++i) {
+    const_locking_iterator i = get_block(objOff, &blockOffset);
+    for(; count > 0 && i != end(); ++i) {
         block_ptr block = *i;
         size_t blockSize = block->size() - blockOffset;
         blockSize = count < blockSize? count: blockSize;
@@ -68,7 +80,7 @@ object::from_io_device(size_t objOff, hal::device_input &input, size_t count)
     gmacError_t ret = gmacSuccess;
     size_t blockOffset = 0;
     size_t off = 0;
-    const_locked_iterator i = get_block(objOff, &blockOffset);
+    const_locking_iterator i = get_block(objOff, &blockOffset);
     for(; i != blocks_.end() && count > 0; ++i) {
         block_ptr block = *i;
         size_t blockSize = block->size() - blockOffset;
@@ -111,7 +123,7 @@ gmacError_t object::memset(size_t offset, int v, size_t size)
 	hal::event_ptr event;
     gmacError_t ret = gmacSuccess;
     size_t blockOffset = 0;
-    const_locked_iterator i = get_block(offset, &blockOffset);
+    const_locking_iterator i = get_block(offset, &blockOffset);
     for(; i != blocks_.end() && size > 0; ++i) {
         block_ptr block = *i;
         size_t blockSize = block->size() - blockOffset;
@@ -130,7 +142,7 @@ object::memcpy_to_object(size_t objOff, const hostptr_t src, size_t size)
     gmacError_t ret = gmacSuccess;
     size_t blockOffset = 0;
     size_t off = 0;
-    const_locked_iterator i = get_block(objOff, &blockOffset);
+    const_locking_iterator i = get_block(objOff, &blockOffset);
     for(; i != blocks_.end() && size > 0; ++i) {
         block_ptr block = *i;
         size_t blockSize = block->size() - blockOffset;
@@ -154,10 +166,10 @@ object::memcpy_object_to_object(object &dstObj, size_t dstOffset, size_t srcOffs
 
     hal::event_ptr event;
 
-    const_locked_iterator i = get_block(srcOffset);
-    TRACE(LOCAL, "FP: %p "FMT_SIZE, dstObj.addr() + dstOffset, size);
-    const_locked_iterator j = dstObj.get_block(dstOffset);
-    TRACE(LOCAL, "FP: %p vs %p "FMT_SIZE, (*j)->addr(), dstObj.addr() + dstOffset, size);
+    const_locking_iterator i = get_block(srcOffset);
+    TRACE(LOCAL, "FP: %p "FMT_SIZE, dstObj.get_start_addr() + dstOffset, size);
+    const_locking_iterator j = dstObj.get_block(dstOffset);
+    TRACE(LOCAL, "FP: %p vs %p "FMT_SIZE, (*j)->addr(), dstObj.get_start_addr() + dstOffset, size);
     size_t left = size;
     while (left > 0) {
         size_t copySize = left < dstObj.get_block_end(dstOffset)? left: dstObj.get_block_end(dstOffset);
@@ -301,7 +313,7 @@ object::memcpy_from_object(hostptr_t dst, size_t objOff, size_t size)
     gmacError_t ret = gmacSuccess;
     size_t blockOffset = 0;
     size_t off = 0;
-    const_locked_iterator i = get_block(objOff);
+    const_locking_iterator i = get_block(objOff);
     for(; i != blocks_.end() && size > 0; ++i) {
         block_ptr block = *i;
         size_t blockSize = block->size() - blockOffset;
@@ -385,7 +397,7 @@ object::signal_read(hostptr_t addr, gmacError_t &err)
     lock_read();
     /// \todo is this validate necessary?
     //validate();
-    const_locked_iterator i = get_block(addr - addr_);
+    const_locking_iterator i = get_block(addr - addr_);
     if(i == blocks_.end()) err = gmacErrorInvalidValue;
     else if((*i)->addr() > addr) err = gmacErrorInvalidValue;
     else ret = protocol_.signal_read(*i, addr, err);
@@ -399,7 +411,7 @@ object::signal_write(hostptr_t addr, gmacError_t &err)
     hal::event_ptr ret;
     lock_read();
     modified_object();
-    const_locked_iterator i = get_block(addr - addr_);
+    const_locking_iterator i = get_block(addr - addr_);
     if(i == blocks_.end()) err = gmacErrorInvalidValue;
     else if((*i)->addr() > addr) err = gmacErrorInvalidValue;
     else ret = protocol_.signal_write(*i, addr, err);
@@ -413,16 +425,15 @@ object::dump(std::ostream &out, protocols::common::Statistic stat)
 #ifdef DEBUG
     lock_write();
     std::ostringstream oss;
-    oss << (void *) addr();
+    oss << (void *) get_start_addr();
     out << oss.str() << " ";
-    gmacError_t ret = gmacSuccess;
-    std::for_each(blocks_.begin(),
-    		      blocks_.end(), [&protocol_, &out, stat, &ret](block_ptr ptr)
-    		                     {
-    	                             if (ret == gmacSuccess) {
-    	                            	 ret = protocol_.dump(ptr, out, stat);
-    	                             }
-    		                     });
+    gmacError_t ret;
+    for (vector_block::iterator it = blocks_.begin(); it != blocks_.end(); it++) {
+        ret = protocol_.dump(*it, out, stat);
+    }
+
+    ASSERTION(ret == gmacSuccess);
+
     out << std::endl;
     unlock();
     if (dumps_.find(stat) == dumps_.end()) dumps_[stat] = 0;

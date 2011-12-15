@@ -117,8 +117,12 @@ protected:
      * \param blockOffset Returns the block offset of the object offset
      * \return Constant iterator pointing to the block
      */
-    typedef util::const_locked_iterator<vector_block> const_locked_iterator;
-    const_locked_iterator get_block(size_t objectOffset, size_t *blockOffset = NULL) const;
+    typedef util::const_locking_iterator<vector_block> const_locking_iterator;
+    const_locking_iterator get_block(size_t objectOffset, size_t *blockOffset = NULL) const;
+
+    const_locking_iterator begin() const;
+    const_locking_iterator end() const;
+
 
     /** Execute a coherence operation on all the blocks of the object
      *
@@ -131,7 +135,7 @@ protected:
                                 gmacError_t &err);
 
     template <typename F>
-    hal::event_ptr coherence_op(F f);
+    hal::event_ptr coherence_op(F f, gmacError_t &err);
 
     /**
      * Default constructor
@@ -163,14 +167,14 @@ public:
      *
      * \return Starting host memory address of the object
      */
-    hostptr_t addr() const;
+    hostptr_t get_start_addr() const;
 
     /**
      * Get the ending host memory address of the object
      *
      * \return Ending host memory address of the object
      */
-    hostptr_t end() const;
+    hostptr_t get_end_addr() const;
 
     /**
      * Get the offset to the beginning of the block that contains the address

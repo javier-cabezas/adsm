@@ -42,7 +42,7 @@ map_object::map_find(const hostptr_t addr, size_t size) const
     lock_read();
     const uint8_t *limit = (const uint8_t *)addr + size;
     i = upper_bound(addr);
-    if(i != end() && i->second->addr() <= limit) {
+    if(i != end() && i->second->get_start_addr() <= limit) {
     	ret = object_ptr(i->second);
     }
     unlock();
@@ -103,9 +103,9 @@ bool
 map_object::add_object(object &obj)
 {
     lock_write();
-    TRACE(LOCAL, "Insert object: %p", obj.addr());
+    TRACE(LOCAL, "Insert object: %p", obj.get_start_addr());
     object_ptr ptr(&obj);
-    std::pair<iterator, bool> ret = Parent::insert(value_type(obj.end(), ptr));
+    std::pair<iterator, bool> ret = Parent::insert(value_type(obj.get_end_addr(), ptr));
     modifiedObjects_unlocked();
     unlock();
     return ret.second;
@@ -115,7 +115,7 @@ bool
 map_object::remove_object(object &obj)
 {
     lock_write();
-    iterator i = find(obj.end());
+    iterator i = find(obj.get_end_addr());
     bool ret = (i != end());
     if(ret == true) {
 #if defined(DEBUG)
@@ -124,17 +124,17 @@ map_object::remove_object(object &obj)
             std::stringstream ss(std::stringstream::out);
             ss << dump << "-" << "remove";
 
-            dumpObject(StatsDir_, ss.str(), memory::protocols::common::PAGE_FAULTS_READ, obj.addr());
-            dumpObject(StatsDir_, ss.str(), memory::protocols::common::PAGE_FAULTS_WRITE, obj.addr());
-            dumpObject(StatsDir_, ss.str(), memory::protocols::common::PAGE_TRANSFERS_TO_HOST, obj.addr());
-            dumpObject(StatsDir_, ss.str(), memory::protocols::common::PAGE_TRANSFERS_TO_ACCELERATOR, obj.addr());
+            dumpObject(StatsDir_, ss.str(), memory::protocols::common::PAGE_FAULTS_READ, obj.get_start_addr());
+            dumpObject(StatsDir_, ss.str(), memory::protocols::common::PAGE_FAULTS_WRITE, obj.get_start_addr());
+            dumpObject(StatsDir_, ss.str(), memory::protocols::common::PAGE_TRANSFERS_TO_HOST, obj.get_start_addr());
+            dumpObject(StatsDir_, ss.str(), memory::protocols::common::PAGE_TRANSFERS_TO_ACCELERATOR, obj.get_start_addr());
         }
 #endif
 
-        TRACE(LOCAL, "Remove object: %p", obj.addr());
+        TRACE(LOCAL, "Remove object: %p", obj.get_start_addr());
         Parent::erase(i);
     } else {
-        TRACE(LOCAL, "CANNOT Remove object: %p from map with "FMT_SIZE" elems", obj.addr(), Parent::size());
+        TRACE(LOCAL, "CANNOT Remove object: %p from map with "FMT_SIZE" elems", obj.get_start_addr(), Parent::size());
     }
     unlock();
     return ret;

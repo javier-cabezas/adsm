@@ -58,7 +58,7 @@ manager::map(core::address_space_ptr aspace, hostptr_t *addr, size_t size, int f
         return gmacErrorMemoryAllocation;
     }
     newObject->add_owner(aspace);
-    *addr = newObject->addr();
+    *addr = newObject->get_start_addr();
 
     // Insert object into memory maps
     map.add_object(*newObject);
@@ -129,7 +129,7 @@ gmacError_t manager::alloc(core::address_space_ptr aspace, hostptr_t *addr, size
         return gmacErrorMemoryAllocation;
     }
     newObject->add_owner(aspace);
-    *addr = newObject->addr();
+    *addr = newObject->get_start_addr();
 
     // Insert object into the global memory map
     std::pair<map_allocation::iterator, bool> res = mapAllocations_.insert(map_allocation::value_type(*addr + size, aspace));
@@ -478,7 +478,7 @@ manager::signal_read(core::address_space_ptr aspace, hostptr_t addr)
         trace::ExitCurrentFunction();
         return false;
     }
-    TRACE(LOCAL,"Read access for object %p: %p", obj->addr(), addr);
+    TRACE(LOCAL,"Read access for object %p: %p", obj->get_start_addr(), addr);
     gmacError_t err;
     obj->signal_read(addr, err);
     ASSERTION(err == gmacSuccess);
@@ -507,7 +507,7 @@ manager::signal_write(core::address_space_ptr aspace, hostptr_t addr)
         trace::ExitCurrentFunction();
         return false;
     }
-    TRACE(LOCAL,"Write access for object %p: %p", obj->addr(), addr);
+    TRACE(LOCAL,"Write access for object %p: %p", obj->get_start_addr(), addr);
     gmacError_t err;
     obj->signal_write(addr, err);
     if (err != gmacSuccess) ret = false;
@@ -543,9 +543,9 @@ manager::memset(core::address_space_ptr aspace, hostptr_t s, int c, size_t size)
     ASSERTION(obj != NULL);
     // Check for a fast path -- probably the user is just
     // initializing a single object or a portion of an object
-    if(obj->addr() <= s && obj->end() >= (s + size)) {
+    if(obj->get_start_addr() <= s && obj->get_end_addr() >= (s + size)) {
         size_t objSize = (size < obj->size()) ? size : obj->size();
-        ret = obj->memset(s - obj->addr(), c, objSize);
+        ret = obj->memset(s - obj->get_start_addr(), c, objSize);
         trace::ExitCurrentFunction();
         return ret;
     }
@@ -561,7 +561,7 @@ manager::memset(core::address_space_ptr aspace, hostptr_t s, int c, size_t size)
         } else {
             // Check if there is a memory gap of host memory at the begining of the
             // memory range that remains to be initialized
-            int gap = int(obj->addr() - s);
+            int gap = int(obj->get_start_addr() - s);
             if(gap > 0) { // If there is gap, initialize and advance the pointer
                 ::memset(s, c, gap);
                 left -= gap;
@@ -574,7 +574,7 @@ manager::memset(core::address_space_ptr aspace, hostptr_t s, int c, size_t size)
             // If the remaining memory in the object is larger than the remaining memory range, adjust
             // the size of the memory range to be initialized by the object
             objSize = (objSize < left) ? objSize : left;
-            ret = obj->memset(s - obj->addr(), c, objSize);
+            ret = obj->memset(s - obj->get_start_addr(), c, objSize);
             if(ret != gmacSuccess) break;
             left -= objSize; // Account for the bytes initialized by the object
             s += objSize;  // Advance the pointer
@@ -604,9 +604,9 @@ hostMemory(hostptr_t addr, size_t size, const object *obj)
     if(obj == NULL) return size;
 
     // The object starts after the memory range, return the difference
-    if(addr < obj->addr()) return obj->addr() - addr;
+    if(addr < obj->get_start_addr()) return obj->get_start_addr() - addr;
 
-    ASSERTION(obj->end() > addr); // Sanity check
+    ASSERTION(obj->get_end_addr() > addr); // Sanity check
     return 0;
 }
 
@@ -646,10 +646,10 @@ manager::memcpy(core::address_space_ptr aspace, hostptr_t dst, const hostptr_t s
     size_t copySize = 0;
     while(left > 0) {
         // Get next objects involved, if necessary
-        if(aspaceDst && dstObject && dstObject->end() < (dst + offset)) {
+        if(aspaceDst && dstObject && dstObject->get_end_addr() < (dst + offset)) {
             dstObject = mapDst->get_object(dst + offset, left);
         }
-        if(aspaceSrc && srcObject && srcObject->end() < (src + offset)) {
+        if(aspaceSrc && srcObject && srcObject->get_end_addr() < (src + offset)) {
             srcObject = mapSrc->get_object(src + offset, left);
         }
 
@@ -663,24 +663,24 @@ manager::memcpy(core::address_space_ptr aspace, hostptr_t dst, const hostptr_t s
             ret = gmacSuccess;
         }
         else if(dstHostMemory != 0) { // Object-to-host memory copy
-            size_t srcCopySize = srcObject->end() - src - offset;
+            size_t srcCopySize = srcObject->get_end_addr() - src - offset;
             copySize = (dstHostMemory < srcCopySize) ? dstHostMemory : srcCopySize;
-            size_t srcObjectOffset = src + offset - srcObject->addr();
+            size_t srcObjectOffset = src + offset - srcObject->get_start_addr();
             ret = srcObject->memcpy_from_object(dst + offset, srcObjectOffset, copySize);
         }
         else if(srcHostMemory != 0) { // Host-to-object memory copy
-            size_t dstCopySize = dstObject->end() - dst - offset;
+            size_t dstCopySize = dstObject->get_end_addr() - dst - offset;
             copySize = (srcHostMemory < dstCopySize) ? srcHostMemory : dstCopySize;
-            size_t dstObjectOffset = dst + offset - dstObject->addr();
+            size_t dstObjectOffset = dst + offset - dstObject->get_start_addr();
             ret = dstObject->memcpy_to_object(dstObjectOffset, src + offset, copySize);
         }
         else { // Object-to-object memory copy
-            size_t srcCopySize = srcObject->end() - src - offset;
-            size_t dstCopySize = dstObject->end() - dst - offset;
+            size_t srcCopySize = srcObject->get_end_addr() - src - offset;
+            size_t dstCopySize = dstObject->get_end_addr() - dst - offset;
             copySize = (srcCopySize < dstCopySize) ? srcCopySize : dstCopySize;
             copySize = (copySize < left) ? copySize : left;
-            size_t srcObjectOffset = src + offset - srcObject->addr();
-            size_t dstObjectOffset = dst + offset - dstObject->addr();
+            size_t srcObjectOffset = src + offset - srcObject->get_start_addr();
+            size_t dstObjectOffset = dst + offset - dstObject->get_start_addr();
             ret = srcObject->memcpy_object_to_object(*dstObject, dstObjectOffset, srcObjectOffset, copySize);
         }
 
@@ -726,16 +726,16 @@ manager::from_io_device(core::address_space_ptr aspace, hostptr_t addr,
             return gmacErrorInvalidValue;
         }
         // Compute sizes for the current object
-        size_t objCount = obj->addr() + obj->size() - (addr + off);
+        size_t objCount = obj->get_start_addr() + obj->size() - (addr + off);
         size_t c = objCount <= count - off? objCount: count - off;
-        size_t objOff = addr - obj->addr();
+        size_t objOff = addr - obj->get_start_addr();
         ret = obj->from_io_device(objOff, input, c);
         if(ret != gmacSuccess) {
             trace::ExitCurrentFunction();
             return ret;
         }
         off += objCount;
-        TRACE(LOCAL,"Copying to obj %p: "FMT_SIZE" of "FMT_SIZE, obj->addr(), c, count);
+        TRACE(LOCAL,"Copying to obj %p: "FMT_SIZE" of "FMT_SIZE, obj->get_start_addr(), c, count);
     } while(addr + off < addr + count);
     trace::ExitCurrentFunction();
     return ret;
@@ -762,9 +762,9 @@ manager::to_io_device(hal::device_output &output, core::address_space_ptr aspace
             return gmacErrorInvalidValue;
         }
         // Compute sizes for the current object
-        size_t objCount = obj->addr() + obj->size() - (addr + off);
+        size_t objCount = obj->get_start_addr() + obj->size() - (addr + off);
         size_t c = objCount <= count - off? objCount: count - off;
-        size_t objOff = addr - obj->addr();
+        size_t objOff = addr - obj->get_start_addr();
         // Handle objects with no memory in the accelerator
         ret = obj->to_io_device(output, objOff, c);
         if(ret != gmacSuccess) {
@@ -772,7 +772,7 @@ manager::to_io_device(hal::device_output &output, core::address_space_ptr aspace
             return ret;
         }
         off += objCount;
-        TRACE(LOCAL,"Copying from obj %p: "FMT_SIZE" of "FMT_SIZE, obj->addr(), c, count);
+        TRACE(LOCAL,"Copying from obj %p: "FMT_SIZE" of "FMT_SIZE, obj->get_start_addr(), c, count);
     } while(addr + off < addr + count);
     trace::ExitCurrentFunction();
     return ret;

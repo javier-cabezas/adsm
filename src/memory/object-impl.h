@@ -97,14 +97,14 @@ object::get_protocol()
 }
 
 inline hostptr_t
-object::addr() const
+object::get_start_addr() const
 {
     // No need for lock -- addr_ is never modified
     return addr_;
 }
 
 inline hostptr_t
-object::end() const
+object::get_end_addr() const
 {
     // No need for lock -- addr_ and size_ are never modified
     return addr_ + size_;
@@ -140,14 +140,19 @@ object::size() const
 
 template <typename F>
 hal::event_ptr
-object::coherence_op(F f)
+object::coherence_op(F f, gmacError_t &err)
 {
     hal::event_ptr ret;
-    for(const_locked_iterator i  = get_block(0, NULL);
+    err = gmacSuccess;
+    for(const_locking_iterator i  = get_block(0, NULL);
                               i != blocks_.end();
     		                ++i) {
-        ret = f(*i);
-        set_last_event(ret);
+        if (err == gmacSuccess) {
+            ret = f(*i);
+        }
+        if (err == gmacSuccess) {
+            set_last_event(ret);
+        }
     }
     return ret;
 }
@@ -156,7 +161,7 @@ inline hal::event_ptr
 object::coherence_op(hal::event_ptr (protocol::*f)(block_ptr, gmacError_t &), gmacError_t &err)
 {
     hal::event_ptr ret;
-    for (const_locked_iterator i  = get_block(0, NULL);
+    for (const_locking_iterator i  = get_block(0, NULL);
                                i != blocks_.end();
                              ++i) {
         ret = (protocol_.*f)(*i, err);
@@ -175,8 +180,7 @@ object::acquire(GmacProtection prot, gmacError_t &err)
     if (released_) {
         TRACE(LOCAL, "Acquiring object %p", addr_);
 
-        auto f =
-        ret = coherence_op(protocol_member(protocol::acquire, prot, err));
+        ret = coherence_op(protocol_member(protocol::acquire, prot, err), err);
         if (err == gmacSuccess) {
             set_last_event(ret);
         }
