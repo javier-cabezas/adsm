@@ -40,7 +40,7 @@ public:
         typename I::stream &stream_;
 
     protected:
-        typename I::event event_;
+        typename I::event_ptr event_;
 
         launch(typename I::kernel &kernel, typename I::kernel::config &config, typename I::kernel::arg_list &args, typename I::stream &stream);
 
@@ -52,11 +52,11 @@ public:
         const typename I::kernel::config &get_config() const;
         const typename I::kernel::arg_list &get_arg_list() const;
 
-        virtual typename I::event execute(list_event<I> &dependencies, gmacError_t &err) = 0;
-        virtual typename I::event execute(typename I::event event, gmacError_t &err) = 0;
-        virtual typename I::event execute(gmacError_t &err) = 0;
+        virtual typename I::event_ptr execute(list_event<I> &dependencies, gmacError_t &err) = 0;
+        virtual typename I::event_ptr execute(typename I::event_ptr event, gmacError_t &err) = 0;
+        virtual typename I::event_ptr execute(gmacError_t &err) = 0;
 
-        typename I::event get_event();
+        typename I::event_ptr get_event();
     };
 
 private:

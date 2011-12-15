@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010, 2011 University of Illinois
+/* Copyright (c) 2009-2011sity of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -39,11 +39,11 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 #include "include/gmac/types.h"
 
-#include "util/Atomics.h"
+#include "util/atomics.h"
 #include "util/lock.h"
 #include "util/locked_iterator.h"
 #include "util/Reference.h"
-#include "memory/Protocol.h"
+#include "memory/protocol.h"
 
 namespace __impl {
 
@@ -63,9 +63,7 @@ class block;
  * divided into blocks, which are the unit of coherence
  */
 class GMAC_LOCAL object :
-    protected gmac::util::lock_rw<object>,
-    public util::Reference {
-
+    protected gmac::util::lock_rw<object> {
     typedef gmac::util::lock_rw<object> Lock;
 
     // DBC_FORCE_TEST(object)
@@ -73,11 +71,11 @@ protected:
 #ifdef DEBUG
     static Atomic Id_;
     unsigned id_;
-    std::map<protocol::common::Statistic, unsigned> dumps_;
+    std::map<protocols::common::Statistic, unsigned> dumps_;
 #endif
 
     /** Memory coherence protocol used by the object */
-    protocol_interface &protocol_;
+    protocol &protocol_;
 
     /// Object host memory address
     hostptr_t addr_;
@@ -92,11 +90,25 @@ protected:
     /// Tells whether the object has been released or not
     bool released_;
 
-    /// Last toHost event
-    hal::event_t lastToHost_;
+    /// Last to_host event
+    hal::event_ptr lastToHost_;
 
     /// Last toDevice event
-    hal::event_t lastToDevice_;
+    hal::event_ptr lastToDevice_;
+
+    /// Last host <-> host event
+    hal::event_ptr lastHost_;
+
+    /// Last device <-> device event
+    hal::event_ptr lastDevice_;
+
+    /// Last launch event
+    hal::event_ptr lastKernel_;
+
+    /// Last event
+    hal::event_ptr last_;
+
+    void set_last_event(hal::event_ptr event);
 
     /**
      * Returns the block corresponding to a given offset from the begining of the object
@@ -105,53 +117,25 @@ protected:
      * \param blockOffset Returns the block offset of the object offset
      * \return Constant iterator pointing to the block
      */
-    typedef util::const_locked_iterator<vector_block> const_locked_iterator;
-    const_locked_iterator get_block(size_t objectOffset, size_t *blockOffset = NULL) const;
+    typedef util::const_locking_iterator<vector_block> const_locking_iterator;
+    const_locking_iterator get_block(size_t objectOffset, size_t *blockOffset = NULL) const;
+
+    const_locking_iterator begin() const;
+    const_locking_iterator end() const;
+
 
     /** Execute a coherence operation on all the blocks of the object
      *
      * \param op Coherence operation to be performed
      * \return Error code
-     * \sa __impl::memory::Block::toHost
+     * \sa __impl::memory::Block::to_host
      * \sa __impl::memory::Block::toAccelerator
      */
-    hal::event_t coherenceOp(hal::event_t (protocol_interface::*op)(block_ptr, gmacError_t &),
-                             gmacError_t &err);
+    hal::event_ptr coherence_op(hal::event_ptr (protocol::*op)(block_ptr, gmacError_t &),
+                                gmacError_t &err);
 
-    template <typename T>
-    hal::event_t coherenceOp(hal::event_t (protocol_interface::*op)(block_ptr, T &, gmacError_t &),
-                             T &param,
-                             gmacError_t &err);
-
-#if 0
-    /**
-     * Execute a memory operation involving an I/O buffer on all the blocks of the object
-     *
-     * \param op Memory operation to be executed
-     * \param buffer I/O buffer used in the memory operation
-     * \param size Size (in bytes) of the memory operation
-     * \param bufferOffset Offset (in bytes) from the begining of the buffer to start performing the operation
-     * \param objectOffset Offset (in bytes) from the beginning of the block to start performing the operation
-     * \return Error code
-     * \sa __impl::memory::Block::copyToHost(core::io_buffer &, size_t, size_t, size_t) const
-     * \sa __impl::memory::Block::copyToAccelerator(core::io_buffer &, size_t, size_t, size_t) const
-     * \sa __impl::memory::Block::copyFromHost(core::io_buffer &, size_t, size_t, size_t) const
-     * \sa __impl::memory::Block::copyFromAccelerator(core::io_buffer &, size_t, size_t, size_t) const
-     */
-    TESTABLE gmacError_t memoryOp(protocol_interface::MemoryOp op,
-                                  core::io_buffer &buffer, size_t size, size_t bufferOffset, size_t objectOffset);
-#endif
-
-    /**
-     * Execute an operation on all the blocks of the object
-     * \param f Operation to be performed
-     * \param t Parameter to be passed
-     * \param s Parameter to be passed
-     * \return Error code
-     * \sa __impl::memory::Block::dump
-     */
-    template <typename T, typename S>
-    gmacError_t forEachBlock(gmacError_t (protocol_interface::*f)(block_ptr, T &, S), T &t, S s);
+    template <typename F>
+    hal::event_ptr coherence_op(F f, gmacError_t &err);
 
     /**
      * Default constructor
@@ -160,15 +144,15 @@ protected:
      * \param addr Host memory address where the object begins
      * \param size Size (in bytes) of the memory object
      */
-    object(protocol_interface &protocol, hostptr_t addr, size_t size);
+    object(protocol &protocol, hostptr_t addr, size_t size);
 
+public:
     //! Default destructor
     virtual ~object();
 
-public:
 #ifdef DEBUG
     unsigned getId() const;
-    unsigned getDumps(protocol::common::Statistic stat);
+    unsigned getDumps(protocols::common::Statistic stat);
 #endif
 
 
@@ -176,42 +160,42 @@ public:
      * Get the protocol that is managing the block
      * \return Memory protocol
      */
-    protocol_interface &getProtocol();
+    protocol &get_protocol();
 
     /**
      * Get the starting host memory address of the object
      *
      * \return Starting host memory address of the object
      */
-    hostptr_t addr() const;
+    hostptr_t get_start_addr() const;
 
     /**
      * Get the ending host memory address of the object
      *
      * \return Ending host memory address of the object
      */
-    hostptr_t end() const;
+    hostptr_t get_end_addr() const;
 
     /**
      * Get the offset to the beginning of the block that contains the address
      *
      * \return Offset to the beginning of the block that contains the address
      */
-    TESTABLE ssize_t blockBase(size_t offset) const;
+    TESTABLE ssize_t get_block_base(size_t offset) const;
 
     /**
      * Get the offset to the end of the block that contains the address
      *
      * \return Offset to the end of the block that contains the address
      */
-    TESTABLE size_t blockEnd(size_t offset) const;
+    TESTABLE size_t get_block_end(size_t offset) const;
 
     /**
      * Get the block size used by the object
      *
      * \return Block size used by the object
      */
-    size_t blockSize() const;
+    size_t get_block_size() const;
 
     /**
      * Get the size (in bytes) of the object
@@ -221,7 +205,7 @@ public:
     size_t size() const;
 
     /// Ensure the owner(s) invalidate memory when acquiring objects
-    virtual void modifiedObject() = 0;
+    virtual void modified_object() = 0;
 
     /**
      * Get the accelerator memory address where a host memory address from the object is mapped
@@ -246,14 +230,14 @@ public:
      * \param owner The new owner of the mode
      * \return Wether it was possible to add the owner or not
      */
-    virtual gmacError_t addOwner(core::address_space_ptr owner) = 0;
+    virtual gmacError_t add_owner(core::address_space_ptr owner) = 0;
 
     /**
      * Remove an owner from the object
      *
      * \param owner The owner to be removed
      */
-    virtual gmacError_t removeOwner(core::address_space_const_ptr owner) = 0;
+    virtual gmacError_t remove_owner(core::address_space_const_ptr owner) = 0;
 
     /**
      * Acquire the ownership of the object for the CPU
@@ -261,7 +245,7 @@ public:
      * \param prot Access type of the previous execution on the accelerator
      * \return Error code
      */
-    hal::event_t acquire(GmacProtection &prot, gmacError_t &err);
+    hal::event_ptr acquire(GmacProtection prot, gmacError_t &err);
 
 #ifdef USE_VM
     /**
@@ -276,7 +260,7 @@ public:
      *
      * \return Error code
      */
-    hal::event_t release(gmacError_t &err);
+    hal::event_ptr release(bool flushDirty, gmacError_t &err);
 
     /** Tells if the object has been released
      *
@@ -284,26 +268,19 @@ public:
      */
     bool is_released() const;
 
-    /** Releases the ownership of the object for the CPU and notifies the
-     * protocol that all the blocks are released
-     *
-     * \return Error code
-     */
-    hal::event_t releaseBlocks(gmacError_t &err);
-
     /**
      * Ensures that the object host memory contains an updated copy of the data
      *
      * \return Error code
      */
-    hal::event_t toHost(gmacError_t &err);
+    hal::event_ptr to_host(gmacError_t &err);
 
     /**
      * Ensures that the object accelerator memory contains an updated copy of the data
      *
      * \return Error code
      */
-    hal::event_t toAccelerator(gmacError_t &err);
+    hal::event_ptr to_device(gmacError_t &err);
 
 
     /**
@@ -314,7 +291,7 @@ public:
      *   \sa __impl::memory::protcol::common::Statistitc
      * \return Error code
      */
-    gmacError_t dump(std::ostream &param, protocol::common::Statistic stat);
+    gmacError_t dump(std::ostream &param, protocols::common::Statistic stat);
 
     /**
      * Signal handler for faults caused due to memory reads
@@ -322,7 +299,7 @@ public:
      * \param addr Host memory address causing the fault
      * \return Error code
      */
-    TESTABLE hal::event_t signal_read(hostptr_t addr, gmacError_t &err);
+    TESTABLE hal::event_ptr signal_read(hostptr_t addr, gmacError_t &err);
 
     /**
      * Signal handler for faults caused due to memory writes
@@ -330,36 +307,9 @@ public:
      * \param addr Host memory address causing the fault
      * \return Error code
      */
-    TESTABLE hal::event_t signal_write(hostptr_t addr, gmacError_t &err);
-
-#if 0
-    /**
-     * Copies the data from the object to an I/O buffer
-     *
-     * \param buffer I/O buffer where the data will be copied
-     * \param size Size (in bytes) of the data to be copied
-     * \param bufferOffset Offset (in bytes) from the begining of the I/O buffer to start copying the data to
-     * \param objectOffset Offset (in bytes) from the begining og the object to start copying data from
-     * \return Error code
-     */
-    TESTABLE gmacError_t copyToBuffer(core::io_buffer &buffer, size_t size,
-                                      size_t bufferOffset = 0, size_t objectOffset = 0);
-
-    /**
-     * Copies the data from an I/O buffer to the object
-     *
-     * \param buffer I/O buffer where the data will be copied from
-     * \param size Size (in bytes) of the data to be copied
-     * \param bufferOffset Offset (in bytes) from the begining of the I/O buffer to start copying the data from
-     * \param objectOffset Offset (in bytes) from the begining og the object to start copying data to
-     * \return Error code
-     */
-    TESTABLE gmacError_t copyFromBuffer(core::io_buffer &buffer, size_t size,
-                                        size_t bufferOffset = 0, size_t objectOffset = 0);
-#endif
+    TESTABLE hal::event_ptr signal_write(hostptr_t addr, gmacError_t &err);
 
     gmacError_t to_io_device(hal::device_output &output, size_t objOff, size_t count);
-
     gmacError_t from_io_device(size_t objOff, hal::device_input &input, size_t count);
 
     /**
@@ -380,7 +330,7 @@ public:
      * this method the memory object will always remain in host memory
      * \return Error code
      */
-    virtual gmacError_t mapToAccelerator() = 0;
+    virtual gmacError_t map_to_device() = 0;
 
     //! Removes the object to the coherence domain.
     /*!
@@ -388,7 +338,7 @@ public:
         this method the object coherency is managed by the library
         \return Error code
     */
-    virtual gmacError_t unmapFromAccelerator() = 0;
+    virtual gmacError_t unmap_from_device() = 0;
 
     /**
      * Copies data from host memory to an object
@@ -398,8 +348,8 @@ public:
      * \param count Size (in bytes) of the data to be copied
      * \return Error code
      */
-    gmacError_t memcpyToObject(size_t objOffset,
-                               const hostptr_t src, size_t count);
+    gmacError_t memcpy_to_object(size_t objOffset,
+                                 const hostptr_t src, size_t count);
 
     /** Copy data from object to object
      * \param dstObj Destination object
@@ -410,9 +360,9 @@ public:
      * \param count Size (in bytes) of the data to be copied
      * \return Error code
      */
-    gmacError_t memcpyObjectToObject(object &dstObj, size_t dstOffset,
-                                     size_t srcOffset,
-                                     size_t count);
+    gmacError_t memcpy_object_to_object(object &dstObj, size_t dstOffset,
+                                        size_t srcOffset,
+                                        size_t count);
 
     /**
      * Copies data from an object to host memory
@@ -422,8 +372,10 @@ public:
      * \param count Size (in bytes) of the data to be copied
      * \return Error code
      */
-    gmacError_t memcpyFromObject(hostptr_t dst,
-                                 size_t objOffset, size_t count);
+    gmacError_t memcpy_from_object(hostptr_t dst,
+                                   size_t objOffset, size_t count);
+    
+    hal::event_ptr get_last_event(hal::event_ptr::type type) const;
 };
 
 }}

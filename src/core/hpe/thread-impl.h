@@ -26,7 +26,7 @@
 
 #include "core/hpe/process.h"
 
-#include "util/Private.h"
+#include "util/private.h"
 
 #include "vdevice.h"
 

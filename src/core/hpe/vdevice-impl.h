@@ -71,14 +71,7 @@ vdevice::eventStream()
 }
 
 inline
-util::shared_ptr<address_space>
-vdevice::get_address_space()
-{
-    return aspace_;
-}
-
-inline
-util::shared_ptr<const address_space>
+address_space_ptr
 vdevice::get_address_space() const
 {
     return aspace_;

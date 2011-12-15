@@ -2,7 +2,7 @@
 
 #include "core/address_space.h"
 
-#include "Memory.h"
+#include "memory.h"
 #include "object.h"
 
 namespace __impl { namespace memory {
@@ -16,48 +16,49 @@ object::~object()
     vector_block::iterator i;
     lock_write();
     gmacError_t err;
-    hal::event_t evt;
-    evt = coherenceOp(&protocol_interface::deleteBlock, err);
+    hal::event_ptr evt;
+    evt = coherence_op(&protocol::remove_block, err);
     ASSERTION(err == gmacSuccess);
     blocks_.clear();
     unlock();
 }
 
-object::const_locked_iterator
+object::const_locking_iterator
 object::get_block(size_t objectOffset, size_t *blockOffset) const
 {
 	if (objectOffset > size()) {
-		return const_locked_iterator(blocks_.end(), blocks_);
+		return const_locking_iterator(blocks_.end(), blocks_);
 	}
 
 	if (blockOffset != NULL) {
 		*blockOffset = objectOffset % config::params::BlockSize;
 	}
 
-	return const_locked_iterator(blocks_.begin() + (objectOffset / config::params::BlockSize),
+	return const_locking_iterator(blocks_.begin() + (objectOffset / config::params::BlockSize),
 			                     blocks_);
 }
 
-hal::event_t
-object::coherenceOp(hal::event_t (protocol_interface::*f)(block_ptr, gmacError_t &), gmacError_t &err)
+object::const_locking_iterator
+object::begin() const
 {
-    hal::event_t ret;
-    for(const_locked_iterator i = get_block(0, NULL); i != blocks_.end(); ++i) {
-        ret = (protocol_.*f)(*i, err);
-        if(err != gmacSuccess) break;
-    }
-    return ret;
+    return const_locking_iterator(blocks_.begin(), blocks_);
+}
+
+object::const_locking_iterator
+object::end() const
+{
+    return const_locking_iterator(blocks_.end(), blocks_);
 }
 
 gmacError_t
 object::to_io_device(hal::device_output &output, size_t objOff, size_t count)
 {
-    hal::event_t event;
+    hal::event_ptr event;
     gmacError_t ret = gmacSuccess;
     size_t blockOffset = 0;
     size_t off = 0;
-    const_locked_iterator i = get_block(objOff, &blockOffset);
-    for(; count > 0 && i != blocks_.end(); ++i) {
+    const_locking_iterator i = get_block(objOff, &blockOffset);
+    for(; count > 0 && i != end(); ++i) {
         block_ptr block = *i;
         size_t blockSize = block->size() - blockOffset;
         blockSize = count < blockSize? count: blockSize;
@@ -75,11 +76,11 @@ object::to_io_device(hal::device_output &output, size_t objOff, size_t count)
 gmacError_t
 object::from_io_device(size_t objOff, hal::device_input &input, size_t count)
 {
-    hal::event_t event;
+    hal::event_ptr event;
     gmacError_t ret = gmacSuccess;
     size_t blockOffset = 0;
     size_t off = 0;
-    const_locked_iterator i = get_block(objOff, &blockOffset);
+    const_locking_iterator i = get_block(objOff, &blockOffset);
     for(; i != blocks_.end() && count > 0; ++i) {
         block_ptr block = *i;
         size_t blockSize = block->size() - blockOffset;
@@ -97,7 +98,7 @@ object::from_io_device(size_t objOff, hal::device_input &input, size_t count)
 }
 
 #if 0
-gmacError_t object::memoryOp(protocol_interface::MemoryOp op,
+gmacError_t object::memoryOp(protocol::MemoryOp op,
                              core::io_buffer &buffer, size_t size, size_t bufferOffset, size_t objectOffset)
 {
     gmacError_t ret = gmacSuccess;
@@ -105,13 +106,13 @@ gmacError_t object::memoryOp(protocol_interface::MemoryOp op,
     vector_block::const_iterator i = get_block(objectOffset, blockOffset);
     for(; i != blocks_.end() && size > 0; i++) {
         block &block = *i->second;
-        size_t blockSize = block.size() - blockOffset;
-        blockSize = size < blockSize? size: blockSize;
+        size_t get_block_size = block.size() - blockOffset;
+        get_block_size = size < get_block_size? size: get_block_size;
         buffer.wait();
-        ret = block.memoryOp(op, buffer, blockSize, bufferOffset, blockOffset);
+        ret = block.memoryOp(op, buffer, get_block_size, bufferOffset, blockOffset);
         blockOffset = 0;
-        bufferOffset += blockSize;
-        size -= blockSize;
+        bufferOffset += get_block_size;
+        size -= get_block_size;
     }
     return ret;
 }
@@ -119,10 +120,10 @@ gmacError_t object::memoryOp(protocol_interface::MemoryOp op,
 
 gmacError_t object::memset(size_t offset, int v, size_t size)
 {
-	hal::event_t event;
+	hal::event_ptr event;
     gmacError_t ret = gmacSuccess;
     size_t blockOffset = 0;
-    const_locked_iterator i = get_block(offset, &blockOffset);
+    const_locking_iterator i = get_block(offset, &blockOffset);
     for(; i != blocks_.end() && size > 0; ++i) {
         block_ptr block = *i;
         size_t blockSize = block->size() - blockOffset;
@@ -135,18 +136,18 @@ gmacError_t object::memset(size_t offset, int v, size_t size)
 }
 
 gmacError_t
-object::memcpyToObject(size_t objOff, const hostptr_t src, size_t size)
+object::memcpy_to_object(size_t objOff, const hostptr_t src, size_t size)
 {
-    hal::event_t event;
+    hal::event_ptr event;
     gmacError_t ret = gmacSuccess;
     size_t blockOffset = 0;
     size_t off = 0;
-    const_locked_iterator i = get_block(objOff, &blockOffset);
+    const_locking_iterator i = get_block(objOff, &blockOffset);
     for(; i != blocks_.end() && size > 0; ++i) {
         block_ptr block = *i;
         size_t blockSize = block->size() - blockOffset;
         blockSize = size < blockSize? size: blockSize;
-        event = protocol_.copyToBlock(block, blockOffset,
+        event = protocol_.copy_to_block(block, blockOffset,
                                              src + off,
                                              blockSize, ret);
         //block.memoryOp(op, buffer, blockSize, bufferOffset, blockOffset);
@@ -158,40 +159,40 @@ object::memcpyToObject(size_t objOff, const hostptr_t src, size_t size)
 }
 
 gmacError_t
-object::memcpyObjectToObject(object &dstObj, size_t dstOffset, size_t srcOffset, size_t size)
+object::memcpy_object_to_object(object &dstObj, size_t dstOffset, size_t srcOffset, size_t size)
 {
     trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
 
-    hal::event_t event;
+    hal::event_ptr event;
 
-    const_locked_iterator i = get_block(srcOffset);
-    TRACE(LOCAL, "FP: %p "FMT_SIZE, dstObj.addr() + dstOffset, size);
-    const_locked_iterator j = dstObj.get_block(dstOffset);
-    TRACE(LOCAL, "FP: %p vs %p "FMT_SIZE, (*j)->addr(), dstObj.addr() + dstOffset, size);
+    const_locking_iterator i = get_block(srcOffset);
+    TRACE(LOCAL, "FP: %p "FMT_SIZE, dstObj.get_start_addr() + dstOffset, size);
+    const_locking_iterator j = dstObj.get_block(dstOffset);
+    TRACE(LOCAL, "FP: %p vs %p "FMT_SIZE, (*j)->addr(), dstObj.get_start_addr() + dstOffset, size);
     size_t left = size;
     while (left > 0) {
-        size_t copySize = left < dstObj.blockEnd(dstOffset)? left: dstObj.blockEnd(dstOffset);
+        size_t copySize = left < dstObj.get_block_end(dstOffset)? left: dstObj.get_block_end(dstOffset);
         // Single copy from the source to copy the block
-        if (copySize <= blockEnd(srcOffset)) {
+        if (copySize <= get_block_end(srcOffset)) {
             TRACE(LOCAL, "FP: Copying1: "FMT_SIZE" bytes", copySize);
-            event = protocol_.copyBlockToBlock(*j, dstOffset % blockSize(),
-                                               *i, srcOffset % blockSize(), copySize, ret);
+            event = protocol_.copy_block_to_block(*j, dstOffset % get_block_size(),
+                                               *i, srcOffset % get_block_size(), copySize, ret);
             ASSERTION(ret == gmacSuccess);
             ++i;
         }
         else { // Two copies from the source to copy the block
             TRACE(LOCAL, "FP: Copying2: "FMT_SIZE" bytes", copySize);
-            size_t firstCopySize = blockEnd(srcOffset);
+            size_t firstCopySize = get_block_end(srcOffset);
             size_t secondCopySize = copySize - firstCopySize;
 
-            event = protocol_.copyBlockToBlock(*j, dstOffset % blockSize(),
-                                               *i, srcOffset % blockSize(),
+            event = protocol_.copy_block_to_block(*j, dstOffset % get_block_size(),
+                                               *i, srcOffset % get_block_size(),
                                                firstCopySize, ret);
             ASSERTION(ret == gmacSuccess);
             ++i;
-            event = protocol_.copyBlockToBlock(*j, (dstOffset + firstCopySize) % blockSize(),
-                                               *i, (srcOffset + firstCopySize) % blockSize(),
+            event = protocol_.copy_block_to_block(*j, (dstOffset + firstCopySize) % get_block_size(),
+                                               *i, (srcOffset + firstCopySize) % get_block_size(),
                                                secondCopySize, ret);
             ASSERTION(ret == gmacSuccess);
         }
@@ -201,8 +202,8 @@ object::memcpyObjectToObject(object &dstObj, size_t dstOffset, size_t srcOffset,
         ++j;
     }
 
-    if (event.is_valid()) {
-        ret = event.sync();
+    if (event) {
+        ret = event->sync();
     }
 
 #if 0
@@ -222,9 +223,9 @@ object::memcpyObjectToObject(object &dstObj, size_t dstOffset, size_t srcOffset,
     size_t left = size;
 
     // Adjust the first copy to deal with a single block
-    size_t copySize = size < dstObj.blockEnd(dstOffset)? size: dstObj.blockEnd(dstOffset);
+    size_t copySize = size < dstObj.get_block_end(dstOffset)? size: dstObj.get_block_end(dstOffset);
 
-    size_t bufSize = size < dstObj.blockSize()? size: dstObj.blockSize();
+    size_t bufSize = size < dstObj.get_block_size()? size: dstObj.get_block_size();
     active = owner().create_io_buffer(bufSize, GMAC_PROT_READWRITE);
     ASSERTION(bufSize >= copySize);
 
@@ -235,12 +236,12 @@ object::memcpyObjectToObject(object &dstObj, size_t dstOffset, size_t srcOffset,
     }
 
     // Single copy from the source to fill the buffer
-    if (copySize <= blockEnd(srcOffset)) {
+    if (copySize <= get_block_end(srcOffset)) {
         ret = copyToBuffer(*active, copySize, 0, srcOffset);
         ASSERTION(ret == gmacSuccess);
     }
     else { // Two copies from the source to fill the buffer
-        size_t firstCopySize = blockEnd(srcOffset);
+        size_t firstCopySize = get_block_end(srcOffset);
         size_t secondCopySize = copySize - firstCopySize;
         ASSERTION(bufSize >= firstCopySize + secondCopySize);
 
@@ -262,19 +263,19 @@ object::memcpyObjectToObject(object &dstObj, size_t dstOffset, size_t srcOffset,
         srcOffset += copySize;
         dstOffset += copySize;
         if(left > 0) {
-            copySize = (left < dstObj.blockSize()) ? left: dstObj.blockSize();
+            copySize = (left < dstObj.get_block_size()) ? left: dstObj.get_block_size();
             ASSERTION(bufSize >= copySize);
             // Avoid overwritting a buffer that is already in use
             passive->wait();
 
             // Request the next copy
             // Single copy from the source to fill the buffer
-            if (copySize <= blockEnd(srcOffset)) {
+            if (copySize <= get_block_end(srcOffset)) {
                 ret = copyToBuffer(*passive, copySize, 0, srcOffset);
                 ASSERTION(ret == gmacSuccess);
             }
             else { // Two copies from the source to fill the buffer
-                size_t firstCopySize = blockEnd(srcOffset);
+                size_t firstCopySize = get_block_end(srcOffset);
                 size_t secondCopySize = copySize - firstCopySize;
                 ASSERTION(bufSize >= firstCopySize + secondCopySize);
 
@@ -306,18 +307,18 @@ object::memcpyObjectToObject(object &dstObj, size_t dstOffset, size_t srcOffset,
 }
 
 gmacError_t
-object::memcpyFromObject(hostptr_t dst, size_t objOff, size_t size)
+object::memcpy_from_object(hostptr_t dst, size_t objOff, size_t size)
 {
-    hal::event_t event;
+    hal::event_ptr event;
     gmacError_t ret = gmacSuccess;
     size_t blockOffset = 0;
     size_t off = 0;
-    const_locked_iterator i = get_block(objOff);
+    const_locking_iterator i = get_block(objOff);
     for(; i != blocks_.end() && size > 0; ++i) {
         block_ptr block = *i;
         size_t blockSize = block->size() - blockOffset;
         blockSize = size < blockSize? size: blockSize;
-        event = protocol_.copyFromBlock(dst + off,
+        event = protocol_.copy_from_block(dst + off,
                                         block, blockOffset,
                                         blockSize, ret);
         //block.memoryOp(op, buffer, blockSize, bufferOffset, blockOffset);
@@ -339,9 +340,9 @@ object::memcpyFromObject(hostptr_t dst, size_t objOff, size_t size)
     size_t left = size;
 
     // Adjust the first copy to deal with a single block
-    size_t copySize = size < blockEnd(objOff)? size: blockEnd(objOff);
+    size_t copySize = size < get_block_end(objOff)? size: get_block_end(objOff);
 
-    size_t bufSize = size < blockSize()? size: blockSize();
+    size_t bufSize = size < get_block_size()? size: get_block_size();
     active = owner().create_io_buffer(bufSize, GMAC_PROT_READ);
     ASSERTION(bufSize >= copySize);
 
@@ -389,14 +390,14 @@ object::memcpyFromObject(hostptr_t dst, size_t objOff, size_t size)
 #endif
 }
 
-hal::event_t
+hal::event_ptr
 object::signal_read(hostptr_t addr, gmacError_t &err)
 {
-    hal::event_t ret;
+    hal::event_ptr ret;
     lock_read();
     /// \todo is this validate necessary?
     //validate();
-    const_locked_iterator i = get_block(addr - addr_);
+    const_locking_iterator i = get_block(addr - addr_);
     if(i == blocks_.end()) err = gmacErrorInvalidValue;
     else if((*i)->addr() > addr) err = gmacErrorInvalidValue;
     else ret = protocol_.signal_read(*i, addr, err);
@@ -404,13 +405,13 @@ object::signal_read(hostptr_t addr, gmacError_t &err)
     return ret;
 }
 
-hal::event_t
+hal::event_ptr
 object::signal_write(hostptr_t addr, gmacError_t &err)
 {
-    hal::event_t ret;
+    hal::event_ptr ret;
     lock_read();
-    modifiedObject();
-    const_locked_iterator i = get_block(addr - addr_);
+    modified_object();
+    const_locking_iterator i = get_block(addr - addr_);
     if(i == blocks_.end()) err = gmacErrorInvalidValue;
     else if((*i)->addr() > addr) err = gmacErrorInvalidValue;
     else ret = protocol_.signal_write(*i, addr, err);
@@ -419,14 +420,20 @@ object::signal_write(hostptr_t addr, gmacError_t &err)
 }
 
 gmacError_t
-object::dump(std::ostream &out, protocol::common::Statistic stat)
+object::dump(std::ostream &out, protocols::common::Statistic stat)
 {
 #ifdef DEBUG
     lock_write();
     std::ostringstream oss;
-    oss << (void *) addr();
+    oss << (void *) get_start_addr();
     out << oss.str() << " ";
-    gmacError_t ret = forEachBlock(&protocol_interface::dump, out, stat);
+    gmacError_t ret;
+    for (vector_block::iterator it = blocks_.begin(); it != blocks_.end(); it++) {
+        ret = protocol_.dump(*it, out, stat);
+    }
+
+    ASSERTION(ret == gmacSuccess);
+
     out << std::endl;
     unlock();
     if (dumps_.find(stat) == dumps_.end()) dumps_[stat] = 0;

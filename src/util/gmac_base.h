@@ -34,9 +34,10 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_UTIL_GMAC_BASE_H_
 #define GMAC_UTIL_GMAC_BASE_H_
 
-#include "Atomics.h"
+#include "trace/logger.h"
+
+#include "atomics.h"
 #include "lock.h"
-#include "Logger.h"
 #include "unique.h"
 
 namespace __impl { namespace util {

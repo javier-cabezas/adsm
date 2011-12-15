@@ -10,26 +10,6 @@
 
 namespace __impl { namespace core { namespace hpe {
 
-#if 0
-context *
-resource_manager::create_context(THREAD_T id, address_space &aspace)
-{
-    context *ctx = NULL;
-
-    map_aspace_resources::iterator it = aspaceResourcesMap_.find(&aspace);
-
-    if (it != aspaceResourcesMap_.end()) {
-        address_space_resources &resources = it->second;
-        ctx = new context(*resources.context_, *resources.streamLaunch_,
-                                               *resources.streamToAccelerator_,
-                                               *resources.streamToHost_,
-                                               *resources.streamAccelerator_);
-    }
-
-    return ctx;
-}
-#endif
-
 resource_manager::resource_manager(process &proc) :
     proc_(proc),
     aspaceMap_("aspace_map"),

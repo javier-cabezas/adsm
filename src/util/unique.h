@@ -34,7 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_UTIL_UNIQUE_H_
 #define GMAC_UTIL_UNIQUE_H_
 
-#include "Atomics.h"
+#include "atomics.h"
 
 namespace __impl { namespace util {
 

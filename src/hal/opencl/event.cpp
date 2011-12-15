@@ -161,16 +161,17 @@ list_event::size() const
 }
 
 void
-list_event::add_event(event_t event) 
+list_event::add_event(event_ptr event) 
 {
-    locker::lock_read(**event);
-    if (std::find(begin(), end(), *event) != end()) {
-        cl_event ev = event();
+    locker::lock_read(*event);
+    util::shared_ptr<_event_t> ptr;
+    if (std::find(begin(), end(), ptr) != end()) {
+        cl_event ev = (*event)();
         cl_int res = clRetainEvent(ev);
         ASSERTION(res == CL_SUCCESS);
-        Parent::push_back(*event);
+        Parent::push_back(ptr);
     }
-    locker::unlock(**event);
+    locker::unlock(*event);
 }
 
 }}}

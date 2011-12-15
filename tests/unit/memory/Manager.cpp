@@ -118,31 +118,31 @@ TEST_F(ManagerTest, Coherence)
     ASSERT_TRUE(manager->translate(Thread::getCurrentVirtualDevice(), ptr).get() != 0);
 
     ObjectMap &map = Thread::getCurrentVirtualDevice().getAddressSpace();
-	ASSERT_TRUE(map.hasModifiedObjects());
+	ASSERT_TRUE(map.has_modified_objects());
 
     for(int n = 0; n < 16; n++) {
 
 	    for(size_t s = 0; s < Size_; s++) {
 	        ptr[s] = (s & 0xff);
 	    }
-        ASSERT_TRUE(map.hasModifiedObjects());
+        ASSERT_TRUE(map.has_modified_objects());
 	
     	ASSERT_EQ(gmacSuccess, manager->releaseObjects(Thread::getCurrentVirtualDevice()));
-        ASSERT_TRUE(map.releasedObjects());
+        ASSERT_TRUE(map.released_objects());
         
     	ASSERT_EQ(gmacSuccess, manager->acquireObjects(Thread::getCurrentVirtualDevice()));
-        ASSERT_FALSE(map.releasedObjects());
-	    ASSERT_FALSE(map.hasModifiedObjects());
+        ASSERT_FALSE(map.released_objects());
+	    ASSERT_FALSE(map.has_modified_objects());
 
 	    for(size_t s = 0; s < Size_; s++) {
 	        EXPECT_EQ(ptr[s], (s & 0xff));
 	    }
-        ASSERT_FALSE(map.hasModifiedObjects());
+        ASSERT_FALSE(map.has_modified_objects());
 
         for(size_t s = 0; s < Size_; s++) {
 	        ptr[s] = 0x0;
 	    }
-        ASSERT_TRUE(map.hasModifiedObjects());
+        ASSERT_TRUE(map.has_modified_objects());
     }
 
     ASSERT_EQ(gmacSuccess, manager->free(Thread::getCurrentVirtualDevice(), ptr));

@@ -8,15 +8,15 @@ buddy::buddy(hostptr_t addr, size_t size) :
     __impl::util::allocator::buddy(addr, size)
 {}
 
-off_t buddy::getFromList(uint8_t i)
+off_t buddy::get_from_list(uint8_t i)
 {
-    return __impl::util::allocator::buddy::getFromList(i);
+    return __impl::util::allocator::buddy::get_from_list(i);
 }
 
-void buddy::putToList(off_t addr, uint8_t i)
+void buddy::put_to_list(off_t addr, uint8_t i)
 {
     REQUIRES(addr >= 0 && size_t(addr) < size_);
-    return __impl::util::allocator::buddy::putToList(addr, i);
+    return __impl::util::allocator::buddy::put_to_list(addr, i);
 }
 
 hostptr_t buddy::get(size_t &size)

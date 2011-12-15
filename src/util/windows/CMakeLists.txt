@@ -4,11 +4,11 @@ set(util_os_SRC
     lock.h
     lock-impl.h
     lock.cpp
-    Private.h
-    Private-impl.h
-    Semaphore.h
-    Semaphore-impl.h
-    Semaphore.cpp
+    private.h
+    private-impl.h
+    semaphore.h
+    semaphore-impl.h
+    semaphore.cpp
     Thread-impl.h
 )
 

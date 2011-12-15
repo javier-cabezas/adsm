@@ -124,7 +124,7 @@ event_deleter::operator()(_event_t *ev)
 }
 
 inline
-event_t::event_t(bool async, _event_t::type t, context_t &context) :
+event_ptr::event_ptr(bool async, _event_t::type t, context_t &context) :
     ptrEvent_(context.get_new_event(async, t), event_deleter())
 {
 }

@@ -1,7 +1,7 @@
 #ifndef GMAC_HAL_CUDA_CONTEXT_IMPL_H_
 #define GMAC_HAL_CUDA_CONTEXT_IMPL_H_
 
-#include "util/Logger.h"
+#include "trace/logger.h"
 
 namespace __impl { namespace hal { namespace cuda {
 

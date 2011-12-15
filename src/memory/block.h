@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010, 2011 University of Illinois
+/* Copyright (c) 2009-2011sity of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -38,12 +38,12 @@ WITH THE SOFTWARE.  */
 #include "config/config.h"
 
 #include "include/gmac/types.h"
-#include "memory/Protocol.h"
+#include "memory/protocol.h"
+#include "trace/logger.h"
 #include "util/lock.h"
-#include "util/Logger.h"
 #include "util/Reference.h"
 
-#include "util/UniquePtr.h"
+#include "util/smart_ptr.h"
 
 /** Description for __impl. */
 namespace __impl {
@@ -115,8 +115,8 @@ protected:
      * Ensures that the host memory has a valid and accessible copy of the data
      * \return Error code
      */
-    virtual hal::event_t to_accelerator(unsigned blockOff, size_t count, gmacError_t &err) = 0;
-    hal::event_t to_accelerator(gmacError_t &err)
+    virtual hal::event_ptr to_accelerator(unsigned blockOff, size_t count, gmacError_t &err) = 0;
+    hal::event_ptr to_accelerator(gmacError_t &err)
     {
         return to_accelerator(0, size_, err);
     }
@@ -125,7 +125,7 @@ protected:
      * Ensures that the host memory has a valid and accessible copy of the data
      * \return Error code
      */
-    hal::event_t to_host(gmacError_t &err)
+    hal::event_ptr to_host(gmacError_t &err)
     {
         return to_host(0, size_, err);
     }
@@ -136,7 +136,7 @@ protected:
      * \param count Size (in bytes)
      * \return Error code
      */
-    virtual hal::event_t to_host(unsigned blockOff, size_t count, gmacError_t &err) = 0;
+    virtual hal::event_ptr to_host(unsigned blockOff, size_t count, gmacError_t &err) = 0;
 
 public:
     /**
@@ -163,7 +163,7 @@ public:
      * \param stat Statistic to be dumped
      * \return Error code
      */
-    gmacError_t dump(std::ostream &param, protocol::common::Statistic stat);
+    gmacError_t dump(std::ostream &param, protocols::common::Statistic stat);
 
     hostptr_t get_shadow() const;
 };
