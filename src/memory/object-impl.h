@@ -1,6 +1,8 @@
 #ifndef GMAC_MEMORY_OBJECT_IMPL_H_
 #define GMAC_MEMORY_OBJECT_IMPL_H_
 
+#include <functional>
+
 #include <fstream>
 #include <sstream>
 
@@ -10,6 +12,8 @@
 #include "trace/logger.h"
 
 namespace __impl { namespace memory {
+
+#define protocol_member(f,...) util::bind(std::mem_fn(&f), &protocol_, std::placeholders::_1, __VA_ARGS__)
 
 inline object::object(protocol &protocol, hostptr_t addr, size_t size) :
     Lock("object"),
@@ -171,14 +175,8 @@ object::acquire(GmacProtection prot, gmacError_t &err)
     if (released_) {
         TRACE(LOCAL, "Acquiring object %p", addr_);
 
-        ret = coherence_op([&protocol_, prot, &err](block_ptr ptr) -> hal::event_ptr
-                           {
-                               hal::event_ptr evt;
-                               if (err == gmacSuccess) {
-                                   evt = protocol_.acquire(ptr, prot, err);
-                               }
-                               return evt;
-                           });
+        auto f =
+        ret = coherence_op(protocol_member(protocol::acquire, prot, err));
         if (err == gmacSuccess) {
             set_last_event(ret);
         }
