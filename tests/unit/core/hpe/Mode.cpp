@@ -45,14 +45,14 @@ TEST_F(ModeTest, MemoryObject) {
 	ASSERT_TRUE(Process_ != NULL);
 
     __impl::memory::ObjectMap &map = Mode_->getAddressSpace();
-    object *obj = map.getProtocol().createObject(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_READ, 0);
+    object *obj = map.get_protocol().create_object(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(obj != NULL);
     map.addObject(*obj);
     const hostptr_t addr = obj->addr();
     ASSERT_TRUE(addr != 0);
     obj->decRef();
 
-    object *ref = map.getObject(addr);
+    object *ref = map.get_object(addr);
     ASSERT_TRUE(ref != NULL);
     ASSERT_EQ(obj, ref);
     map.removeObject(*obj);
@@ -65,9 +65,9 @@ TEST_F(ModeTest, MemoryObjectMap){
 	ASSERT_TRUE(Process_ != NULL);
 
 	__impl::memory::ObjectMap &map = Mode_->getAddressSpace();
-	object *obj = map.getProtocol().createObject(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_WRITE, 0);
+	object *obj = map.get_protocol().create_object(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_WRITE, 0);
 	ASSERT_TRUE(obj != NULL);
-	object *obj2 = map.getProtocol().createObject(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_WRITE, 0);
+	object *obj2 = map.get_protocol().create_object(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_WRITE, 0);
     ASSERT_TRUE(obj2 != NULL);
 	ASSERT_FALSE(map.hasObject(*obj));
     ASSERT_TRUE(map.addObject(*obj));
@@ -78,17 +78,17 @@ TEST_F(ModeTest, MemoryObjectMap){
     for(size_t s = 0; s < size_; s++) {
        ptr[s] = (s & 0xff);
     }
-	size_t size_all = map.memorySize();
+	size_t size_all = map.get_memory_size();
 	ASSERT_EQ(size_, size_all);
 	ASSERT_TRUE(map.addObject(*obj2));
-	size_all = map.memorySize();
+	size_all = map.get_memory_size();
 	ASSERT_EQ(size_*2, size_all);
-	ASSERT_TRUE(map.hasModifiedObjects());
+	ASSERT_TRUE(map.has_modified_objects());
 	ASSERT_EQ(gmacSuccess, map.releaseObjects());
-	ASSERT_TRUE(map.releasedObjects());
-	ASSERT_TRUE(map.hasModifiedObjects());
+	ASSERT_TRUE(map.released_objects());
+	ASSERT_TRUE(map.has_modified_objects());
 	ASSERT_EQ(gmacSuccess, map.acquireObjects());
-	ASSERT_FALSE(map.releasedObjects());
+	ASSERT_FALSE(map.released_objects());
 
 	for(size_t s = 0; s <obj->size(); s++) {
 	        EXPECT_EQ(ptr[s], (s & 0xff));

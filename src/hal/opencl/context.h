@@ -44,8 +44,8 @@ class GMAC_LOCAL context_t :
 
     friend class buffer_t;
     friend class stream_t;
+    friend class event_ptr;
     friend class _event_common_t;
-    friend class event_t;
     friend class event_deleter;
     friend class detail::stream_t<backend_traits, implementation_traits>;
 
@@ -55,15 +55,15 @@ class GMAC_LOCAL context_t :
     buffer_t *alloc_buffer(size_t size, GmacProtection hint, stream_t &stream, gmacError_t &err);
     gmacError_t free_buffer(buffer_t &buffer);
 
-    event_t copy_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
-    event_t copy_backend(ptr_t dst, device_input &input, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
-    event_t copy_backend(device_output &output, const ptr_t src, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
-    event_t memset_backend(ptr_t dst, int c, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
+    event_ptr copy_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
+    event_ptr copy_backend(ptr_t dst, device_input &input, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
+    event_ptr copy_backend(device_output &output, const ptr_t src, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
+    event_ptr memset_backend(ptr_t dst, int c, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
 
-    event_t copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
-    event_t copy_async_backend(ptr_t dst, device_input &input, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
-    event_t copy_async_backend(device_output &output, const ptr_t src, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
-    event_t memset_async_backend(ptr_t dst, int c, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
+    event_ptr copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
+    event_ptr copy_async_backend(ptr_t dst, device_input &input, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
+    event_ptr copy_async_backend(device_output &output, const ptr_t src, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
+    event_ptr memset_async_backend(ptr_t dst, int c, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
 
 public:
     context_t(cl_context ctx, device &device);

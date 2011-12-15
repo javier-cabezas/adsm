@@ -45,10 +45,10 @@ protected:
 	object(hostptr_t addr, size_t size);
     virtual ~object();
 
-    gmacError_t memoryOp(__impl::memory::protocol_interface::MemoryOp op, __impl::core::io_buffer &buffer, size_t size, size_t bufferOffset, size_t objectOffset);
+    gmacError_t memoryOp(__impl::memory::protocol::MemoryOp op, __impl::core::io_buffer &buffer, size_t size, size_t bufferOffset, size_t objectOffset);
 public:
-    ssize_t blockBase(size_t offset) const;
-    size_t blockEnd(size_t offset) const;
+    ssize_t get_block_base(size_t offset) const;
+    size_t get_block_end(size_t offset) const;
 
 	gmacError_t signal_read(hostptr_t addr);
     gmacError_t signal_write(hostptr_t addr);

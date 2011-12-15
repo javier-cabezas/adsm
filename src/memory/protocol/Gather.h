@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010, 2011 University of Illinois
+/* Copyright (c) 2009-2011sity of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -57,7 +57,7 @@ class object;
 class block;
 template<typename T> class StateBlock;
 
-namespace protocol_interface {
+namespace protocol {
 
 class GMAC_LOCAL GatherBuffer : public gmac::util::Lock {
     std::map<accptr_t, block *> subBlockList_;
@@ -67,7 +67,7 @@ public:
 
     bool addSubBlock(block &b, unsigned index);
     bool removeSubBlock(const block &b, unsigned index);
-    void toAccelerator();
+    void to_device();
 };
 
 class GMAC_LOCAL GatherBuffers : public gmac::util::Lock {
@@ -90,7 +90,7 @@ public:
     release operation. Data is transferred from accelerator memory to host memory
     lazily, whenever it is needed by the application
 */
-class GMAC_LOCAL GatherBase : public protocol_interface, handler, gmac::util::Lock {
+class GMAC_LOCAL GatherBase : public protocol, handler, gmac::util::Lock {
 public:
     //! Protocol states
     typedef enum {
@@ -128,9 +128,9 @@ protected:
 
 public:
     // Protocol Interface
-        void deleteObject(object &obj);
+        void delete_object(object &obj);
 
-    bool needUpdate(const block &block) const;
+    bool needs_update(const block &block) const;
 
     gmacError_t signal_read(block &block, hostptr_t addr);
 
@@ -144,15 +144,15 @@ public:
 
     gmacError_t release(block &block);
 
-    gmacError_t mapToAccelerator(block &block);
+    gmacError_t map_to_device(block &block);
 
-    gmacError_t unmapFromAccelerator(block &block);
+    gmacError_t unmap_from_device(block &block);
 
-    gmacError_t deleteBlock(block &block);
+    gmacError_t remove_block(block &block);
 
-        gmacError_t toHost(block &block);
+        gmacError_t to_host(block &block);
 
-    gmacError_t toAccelerator(block &block);
+    gmacError_t to_device(block &block);
 
         gmacError_t copyToBuffer(const block &block, core::IOBuffer &buffer, size_t size,
                 size_t bufferOffset, size_t blockOffset) const;
@@ -177,7 +177,7 @@ public:
     virtual ~Gather();
 
     // Protocol Interface
-    memory::object *createObject(size_t size, hostptr_t cpuPtr,
+    memory::object *create_object(size_t size, hostptr_t cpuPtr,
         GmacProtection prot, unsigned flags);
 };
 

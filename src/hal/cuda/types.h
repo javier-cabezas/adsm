@@ -21,7 +21,7 @@ class texture_t;
 class variable_t;
 class code_repository;
 class _event_t;
-class event_t;
+class event_ptr;
 class event_list;
 class buffer_t;
 
@@ -41,7 +41,8 @@ typedef hal::detail::implementation_traits<coherence_domain,
                                            texture_t,
                                            variable_t,
                                            code_repository,
-                                           event_t,
+                                           _event_t,
+                                           event_ptr,
                                            event_list,
                                            buffer_t,
                                            ptr_t> implementation_traits;

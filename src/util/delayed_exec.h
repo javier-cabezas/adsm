@@ -57,8 +57,8 @@ using std::bind;
 using namespace std::tr1;
 #endif
 
-#define do_member(f,o,...) bind(std::mem_fn(&f), o, __VA_ARGS__)
-#define do_func(f,...)     bind(&f, __VA_ARGS__)
+#define do_member(f,o,...) util::bind(std::mem_fn(&f), o, __VA_ARGS__)
+#define do_func(f,...)     util::bind(&f, __VA_ARGS__)
 
 class GMAC_LOCAL delayed_exec {
 protected:

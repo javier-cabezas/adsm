@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010, 2011 University of Illinois
+/* Copyright (c) 2009-2011sity of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -51,9 +51,9 @@ public:
         friend class kernel;
         typedef hal::kernel_t::arg_list Parent;
 #if 0
-        std::map<unsigned, std::list<memory::ObjectInfo>::iterator > paramToParamPtr_;
+        std::map<unsigned, std::list<memory::object_access_info>::iterator > paramToParamPtr_;
 #endif
-        std::list<memory::ObjectInfo> usedObjects_;
+        std::list<memory::object_access_info> usedObjects_;
 
     public:
         /**
@@ -64,7 +64,7 @@ public:
          */
         void add_object(hostptr_t ptr, /* unsigned index, */GmacProtection prot);
 
-        typedef std::list<memory::ObjectInfo> list_object_info;
+        typedef std::list<memory::object_access_info> list_object_info;
         /**
          * Gets the list of objects being used by the kernel
          *

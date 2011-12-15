@@ -2,7 +2,7 @@
 #define GMAC_HAL_TYPES_EVENT_H_
 
 #include "util/delayed_exec.h"
-#include "util/UniquePtr.h"
+#include "util/smart_ptr.h"
 
 namespace __impl { namespace hal {
 
@@ -18,8 +18,12 @@ class GMAC_LOCAL _event_t :
     typedef typename I::context context_parent_t;
 public:
     enum type {
-        Transfer,
-        Kernel
+        TransferToHost,
+        TransferToDevice,
+        TransferHost,
+        TransferDevice,
+        Kernel,
+        Invalid
     };
 
     enum state {

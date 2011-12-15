@@ -155,33 +155,33 @@ event_deleter::operator()(_event_t *ev)
 }
 
 inline
-event_t::event_t(bool async, _event_t::type t, context_t &context) :
+event_ptr::event_ptr(bool async, _event_t::type t, context_t &context) :
     ptrEvent_(context.get_new_event(async, t), event_deleter())
 {
 }
 
 inline
-event_t::event_t()
+event_ptr::event_ptr()
 {
 }
 
 #ifdef USE_CXX0X
 inline
-event_t::event_t(event_t &&event) :
+event_ptr::event_ptr(event_ptr &&event) :
     ptrEvent_(std::move(event.ptrEvent_))
 {
 }
 #endif
 
 inline
-event_t::event_t(const event_t &event) :
+event_ptr::event_ptr(const event_ptr &event) :
     ptrEvent_(event.ptrEvent_)
 {
 }
 
 inline
-event_t &
-event_t::operator=(const event_t &event)
+event_ptr &
+event_ptr::operator=(const event_ptr &event)
 {
     if (&event != this) {
         ptrEvent_ = event.ptrEvent_;
@@ -192,8 +192,8 @@ event_t::operator=(const event_t &event)
 
 #ifdef USE_CXX0X
 inline
-event_t &
-event_t::operator=(event_t &&event)
+event_ptr &
+event_ptr::operator=(event_ptr &&event)
 {
     if (&event != this) {
         ptrEvent_ = std::move(event.ptrEvent_);
@@ -203,70 +203,10 @@ event_t::operator=(event_t &&event)
 }
 #endif
 
-inline
-gmacError_t
-event_t::sync()
-{
-    ASSERTION(bool(ptrEvent_), "Using not valid pointer");
-
-    gmacError_t ret = ptrEvent_->sync();
-    return ret;
-}
-
-inline
-void
-event_t::set_synced()
-{
-    ASSERTION(bool(ptrEvent_), "Using not valid pointer");
-
-    ptrEvent_->set_synced();
-}
-
-inline
-void
-event_t::begin(stream_t &stream)
-{
-    ASSERTION(bool(ptrEvent_), "Using not valid pointer");
-
-    ptrEvent_->begin(stream);
-}
-
-inline
-void
-event_t::invalidate()
-{
-    ptrEvent_.reset();
-}
-
-inline
-bool
-event_t::is_valid() const
-{
-    return bool(ptrEvent_);
-}
-
-inline
-util::shared_ptr<_event_t>
-event_t::operator*()
-{
-    ASSERTION(bool(ptrEvent_), "Using not valid pointer");
-
-    return ptrEvent_;
-}
-
-inline
-cl_event &
-event_t::operator()()
-{
-    ASSERTION(bool(ptrEvent_), "Using not valid pointer");
-
-    return (*ptrEvent_.get())();
-}
-
 template <typename F>
 inline
 void
-event_t::add_trigger(F fun)
+event_ptr::add_trigger(F fun)
 {
     ASSERTION(bool(ptrEvent_));
 

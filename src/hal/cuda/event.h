@@ -7,7 +7,8 @@
 
 #include "hal/types-detail.h"
 
-#include "util/Logger.h"
+#include "trace/logger.h"
+
 #include "util/unique.h"
 
 namespace __impl { namespace hal {
@@ -17,7 +18,7 @@ namespace cuda {
 class GMAC_LOCAL _event_common_t {
     friend class context_t;
     friend class device;
-    friend class event_t;
+    friend class event_ptr;
     friend class kernel_t;
     stream_t *stream_;
 
@@ -42,7 +43,7 @@ class GMAC_LOCAL _event_t :
     public util::unique<_event_t> {
 
     friend class context_t;
-    friend class event_t;
+    friend class event_ptr;
 
     typedef hal::detail::_event_t<implementation_traits> Parent;
 
@@ -63,38 +64,45 @@ public:
     void operator()(_event_t *ev);
 };
 
-class GMAC_LOCAL event_t {
+class GMAC_LOCAL event_ptr {
     friend class context_t;
     friend class kernel_t;
 
 private:
     util::shared_ptr<_event_t> ptrEvent_;
 
-    event_t(bool async, _event_t::type t, context_t &context);
+    event_ptr(bool async, _event_t::type t, context_t &context);
 
+    inline
+    void reset()
+    {
+        ptrEvent_.reset();
+    }
 public:
     typedef _event_t event_type;
+    typedef _event_t::type type;
+
     inline
-    event_t()
+    event_ptr()
     {
     }
 
 #ifdef USE_CXX0X
     inline
-    event_t(event_t &&event) :
+    event_ptr(event_ptr &&event) :
         ptrEvent_(std::move(event.ptrEvent_))
     {
     }
 #endif
 
     inline
-    event_t(const event_t &event) :
+    event_ptr(const event_ptr &event) :
         ptrEvent_(event.ptrEvent_)
     {
     }
 
     inline
-    event_t &operator=(const event_t &event)
+    event_ptr &operator=(const event_ptr &event)
     {
         if (&event != this) {
             ptrEvent_ = event.ptrEvent_;
@@ -105,7 +113,7 @@ public:
 
 #ifdef USE_CXX0X
     inline
-    event_t &operator=(event_t &&event)
+    event_ptr &operator=(event_ptr &&event)
     {
         ptrEvent_ = std::move(event.ptrEvent_);
         return *this;
@@ -113,40 +121,19 @@ public:
 #endif
 
     inline
-    gmacError_t sync()
-    {
-        ASSERTION(bool(ptrEvent_));
-
-        gmacError_t ret = ptrEvent_->sync();
-        return ret;
-    }
-
-    inline
-    void begin(stream_t &stream)
-    {
-        ASSERTION(bool(ptrEvent_));
-
-        ptrEvent_->begin(stream);
-    }
-
-    inline
-    void end()
-    {
-        ASSERTION(bool(ptrEvent_));
-
-        ptrEvent_->end();
-    }
-
-    inline
-    void reset()
-    {
-        ptrEvent_.reset();
-    }
-
-    inline
-    bool is_valid() const
+    operator bool() const
     {
         return bool(ptrEvent_);
+    }
+
+    _event_t *operator->()
+    {
+        return ptrEvent_.get();
+    }
+
+    _event_t &operator*()
+    {
+        return *ptrEvent_.get();
     }
 
     template <typename F>
@@ -163,14 +150,14 @@ typedef hal::detail::list_event<implementation_traits> list_event_detail;
 
 class GMAC_LOCAL list_event :
     public list_event_detail,
-    protected std::list<event_t> {
-    typedef std::list<event_t> Parent;
+    protected std::list<event_ptr> {
+    typedef std::list<event_ptr> Parent;
 
 public:
     list_event() { printf("Creating event list\n"); }
     gmacError_t sync();
 
-    void add_event(event_t event); 
+    void add_event(event_ptr event); 
 
     size_t size() const;
 };
