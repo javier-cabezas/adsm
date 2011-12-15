@@ -25,7 +25,7 @@ Lazy<T>::create_object(size_t size, hostptr_t cpuPtr,
     if(err != gmacSuccess) {
         return NULL;
     }
-    memory_ops::protect(ret->addr(), ret->size(), prot);
+    memory_ops::protect(ret->get_start_addr(), ret->size(), prot);
 
     return ret;
 }
