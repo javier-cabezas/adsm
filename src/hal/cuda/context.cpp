@@ -254,7 +254,7 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
         res = cuMemcpyDtoHAsync(dst.get_host_addr(), src.get_device_addr(), count, stream());
 
         // Perform memcpy after asynchronous copy
-        ret.add_trigger(util::do_func(memcpy, buffer->get_addr(), src.get_host_addr(), count));
+        ret.add_trigger(do_func(memcpy, buffer->get_addr(), src.get_host_addr(), count));
     } else if (dst.is_host_ptr() &&
                src.is_host_ptr()) {
         TRACE(LOCAL, "H (%p) -> H (%p) copy ("FMT_SIZE" bytes) on stream: "FMT_ID,
