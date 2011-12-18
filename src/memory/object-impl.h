@@ -22,18 +22,9 @@ inline object::object(protocol &protocol, hostptr_t addr, size_t size) :
     size_(size),
     released_(false)
 {
-#ifdef DEBUG
-    id_ = AtomicInc(object::Id_);
-#endif
 }
 
 #ifdef DEBUG
-inline unsigned
-object::getId() const
-{
-    return id_;
-}
-
 inline unsigned
 object::getDumps(protocols::common::Statistic stat)
 {
@@ -96,18 +87,11 @@ object::get_protocol()
     return protocol_;
 }
 
-inline hostptr_t
-object::get_start_addr() const
+inline const object::bounds
+object::get_bounds() const
 {
     // No need for lock -- addr_ is never modified
-    return addr_;
-}
-
-inline hostptr_t
-object::get_end_addr() const
-{
-    // No need for lock -- addr_ and size_ are never modified
-    return addr_ + size_;
+    return bounds(addr_, addr_ + size_);
 }
 
 inline ssize_t
@@ -144,15 +128,12 @@ object::coherence_op(F f, gmacError_t &err)
 {
     hal::event_ptr ret;
     err = gmacSuccess;
-    for(const_locking_iterator i  = get_block(0, NULL);
-                              i != blocks_.end();
+    for(const_locking_iterator i  = begin();
+                               i != end();
     		                ++i) {
-        if (err == gmacSuccess) {
-            ret = f(*i);
-        }
-        if (err == gmacSuccess) {
-            set_last_event(ret);
-        }
+        ret = f(*i);
+        if (err != gmacSuccess) break;
+        set_last_event(ret);
     }
     return ret;
 }
@@ -161,9 +142,9 @@ inline hal::event_ptr
 object::coherence_op(hal::event_ptr (protocol::*f)(block_ptr, gmacError_t &), gmacError_t &err)
 {
     hal::event_ptr ret;
-    for (const_locking_iterator i  = get_block(0, NULL);
-                               i != blocks_.end();
-                             ++i) {
+    for (const_locking_iterator i  = begin();
+                                i != end();
+                              ++i) {
         ret = (protocol_.*f)(*i, err);
         if (err != gmacSuccess) break;
         set_last_event(ret);
@@ -179,7 +160,6 @@ object::acquire(GmacProtection prot, gmacError_t &err)
     TRACE(LOCAL, "Acquiring object %p?", addr_);
     if (released_) {
         TRACE(LOCAL, "Acquiring object %p", addr_);
-
         ret = coherence_op(protocol_member(protocol::acquire, prot, err), err);
         if (err == gmacSuccess) {
             set_last_event(ret);
@@ -199,6 +179,9 @@ object::release(bool flushDirty, gmacError_t &err)
     if (flushDirty && !released_) {
         TRACE(LOCAL, "Releasing object %p", addr_);
         ret = coherence_op(&protocol::release, err);
+        if (err == gmacSuccess) {
+            set_last_event(ret);
+        }
     }
     released_ = true;
     unlock();

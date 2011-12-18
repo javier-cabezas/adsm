@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2011sity of Illinois
+/* Copyright (c) 2009-2011 Universityversity of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -52,30 +52,31 @@ enum Statistic {
 extern const char *StatisticName[];
 
 template <typename T>
-class GMAC_LOCAL BlockState {
+class GMAC_LOCAL block_state {
 public:
-    typedef T ProtocolState;
+    typedef T protocol_state;
+protected:
     T state_;
 
     unsigned faultsCacheWrite_;
     unsigned faultsCacheRead_;
 
 public:
-    BlockState(ProtocolState state);
+    block_state(protocol_state state);
 
-    virtual hal::event_ptr syncToAccelerator(gmacError_t &err) = 0;
-    virtual hal::event_ptr syncToHost(gmacError_t &err) = 0;
+    virtual hal::event_ptr sync_to_device(gmacError_t &err) = 0;
+    virtual hal::event_ptr sync_to_host(gmacError_t &err) = 0;
 
-    virtual bool is(ProtocolState state) const = 0;
+    virtual bool is(protocol_state state) const = 0;
 
-    ProtocolState getState() const;
-    virtual void setState(ProtocolState state, hostptr_t addr = NULL) = 0;
+    protocol_state get_state() const;
+    virtual void set_state(protocol_state state, hostptr_t addr = NULL) = 0;
 
-    unsigned getCacheWriteFaults() const;
-    unsigned getCacheReadFaults() const;
+    unsigned get_faults_cache_write() const;
+    unsigned get_faults_cache_read() const;
 
-    void resetCacheWriteFaults();
-    void resetCacheReadFaults();
+    void reset_faults_cache_write();
+    void reset_faults_cache_read();
 
     virtual gmacError_t dump(std::ostream &stream, Statistic stat) = 0;
 };

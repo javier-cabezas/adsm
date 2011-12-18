@@ -18,10 +18,11 @@ block::block(hostptr_t addr, hostptr_t shadow, size_t size) :
 {
 }
 
-inline hostptr_t
-block::addr() const
+inline const block::bounds
+block::get_bounds() const
 {
-    return addr_;
+    // No need for lock -- addr_ is never modified
+    return bounds(addr_, addr_ + size_);
 }
 
 inline size_t

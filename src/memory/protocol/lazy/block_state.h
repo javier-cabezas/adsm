@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2011sity of Illinois
+/* Copyright (c) 2009-2011 Universityversity of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -140,16 +140,16 @@ public:
 
 #endif
 
-class GMAC_LOCAL BlockState :
-    public common::BlockState<lazy_types::State> {
+class GMAC_LOCAL block_state :
+    public common::block_state<lazy_types::State> {
 #if defined(USE_SUBBLOCK_TRACKING)
     friend class StrideInfo;
     friend class BlockTreeInfo;
 #endif
 
 protected:
-    lazy_types::Block &block();
-    const lazy_types::Block &block() const;
+    lazy_types::block &block();
+    const lazy_types::block &block() const;
 
 #if defined(USE_SUBBLOCK_TRACKING)
     //const lazy::Block &block();
@@ -177,9 +177,9 @@ protected:
     StrideInfo strideInfo_;
     BlockTreeInfo treeInfo_;
 
-    void setSubBlock(const hostptr_t addr, ProtocolState state);
-    void setSubBlock(long_t subBlock, ProtocolState state);
-    void setAll(ProtocolState state);
+    void setSubBlock(const hostptr_t addr, protocol_state state);
+    void setSubBlock(long_t subBlock, protocol_state state);
+    void setAll(protocol_state state);
 
     void reset();
 
@@ -193,21 +193,21 @@ protected:
 #endif
 
 public:
-    BlockState(lazy_types::State init);
+    block_state(lazy_types::State init);
 
-    void setState(ProtocolState state, hostptr_t addr = NULL);
+    void set_state(protocol_state state, hostptr_t addr = NULL);
 
 #if 0
-    bool hasState(ProtocolState state) const;
+    bool hasState(protocol_state state) const;
 #endif
 
-    hal::event_ptr syncToAccelerator(gmacError_t &err);
-    hal::event_ptr syncToHost(gmacError_t &err);     
+    hal::event_ptr sync_to_device(gmacError_t &err);
+    hal::event_ptr sync_to_host(gmacError_t &err);     
 
     void read(const hostptr_t addr);
     void write(const hostptr_t addr);
 
-    bool is(ProtocolState state) const;
+    bool is(protocol_state state) const;
 
     int protect(GmacProtection prot);
     int unprotect();

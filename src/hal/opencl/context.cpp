@@ -315,13 +315,13 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
                      count, stream.get_print_id());
         buffer_t *buffer = get_input_buffer(count, stream, ret);
 
-        res = clEnqueueReadBuffer(stream(), dst.get_device_addr(), CL_FALSE,
-                                            dst.get_offset(), count,
+        res = clEnqueueReadBuffer(stream(), src.get_device_addr(), CL_FALSE,
+                                            src.get_offset(), count,
                                             buffer->get_addr(),
                                             nevents, events, &(*ret)());
 
         // Perform memcpy after asynchronous copy
-        ret.add_trigger(util::do_func(::memcpy, buffer->get_addr(), src.get_host_addr(), count));
+        ret.add_trigger(do_func(::memcpy, dst.get_host_addr(), buffer->get_addr(), count));
         // Release buffer after memcpy
         //ret.add_trigger(util::do_member(stream_t::put_buffer, &stream, buffer));
     } else if (dst.is_host_ptr() &&

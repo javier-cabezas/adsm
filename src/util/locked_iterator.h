@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2011sity of Illinois
+/* Copyright (c) 2009-2011 Universityversity of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -297,8 +297,9 @@ protected:
 		it_(it),
 		c_(c)
 	{
-		CFATAL(it != c.end(), "Cannot initialize an iterator with an end value");
-		lock(*getter::get_element(it_));
+		if (it != c.end()) {
+		    lock(*getter::get_element(it_));
+		}
 	}
 
 	locking_iterator_base(locking_iterator_base &&it) :

@@ -164,16 +164,16 @@ StoreShared::~StoreShared()
 
 template <typename T>
 inline void
-Node::syncToHost(long_t startIndex, long_t endIndex)
+Node::sync_to_host(long_t startIndex, long_t endIndex)
 {
-    syncToHost(startIndex, endIndex, sizeof(T));
+    sync_to_host(startIndex, endIndex, sizeof(T));
 }
 
 template <typename T>
 inline void
-Node::syncToAccelerator(long_t startIndex, long_t endIndex)
+Node::sync_to_device(long_t startIndex, long_t endIndex)
 {
-    syncToAccelerator(startIndex, endIndex, sizeof(T));
+    sync_to_device(startIndex, endIndex, sizeof(T));
 }
 
 inline
@@ -415,9 +415,9 @@ Node::sync()
 
     if (!this->isSynced()) {
         if (nextEntries_.size() > 0) {
-            this->syncToHost<Node *>(getFirstUsedEntry(), getLastUsedEntry());
+            this->sync_to_host<Node *>(getFirstUsedEntry(), getLastUsedEntry());
         } else {
-            this->syncToHost<uint8_t>(getFirstUsedEntry(), getLastUsedEntry());
+            this->sync_to_host<uint8_t>(getFirstUsedEntry(), getLastUsedEntry());
         }
         this->setSynced(true);
     }
@@ -513,7 +513,7 @@ Bitmap::release()
     if (released_ == false) {
         TRACE(LOCAL, "Releasing");
         // Sync the device variables
-        syncToAccelerator();
+        sync_to_device();
 
         // Sync the bitmap contents
         root_->release();

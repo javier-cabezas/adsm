@@ -35,7 +35,7 @@ static LONG CALLBACK segvHandler(EXCEPTION_POINTERS *ex)
     else TRACE(GLOBAL, "Write SIGSEGV for %p", addr);
 
     bool resolved = false;
-    core::Mode *mode = Process_->owner((const hostptr_t)addr);
+    core::Mode *mode = Process_->get_owner((const hostptr_t)addr);
     if(mode != NULL) {
         if(!writeAccess) resolved = Manager_->signal_read(*mode, (hostptr_t)addr);
         else             resolved = Manager_->signal_write(*mode, (hostptr_t)addr);

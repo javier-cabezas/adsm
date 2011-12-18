@@ -17,15 +17,15 @@ inline Lazy<T>::~Lazy()
 template<typename T>
 memory::object *
 Lazy<T>::create_object(size_t size, hostptr_t cpuPtr,
-                      GmacProtection prot, unsigned flags)
+                       GmacProtection prot, unsigned flags)
 {
     gmacError_t err;
     object *ret = new T(*this, cpuPtr, size, lazy_base::state(prot), err);
-    if(ret == NULL) return ret;
-    if(err != gmacSuccess) {
+    if (ret == NULL) return ret;
+    if (err != gmacSuccess) {
         return NULL;
     }
-    memory_ops::protect(ret->get_start_addr(), ret->size(), prot);
+    memory_ops::protect(ret->get_bounds().start, ret->size(), prot);
 
     return ret;
 }

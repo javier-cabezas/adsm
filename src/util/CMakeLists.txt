@@ -19,6 +19,7 @@ set(util_SRC
     locked_iterator.h
     locked_iterator-impl.h
     locked_object.h
+    misc.h
     NonCopyable.h
     Parameter.h
     Parameter-impl.h

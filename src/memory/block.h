@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2011sity of Illinois
+/* Copyright (c) 2009-2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -41,6 +41,7 @@ WITH THE SOFTWARE.  */
 #include "memory/protocol.h"
 #include "trace/logger.h"
 #include "util/lock.h"
+#include "util/misc.h"
 #include "util/Reference.h"
 
 #include "util/smart_ptr.h"
@@ -97,12 +98,13 @@ protected:
     block(hostptr_t addr, hostptr_t shadow, size_t size);
 
 public:
+    typedef util::bounds<hostptr_t> bounds;
 
     /**
-     * Host memory address where the block starts
-     * \return Starting host memory address of the block
+     * Host memory address bounds of the block
+     * \return The host memory address bounds of the block
      */
-    hostptr_t addr() const;
+    const bounds get_bounds() const;
 
     /**
      *  Block size
@@ -111,6 +113,7 @@ public:
     size_t size() const;
 
 protected:
+#if 0
     /**
      * Ensures that the host memory has a valid and accessible copy of the data
      * \return Error code
@@ -137,13 +140,14 @@ protected:
      * \return Error code
      */
     virtual hal::event_ptr to_host(unsigned blockOff, size_t count, gmacError_t &err) = 0;
+#endif
 
 public:
     /**
      * Get memory block owner
      * \return Owner of the memory block
      */
-    virtual core::address_space_ptr owner() const = 0;
+    virtual core::address_space_ptr get_owner() const = 0;
 
     /**
      * Get memory block address at the accelerator

@@ -112,7 +112,7 @@ gmacError_t map_object::dumpObjects(const std::string &dir, std::string prefix, 
     for(i = begin(); i != end(); i++) {
         object &obj = *(i->second);
         std::stringstream name;
-        name << dir << prefix << "#" << obj.getId() << "-" << obj.getDumps(stat) << "_" << protocols::common::StatisticName[stat];
+        name << dir << prefix << "#" << obj.get_print_id() << "-" << obj.getDumps(stat) << "_" << protocols::common::StatisticName[stat];
 
         std::ofstream out(name.str().c_str(), std::ios_base::trunc);
         ASSERTION(out.good());
@@ -131,7 +131,7 @@ gmacError_t map_object::dumpObject(const std::string &dir, std::string prefix, p
     lock_read();
     ASSERTION(obj != NULL);
     std::stringstream name;
-    name << dir << prefix << "#" << obj->getId() << "-" << obj->getDumps(stat) << "_" << protocols::common::StatisticName[stat];
+    name << dir << prefix << "#" << obj->get_print_id() << "-" << obj->getDumps(stat) << "_" << protocols::common::StatisticName[stat];
 
     std::ofstream out(name.str().c_str(), std::ios_base::trunc);
     ASSERTION(out.good());

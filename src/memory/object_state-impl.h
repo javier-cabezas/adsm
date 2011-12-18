@@ -13,21 +13,10 @@ inline void object_state<State>::modified_object()
     ASSERTION(bool(ownerShortcut_));
 
     ownerShortcut_->get_object_map().modified_objects();
-#if 0
-    AcceleratorMap::iterator i;
-    for(i = acceleratorAddr_.begin(); i != acceleratorAddr_.end(); i++) {
-        std::list<core::address_space *> aspaces = i->second;
-        std::list<core::address_space *>::iterator j;
-        for(j = i->second.begin(); j != i->second.end(); j++) {
-            ObjectMap &map = (*j)->getAddressSpace();
-            map.modified_objects();
-        }
-    }
-#endif
 }
 
 static inline gmacError_t
-mallocAccelerator(core::address_space &aspace, hostptr_t addr, size_t size, accptr_t &acceleratorAddr)
+malloc_accelerator(core::address_space &aspace, hostptr_t addr, size_t size, accptr_t &acceleratorAddr)
 {
     acceleratorAddr = accptr_t();
     // Allocate accelerator memory
@@ -45,13 +34,13 @@ mallocAccelerator(core::address_space &aspace, hostptr_t addr, size_t size, accp
 
 template<typename State>
 gmacError_t
-object_state<State>::repopulateBlocks(core::address_space &aspace)
+object_state<State>::repopulate_blocks(core::address_space &aspace)
 {
-    abort();
+    FATAL("Not implemented");
 
     // Repopulate the block-set
     ptroff_t offset = 0;
-    for (vector_block::iterator i = blocks_.begin(); i != blocks_.end(); i++) {
+    for (const_locking_iterator i = begin(); i != end(); ++i) {
         block_state<State> &oldBlock = *dynamic_cast<block_state<State> *>(*i);
         block_state<State> *newBlock = new block_state<State>(oldBlock.getProtocol(),
                                                                 addr_   + offset,
@@ -73,7 +62,7 @@ template<typename State>
 object_state<State>::object_state(protocol &protocol,
                               hostptr_t hostAddr,
                               size_t size,
-                              typename State::ProtocolState init,
+                              typename State::protocol_state init,
                               gmacError_t &err) :
     object(protocol, hostAddr, size),
     shadow_(NULL),
@@ -100,11 +89,11 @@ object_state<State>::object_state(protocol &protocol,
 
     hostptr_t mark = addr_;
     ptroff_t offset = 0;
-    while(size > 0) {
+    while (size > 0) {
         size_t blockSize = (size > BlockSize_) ? BlockSize_ : size;
         mark += blockSize;
         block_ptr block(new block_state<State>(*this, addr_ + offset,
-                                                shadow_ + offset, blockSize, init));
+                                               shadow_ + offset, blockSize, init));
         blocks_.push_back(block);
         size -= blockSize;
         offset += ptroff_t(blockSize);
@@ -112,7 +101,6 @@ object_state<State>::object_state(protocol &protocol,
     }
     
 }
-
 
 template<typename State>
 object_state<State>::~object_state()
@@ -139,7 +127,7 @@ object_state<State>::get_device_addr() const
 
 template<typename State>
 inline core::address_space_ptr
-object_state<State>::owner()
+object_state<State>::get_owner()
 {
     ASSERTION(bool(ownerShortcut_));
 
@@ -148,7 +136,7 @@ object_state<State>::owner()
 
 template<typename State>
 inline core::address_space_const_ptr
-object_state<State>::owner() const
+object_state<State>::get_owner() const
 {
     ASSERTION(bool(ownerShortcut_));
 
@@ -162,7 +150,7 @@ object_state<State>::add_owner(core::address_space_ptr owner)
     ASSERTION(!ownerShortcut_);
     ownerShortcut_ = owner;
 
-    gmacError_t ret = mallocAccelerator(*owner, addr_, size_, deviceAddr_);
+    gmacError_t ret = malloc_accelerator(*owner, addr_, size_, deviceAddr_);
     TRACE(LOCAL, "Add owner %p Object @ %p with device addr: %p", owner.get(), addr_, deviceAddr_.get_device_addr());
 
     return ret;
@@ -202,7 +190,7 @@ object_state<State>::map_to_device()
     // Allocate accelerator memory in the new aspace
     accptr_t newDeviceAddr(0);
 
-    gmacError_t ret = mallocAccelerator(*ownerShortcut_, addr_, size_, newDeviceAddr);
+    gmacError_t ret = malloc_accelerator(*ownerShortcut_, addr_, size_, newDeviceAddr);
     if (ret == gmacSuccess) {
         deviceAddr_ = newDeviceAddr;
     }

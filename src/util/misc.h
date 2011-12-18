@@ -31,70 +31,24 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_UTIL_LOCK_H_
-#define GMAC_UTIL_LOCK_H_
-
-#include "config/common.h"
-
-#if defined(USE_TRACE_LOCKS)
-#include <string>
-#endif
+#ifndef GMAC_UTIL_MISC_H_
+#define GMAC_UTIL_MISC_H_
 
 namespace __impl { namespace util {
 
-class GMAC_LOCAL lock__ {
-protected:
-#if defined(USE_TRACE_LOCKS)
-    //! Signal that the lock is exclusive, e.g., due to a lock-write
-    mutable bool exclusive_;
-    std::string name_;
-#endif
-public:
-    //! Default constructor
-    /*!
-        \param name lock name for tracing purposes
-    */
-    lock__(const char *name);
+template <typename S, typename E = S>
+struct bounds {
+    S start;
+    E end;
 
-    //! The thread requests the lock
-    void enter() const;
-    
-    //! The thread gets an exclusive lock
-    void locked() const;
-
-    //! The thread gets a shared lock
-    void done() const;
-
-    //! The thread releases a lock
-    void exit() const;
+    inline
+    bounds(S _start, E _end) :
+        start(_start),
+        end(_end)
+    {
+    }
 };
 
 }}
-
-#if defined(POSIX)
-#include "util/posix/lock.h"
-#elif defined(WINDOWS)
-#include "util/windows/lock.h"
-#endif
-
-namespace __impl { namespace util {
-template <typename T>
-class scoped_lock {
-    T &obj_;
-    bool owned_;
-public:
-    explicit scoped_lock(T &obj);
-    explicit scoped_lock(scoped_lock<T> &obj);
-    ~scoped_lock();
-
-    T &operator()();
-    const T &operator()() const;
-
-    scoped_lock<T> &operator=(scoped_lock<T> &lock);
-};
-
-}}
-
-#include "lock-impl.h"
 
 #endif

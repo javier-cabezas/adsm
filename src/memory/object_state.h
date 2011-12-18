@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009-2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -59,28 +59,22 @@ class GMAC_LOCAL object_state :
 protected:
     hostptr_t shadow_;
     bool hasUserMemory_;
-#if 0
-    typedef std::map<accptr_t, std::list<core::address_space *> > AcceleratorMap;
-    typedef std::map<core::address_space *, accptr_t> map_aspace;
 
-    AcceleratorMap acceleratorAddr_;
-    map_aspace owners_;
-#endif
     accptr_t deviceAddr_;
     core::address_space_ptr ownerShortcut_;
 
-    gmacError_t repopulateBlocks(core::address_space &aspace);
+    gmacError_t repopulate_blocks(core::address_space &aspace);
 
     void modified_object();
 public:
-    object_state(protocol &protocol, hostptr_t cpuAddr, size_t size, typename State::ProtocolState init, gmacError_t &err);
+    object_state(protocol &protocol, hostptr_t cpuAddr, size_t size, typename State::protocol_state init, gmacError_t &err);
     virtual ~object_state();
 
     accptr_t get_device_addr(const hostptr_t addr) const;
     accptr_t get_device_addr() const;
 
-    core::address_space_ptr owner();
-    core::address_space_const_ptr owner() const;
+    core::address_space_ptr get_owner();
+    core::address_space_const_ptr get_owner() const;
 
     gmacError_t add_owner(core::address_space_ptr owner);
     gmacError_t remove_owner(core::address_space_const_ptr owner);

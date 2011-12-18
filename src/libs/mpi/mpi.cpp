@@ -56,8 +56,8 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
 
     Process &proc = getProcess();
 	// Check if GMAC owns any of the buffers to be transferred
-	Mode *srcMode = proc.owner(hostptr_t(sendbuf));
-	Mode *dstMode = proc.owner(hostptr_t(recvbuf));
+	Mode *srcMode = proc.get_owner(hostptr_t(sendbuf));
+	Mode *dstMode = proc.get_owner(hostptr_t(recvbuf));
 
 	if (srcMode == NULL && dstMode == NULL) {
         return __MPI_Sendrecv(sendbuf, sendcount, sendtype, dest, sendtag, recvbuf, recvcount, recvtype, source, recvtag, comm, status);
@@ -175,7 +175,7 @@ int __gmac_MPI_Send( void *buf, int count, MPI_Datatype datatype, int dest, int 
     if(__MPI_Send == NULL) mpiInit();
 
 	// Check if GMAC owns any of the buffers to be transferred
-	Mode *srcMode = getProcess().owner(hostptr_t(buf));
+	Mode *srcMode = getProcess().get_owner(hostptr_t(buf));
 
 	if (srcMode == NULL) {
         return func(buf, count, datatype, dest, tag, comm);
@@ -271,7 +271,7 @@ int MPI_Recv( void *buf, int count, MPI_Datatype datatype, int source, int tag, 
     if(__MPI_Recv == NULL) mpiInit();
 
 	// Locate memory regions (if any)
-	Mode *dstMode = getProcess().owner(hostptr_t(buf));
+	Mode *dstMode = getProcess().get_owner(hostptr_t(buf));
 
 	if (dstMode == NULL) {
         return __MPI_Recv(buf, count, datatype, source, tag, comm, status);

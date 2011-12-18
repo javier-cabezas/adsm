@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2011sity of Illinois
+/* Copyright (c) 2009-2011 Universityversity of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -53,7 +53,7 @@ protected:
     address_space &owner_;
 
 public:
-    contextMap(address_space &owner);
+    contextMap(address_space &get_owner);
     void add(THREAD_T id, context &ctx);
     context *find(THREAD_T id);
     void remove(THREAD_T id);

@@ -204,9 +204,9 @@ Node::release()
 
     if (this->isDirty()) {
         if (nextEntries_.size() > 0) {
-            this->syncToAccelerator<Node *>(this->firstDirtyEntry_, this->lastDirtyEntry_);
+            this->sync_to_device<Node *>(this->firstDirtyEntry_, this->lastDirtyEntry_);
         } else {
-            this->syncToAccelerator<uint8_t>(this->firstDirtyEntry_, this->lastDirtyEntry_);
+            this->sync_to_device<uint8_t>(this->firstDirtyEntry_, this->lastDirtyEntry_);
         }
     }
 }

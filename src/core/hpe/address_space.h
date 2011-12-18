@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2011sity of Illinois
+/* Copyright (c) 2009-2011 Universityversity of Illinois
  Universitat Politecnica de Catalunya
  All rights reserved.
 

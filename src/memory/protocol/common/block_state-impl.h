@@ -39,7 +39,7 @@ namespace memory { namespace protocols { namespace common {
 
 template <typename T>
 inline
-BlockState<T>::BlockState(ProtocolState state) :
+block_state<T>::block_state(protocol_state state) :
     state_(state),
     faultsCacheWrite_(0),
     faultsCacheRead_(0)
@@ -49,7 +49,7 @@ BlockState<T>::BlockState(ProtocolState state) :
 template <typename T>
 inline
 T
-BlockState<T>::getState() const
+block_state<T>::get_state() const
 {
     return state_;
 }
@@ -57,7 +57,7 @@ BlockState<T>::getState() const
 template <typename T>
 inline
 unsigned
-BlockState<T>::getCacheWriteFaults() const
+block_state<T>::get_faults_cache_write() const
 {
     return faultsCacheWrite_;
 }
@@ -65,7 +65,7 @@ BlockState<T>::getCacheWriteFaults() const
 template <typename T>
 inline
 unsigned
-BlockState<T>::getCacheReadFaults() const
+block_state<T>::get_faults_cache_read() const
 {
     return faultsCacheRead_;
 }
@@ -73,7 +73,7 @@ BlockState<T>::getCacheReadFaults() const
 template <typename T>
 inline
 void
-BlockState<T>::resetCacheWriteFaults()
+block_state<T>::reset_faults_cache_write()
 {
     faultsCacheWrite_ = 0;
 }
@@ -81,7 +81,7 @@ BlockState<T>::resetCacheWriteFaults()
 template <typename T>
 inline
 void
-BlockState<T>::resetCacheReadFaults()
+block_state<T>::reset_faults_cache_read()
 {
     faultsCacheRead_ = 0;
 }
@@ -90,7 +90,7 @@ BlockState<T>::resetCacheReadFaults()
 template <typename T>
 inline
 void
-BlockState<T>::setState(ProtocolState state)
+block_state<T>::set_state(protocol_state state)
 {
     state_ = state;
 }

@@ -86,14 +86,14 @@ public:
                  hostptr_t hostAddr,
                  hostptr_t shadowAddr,
                  size_t size,
-                 typename State::ProtocolState init);
+                 typename State::protocol_state init);
 
     /**
      * Get memory block owner
      *
      * \return A reference to the owner mode of the memory block
      */
-    core::address_space_ptr owner() const;
+    core::address_space_ptr get_owner() const;
 
     /**
      * Get memory block address at the accelerator
@@ -111,33 +111,11 @@ public:
      */
     accptr_t get_device_addr() const;
 
-    hal::event_ptr to_accelerator(unsigned blockOff, size_t count, gmacError_t &err);
-    hal::event_ptr to_accelerator(gmacError_t &err)
-    {
-        return to_accelerator(0, size_, err);
-    }
-
-    hal::event_ptr to_host(unsigned blockOff, size_t count, gmacError_t &err);
-    hal::event_ptr to_host(gmacError_t &err)
-    {
-        return to_host(0, size_, err);
-    }
-
 
     object_state<State> &get_parent()
 	{
     	return parent_;
 	}
-
-#if 0
-    gmacError_t copyToBuffer(core::io_buffer &buffer, size_t bufferOff,
-                             size_t blockOff, size_t count, Source src) const;
-
-    gmacError_t copyFromBuffer(size_t blockOff, core::io_buffer &buffer,
-                               size_t bufferOff, size_t count, Destination dst) const;
-
-    gmacError_t memset(int v, size_t count, size_t blockOffset, Destination dst) const;
-#endif
 };
 
 

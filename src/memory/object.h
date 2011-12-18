@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2011sity of Illinois
+/* Copyright (c) 2009-2011 Universityversity of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -42,6 +42,7 @@ WITH THE SOFTWARE.  */
 #include "util/atomics.h"
 #include "util/lock.h"
 #include "util/locked_iterator.h"
+#include "util/misc.h"
 #include "util/Reference.h"
 #include "memory/protocol.h"
 
@@ -63,14 +64,16 @@ class block;
  * divided into blocks, which are the unit of coherence
  */
 class GMAC_LOCAL object :
-    protected gmac::util::lock_rw<object> {
+    protected gmac::util::lock_rw<object>,
+    public util::unique<object> {
     typedef gmac::util::lock_rw<object> Lock;
 
     // DBC_FORCE_TEST(object)
+public:
+    typedef util::bounds<hostptr_t> bounds;
+
 protected:
 #ifdef DEBUG
-    static Atomic Id_;
-    unsigned id_;
     std::map<protocols::common::Statistic, unsigned> dumps_;
 #endif
 
@@ -151,7 +154,6 @@ public:
     virtual ~object();
 
 #ifdef DEBUG
-    unsigned getId() const;
     unsigned getDumps(protocols::common::Statistic stat);
 #endif
 
@@ -163,18 +165,11 @@ public:
     protocol &get_protocol();
 
     /**
-     * Get the starting host memory address of the object
+     * Get the bounds of the object
      *
-     * \return Starting host memory address of the object
+     * \return Object memory bounds
      */
-    hostptr_t get_start_addr() const;
-
-    /**
-     * Get the ending host memory address of the object
-     *
-     * \return Ending host memory address of the object
-     */
-    hostptr_t get_end_addr() const;
+    const bounds get_bounds() const;
 
     /**
      * Get the offset to the beginning of the block that contains the address
@@ -221,8 +216,8 @@ public:
      *
      * \return The owner of the object
      */
-    virtual core::address_space_ptr owner() = 0;
-    virtual core::address_space_const_ptr owner() const = 0;
+    virtual core::address_space_ptr get_owner() = 0;
+    virtual core::address_space_const_ptr get_owner() const = 0;
 
     /**
      * Add a new owner to the object

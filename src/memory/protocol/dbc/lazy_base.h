@@ -51,7 +51,7 @@ protected:
     typedef __impl::memory::block_ptr block_ptr_impl;
     typedef __impl::memory::object object_impl;
     typedef __impl::memory::protocols::lazy_types::State state_impl;
-    typedef __impl::memory::protocols::lazy_types::Block lazy_block_impl;
+    typedef __impl::memory::protocols::lazy_types::block lazy_block_impl;
     typedef __impl::util::shared_ptr<lazy_block_impl> lazy_block_ptr_impl;
 
 public:

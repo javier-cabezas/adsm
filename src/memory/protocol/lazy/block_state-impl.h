@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2011sity of Illinois
+/* Copyright (c) 2009-2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -215,7 +215,7 @@ StrideInfo::signal_write(hostptr_t addr)
 
 inline
 block &
-BlockState::block()
+block_state::block()
 {
 	//return reinterpret_cast<Block &>(*this);
 	return *(block *)this;
@@ -223,7 +223,7 @@ BlockState::block()
 
 inline
 const block &
-BlockState::block() const
+block_state::block() const
 {
 	//return reinterpret_cast<const Block &>(*this);
 	return *(const block *)this;
@@ -231,7 +231,7 @@ BlockState::block() const
 
 inline
 void
-BlockState::setSubBlock(const hostptr_t addr, ProtocolState state)
+block_state::setSubBlock(const hostptr_t addr, protocol_state state)
 {
     setSubBlock(GetSubBlockIndex(block().addr(), addr), state);
 }
@@ -243,7 +243,7 @@ BlockState::setSubBlock(const hostptr_t addr, ProtocolState state)
 
 inline
 void
-BlockState::setSubBlock(long_t subBlock, ProtocolState state)
+block_state::setSubBlock(long_t subBlock, protocol_state state)
 {
 #ifdef USE_VM
     vm::Bitmap &bitmap = GetBitmap();
@@ -255,7 +255,7 @@ BlockState::setSubBlock(long_t subBlock, ProtocolState state)
 
 inline
 void
-BlockState::setAll(ProtocolState state)
+block_state::setAll(protocol_state state)
 {
 #ifdef USE_VM
     vm::Bitmap &bitmap = GetBitmap();
@@ -266,8 +266,8 @@ BlockState::setAll(ProtocolState state)
 }
 
 inline
-BlockState::BlockState(lazy_types::State init) :
-    common::BlockState<lazy_types::State>(init),
+block_state::block_state(lazy_types::State init) :
+    common::block_state<lazy_types::State>(init),
     subBlocks_(block().size()/SubBlockSize_ + ((block().size() % SubBlockSize_ == 0)? 0: 1)),
     subBlockState_(subBlocks_),
 #ifdef DEBUG
@@ -295,15 +295,15 @@ BlockState::BlockState(lazy_types::State init) :
 }
 
 #if 0
-common::BlockState<lazy_types::State>::ProtocolState
-BlockState::getState(hostptr_t addr) const
+common::block_state<lazy_types::State>::protocol_state
+block_state::get_state(hostptr_t addr) const
 {
-    return ProtocolState(subBlockState_[GetSubBlockIndex(block().addr(), addr)]);
+    return protocol_state(subBlockState_[GetSubBlockIndex(block().addr(), addr)]);
 }
 #endif
 
 inline void
-BlockState::setState(ProtocolState state, hostptr_t addr)
+block_state::set_state(protocol_state state, hostptr_t addr)
 {
     if (addr == NULL) {
         setAll(state);
@@ -322,32 +322,32 @@ BlockState::setState(ProtocolState state, hostptr_t addr)
 }
 
 inline hostptr_t
-BlockState::getSubBlockAddr(const hostptr_t addr) const
+block_state::getSubBlockAddr(const hostptr_t addr) const
 {
     return GetSubBlockAddr(block().addr(), addr);
 }
 
 inline hostptr_t
-BlockState::getSubBlockAddr(unsigned index) const
+block_state::getSubBlockAddr(unsigned index) const
 {
     return GetSubBlockAddr(block().addr(), block().addr() + index * SubBlockSize_);
 }
 
 inline unsigned
-BlockState::getSubBlocks() const
+block_state::getSubBlocks() const
 {
     return subBlocks_;
 }
 
 inline size_t
-BlockState::getSubBlockSize() const
+block_state::getSubBlockSize() const
 {
     return block().size() < SubBlockSize_? block().size(): SubBlockSize_;
 }
 
 inline
 hal::event_ptr
-BlockState::syncToAccelerator(gmacError_t &err)
+block_state::sync_to_device(gmacError_t &err)
 {
     hal::event_ptr ret;
     err = gmacSuccess;
@@ -363,7 +363,7 @@ BlockState::syncToAccelerator(gmacError_t &err)
 #endif
     for (unsigned i = 0; i != subBlocks_; i++) {
 #ifdef USE_VM
-        if (bitmap.getEntry<ProtocolState>(block().acceleratorAddr(GetMode()) + i * SubBlockSize_) == lazy_types::Dirty) {
+        if (bitmap.getEntry<protocol_state>(block().acceleratorAddr(GetMode()) + i * SubBlockSize_) == lazy_types::Dirty) {
 #else
         if (subBlockState_[i] == lazy_types::Dirty) {
 #endif
@@ -380,7 +380,9 @@ BlockState::syncToAccelerator(gmacError_t &err)
             } else {
                 size_t sizeTransfer = SubBlockSize_ * (groupEnd - groupStart + 1);
                 if (sizeTransfer > block().size()) sizeTransfer = block().size();
-                ret = block().to_device(groupStart * SubBlockSize_, sizeTransfer, err);
+                ret = block().get_owner()->copy_async(block().get_device_addr()        + groupStart * SubBlockSize_,
+                                                      hal::ptr_t(block().get_shadow()) + groupStart * SubBlockSize_,
+                                                      sizeTransfer, err);
 #ifdef DEBUG
                 for (unsigned j = groupStart; j <= groupEnd; j++) { 
                     transfersToAccelerator_[j]++;
@@ -393,10 +395,12 @@ BlockState::syncToAccelerator(gmacError_t &err)
         }
     }
 
-    if (inGroup) {
+    if (err == gmacSuccess && inGroup) {
         size_t sizeTransfer = SubBlockSize_ * (groupEnd - groupStart + 1);
         if (sizeTransfer > block().size()) sizeTransfer = block().size();
-        ret = block().to_device(groupStart * SubBlockSize_, sizeTransfe, err);
+        ret = block().get_owner()->copy_async(block().get_device_addr()        + groupStart * SubBlockSize_,
+                                              hal::ptr_t(block().get_shadow()) + groupStart * SubBlockSize_,
+                                              sizeTransfer, err);
                                     
 #ifdef DEBUG
         for (unsigned j = groupStart; j <= groupEnd; j++) { 
@@ -411,14 +415,17 @@ BlockState::syncToAccelerator(gmacError_t &err)
 
 inline
 hal::event_ptr
-BlockState::syncToHost(gmacError_t &err)
+block_state::sync_to_host(gmacError_t &err)
 {
     TRACE(LOCAL, "Transfer block to host: %p", block().addr());
 
 #ifndef USE_VM
-    hal::event_ptr ret = block().to_host(err);
+    hal::event_ptr ret;
+    ret = block().get_owner()->copy_async(hal::ptr_t(block().get_shadow()),
+                                          block().get_device_addr(),
+                                          block().size(), err);
 #ifdef DEBUG
-    for (unsigned i = 0; i < subBlockState_.size(); i++) { 
+    for (unsigned i = 0; i < subBlockState_.size(); i++) {
         transfersToHost_[i]++;
     }
 #endif
@@ -432,7 +439,7 @@ BlockState::syncToHost(gmacError_t &err)
 
     vm::Bitmap &bitmap = GetBitmap();
     for (unsigned i = 0; i != subBlocks_; i++) {
-        if (bitmap.getEntry<ProtocolState>(block().acceleratorAddr(GetMode()) + i * SubBlockSize_) == lazy_types::Invalid) {
+        if (bitmap.getEntry<protocol_state>(block().acceleratorAddr(GetMode()) + i * SubBlockSize_) == lazy_types::Invalid) {
 #ifdef DEBUG
             transfersToHost_[i]++;
 #endif
@@ -447,20 +454,20 @@ BlockState::syncToHost(gmacError_t &err)
                     vm::cost<vm::MODEL_TOHOST>(SubBlockSize_, 1)) {
                 gaps++;
             } else {
-                ret = block().to_host(groupStart * SubBlockSize_,
-                                      SubBlockSize_ * (groupEnd - groupStart + 1),
-                                      err);
+                ret = block().get_owner()->copy_async(hal::ptr_t(block().get_shadow()) + groupStart * SubBlockSize_,
+                                                      block().get_device_addr()        + groupStart * SubBlockSize_,
+                                                      SubBlockSize_ * (groupEnd - groupStart + 1), err);
                 gaps = 0;
                 inGroup = false;
-                if (ret != gmacSuccess) break;
+                if (err != gmacSuccess) break;
             }
         }
     }
 
-    if (inGroup) {
-        ret = block().to_host(groupStart * SubBlockSize_,
-                            SubBlockSize_ * (groupEnd - groupStart + 1),
-                            err);
+    if (err == gmacSuccess && inGroup) {
+        ret = block().get_owner()->copy_async(hal::ptr_t(block().get_shadow()) + groupStart * SubBlockSize_,
+                                              block().get_device_addr()        + groupStart * SubBlockSize_,
+                                              SubBlockSize_ * (groupEnd - groupStart + 1), err);
     }
 
 #endif
@@ -469,7 +476,7 @@ BlockState::syncToHost(gmacError_t &err)
 }
 
 inline void
-BlockState::read(const hostptr_t addr)
+block_state::read(const hostptr_t addr)
 {
     long_t currentSubBlock = GetSubBlockIndex(block().addr(), addr);
     faultsRead_++;
@@ -485,7 +492,7 @@ BlockState::read(const hostptr_t addr)
 }
 
 inline void
-BlockState::writeStride(const hostptr_t addr)
+block_state::writeStride(const hostptr_t addr)
 {
     strideInfo_.signal_write(addr);
     if (strideInfo_.isStrided()) {
@@ -499,7 +506,7 @@ BlockState::writeStride(const hostptr_t addr)
 }
 
 inline void
-BlockState::writeTree(const hostptr_t addr)
+block_state::writeTree(const hostptr_t addr)
 {
     treeInfo_.signal_write(addr);
     BlockTreeInfo::Pair info = treeInfo_.getUnprotectInfo();
@@ -510,7 +517,7 @@ BlockState::writeTree(const hostptr_t addr)
 }
 
 inline void
-BlockState::write(const hostptr_t addr)
+block_state::write(const hostptr_t addr)
 {
     long_t currentSubBlock = GetSubBlockIndex(block().addr(), addr);
 
@@ -536,7 +543,7 @@ BlockState::write(const hostptr_t addr)
 }
 
 inline bool
-BlockState::is(ProtocolState state) const
+block_state::is(protocol_state state) const
 {
 #ifdef USE_VM
     vm::Bitmap &bitmap = GetBitmap();
@@ -551,7 +558,7 @@ BlockState::is(ProtocolState state) const
 }
 
 inline void
-BlockState::reset()
+block_state::reset()
 {
     faultsRead_  = 0;
     faultsWrite_ = 0;
@@ -561,7 +568,7 @@ BlockState::reset()
 }
 
 inline int
-BlockState::unprotect()
+block_state::unprotect()
 {
     int ret = 0;
     unsigned start = 0;
@@ -571,9 +578,9 @@ BlockState::unprotect()
 #endif
     for (unsigned i = 0; i < subBlocks_; i++) {
 #ifdef USE_VM
-        ProtocolState state = bitmap.getEntry<ProtocolState>(block().acceleratorAddr(GetMode()) + i * SubBlockSize_);
+        protocol_state state = bitmap.getEntry<protocol_state>(block().acceleratorAddr(GetMode()) + i * SubBlockSize_);
 #else
-        ProtocolState state = ProtocolState(subBlockState_[i]);
+        protocol_state state = protocol_state(subBlockState_[i]);
 #endif
         if (state == lazy_types::Dirty) {
             if (size == 0) start = i;
@@ -591,7 +598,7 @@ BlockState::unprotect()
 }
 
 inline int
-BlockState::protect(GmacProtection prot)
+block_state::protect(GmacProtection prot)
 {
     int ret = 0;
 #if 1
@@ -609,7 +616,7 @@ BlockState::protect(GmacProtection prot)
 
 inline
 void
-BlockState::acquired()
+block_state::acquired()
 {
     //setAll(lazy::Invalid);   
     //state_ = lazy::Invalid;
@@ -620,7 +627,7 @@ BlockState::acquired()
 
 inline
 void
-BlockState::released()
+block_state::released()
 {
     //setAll(lazy::ReadOnly);   
     state_ = lazy_types::ReadOnly;
@@ -632,7 +639,7 @@ BlockState::released()
 
 inline
 gmacError_t
-BlockState::dump(std::ostream &stream, common::Statistic stat)
+block_state::dump(std::ostream &stream, common::Statistic stat)
 {
 #ifdef DEBUG
     if (stat == common::PAGE_FAULTS_READ) {
@@ -683,24 +690,22 @@ namespace protocols {
 namespace lazy_types {
 
 inline
-Block &
-BlockState::block()
+block &
+block_state::block()
 {
-	//return reinterpret_cast<Block &>(*this);
-	return *(Block *)this;
+	return *(lazy_types::block *)this;
 }
 
 inline
-const Block &
-BlockState::block() const
+const block &
+block_state::block() const
 {
-	//return reinterpret_cast<const Block &>(*this);
-	return *(const Block *)this;
+	return *(const lazy_types::block *)this;
 }
 
 inline
-BlockState::BlockState(ProtocolState init) :
-    common::BlockState<lazy_types::State>(init)
+block_state::block_state(protocol_state init) :
+    common::block_state<lazy_types::State>(init)
 #ifdef DEBUG
     , faultsRead_(0),
     faultsWrite_(0),
@@ -710,47 +715,47 @@ BlockState::BlockState(ProtocolState init) :
 {
 }
 
-#if 0
-ProtocolState
-BlockState::getState(hostptr_t /* addr */) const
-{
-    return state_;
-}
-#endif
-
 inline void
-BlockState::setState(ProtocolState state, hostptr_t /* addr */)
+block_state::set_state(protocol_state state, hostptr_t /* addr */)
 {
     state_ = state;
 }
 
 inline
 hal::event_ptr
-BlockState::syncToAccelerator(gmacError_t &err)
+block_state::sync_to_device(gmacError_t &err)
 {
-    TRACE(LOCAL, "Transfer block to accelerator: %p", block().addr());
+    TRACE(LOCAL, "Transfer block to device: %p", block().get_bounds().start);
 
 #ifdef DEBUG
     transfersToAccelerator_++;
 #endif
-    return block().to_accelerator(err);
+    hal::event_ptr ret;
+    ret = block().get_owner()->copy_async(block().get_device_addr(),
+                                          hal::ptr_t(block().get_shadow()),
+                                          block().size(), err);
+    return ret;
 }
 
 inline
 hal::event_ptr
-BlockState::syncToHost(gmacError_t &err)
+block_state::sync_to_host(gmacError_t &err)
 {
-    TRACE(LOCAL, "Transfer block to host: %p", block().addr());
+    TRACE(LOCAL, "Transfer block to host: %p", block().get_bounds().start);
 
 #ifdef DEBUG
     transfersToHost_++;
 #endif
-    return block().to_host(err);
+    hal::event_ptr ret;
+    err = block().get_owner()->copy(hal::ptr_t(block().get_shadow()),
+                                    block().get_device_addr(),
+                                    block().size());
+    return ret;
 }
 
 inline
 void
-BlockState::read(const hostptr_t /*addr*/)
+block_state::read(const hostptr_t /*addr*/)
 {
 #ifdef DEBUG
     faultsRead_++;
@@ -760,7 +765,7 @@ BlockState::read(const hostptr_t /*addr*/)
 
 inline
 void
-BlockState::write(const hostptr_t /*addr*/)
+block_state::write(const hostptr_t /*addr*/)
 {
 #ifdef DEBUG
     faultsWrite_++;
@@ -770,28 +775,28 @@ BlockState::write(const hostptr_t /*addr*/)
 
 inline
 bool
-BlockState::is(ProtocolState state) const
+block_state::is(protocol_state state) const
 {
     return state_ == state;
 }
 
 inline
 int
-BlockState::protect(GmacProtection prot)
+block_state::protect(GmacProtection prot)
 {
-    return memory_ops::protect(block().addr(), block().size(), prot);
+    return memory_ops::protect(block().get_bounds().start, block().size(), prot);
 }
 
 inline
 int
-BlockState::unprotect()
+block_state::unprotect()
 {
-    return memory_ops::protect(block().addr(), block().size(), GMAC_PROT_READWRITE);
+    return memory_ops::protect(block().get_bounds().start, block().size(), GMAC_PROT_READWRITE);
 }
 
 inline
 void
-BlockState::acquired()
+block_state::acquired()
 {
 #ifdef DEBUG
     faultsRead_ = 0;
@@ -803,7 +808,7 @@ BlockState::acquired()
 
 inline
 void
-BlockState::released()
+block_state::released()
 {
 #ifdef DEBUG
     faultsRead_ = 0;
@@ -815,7 +820,7 @@ BlockState::released()
 
 inline
 gmacError_t
-BlockState::dump(std::ostream &stream, common::Statistic stat)
+block_state::dump(std::ostream &stream, common::Statistic stat)
 {
 #ifdef DEBUG
     if (stat == common::PAGE_FAULTS_READ) {

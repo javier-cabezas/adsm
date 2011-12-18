@@ -73,8 +73,8 @@ private:
     long_t firstUsedEntry_;
     long_t lastUsedEntry_;
 
-    void syncToHost(long_t startIndex, long_t endIndex, size_t elemSize);
-    void syncToAccelerator(long_t startIndex, long_t endIndex, size_t elemSize);
+    void sync_to_host(long_t startIndex, long_t endIndex, size_t elemSize);
+    void sync_to_device(long_t startIndex, long_t endIndex, size_t elemSize);
     void setDirty(bool synced);
 
     bool isDirty() const;
@@ -187,7 +187,7 @@ protected:
      * \param lastIndex The last index of the node to be synchronized
      */
     template <typename T>
-    void syncToHost(long_t startIndex, long_t endIndex);
+    void sync_to_host(long_t startIndex, long_t endIndex);
 
     /**
      * Synchronizes the contents of the Node from the host memory
@@ -197,7 +197,7 @@ protected:
      * \param lastIndex The last index of the node to be synchronized
      */
     template <typename T>
-    void syncToAccelerator(long_t startIndex, long_t endIndex);
+    void sync_to_device(long_t startIndex, long_t endIndex);
 
     /**
      * Tells if the Node is synced between host and accelerator
@@ -420,7 +420,7 @@ protected:
      */
     long_t getIndex(const accptr_t ptr) const;
 
-    void syncToAccelerator();
+    void sync_to_device();
 public:
     /**
      * Constructs a new Bitmap
