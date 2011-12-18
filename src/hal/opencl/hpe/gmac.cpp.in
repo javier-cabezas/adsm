@@ -1,0 +1,264 @@
+#include "config/common.h"
+#include "include/gmac/opencl.h"
+
+#include "memory/manager.h"
+
+#include "core/hpe/address_space.h"
+#include "core/hpe/thread.h"
+#include "core/hpe/vdevice.h"
+
+#include "util/file.h"
+
+using __impl::core::hpe::address_space_ptr;
+using __impl::core::hpe::kernel;
+using __impl::core::hpe::thread;
+using __impl::core::hpe::vdevice;
+
+using __impl::hal::ptr_t;
+using __impl::hal::kernel_t;
+
+using __impl::util::get_file_contents;
+
+namespace @OPENCL_API_PREFIX@ {
+const config config::null = config();
+}
+
+static vdevice &get_current_vdevice()
+{
+    return thread::get_current_thread().get_current_virtual_device();
+}
+
+struct GMAC_LOCAL launch_config {
+    gmac_kernel_id_t key;
+    kernel::arg_list *args;
+    kernel::launch_ptr launch;
+};
+
+gmacError_t APICALL
+@OPENCL_API_PREFIX@GetKernel(gmac_kernel_id_t key, @OPENCL_API_PREFIX@_kernel *k)
+{
+    enterGmac();
+    gmacError_t ret = gmacSuccess;
+
+    launch_config *conf = new launch_config;
+    conf->key  = key;
+    conf->args = new kernel::arg_list;
+
+    k->impl_ = conf;
+
+    thread::set_last_error(ret);
+    exitGmac();
+
+    return ret;
+}
+
+gmacError_t APICALL
+@OPENCL_API_PREFIX@ReleaseKernel(@OPENCL_API_PREFIX@_kernel k)
+{
+    enterGmac();
+    if (k.impl_ != NULL) {
+        launch_config *conf = reinterpret_cast<launch_config *>(k.impl_);
+        delete conf->args;
+        delete conf;
+    }
+    gmacError_t ret = gmacSuccess;
+    thread::set_last_error(ret);
+    exitGmac();
+
+    return ret;
+}
+
+gmacError_t APICALL
+@OPENCL_API_PREFIX@SetKernelArg(@OPENCL_API_PREFIX@_kernel k, unsigned index, size_t size, const void *addr)
+{
+    enterGmac();
+    launch_config *conf = reinterpret_cast<launch_config *>(k.impl_);
+    vdevice &dev = get_current_vdevice();
+    kernel *ker = dev.get_address_space()->get_kernel(conf->key);
+    gmacError_t ret;
+    if (ker != NULL) {
+        ret = conf->args->set_arg(*ker, addr, size, index);
+    } else {
+        ret = gmacErrorInvalidValue;
+    }
+    thread::set_last_error(ret);
+    exitGmac();
+
+    return ret;
+}
+
+gmacError_t APICALL
+@OPENCL_API_PREFIX@SetKernelArgPtrComplex(@OPENCL_API_PREFIX@_kernel k, unsigned index, const void *_ptr, GmacProtection prot)
+{
+    hostptr_t ptr = hostptr_t(_ptr);
+
+    enterGmac();
+    gmacError_t ret = gmacSuccess;
+
+    address_space_ptr aspace = get_current_vdevice().get_address_space();
+
+    ptr_t tmp = __impl::memory::getManager().translate(aspace, ptr);
+    if (!tmp) {
+        ret = gmacErrorInvalidValue;
+        thread::set_last_error(ret);
+        exitGmac();
+        return ret;
+    }
+
+    launch_config *conf = reinterpret_cast<launch_config *>(k.impl_);
+    kernel::arg_list *args = conf->args;
+    cl_mem tmpMem;
+    if (tmp.get_offset() > 0) {
+        size_t size;
+        size = __impl::memory::getManager().getAllocSize(aspace, ptr, ret);
+        ASSERTION(ret == gmacSuccess);
+        tmpMem = args->get_subbuffer(aspace->get_hal_context()(), ptr, tmp, size);
+    } else {
+        tmpMem = tmp.get_device_addr();
+    }
+
+    vdevice &dev = get_current_vdevice();
+    kernel *ker = dev.get_address_space()->get_kernel(conf->key);
+
+    if (ker != NULL) {
+        ret = args->set_arg(*ker, &tmpMem, sizeof(cl_mem), index);
+        if (ret == gmacSuccess) {
+            args->add_object(ptr, prot);
+        }
+    } else {
+        ret = gmacErrorInvalidValue;
+    }
+
+    thread::set_last_error(ret);
+    exitGmac();
+
+    return ret;
+}
+
+gmacError_t
+gmacLaunch(kernel::launch_ptr);
+
+gmacError_t
+gmacThreadSynchronize(kernel::launch_ptr);
+
+gmacError_t APICALL
+@OPENCL_API_PREFIX@CallNDRange(@OPENCL_API_PREFIX@_kernel kernel,
+    size_t workDim, const size_t *globalWorkOffset,
+    const size_t *globalWorkSize, const size_t *localWorkSize)
+{
+    gmacError_t ret;
+    enterGmac();
+
+    launch_config *conf = reinterpret_cast<launch_config *>(kernel.impl_);
+    kernel::arg_list *args = conf->args;
+    kernel::config *c = new kernel::config(cl_int(workDim), globalWorkOffset, globalWorkSize, localWorkSize);
+    vdevice &dev = get_current_vdevice();
+    kernel::launch_ptr launch = dev.launch(conf->key, *c, *args, ret);
+
+    ret = gmacLaunch(launch);
+    if(ret == gmacSuccess) {
+#if defined(SEPARATE_COMMAND_QUEUES)
+        ret = gmacThreadSynchronize(*(kernel::launch *)kernel.impl_);
+#else
+        ret = __impl::memory::getManager().acquireObjects(dev.get_address_space(),
+                                                          args->get_objects());
+#endif
+        conf->launch = launch;
+    }
+    thread::set_last_error(ret);
+    exitGmac();
+    return ret;
+}
+
+
+gmacError_t APICALL @OPENCL_API_PREFIX@GetKernelError(@OPENCL_API_PREFIX@_kernel kernel)
+{
+    enterGmac();
+    launch_config *conf = reinterpret_cast<launch_config *>(kernel.impl_);
+    gmacError_t ret = gmacThreadSynchronize(conf->launch);
+    thread::set_last_error(ret);
+    exitGmac();
+    return ret;
+}
+
+
+gmacError_t APICALL
+@OPENCL_API_PREFIX@CompileSource(const char *_code, const char *_flags)
+{
+    enterGmac();
+    std::string code(_code? _code: "");
+    std::string flags(_flags? _flags: "");
+
+    vdevice &dev = get_current_vdevice();
+
+    gmacError_t ret = __impl::hal::opencl::compile_code(dev.get_address_space()->get_hal_context().get_device().get_platform(), code, flags);
+    thread::set_last_error(ret);
+    exitGmac();
+
+    return ret;
+}
+
+gmacError_t APICALL
+@OPENCL_API_PREFIX@CompileSourceFile(const char *path, const char *flags)
+{
+    gmacError_t ret = gmacSuccess;
+    
+    std::string code = get_file_contents(path, ret);
+
+    if (ret == gmacSuccess) {
+        ret = @OPENCL_API_PREFIX@CompileSource(code.c_str(), flags);
+    }
+
+    thread::set_last_error(ret);
+
+    return ret;
+}
+
+gmacError_t APICALL
+@OPENCL_API_PREFIX@CompileBinary(const unsigned char *_binary, size_t size, const char *_flags)
+{
+    enterGmac();
+    std::string binary(_binary? (const char*) _binary: "", size);
+    std::string flags(_flags? _flags: "");
+
+    vdevice &dev = get_current_vdevice();
+
+    gmacError_t ret = __impl::hal::opencl::compile_binary(dev.get_address_space()->get_hal_context().get_device().get_platform(), binary, flags);
+    thread::set_last_error(ret);
+    exitGmac();
+
+    return ret;
+}
+
+gmacError_t APICALL
+@OPENCL_API_PREFIX@CompileBinaryFile(const char *path, const char *flags)
+{
+    gmacError_t ret = gmacSuccess;
+    std::ifstream in(path, std::ios_base::in);
+    if (!in.good()) {
+        ret = gmacErrorInvalidValue;
+        thread::set_last_error(ret);
+        return ret;
+    }
+    in.seekg (0, std::ios::end);
+    std::streampos length = in.tellg();
+    in.seekg (0, std::ios::beg);
+    if (length == std::streampos(0)) {
+        thread::set_last_error(ret);
+        return ret;
+    }
+    // Allocate memory for the code
+    unsigned char *buffer = new unsigned char[int(length)+1];
+    // Read data as a block
+    in.read((char *) &buffer[0],length);
+    buffer[static_cast<int>(length)] = '\0';
+    in.close();
+    ret = @OPENCL_API_PREFIX@CompileBinary(&buffer[0], static_cast<int>(length), flags);
+    thread::set_last_error(ret);
+
+    delete [] buffer;
+
+    return ret;
+}
+
+/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */
