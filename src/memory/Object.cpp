@@ -169,13 +169,6 @@ Object::memcpyObjectToObject(core::Mode &mode,
         acceleratorAddr(srcOwner, srcPtr).pasId_) {
         TRACE(LOCAL, "Using fast path!: %p -> %p ("FMT_SIZE")",        addr() + srcOffset,
                                                                 dstObj.addr() + dstOffset, size);
-        accptr_t dstPtr = dstObj.acceleratorAddr(dstOwner, dstObj.addr() + dstOffset);
-        accptr_t srcPtr = acceleratorAddr(srcOwner, addr() + srcOffset);
-
-#if 0
-        lockWrite();
-        dstObj.lockWrite();
-#endif
         size_t dummyOffset = 0;
         BlockMap::const_iterator i = firstBlock(srcOffset, dummyOffset);
         TRACE(LOCAL, "FP: %p "FMT_SIZE, dstObj.addr() + dstOffset, size);
