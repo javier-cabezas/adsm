@@ -4,7 +4,40 @@
 
 namespace __impl { namespace hal { namespace cuda {
 
-event_t 
+static event_ptr::type
+get_event_type(ptr_t dst, ptr_t src)
+{
+    if (dst.is_device_ptr() &&
+        src.is_device_ptr()) {
+        return event_ptr::type::TransferDevice;
+    } else if (dst.is_device_ptr() &&
+               src.is_host_ptr()) {
+        return event_ptr::type::TransferToDevice;
+    } else if (dst.is_host_ptr() &&
+               src.is_device_ptr()) {
+        return event_ptr::type::TransferToHost;
+    } else {
+        return event_ptr::type::TransferHost;
+    }
+}
+
+static event_ptr::type
+get_event_type(ptr_t dst, device_input &/* input */)
+{
+    if (dst.is_device_ptr()) {
+        return event_ptr::type::TransferToDevice;
+    } else {
+        return event_ptr::type::TransferToHost;
+    }
+}
+
+static event_ptr::type
+get_event_type(device_output &/* output */, ptr_t src)
+{
+    return event_ptr::type::TransferToHost;
+}
+
+event_ptr 
 context_t::copy_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
@@ -13,17 +46,17 @@ context_t::copy_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stre
         err = dependencies->sync();
 
         if (err != gmacSuccess) {
-            return event_t();
+            return event_ptr();
         }
     }
 
-    event_t ret(false, _event_t::Transfer, *this);
+    event_ptr ret(false, get_event_type(dst, src), *this);
 
     CUresult res;
 
     set();
 
-    ret.begin(stream);
+    ret->begin(stream);
     if (dst.is_device_ptr() &&
         src.is_device_ptr()) {
         TRACE(LOCAL, "D -> D copy ("FMT_SIZE" bytes) on stream: %p", count, stream());
@@ -59,7 +92,7 @@ context_t::copy_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stre
     } else {
         FATAL("Unhandled case");
     }
-    ret.end();
+    ret->end();
 
     err = error(res);
     if (err != gmacSuccess) {
@@ -71,7 +104,7 @@ context_t::copy_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stre
     return ret;
 }
 
-event_t
+event_ptr
 context_t::copy_backend(ptr_t dst, device_input &input, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
@@ -80,12 +113,12 @@ context_t::copy_backend(ptr_t dst, device_input &input, size_t count, stream_t &
         err = dependencies->sync();
 
         if (err != gmacSuccess) {
-            return event_t();
+            return event_ptr();
         }
     }
 
     TRACE(LOCAL, "IO -> D copy ("FMT_SIZE" bytes) on stream: %p", count, stream());
-    event_t ret(false, _event_t::Transfer, *this);
+    event_ptr ret(false, get_event_type(dst, input), *this);
 
     hostptr_t host = get_memory(count);
 
@@ -96,9 +129,9 @@ context_t::copy_backend(ptr_t dst, device_input &input, size_t count, stream_t &
 
         set();
 
-        ret.begin(stream);
+        ret->begin(stream);
         res = cuMemcpyHtoD(dst.get_device_addr(), host, count);
-        ret.end();
+        ret->end();
 
         err = error(res);
         if (err != gmacSuccess) {
@@ -113,7 +146,7 @@ context_t::copy_backend(ptr_t dst, device_input &input, size_t count, stream_t &
     return ret;
 }
 
-event_t
+event_ptr
 context_t::copy_backend(device_output &output, const ptr_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
@@ -122,12 +155,12 @@ context_t::copy_backend(device_output &output, const ptr_t src, size_t count, st
         err = dependencies->sync();
 
         if (err != gmacSuccess) {
-            return event_t();
+            return event_ptr();
         }
     }
 
     TRACE(LOCAL, "D -> IO copy ("FMT_SIZE" bytes) on stream: %p", count, stream());
-    event_t ret(false, _event_t::Transfer, *this);
+    event_ptr ret(false, get_event_type(output, src), *this);
 
     hostptr_t host = get_memory(count);
 
@@ -135,9 +168,9 @@ context_t::copy_backend(device_output &output, const ptr_t src, size_t count, st
 
     set();
 
-    ret.begin(stream);
+    ret->begin(stream);
     res = cuMemcpyDtoH(host, src.get_device_addr(), count);
-    ret.end();
+    ret->end();
 
     bool ok = output.write(host, count);
 
@@ -158,7 +191,7 @@ context_t::copy_backend(device_output &output, const ptr_t src, size_t count, st
     return ret;
 }
 
-event_t 
+event_ptr 
 context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
@@ -167,17 +200,17 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
         err = dependencies->sync();
 
         if (err != gmacSuccess) {
-            return event_t();
+            return event_ptr();
         }
     }
 
-    event_t ret(true, _event_t::Transfer, *this);
+    event_ptr ret(true, get_event_type(dst, src), *this);
 
     CUresult res;
 
     set();
 
-    ret.begin(stream);
+    ret->begin(stream);
     if (dst.is_device_ptr() &&
         src.is_device_ptr()) {
         TRACE(LOCAL, "D (%p) -> D (%p) async copy ("FMT_SIZE" bytes) on stream: "FMT_ID,
@@ -213,17 +246,15 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
                      src.get_device_addr(),
                      dst.get_host_addr(),
                      count, stream.get_print_id());
-        event_t last = stream.get_last_event();
-        if (last.is_valid()) {
-            last.sync();
-        }
+        event_ptr last = stream.get_last_event();
+        last->sync();
 
         buffer_t *buffer = get_input_buffer(count, stream, ret);
 
         res = cuMemcpyDtoHAsync(dst.get_host_addr(), src.get_device_addr(), count, stream());
 
         // Perform memcpy after asynchronous copy
-        ret.add_trigger(util::do_func(memcpy, buffer->get_addr(), src.get_host_addr(), count));
+        ret.add_trigger(do_func(memcpy, buffer->get_addr(), src.get_host_addr(), count));
     } else if (dst.is_host_ptr() &&
                src.is_host_ptr()) {
         TRACE(LOCAL, "H (%p) -> H (%p) copy ("FMT_SIZE" bytes) on stream: "FMT_ID,
@@ -235,7 +266,7 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
         memcpy(dst.get_host_addr(), src.get_host_addr(), count);
     }
 
-    ret.end();
+    ret->end();
 
     err = error(res);
     if (err != gmacSuccess) {
@@ -247,7 +278,7 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
     return ret;
 }
 
-event_t
+event_ptr
 context_t::copy_async_backend(ptr_t dst, device_input &input, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
@@ -256,12 +287,12 @@ context_t::copy_async_backend(ptr_t dst, device_input &input, size_t count, stre
         err = dependencies->sync();
 
         if (err != gmacSuccess) {
-            return event_t();
+            return event_ptr();
         }
     }
 
     TRACE(LOCAL, "IO -> D async copy ("FMT_SIZE" bytes) on stream: %p", count, stream());
-    event_t ret(true, _event_t::Transfer, *this);
+    event_ptr ret(true, get_event_type(dst, input), *this);
 
     //buffer_t &buffer = stream.get_buffer(count);
     hostptr_t mem = get_memory(count);
@@ -273,9 +304,9 @@ context_t::copy_async_backend(ptr_t dst, device_input &input, size_t count, stre
 
         set();
 
-        ret.begin(stream);
+        ret->begin(stream);
         res = cuMemcpyHtoDAsync(dst.get_device_addr(), mem, count, stream());
-        ret.end();
+        ret->end();
 
         err = error(res);
         if (err != gmacSuccess) {
@@ -289,7 +320,7 @@ context_t::copy_async_backend(ptr_t dst, device_input &input, size_t count, stre
     return ret;
 }
 
-event_t
+event_ptr
 context_t::copy_async_backend(device_output &output, const ptr_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
@@ -298,12 +329,12 @@ context_t::copy_async_backend(device_output &output, const ptr_t src, size_t cou
         err = dependencies->sync();
 
         if (err != gmacSuccess) {
-            return event_t();
+            return event_ptr();
         }
     }
 
     TRACE(LOCAL, "D -> IO async copy ("FMT_SIZE" bytes) on stream: %p", count, stream());
-    event_t ret(false, _event_t::Transfer, *this);
+    event_ptr ret(true, get_event_type(output, src), *this);
 
     hostptr_t host = get_memory(count);
 
@@ -311,9 +342,9 @@ context_t::copy_async_backend(device_output &output, const ptr_t src, size_t cou
 
     set();
 
-    ret.begin(stream);
+    ret->begin(stream);
     res = cuMemcpyDtoHAsync(host, src.get_device_addr(), count, stream());
-    ret.end();
+    ret->end();
 
     bool ok = output.write(host, count);
 
@@ -334,7 +365,7 @@ context_t::copy_async_backend(device_output &output, const ptr_t src, size_t cou
     return ret;
 }
 
-event_t 
+event_ptr 
 context_t::memset_backend(ptr_t dst, int c, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
@@ -343,18 +374,18 @@ context_t::memset_backend(ptr_t dst, int c, size_t count, stream_t &stream, list
         err = dependencies->sync();
 
         if (err != gmacSuccess) {
-            return event_t();
+            return event_ptr();
         }
     }
 
     set();
 
     TRACE(LOCAL, "memset ("FMT_SIZE" bytes) on stream: %p", count, stream());
-    event_t ret(false, _event_t::Transfer, *this);
+    event_ptr ret(false, event_ptr::type::TransferToDevice, *this);
 
-    ret.begin(stream);
+    ret->begin(stream);
     CUresult res = cuMemsetD8(dst.get_device_addr(), (unsigned char)c, count);
-    ret.end();
+    ret->end();
 
     err = error(res);
 
@@ -367,7 +398,7 @@ context_t::memset_backend(ptr_t dst, int c, size_t count, stream_t &stream, list
     return ret;
 }
 
-event_t 
+event_ptr 
 context_t::memset_async_backend(ptr_t dst, int c, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
@@ -376,18 +407,18 @@ context_t::memset_async_backend(ptr_t dst, int c, size_t count, stream_t &stream
         err = dependencies->sync();
 
         if (err != gmacSuccess) {
-            return event_t();
+            return event_ptr();
         }
     }
 
     set();
 
     TRACE(LOCAL, "memset_async ("FMT_SIZE" bytes) on stream: %p", count, stream());
-    event_t ret(true, _event_t::Transfer, *this);
+    event_ptr ret(true, _event_t::type::TransferToDevice, *this);
 
-    ret.begin(stream);
+    ret->begin(stream);
     CUresult res = cuMemsetD8Async(dst.get_device_addr(), (unsigned char)c, count, stream());
-    ret.end();
+    ret->end();
 
     err = error(res);
 

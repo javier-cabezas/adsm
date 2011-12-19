@@ -6,10 +6,12 @@ set(util_os_SRC
     lock.h
     lock-impl.h
     lock.cpp
+    private.h
+    private-impl.h
     Thread-impl.h
-    Semaphore.h
-    Semaphore-impl.h
-    Semaphore.cpp
+    semaphore.h
+    semaphore-impl.h
+    semaphore.cpp
 )
 
 set(util_os_DBC

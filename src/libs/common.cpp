@@ -2,8 +2,8 @@
 
 #include "libs/common.h"
 
-#include "util/Atomics.h"
-#include "util/Private.h"
+#include "util/atomics.h"
+#include "util/private.h"
 
 static __impl::util::Private<bool> inGmac_;
 __impl::util::Private<bool> isRunTimeThread_;

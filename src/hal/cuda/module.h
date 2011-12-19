@@ -47,7 +47,7 @@ WITH THE SOFTWARE.  */
 #include "config/config.h"
 
 #include "util/descriptor.h"
-#include "util/UniquePtr.h"
+#include "util/smart_ptr.h"
 #include "util/stl/locked_map.h"
 
 #include "types.h"

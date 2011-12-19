@@ -34,9 +34,10 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_UTIL_REFERENCE_H_
 #define GMAC_UTIL_REFERENCE_H_
 
+#if 0
 #include "config/common.h"
 
-#include "Atomics.h"
+#include "atomics.h"
 
 namespace __impl { namespace util {
 
@@ -68,5 +69,6 @@ public:
 }}
 
 #include "Reference-impl.h"
+#endif
 
 #endif

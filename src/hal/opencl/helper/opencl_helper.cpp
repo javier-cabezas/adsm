@@ -1,5 +1,6 @@
-#include "util/Logger.h"
-#include "util/UniquePtr.h"
+#include "trace/logger.h"
+
+#include "util/smart_ptr.h"
 
 #include "opencl_helper.h"
 

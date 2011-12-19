@@ -17,13 +17,13 @@ class GMAC_LOCAL stream_t :
     public hal::detail::stream_t<backend_traits, implementation_traits> {
     typedef hal::detail::stream_t<backend_traits, implementation_traits> Parent;
 
-    event_t lastEvent_;
+    event_ptr lastEvent_;
 
 public:
     stream_t(CUstream stream, context_t &context);
 
-    event_t get_last_event();
-    void set_last_event(event_t event);
+    event_ptr get_last_event();
+    void set_last_event(event_ptr event);
 
     context_t &get_context();
 

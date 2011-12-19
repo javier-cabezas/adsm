@@ -36,8 +36,8 @@ WITH THE SOFTWARE.  */
 
 #include "include/gmac/types.h"
 #include "config/common.h"
-#include "util/Private.h"
-#include "util/Atomics.h"
+#include "util/private.h"
+#include "util/atomics.h"
 
 #include "States.h"
 

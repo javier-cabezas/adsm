@@ -106,7 +106,7 @@ kernel_t<B, I>::launch::get_arg_list() const
 
 template <typename B, typename I>
 inline
-typename I::event
+typename I::event_ptr
 kernel_t<B, I>::launch::get_event()
 {
     return event_;

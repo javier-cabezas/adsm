@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010, 2011 University of Illinois
+/* Copyright (c) 2009-2011sity of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -48,7 +48,7 @@ WITH THE SOFTWARE.  */
 
 #include "util/NonCopyable.h"
 #include "util/Reference.h"
-#include "util/Private.h"
+#include "util/private.h"
 
 #include "kernel.h"
 
@@ -82,7 +82,7 @@ class GMAC_LOCAL vdevice :
 protected:
     process &proc_;
 
-    util::shared_ptr<address_space> aspace_;
+    address_space_ptr aspace_;
 
     hal::stream_t &streamLaunch_;
 #ifdef USE_VM
@@ -115,7 +115,7 @@ public:
      * \param streamLaunch Stream to which enqueue kernel launch
     */
     vdevice(process &proc,
-            util::shared_ptr<address_space> aspace,
+            address_space_ptr aspace,
             hal::stream_t &streamLaunch);
 
 #if 0
@@ -189,7 +189,7 @@ public:
      * \param launch Reference to a KernelLaunch object
      * \return An event that represents the kernel execution
      */
-    hal::event_t execute(kernel::launch_ptr launch, gmacError_t &err);
+    hal::event_ptr execute(kernel::launch_ptr launch, gmacError_t &err);
 
     /**
      * Waits for kernel execution
@@ -246,10 +246,7 @@ public:
     memory::map_object &get_object_map();
     const memory::map_object &get_object_map() const;
 
-    util::shared_ptr<address_space> get_address_space();
-    util::shared_ptr<const address_space> get_address_space() const;
-
-    const hal::device &get_device();
+    address_space_ptr get_address_space() const;
 };
 
 }}}

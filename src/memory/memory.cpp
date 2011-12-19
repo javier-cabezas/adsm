@@ -1,14 +1,14 @@
 #include "manager.h"
 #include "allocator.h"
 
-#include "allocator/Slab.h"
+#include "allocator/slab.h"
 
 #include "memory/object_state.h"
 
 #ifdef USE_VM
 //#include "protocol/Gather.h"
 #endif
-#include "protocol/Lazy.h"
+#include "protocol/lazy.h"
 
 #if defined(__GNUC__)
 #include <strings.h>
@@ -48,10 +48,10 @@ void Init()
 #endif
 }
 
-protocol_interface *ProtocolInit(unsigned flags)
+protocol *ProtocolInit(unsigned flags)
 {
     TRACE(GLOBAL, "Initializing Memory Protocol");
-    protocol_interface *ret = NULL;
+    protocol *ret = NULL;
     if(strcasecmp(config::params::Protocol, "Rolling") == 0 ||
        strcasecmp(config::params::Protocol, "Lazy") == 0) {
         bool eager;
@@ -61,22 +61,22 @@ protocol_interface *ProtocolInit(unsigned flags)
             eager = false;
         }
         if(0 != (flags & 0x1)) {
-            ret = new gmac::memory::protocol::Lazy<
-                memory::object_state<protocol::lazy_types::BlockState> >(eager);
+            ret = new gmac::memory::protocols::Lazy<
+                memory::object_state<protocols::lazy_types::BlockState> >(eager);
         } else {
-            ret = new gmac::memory::protocol::Lazy<
-                memory::object_state<protocol::lazy_types::BlockState> >(eager);
+            ret = new gmac::memory::protocols::Lazy<
+                memory::object_state<protocols::lazy_types::BlockState> >(eager);
         }
     }
 #ifdef USE_VM
-    else if(strcasecmp(config::params::protocol_interface, "Gather") == 0) {
+    else if(strcasecmp(config::params::protocol, "Gather") == 0) {
         if(0 != (flags & 0x1)) {
-            ret = new gmac::memory::protocol_interface::Lazy<
-                memory::object_state<protocol_interface::lazy_types::BlockState> >(eager);
+            ret = new gmac::memory::protocol::Lazy<
+                memory::object_state<protocol::lazy_types::BlockState> >(eager);
         }
         else {
-            ret = new gmac::memory::protocol_interface::Lazy<
-                memory::object_state<protocol_interface::lazy_types::BlockState> >(eager);
+            ret = new gmac::memory::protocol::Lazy<
+                memory::object_state<protocol::lazy_types::BlockState> >(eager);
         }
     }
 #endif

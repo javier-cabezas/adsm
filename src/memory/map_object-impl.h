@@ -6,14 +6,14 @@
 namespace __impl { namespace memory {
 
 inline
-hal::event_t
-map_object::forEachObject(hal::event_t (object::*f)(gmacError_t &), gmacError_t &err)
+hal::event_ptr
+map_object::acquire_objects(GmacProtection prot, gmacError_t &err)
 {
-    hal::event_t ret;
+    hal::event_ptr ret;
     iterator i;
     lock_read();
     for(i = begin(); i != end(); i++) {
-        ret = (i->second->*f)(err);
+        ret = (*i->second).release(prot, err);
         if(err != gmacSuccess) {
             unlock();
             return ret;
@@ -23,16 +23,16 @@ map_object::forEachObject(hal::event_t (object::*f)(gmacError_t &), gmacError_t 
     return ret;
 }
 
-template <typename P1>
-hal::event_t
-map_object::forEachObject(hal::event_t (object::*f)(P1 &, gmacError_t &), P1 &p1, gmacError_t &err)
+inline
+hal::event_ptr
+map_object::release_objects(bool flushDirty, gmacError_t &err)
 {
-    hal::event_t ret;
-    const_iterator i;
+    hal::event_ptr ret;
+    iterator i;
     lock_read();
     for(i = begin(); i != end(); i++) {
-        ret = (i->second->*f)(p1, err);
-        if (err != gmacSuccess) {
+        ret = (*i->second).release(flushDirty, err);
+        if(err != gmacSuccess) {
             unlock();
             return ret;
         }
@@ -41,17 +41,78 @@ map_object::forEachObject(hal::event_t (object::*f)(P1 &, gmacError_t &), P1 &p1
     return ret;
 }
 
+#if 0
+inline
+hal::event_ptr
+map_object::for_each_object(hal::event_ptr (object::*f)(gmacError_t &), gmacError_t &err)
+{
+    hal::event_ptr ret;
+    iterator i;
+    lock_read();
+    for(i = begin(); i != end(); i++) {
+        ret = ((*i->second).*f)(err);
+        if(err != gmacSuccess) {
+            unlock();
+            return ret;
+        }
+    }
+    unlock();
+    return ret;
+}
+#endif
+
+#if 0
+template <typename P1>
+hal::event_ptr
+map_object::for_each_object(hal::event_ptr (object::*f)(P1, gmacError_t &), P1 p1, gmacError_t &err)
+{
+    hal::event_ptr ret;
+    const_iterator i;
+    lock_read();
+    for(i = begin(); i != end(); i++) {
+        ret = ((*i->second).*f)(p1, err);
+        if (err != gmacSuccess) {
+            unlock();
+            return ret;
+        }
+    }
+    unlock();
+    return ret;
+}
+#endif
+
+#if 0
+template <typename F, typename... Args>
+hal::event_ptr
+map_object::for_each_object(F f, gmacError_t &err, Args... args)
+{
+    hal::event_ptr ret;
+    const_iterator i;
+    lock_read();
+    for(i = begin(); i != end(); i++) {
+        F tmp = f;
+        std::bind(tmp, *i->second, args..., err);
+        ret = tmp();
+        if (err != gmacSuccess) {
+            unlock();
+            return ret;
+        }
+    }
+    unlock();
+    return ret;
+}
+#endif
 
 #ifdef DEBUG
 inline
-gmacError_t map_object::dumpObjects(const std::string &dir, std::string prefix, protocol::common::Statistic stat) const
+gmacError_t map_object::dumpObjects(const std::string &dir, std::string prefix, protocols::common::Statistic stat) const
 {
     lock_read();
     const_iterator i;
     for(i = begin(); i != end(); i++) {
         object &obj = *(i->second);
         std::stringstream name;
-        name << dir << prefix << "#" << obj.getId() << "-" << obj.getDumps(stat) << "_" << protocol::common::StatisticName[stat];
+        name << dir << prefix << "#" << obj.getId() << "-" << obj.getDumps(stat) << "_" << protocols::common::StatisticName[stat];
 
         std::ofstream out(name.str().c_str(), std::ios_base::trunc);
         ASSERTION(out.good());
@@ -64,13 +125,13 @@ gmacError_t map_object::dumpObjects(const std::string &dir, std::string prefix, 
 }
 
 inline
-gmacError_t map_object::dumpObject(const std::string &dir, std::string prefix, protocol::common::Statistic stat, hostptr_t ptr) const
+gmacError_t map_object::dumpObject(const std::string &dir, std::string prefix, protocols::common::Statistic stat, hostptr_t ptr) const
 {
-    object *obj = getObject(ptr, 1);
+    object_ptr obj = get_object(ptr, 1);
     lock_read();
     ASSERTION(obj != NULL);
     std::stringstream name;
-    name << dir << prefix << "#" << obj->getId() << "-" << obj->getDumps(stat) << "_" << protocol::common::StatisticName[stat];
+    name << dir << prefix << "#" << obj->getId() << "-" << obj->getDumps(stat) << "_" << protocols::common::StatisticName[stat];
 
     std::ofstream out(name.str().c_str(), std::ios_base::trunc);
     ASSERTION(out.good());
@@ -84,7 +145,7 @@ gmacError_t map_object::dumpObject(const std::string &dir, std::string prefix, p
 
 inline
 bool
-map_object::hasModifiedObjects() const
+map_object::has_modified_objects() const
 {
     lock_read();
     bool ret = modifiedObjects_;
@@ -94,7 +155,7 @@ map_object::hasModifiedObjects() const
 
 inline
 void
-map_object::invalidateObjects()
+map_object::invalidate_objects()
 {
     lock_write();
     modifiedObjects_ = false;
@@ -111,7 +172,7 @@ map_object::modifiedObjects_unlocked()
 
 inline
 void
-map_object::modifiedObjects()
+map_object::modified_objects()
 {
     lock_write();
     modifiedObjects_unlocked();
@@ -120,7 +181,7 @@ map_object::modifiedObjects()
 
 inline
 bool
-map_object::releasedObjects() const
+map_object::released_objects() const
 {
     lock_read();
     bool ret = releasedObjects_;
@@ -129,8 +190,8 @@ map_object::releasedObjects() const
 }
 
 inline
-protocol_interface &
-map_object::getProtocol()
+protocol &
+map_object::get_protocol()
 {
     return protocol_;
 }

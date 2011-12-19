@@ -94,7 +94,7 @@ public:
         public hal::detail::kernel_t<backend_traits, implementation_traits>::launch,
         public util::unique<launch> {
  
-        event_t execute(unsigned nevents, const cl_event *events, gmacError_t &err);
+        event_ptr execute(unsigned nevents, const cl_event *events, gmacError_t &err);
 
         unsigned nArgs_;
         const void *params_[256];
@@ -105,9 +105,9 @@ public:
             TRACE(LOCAL, "Deleting launch "FMT_ID, this->get_print_id());
         }
 
-        event_t execute(list_event_detail &dependencies, gmacError_t &err);
-        event_t execute(event_t event, gmacError_t &err);
-        event_t execute(gmacError_t &err);
+        event_ptr execute(list_event_detail &dependencies, gmacError_t &err);
+        event_ptr execute(event_ptr event, gmacError_t &err);
+        event_ptr execute(gmacError_t &err);
     };
 
     typedef util::shared_ptr<launch> launch_ptr;

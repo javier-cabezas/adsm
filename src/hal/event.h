@@ -2,7 +2,7 @@
 #define GMAC_HAL_TYPES_EVENT_H_
 
 #include "util/delayed_exec.h"
-#include "util/UniquePtr.h"
+#include "util/smart_ptr.h"
 
 namespace __impl { namespace hal {
 
@@ -10,15 +10,20 @@ namespace detail {
 
 template <typename I>
 class GMAC_LOCAL _event_t :
-    public util::delayed_exec {
+    public util::delayed_exec,
+    public gmac::util::lock_rw<_event_t<I> > {
     friend class I::context;
     friend class I::kernel;
 
     typedef typename I::context context_parent_t;
 public:
     enum type {
-        Transfer,
-        Kernel
+        TransferToHost,
+        TransferToDevice,
+        TransferHost,
+        TransferDevice,
+        Kernel,
+        Invalid
     };
 
     enum state {
@@ -49,7 +54,7 @@ protected:
 public:
     virtual ~_event_t();
 
-    virtual gmacError_t sync();
+    virtual gmacError_t sync() = 0;
 
     context_parent_t &get_context();
 
@@ -62,6 +67,12 @@ public:
     hal::time_t get_time_end() const;
 
     bool is_synced() const;
+};
+
+template <typename I>
+class GMAC_LOCAL list_event {
+public:
+    virtual void add_event(typename I::event event) = 0;
 };
 
 }

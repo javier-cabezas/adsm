@@ -43,7 +43,7 @@ stream_t<B, I>::operator()() const
 template <typename B, typename I>
 inline
 void
-stream_t<B, I>::set_last_event(typename I::event event)
+stream_t<B, I>::set_last_event(typename I::event_ptr event)
 {
     this->lock();
     lastEvent_ = event;
@@ -52,10 +52,10 @@ stream_t<B, I>::set_last_event(typename I::event event)
 
 template <typename B, typename I>
 inline
-typename I::event
+typename I::event_ptr
 stream_t<B, I>::get_last_event()
 {
-    typename I::event ret;
+    typename I::event_ptr ret;
     this->lock();
     ret = lastEvent_;
     this->unlock();

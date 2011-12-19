@@ -10,13 +10,13 @@ set(memory_SRC
     block_state-impl.h
     handler.h
     handler.cpp
-    HostMappedObject.h
-    HostMappedObject-impl.h
-    HostMappedObject.cpp
+    object_mapped.h
+    object_mapped-impl.h
+    object_mapped.cpp
     manager.h
     manager-impl.h
     manager.cpp
-    Memory.h
+    memory.h
     object.h
     object-impl.h
     object.cpp
@@ -25,32 +25,30 @@ set(memory_SRC
     map_object.h
     map_object-impl.h
     map_object.cpp
-    Protocol.h
-    Protocol.cpp
+    protocol.h
+    protocol.cpp
     memory.cpp
-    allocator/Cache.h
-    allocator/Cache-impl.h
-    allocator/Cache.cpp
-    allocator/Slab.h
-    allocator/Slab-impl.h
-    allocator/Slab.cpp
-    protocol/BlockList.h
-    protocol/BlockList-impl.h
+    allocator/cache.h
+    allocator/cache-impl.h
+    allocator/cache.cpp
+    allocator/slab.h
+    allocator/slab-impl.h
+    allocator/slab.cpp
     protocol/Gather.h
     protocol/Gather-impl.h
     protocol/Gather.cpp
-    protocol/LazyBase.h
-    protocol/Lazy.h
-    protocol/Lazy-impl.h
-    protocol/Lazy.cpp
-    protocol/common/BlockList.h
-    protocol/common/BlockList-impl.h
-    protocol/common/BlockState.h
-    protocol/common/BlockState-impl.h
-    protocol/common/BlockState.cpp
-    protocol/lazy/BlockState.h
-    protocol/lazy/BlockState-impl.h
-    protocol/lazy/LazyTypes.h
+    protocol/lazy_base.h
+    protocol/lazy.h
+    protocol/lazy-impl.h
+    protocol/lazy.cpp
+    protocol/common/list_block.h
+    protocol/common/list_block-impl.h
+    protocol/common/block_state.h
+    protocol/common/block_state-impl.h
+    protocol/common/block_state.cpp
+    protocol/lazy/block_state.h
+    protocol/lazy/block_state-impl.h
+    protocol/lazy/lazy_types.h
 )
 
 set(memory_DBC
@@ -58,10 +56,10 @@ set(memory_DBC
     dbc/block.cpp
     dbc/manager.h
     dbc/manager.cpp
-    protocol/dbc/Lazy.h
-    protocol/dbc/Lazy-impl.h
-    protocol/dbc/LazyBase.h
-    protocol/dbc/Lazy.cpp
+    protocol/dbc/lazy.h
+    protocol/dbc/lazy-impl.h
+    protocol/dbc/lazy_base.h
+    protocol/dbc/lazy.cpp
 )
 
 # dbc/object.h

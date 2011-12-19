@@ -49,6 +49,9 @@ namespace core {
 
 namespace memory {
 
+template <typename T>
+class block_state;
+
 template<typename State>
 class GMAC_LOCAL object_state :
     util::gmac_base<object_state<State> >,
@@ -68,9 +71,9 @@ protected:
 
     gmacError_t repopulateBlocks(core::address_space &aspace);
 
-    void modifiedObject();
+    void modified_object();
 public:
-    object_state(protocol_interface &protocol, hostptr_t cpuAddr, size_t size, typename State::ProtocolState init, gmacError_t &err);
+    object_state(protocol &protocol, hostptr_t cpuAddr, size_t size, typename State::ProtocolState init, gmacError_t &err);
     virtual ~object_state();
 
     accptr_t get_device_addr(const hostptr_t addr) const;
@@ -79,11 +82,11 @@ public:
     core::address_space_ptr owner();
     core::address_space_const_ptr owner() const;
 
-    gmacError_t addOwner(core::address_space_ptr owner);
-    gmacError_t removeOwner(core::address_space_const_ptr owner);
+    gmacError_t add_owner(core::address_space_ptr owner);
+    gmacError_t remove_owner(core::address_space_const_ptr owner);
 
-    gmacError_t mapToAccelerator();
-    gmacError_t unmapFromAccelerator();
+    gmacError_t map_to_device();
+    gmacError_t unmap_from_device();
 
     static gmacError_t split(object_state &group, size_t offset, size_t size);
 };

@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009-2011 Universityrsity of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -53,7 +53,7 @@ namespace __impl {
     }
 }
 
-#include "util/Private.h"
+#include "util/private.h"
 
 extern __impl::util::Private<bool> isRunTimeThread_;
 
