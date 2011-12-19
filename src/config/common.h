@@ -1,4 +1,4 @@
-/* Copyright (c) 2009 University of Illinois
+/* Copyright (c) 2009-2011 Universityrsity of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -92,7 +92,7 @@ namespace __impl {
     namespace core {}
     namespace util {}
     namespace memory {
-        namespace protocol {}
+        namespace protocols {}
     }
     namespace trace {}
 }
@@ -111,7 +111,7 @@ namespace __dbc {
     namespace memory {
         // Singleton classes need to be predeclared
         class manager;
-        namespace protocol {}
+        namespace protocols {}
     }
     namespace trace = __impl::trace;
 }

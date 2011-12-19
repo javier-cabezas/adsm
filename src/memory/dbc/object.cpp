@@ -15,7 +15,7 @@ object::~object()
 }
 
 gmacError_t
-object::memoryOp(__impl::memory::protocol_interface::MemoryOp op, __impl::core::io_buffer &buffer, size_t size, size_t bufferOffset, size_t objectOffset)
+object::memoryOp(__impl::memory::protocol::MemoryOp op, __impl::core::io_buffer &buffer, size_t size, size_t bufferOffset, size_t objectOffset)
 {
     // PRECONDITIONS
     REQUIRES(size > 0);
@@ -31,24 +31,24 @@ object::memoryOp(__impl::memory::protocol_interface::MemoryOp op, __impl::core::
 
 
 ssize_t
-object::blockBase(size_t offset) const
+object::get_block_base(size_t offset) const
 {
     // PRECONDITIONS
     REQUIRES(offset <= size_);
     // CALL IMPLEMENTATION
-    ssize_t ret = __impl::memory::object::blockBase(offset);
+    ssize_t ret = __impl::memory::object::get_block_base(offset);
     // POSTCONDITIONS
     
     return ret;
 }
 
 size_t
-object::blockEnd(size_t offset) const
+object::get_block_end(size_t offset) const
 {
     // PRECONDITIONS
     REQUIRES(offset <= size_);
     // CALL IMPLEMENTATION
-    size_t ret = __impl::memory::object::blockEnd(offset);
+    size_t ret = __impl::memory::object::get_block_end(offset);
     // POSTCONDITIONS
     
     return ret;

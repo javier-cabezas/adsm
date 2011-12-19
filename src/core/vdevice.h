@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010, 2011 University of Illinois
+/* Copyright (c) 2009-2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -39,7 +39,7 @@ WITH THE SOFTWARE.  */
 #ifdef USE_VM
 #include "memory/vm/Bitmap.h"
 #endif
-#include "util/Atomics.h"
+#include "util/atomics.h"
 #include "util/lock.h"
 #include "util/NonCopyable.h"
 #include "util/Reference.h"
@@ -57,7 +57,6 @@ class Process;
  * thread has one mode per accelerator type in the system
  */
 class GMAC_LOCAL vdevice :
-    public util::Reference,
     public util::NonCopyable,
     public util::unique<vdevice, GmacVirtualDeviceId> {
 protected:

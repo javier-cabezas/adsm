@@ -9,20 +9,20 @@ int main(int argc, char *argv[])
     void *dummy[allocations];
     size_t freeMem;
     gmacError_t ret;
-    ret = gmacGetFreeMemory(gmacGetCurrentAcceleratorId(), &freeMem);
+    ret = gmacGetFreeMemory(gmacGetCurrentDeviceId(), &freeMem);
     assert(ret == gmacSuccess);
     fprintf(stdout, "Free memory: %zd\n", freeMem);
 
     for (unsigned i = 0; i < allocations; i++) {
         assert(gmacMalloc((void **)&dummy[i], allocationSize * sizeof(long)) == gmacSuccess);
-        ret = gmacGetFreeMemory(gmacGetCurrentAcceleratorId(), &freeMem);
+        ret = gmacGetFreeMemory(gmacGetCurrentDeviceId(), &freeMem);
         assert(ret == gmacSuccess);
         fprintf(stdout, "Free memory: %zd\n", freeMem);
     }
     
     for (unsigned i = 0; i < allocations; i++) {
         assert(gmacFree(dummy[i]) == gmacSuccess);
-        ret = gmacGetFreeMemory(gmacGetCurrentAcceleratorId(), &freeMem);
+        ret = gmacGetFreeMemory(gmacGetCurrentDeviceId(), &freeMem);
         assert(ret == gmacSuccess);
         fprintf(stdout, "Free memory: %zd\n", freeMem);
     }
@@ -30,20 +30,20 @@ int main(int argc, char *argv[])
 #if 0
     gmacMigrate(1);
 
-    ret = gmacGetFreeMemory(gmacGetCurrentAcceleratorId(), &freeMem);
+    ret = gmacGetFreeMemory(gmacGetCurrentDeviceId(), &freeMem);
     assert(ret == gmacSuccess);
     fprintf(stdout, "Free memory: %zd\n", freeMem);
 
     for (unsigned i = 0; i < allocations; i++) {
         assert(gmacMalloc((void **)&dummy[i], allocationSize * sizeof(long)) == gmacSuccess);
-        ret = gmacGetFreeMemory(gmacGetCurrentAcceleratorId(), &freeMem);
+        ret = gmacGetFreeMemory(gmacGetCurrentDeviceId(), &freeMem);
         assert(ret == gmacSuccess);
         fprintf(stdout, "Free memory: %zd\n", freeMem);
     }
     
     for (unsigned i = 0; i < allocations; i++) {
         assert(gmacFree(dummy[i]) == gmacSuccess);
-        ret = gmacGetFreeMemory(gmacGetCurrentAcceleratorId(), &freeMem);
+        ret = gmacGetFreeMemory(gmacGetCurrentDeviceId(), &freeMem);
         assert(ret == gmacSuccess);
         fprintf(stdout, "Free memory: %zd\n", freeMem);
     }

@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010, 2011 University of Illinois
+/* Copyright (c) 2009-2011sity of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -39,7 +39,7 @@ WITH THE SOFTWARE.  */
 #include "config/common.h"
 #include "config/order.h"
 #include "util/loader.h"
-#include "util/Singleton.h"
+#include "util/singleton.h"
 
 namespace __impl {
 
@@ -52,7 +52,7 @@ class Thread;
 class vdevice;
 
 /** Represents the resources used by a running process */
-class GMAC_LOCAL process : public util::Singleton<process> {
+class GMAC_LOCAL process : public util::singleton<process> {
     // Needed to let Singleton call the protected constructor
 protected:
     /**
@@ -99,7 +99,7 @@ public:
      * \return A reference to the protocol used by the process for the global
      * objects
      */
-    virtual memory::protocol_interface *getProtocol() = 0;
+    virtual memory::protocol *get_protocol() = 0;
 
     /**
      * Inserts an object into the orphan (objects without owner) list

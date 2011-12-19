@@ -49,7 +49,7 @@ WITH THE SOFTWARE.  */
 #include "config/config.h"
 
 #include "util/descriptor.h"
-#include "util/UniquePtr.h"
+#include "util/smart_ptr.h"
 
 #include "types.h"
 

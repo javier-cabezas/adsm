@@ -26,13 +26,13 @@ stream_t::query()
 
 inline
 void
-stream_t::set_last_event(event_t event)
+stream_t::set_last_event(event_ptr event)
 {
     lastEvent_ = event;
 }
 
 inline
-event_t
+event_ptr
 stream_t::get_last_event()
 {
     return lastEvent_;

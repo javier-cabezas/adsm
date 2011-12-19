@@ -6,6 +6,39 @@
 
 namespace __impl { namespace hal { namespace opencl {
 
+static event_ptr::type
+get_event_type(ptr_t dst, ptr_t src)
+{
+    if (dst.is_device_ptr() &&
+        src.is_device_ptr()) {
+        return event_ptr::type::TransferDevice;
+    } else if (dst.is_device_ptr() &&
+               src.is_host_ptr()) {
+        return event_ptr::type::TransferToDevice;
+    } else if (dst.is_host_ptr() &&
+               src.is_device_ptr()) {
+        return event_ptr::type::TransferToHost;
+    } else {
+        return event_ptr::type::TransferHost;
+    }
+}
+
+static event_ptr::type
+get_event_type(ptr_t dst, device_input &/* input */)
+{
+    if (dst.is_device_ptr()) {
+        return event_ptr::type::TransferToDevice;
+    } else {
+        return event_ptr::type::TransferToHost;
+    }
+}
+
+static event_ptr::type
+get_event_type(device_output &/* output */, ptr_t src)
+{
+    return event_ptr::type::TransferToHost;
+}
+
 context_t::context_t(cl_context ctx, device &dev) :
     Parent(ctx, dev)
 {
@@ -39,7 +72,7 @@ context_t::dispose_event(_event_t &event)
 
 
 
-event_t 
+event_ptr 
 context_t::copy_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     cl_event *events = NULL;
@@ -47,15 +80,14 @@ context_t::copy_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stre
 
     if (_dependencies != NULL) {
         list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
-        nevents = dependencies->size();
-        events  = dependencies->get_event_array();
+        events = dependencies->get_event_array(stream, nevents);
     }
 
-    event_t ret(false, _event_t::Transfer, *this);
+    event_ptr ret(false, get_event_type(dst, src), *this);
 
     cl_int res;
 
-    ret.begin(stream);
+    ret->begin(stream);
     if (dst.is_device_ptr() &&
         src.is_device_ptr()) {
         TRACE(LOCAL, "D -> D copy ("FMT_SIZE" bytes) on stream: "FMT_ID, count, stream.get_print_id());
@@ -63,19 +95,19 @@ context_t::copy_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stre
         if (dst.get_context()->get_device().has_direct_copy(src.get_context()->get_device())) {
             res = clEnqueueCopyBuffer(stream(), dst.get_device_addr(), src.get_device_addr(),
                                                 dst.get_offset(),      src.get_offset(), count,
-                                                nevents, events, &ret());
+                                                nevents, events, &(*ret)());
         } else {
             hostptr_t host = get_memory(count);
 
             res = clEnqueueReadBuffer(stream(), src.get_device_addr(), CL_FALSE,
                                                 src.get_offset(), count,
                                                 host,
-                                                nevents, events, &ret());
+                                                nevents, events, &(*ret)());
             if (res == CL_SUCCESS) {
                 res = clEnqueueWriteBuffer(stream(), dst.get_device_addr(), CL_TRUE,
                                                      dst.get_offset(), count,
                                                      host,
-                                                     nevents, events, &ret());
+                                                     nevents, events, &(*ret)());
             }
 
             put_memory(host, count);
@@ -87,7 +119,7 @@ context_t::copy_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stre
         res = clEnqueueWriteBuffer(stream(), dst.get_device_addr(), CL_TRUE,
                                              dst.get_offset(), count,
                                              src.get_host_addr(),
-                                             nevents, events, &ret());
+                                             nevents, events, &(*ret)());
     } else if (dst.is_host_ptr() &&
                src.is_device_ptr()) {
         TRACE(LOCAL, "D -> H (%p) copy ("FMT_SIZE" bytes) on stream: "FMT_ID, dst.get_host_addr(), count, stream.get_print_id());
@@ -95,7 +127,7 @@ context_t::copy_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stre
         res = clEnqueueReadBuffer(stream(), src.get_device_addr(), CL_TRUE,
                                             src.get_offset(), count,
                                             dst.get_host_addr(),
-                                            nevents, events, &ret());
+                                            nevents, events, &(*ret)());
     } else if (dst.is_host_ptr() &&
                src.is_host_ptr()) {
         TRACE(LOCAL, "H (%p) -> H (%p) copy ("FMT_SIZE" bytes) on stream: "FMT_ID, src.get_host_addr(), dst.get_host_addr(), count, stream.get_print_id());
@@ -108,7 +140,7 @@ context_t::copy_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stre
 
     err = error(res);
     if (err != gmacSuccess) {
-        ret.invalidate();
+        ret.reset();
     } else {
         stream.set_last_event(ret);
     }
@@ -120,7 +152,7 @@ context_t::copy_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stre
     return ret;
 }
 
-event_t
+event_ptr
 context_t::copy_backend(ptr_t dst, device_input &input, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     cl_event *events = NULL;
@@ -128,12 +160,11 @@ context_t::copy_backend(ptr_t dst, device_input &input, size_t count, stream_t &
 
     if (_dependencies != NULL) {
         list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
-        nevents = dependencies->size();
-        events  = dependencies->get_event_array();
+        events = dependencies->get_event_array(stream, nevents);
     }
 
     TRACE(LOCAL, "IO -> D copy ("FMT_SIZE" bytes) on stream: "FMT_ID, count, stream.get_print_id());
-    event_t ret(false, _event_t::Transfer, *this);
+    event_ptr ret(false, get_event_type(dst, input), *this);
 
     hostptr_t host = get_memory(count);
 
@@ -142,15 +173,15 @@ context_t::copy_backend(ptr_t dst, device_input &input, size_t count, stream_t &
     if (ok) {
         cl_int res;
 
-        ret.begin(stream);
+        ret->begin(stream);
         res = clEnqueueWriteBuffer(stream(), dst.get_device_addr(), CL_TRUE,
                                              dst.get_offset(), count,
                                              host,
-                                             nevents, events, &ret());
+                                             nevents, events, &(*ret)());
 
         err = error(res);
         if (err != gmacSuccess) {
-            ret.invalidate();
+            ret.reset();
         } else {
             stream.set_last_event(ret);
         }
@@ -165,7 +196,7 @@ context_t::copy_backend(ptr_t dst, device_input &input, size_t count, stream_t &
     return ret;
 }
 
-event_t
+event_ptr
 context_t::copy_backend(device_output &output, const ptr_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     cl_event *events = NULL;
@@ -173,23 +204,22 @@ context_t::copy_backend(device_output &output, const ptr_t src, size_t count, st
 
     if (_dependencies != NULL) {
         list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
-        nevents = dependencies->size();
-        events  = dependencies->get_event_array();
+        events = dependencies->get_event_array(stream, nevents);
     }
 
     TRACE(LOCAL, "D -> IO copy ("FMT_SIZE" bytes) on stream: "FMT_ID, count, stream.get_print_id());
-    event_t ret(false, _event_t::Transfer, *this);
+    event_ptr ret(false, get_event_type(output, src), *this);
 
     hostptr_t host = get_memory(count);
 
     cl_int res;
 
-    ret.begin(stream);
+    ret->begin(stream);
 
     res = clEnqueueReadBuffer(stream(), src.get_device_addr(), CL_TRUE,
                                         src.get_offset(), count,
                                         host,
-                                        nevents, events, &ret());
+                                        nevents, events, &(*ret)());
 
 
     if (err == gmacSuccess) {
@@ -203,7 +233,7 @@ context_t::copy_backend(device_output &output, const ptr_t src, size_t count, st
     }
 
     if (err != gmacSuccess) {
-        ret.invalidate();
+        ret.reset();
     } else {
         stream.set_last_event(ret);
     }
@@ -217,7 +247,7 @@ context_t::copy_backend(device_output &output, const ptr_t src, size_t count, st
     return ret;
 }
 
-event_t 
+event_ptr 
 context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     cl_event *events = NULL;
@@ -225,15 +255,14 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
 
     if (_dependencies != NULL) {
         list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
-        nevents = dependencies->size();
-        events  = dependencies->get_event_array();
+        events = dependencies->get_event_array(stream, nevents);
     }
 
-    event_t ret(true, _event_t::Transfer, *this);
+    event_ptr ret(true, get_event_type(dst, src), *this);
 
     cl_int res;
 
-    ret.begin(stream);
+    ret->begin(stream);
     if (dst.is_device_ptr() &&
         src.is_device_ptr()) {
         TRACE(LOCAL, "D (%p) -> D (%p) async copy ("FMT_SIZE" bytes) on stream: "FMT_ID,
@@ -244,19 +273,19 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
         if (dst.get_context()->get_device().has_direct_copy(src.get_context()->get_device())) {
             res = clEnqueueCopyBuffer(stream(), dst.get_device_addr(), src.get_device_addr(),
                                                 dst.get_offset(),      src.get_offset(), count,
-                                                nevents, events, &ret());
+                                                nevents, events, &(*ret)());
         } else {
             buffer_t *buffer = get_input_buffer(count, stream, ret);
 
             res = clEnqueueReadBuffer(stream(), src.get_device_addr(), CL_FALSE,
                                                 src.get_offset(), count,
                                                 buffer->get_addr(),
-                                                nevents, events, &ret());
+                                                nevents, events, &(*ret)());
             if (res == CL_SUCCESS) {
                 res = clEnqueueWriteBuffer(stream(), dst.get_device_addr(), CL_FALSE,
                                                      dst.get_offset(), count,
                                                      buffer->get_addr(),
-                                                     nevents, events, &ret());
+                                                     nevents, events, &(*ret)());
             }
         }
     } else if (dst.is_device_ptr() &&
@@ -272,7 +301,7 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
         res = clEnqueueWriteBuffer(stream(), dst.get_device_addr(), CL_FALSE,
                                              dst.get_offset(), count,
                                              buffer->get_addr(),
-                                             nevents, events, &ret());
+                                             nevents, events, &(*ret)());
 
         if (res == CL_SUCCESS) {
             // Release buffer after asynchronous copy
@@ -289,7 +318,7 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
         res = clEnqueueReadBuffer(stream(), dst.get_device_addr(), CL_FALSE,
                                             dst.get_offset(), count,
                                             buffer->get_addr(),
-                                            nevents, events, &ret());
+                                            nevents, events, &(*ret)());
 
         // Perform memcpy after asynchronous copy
         ret.add_trigger(util::do_func(::memcpy, buffer->get_addr(), src.get_host_addr(), count));
@@ -308,7 +337,7 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
 
     err = error(res);
     if (err != gmacSuccess) {
-        ret.invalidate();
+        ret.reset();
     } else {
         stream.set_last_event(ret);
     }
@@ -320,7 +349,7 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
     return ret;
 }
 
-event_t
+event_ptr
 context_t::copy_async_backend(ptr_t dst, device_input &input, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     cl_event *events = NULL;
@@ -328,12 +357,11 @@ context_t::copy_async_backend(ptr_t dst, device_input &input, size_t count, stre
 
     if (_dependencies != NULL) {
         list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
-        nevents = dependencies->size();
-        events  = dependencies->get_event_array();
+        events = dependencies->get_event_array(stream, nevents);
     }
 
     TRACE(LOCAL, "IO -> D async copy ("FMT_SIZE" bytes) on stream: "FMT_ID, count, stream.get_print_id());
-    event_t ret(true, _event_t::Transfer, *this);
+    event_ptr ret(true, get_event_type(dst, input), *this);
 
     //buffer_t &buffer = stream.get_buffer(count);
     hostptr_t mem = get_memory(count);
@@ -343,15 +371,15 @@ context_t::copy_async_backend(ptr_t dst, device_input &input, size_t count, stre
     if (ok) {
         cl_int res;
 
-        ret.begin(stream);
+        ret->begin(stream);
         res = clEnqueueWriteBuffer(stream(), dst.get_device_addr(), CL_FALSE,
                                              dst.get_offset(), count,
                                              mem,
-                                             nevents, events, &ret());
+                                             nevents, events, &(*ret)());
 
         err = error(res);
         if (err != gmacSuccess) {
-            ret.invalidate();
+            ret.reset();
         } else {
             stream.set_last_event(ret);
             ret.add_trigger(do_member(context_t::put_memory, this, mem, count));
@@ -366,7 +394,7 @@ context_t::copy_async_backend(ptr_t dst, device_input &input, size_t count, stre
     return ret;
 }
 
-event_t
+event_ptr
 context_t::copy_async_backend(device_output &output, const ptr_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     cl_event *events = NULL;
@@ -374,22 +402,21 @@ context_t::copy_async_backend(device_output &output, const ptr_t src, size_t cou
 
     if (_dependencies != NULL) {
         list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
-        nevents = dependencies->size();
-        events  = dependencies->get_event_array();
+        events = dependencies->get_event_array(stream, nevents);
     }
 
     TRACE(LOCAL, "D -> IO async copy ("FMT_SIZE" bytes) on stream: "FMT_ID, count, stream.get_print_id());
-    event_t ret(false, _event_t::Transfer, *this);
+    event_ptr ret(false, get_event_type(output, src), *this);
 
     hostptr_t host = get_memory(count);
 
     cl_int res;
 
-    ret.begin(stream);
+    ret->begin(stream);
     res = clEnqueueReadBuffer(stream(), src.get_device_addr(), CL_TRUE,
                                         src.get_offset(), count,
                                         host,
-                                        nevents, events, &ret());
+                                        nevents, events, &(*ret)());
 
     if (err == gmacSuccess) {
         bool ok = output.write(host, count);
@@ -402,7 +429,7 @@ context_t::copy_async_backend(device_output &output, const ptr_t src, size_t cou
     }
 
     if (err != gmacSuccess) {
-        ret.invalidate();
+        ret.reset();
     } else {
         stream.set_last_event(ret);
     }
@@ -416,7 +443,7 @@ context_t::copy_async_backend(device_output &output, const ptr_t src, size_t cou
     return ret;
 }
 
-event_t 
+event_ptr 
 context_t::memset_backend(ptr_t dst, int c, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     FATAL("Not implemented");
@@ -443,7 +470,7 @@ context_t::memset_backend(ptr_t dst, int c, size_t count, stream_t &stream, list
     kernel_t::launch_ptr launch = kernel->launch_config(config, args, stream);
 #endif
 
-    event_t ret;
+    event_ptr ret;
 #if 0
     if (_dependencies) {
         ret = launch->execute(*_dependencies, err2);
@@ -463,7 +490,7 @@ context_t::memset_backend(ptr_t dst, int c, size_t count, stream_t &stream, list
     return ret;
 }
 
-event_t 
+event_ptr 
 context_t::memset_async_backend(ptr_t dst, int c, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     kernel_t *kernel = get_code_repository().get_kernel(gmac_memset);
@@ -487,16 +514,16 @@ context_t::memset_async_backend(ptr_t dst, int c, size_t count, stream_t &stream
 
     kernel_t::launch_ptr launch = kernel->launch_config(config, args, stream);
 
-    event_t ret;
+    event_ptr ret;
     if (_dependencies) {
-        // ret = launch->execute(*_dependencies, err2);
+        ret = launch->execute(*_dependencies, err2);
     } else {
-        //ret = launch->execute(err2);
+        ret = launch->execute(err2);
     }
 
     ASSERTION(err2 == gmacSuccess, "error executing memset");
-    //err2 = ret.sync();
-    //ASSERTION(err2 == gmacSuccess, "error executing memset");
+    err2 = ret->sync();
+    ASSERTION(err2 == gmacSuccess, "error executing memset");
 
     err = gmacSuccess;
 

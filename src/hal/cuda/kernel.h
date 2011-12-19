@@ -61,9 +61,9 @@ public:
     public:
         launch(kernel_t &parent, config &conf, arg_list &args, stream_t &stream);
 
-        event_t execute(list_event_detail &dependencies, gmacError_t &err);
-        event_t execute(event_t event, gmacError_t &err);
-        event_t execute(gmacError_t &err);
+        event_ptr execute(list_event_detail &dependencies, gmacError_t &err);
+        event_ptr execute(event_ptr event, gmacError_t &err);
+        event_ptr execute(gmacError_t &err);
     };
 
     kernel_t(CUfunction func, const std::string &name);

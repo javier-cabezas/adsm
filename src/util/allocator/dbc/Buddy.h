@@ -46,8 +46,8 @@ class GMAC_LOCAL buddy :
     public virtual Contract {
     DBC_TESTED(__impl::util::allocator::buddy)
 protected:
-    off_t getFromList(uint8_t i);
-    void putToList(off_t addr, uint8_t i);
+    off_t get_from_list(uint8_t i);
+    void put_to_list(off_t addr, uint8_t i);
 public:
     buddy(hostptr_t addr, size_t size);
     hostptr_t get(size_t &size);

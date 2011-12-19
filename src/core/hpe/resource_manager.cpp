@@ -10,26 +10,6 @@
 
 namespace __impl { namespace core { namespace hpe {
 
-#if 0
-context *
-resource_manager::create_context(THREAD_T id, address_space &aspace)
-{
-    context *ctx = NULL;
-
-    map_aspace_resources::iterator it = aspaceResourcesMap_.find(&aspace);
-
-    if (it != aspaceResourcesMap_.end()) {
-        address_space_resources &resources = it->second;
-        ctx = new context(*resources.context_, *resources.streamLaunch_,
-                                               *resources.streamToAccelerator_,
-                                               *resources.streamToHost_,
-                                               *resources.streamAccelerator_);
-    }
-
-    return ctx;
-}
-#endif
-
 resource_manager::resource_manager(process &proc) :
     proc_(proc),
     aspaceMap_("aspace_map"),
@@ -200,6 +180,15 @@ resource_manager::get_device_info(unsigned deviceId, GmacDeviceInfo &info)
 {
 	ASSERTION(size_t(deviceId) < devices_.size());
 	return devices_[deviceId]->get_info(info);
+}
+
+gmacError_t
+resource_manager::get_device_free_mem(unsigned deviceId, size_t &freeMem)
+{
+	ASSERTION(size_t(deviceId) < devices_.size());
+	freeMem = devices_[deviceId]->get_free_memory();
+
+    return gmacSuccess;
 }
 
 }}}

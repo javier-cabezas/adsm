@@ -3,14 +3,13 @@
 
 #include "config/order.h"
 #include "memory/object.h"
-#include "memory/Protocol.h"
+#include "memory/protocol.h"
 #include "trace/Tracer.h"
 
 namespace __impl { namespace core {
 
 inline
-vdevice::vdevice() :
-    util::Reference("vdevice")
+vdevice::vdevice()
 {
     TRACE(LOCAL,"Creating Execution vdevice %p", this);
     trace::StartThread(THREAD_T(get_print_id()), "GPU");

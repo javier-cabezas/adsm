@@ -7,7 +7,7 @@
 
 namespace __impl { namespace core { namespace hpe {
 
-vdevice::vdevice(process &proc, util::shared_ptr<address_space> aspace,
+vdevice::vdevice(process &proc, address_space_ptr aspace,
                  hal::stream_t &streamLaunch) :
     proc_(proc),
     aspace_(aspace),
@@ -39,18 +39,18 @@ vdevice::launch(gmac_kernel_id_t id, hal::kernel_t::config &conf,
     return ret;
 }
 
-hal::event_t
+hal::event_ptr
 vdevice::execute(kernel::launch_ptr launch, gmacError_t &err)
 {
-    hal::event_t ret;
+    hal::event_ptr ret;
     err = gmacSuccess;
 
     if (launch->get_arg_list().get_objects().size() == 0) {
-        hal::event_t event = aspace_->streamToAccelerator_.get_last_event();
+        hal::event_ptr event = aspace_->streamToAccelerator_.get_last_event();
         ret = launch->execute(event, err);
     } else {
         // TODO: Implement per object synchronization
-        hal::event_t event = aspace_->streamToAccelerator_.get_last_event();
+        hal::event_ptr event = aspace_->streamToAccelerator_.get_last_event();
         ret = launch->execute(event, err);
     }
 
@@ -61,9 +61,9 @@ gmacError_t
 vdevice::wait(kernel::launch_ptr launch)
 {
     gmacError_t ret = gmacSuccess;
-    hal::event_t event = launch->get_event();
+    hal::event_ptr event = launch->get_event();
 
-    ret = event.sync();
+    ret = event->sync();
 
     return ret;
 }

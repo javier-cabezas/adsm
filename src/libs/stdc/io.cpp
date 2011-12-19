@@ -9,9 +9,9 @@
 #include "memory/manager.h"
 
 #include "trace/Tracer.h"
+#include "trace/logger.h"
 
 #include "util/loader.h"
-#include "util/Logger.h"
 
 #include "stdc.h"
 

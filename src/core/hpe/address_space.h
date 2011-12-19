@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010, 2011 University of Illinois
+/* Copyright (c) 2009-2011sity of Illinois
  Universitat Politecnica de Catalunya
  All rights reserved.
 
@@ -68,7 +68,7 @@ class GMAC_LOCAL address_space :
     friend class resource_manager;
     friend class vdevice;
 
-    typedef gmac::util::mutex<address_space> Lock;
+    typedef gmac::util::mutex<address_space> lock;
 
     hal::context_t &ctx_;
 
@@ -112,13 +112,13 @@ public:
     gmacError_t copy(hal::ptr_t dst, hal::device_input &input, size_t count);
     gmacError_t copy(hal::device_output &output, const hal::ptr_t src, size_t count);
 
-    hal::event_t copy_async(hal::ptr_t dst, const hal::ptr_t src, size_t count, gmacError_t &err);
+    hal::event_ptr copy_async(hal::ptr_t dst, const hal::ptr_t src, size_t count, gmacError_t &err);
 
-    hal::event_t copy_async(hal::ptr_t dst, hal::device_input &input, size_t count, gmacError_t &err);
-    hal::event_t copy_async(hal::device_output &output, const hal::ptr_t src, size_t count, gmacError_t &err);
+    hal::event_ptr copy_async(hal::ptr_t dst, hal::device_input &input, size_t count, gmacError_t &err);
+    hal::event_ptr copy_async(hal::device_output &output, const hal::ptr_t src, size_t count, gmacError_t &err);
 
     gmacError_t memset(hal::ptr_t addr, int c, size_t count);
-    hal::event_t memset_async(hal::ptr_t addr, int c, size_t count, gmacError_t &err);
+    hal::event_ptr memset_async(hal::ptr_t addr, int c, size_t count, gmacError_t &err);
 
     hal::context_t &get_hal_context();
     const hal::context_t &get_hal_context() const;

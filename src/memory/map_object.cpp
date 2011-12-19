@@ -4,7 +4,7 @@
 
 #include "map_object.h"
 #include "object.h"
-#include "Protocol.h"
+#include "protocol.h"
 
 namespace __impl { namespace memory {
 
@@ -34,15 +34,17 @@ map_object::statsInit()
 }
 #endif
 
-object *
-map_object::mapFind(const hostptr_t addr, size_t size) const
+object_ptr
+map_object::map_find(const hostptr_t addr, size_t size) const
 {
     map_object::const_iterator i;
-    object *ret = NULL;
+    object_ptr ret;
     lock_read();
     const uint8_t *limit = (const uint8_t *)addr + size;
     i = upper_bound(addr);
-    if(i != end() && i->second->addr() <= limit) ret = i->second;
+    if(i != end() && i->second->get_start_addr() <= limit) {
+    	ret = object_ptr(i->second);
+    }
     unlock();
     return ret;
 }
@@ -69,16 +71,13 @@ map_object::~map_object()
 void
 map_object::cleanUp()
 {
-    const_iterator i;
     lock_write();
-    for(i = begin(); i != end(); i++) {
-        // Decrement reference count of pointed objects to allow later destruction
-        i->second->decRef();
-    }
+    clear();
     unlock();
 }
 
-size_t map_object::size() const
+size_t
+map_object::size() const
 {
     lock_read();
     size_t ret = Parent::size();
@@ -100,21 +99,23 @@ map_object::getProcess() const
 }
 #endif
 
-bool map_object::addObject(object &obj)
+bool
+map_object::add_object(object &obj)
 {
     lock_write();
-    TRACE(LOCAL, "Insert object: %p", obj.addr());
-    std::pair<iterator, bool> ret = Parent::insert(value_type(obj.end(), &obj));
-    if(ret.second == true) obj.incRef();
+    TRACE(LOCAL, "Insert object: %p", obj.get_start_addr());
+    object_ptr ptr(&obj);
+    std::pair<iterator, bool> ret = Parent::insert(value_type(obj.get_end_addr(), ptr));
     modifiedObjects_unlocked();
     unlock();
     return ret.second;
 }
 
-bool map_object::removeObject(object &obj)
+bool
+map_object::remove_object(object &obj)
 {
     lock_write();
-    iterator i = find(obj.end());
+    iterator i = find(obj.get_end_addr());
     bool ret = (i != end());
     if(ret == true) {
 #if defined(DEBUG)
@@ -123,33 +124,31 @@ bool map_object::removeObject(object &obj)
             std::stringstream ss(std::stringstream::out);
             ss << dump << "-" << "remove";
 
-            dumpObject(StatsDir_, ss.str(), memory::protocol::common::PAGE_FAULTS_READ, obj.addr());
-            dumpObject(StatsDir_, ss.str(), memory::protocol::common::PAGE_FAULTS_WRITE, obj.addr());
-            dumpObject(StatsDir_, ss.str(), memory::protocol::common::PAGE_TRANSFERS_TO_HOST, obj.addr());
-            dumpObject(StatsDir_, ss.str(), memory::protocol::common::PAGE_TRANSFERS_TO_ACCELERATOR, obj.addr());
+            dumpObject(StatsDir_, ss.str(), memory::protocols::common::PAGE_FAULTS_READ, obj.get_start_addr());
+            dumpObject(StatsDir_, ss.str(), memory::protocols::common::PAGE_FAULTS_WRITE, obj.get_start_addr());
+            dumpObject(StatsDir_, ss.str(), memory::protocols::common::PAGE_TRANSFERS_TO_HOST, obj.get_start_addr());
+            dumpObject(StatsDir_, ss.str(), memory::protocols::common::PAGE_TRANSFERS_TO_ACCELERATOR, obj.get_start_addr());
         }
 #endif
 
-        TRACE(LOCAL, "Remove object: %p", obj.addr());
-        obj.decRef();
+        TRACE(LOCAL, "Remove object: %p", obj.get_start_addr());
         Parent::erase(i);
     } else {
-        TRACE(LOCAL, "CANNOT Remove object: %p from map with "FMT_SIZE" elems", obj.addr(), Parent::size());
+        TRACE(LOCAL, "CANNOT Remove object: %p from map with "FMT_SIZE" elems", obj.get_start_addr(), Parent::size());
     }
     unlock();
     return ret;
 }
 
-object *map_object::getObject(const hostptr_t addr, size_t size) const
+object_ptr
+map_object::get_object(const hostptr_t addr, size_t size) const
 {
-    // Lock already acquired in mapFind
-    object *ret = NULL;
-    ret = mapFind(addr, size);
-    if(ret != NULL) ret->incRef();
-    return ret;
+    // Lock already acquired in map_find
+    return map_find(addr, size);
 }
 
-size_t map_object::memorySize() const
+size_t
+map_object::get_memory_size() const
 {
     size_t total = 0;
     const_iterator i;
@@ -161,7 +160,8 @@ size_t map_object::memorySize() const
     return total;
 }
 
-gmacError_t map_object::releaseObjects()
+gmacError_t
+map_object::release_objects()
 {
     lock_write();
 #ifdef DEBUG
@@ -170,10 +170,10 @@ gmacError_t map_object::releaseObjects()
         std::stringstream ss(std::stringstream::out);
         ss << dump << "-" << "release";
 
-        dumpObjects(StatsDir_, ss.str(), memory::protocol::common::PAGE_FAULTS_READ);
-        dumpObjects(StatsDir_, ss.str(), memory::protocol::common::PAGE_FAULTS_WRITE);
-        dumpObjects(StatsDir_, ss.str(), memory::protocol::common::PAGE_TRANSFERS_TO_HOST);
-        dumpObjects(StatsDir_, ss.str(), memory::protocol::common::PAGE_TRANSFERS_TO_ACCELERATOR);
+        dumpObjects(StatsDir_, ss.str(), memory::protocols::common::PAGE_FAULTS_READ);
+        dumpObjects(StatsDir_, ss.str(), memory::protocols::common::PAGE_FAULTS_WRITE);
+        dumpObjects(StatsDir_, ss.str(), memory::protocols::common::PAGE_TRANSFERS_TO_HOST);
+        dumpObjects(StatsDir_, ss.str(), memory::protocols::common::PAGE_TRANSFERS_TO_ACCELERATOR);
     }
 #endif
     releasedObjects_ = true;
@@ -182,7 +182,7 @@ gmacError_t map_object::releaseObjects()
 }
 
 gmacError_t
-map_object::acquireObjects()
+map_object::acquire_objects()
 {
     lock_write();
     modifiedObjects_ = false;

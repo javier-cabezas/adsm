@@ -1,19 +1,22 @@
 #ifndef GMAC_MEMORY_OBJECT_IMPL_H_
 #define GMAC_MEMORY_OBJECT_IMPL_H_
 
+#include <functional>
+
 #include <fstream>
 #include <sstream>
 
-#include "Protocol.h"
+#include "protocol.h"
 #include "block.h"
 
-#include "util/Logger.h"
+#include "trace/logger.h"
 
 namespace __impl { namespace memory {
 
-inline object::object(protocol_interface &protocol, hostptr_t addr, size_t size) :
+#define protocol_member(f,...) util::bind(std::mem_fn(&f), &protocol_, std::placeholders::_1, __VA_ARGS__)
+
+inline object::object(protocol &protocol, hostptr_t addr, size_t size) :
     Lock("object"),
-    util::Reference("Object"),
     protocol_(protocol),
     addr_(addr),
     size_(size),
@@ -32,51 +35,98 @@ object::getId() const
 }
 
 inline unsigned
-object::getDumps(protocol::common::Statistic stat)
+object::getDumps(protocols::common::Statistic stat)
 {
     if (dumps_.find(stat) == dumps_.end()) dumps_[stat] = 0;
     return dumps_[stat];
 }
 #endif
 
+inline void
+object::set_last_event(hal::event_ptr event)
+{
+    if (!event) return;
+
+    switch (event->get_type()) {
+    case hal::event_ptr::type::TransferToHost:
+        lastToHost_ = event;
+        break;
+    case hal::event_ptr::type::TransferToDevice:
+        lastToDevice_ = event;
+        break;
+    case hal::event_ptr::type::TransferHost:
+        lastHost_ = event;
+        break;
+    case hal::event_ptr::type::TransferDevice:
+        lastDevice_ = event;
+        break;
+    case hal::event_ptr::type::Kernel:
+        lastKernel_ = event;
+        break;
+    case hal::event_ptr::type::Invalid:
+        break;
+    }
+
+    last_ = event;
+}
+
+inline hal::event_ptr
+object::get_last_event(hal::event_ptr::type type) const
+{
+    switch (type) {
+    case hal::event_ptr::type::TransferToHost:
+        return lastToHost_;
+    case hal::event_ptr::type::TransferToDevice:
+        return lastToDevice_;
+    case hal::event_ptr::type::TransferHost:
+        return lastHost_;
+    case hal::event_ptr::type::TransferDevice:
+        return lastDevice_;
+    case hal::event_ptr::type::Kernel:
+        return lastKernel_;
+    case hal::event_ptr::type::Invalid:
+        return hal::event_ptr();
+    }
+}
+
 inline
-protocol_interface &
-object::getProtocol()
+protocol &
+object::get_protocol()
 {
     return protocol_;
 }
 
 inline hostptr_t
-object::addr() const
+object::get_start_addr() const
 {
     // No need for lock -- addr_ is never modified
     return addr_;
 }
 
 inline hostptr_t
-object::end() const
+object::get_end_addr() const
 {
     // No need for lock -- addr_ and size_ are never modified
     return addr_ + size_;
 }
 
 inline ssize_t
-object::blockBase(size_t offset) const
+object::get_block_base(size_t offset) const
 {
-    return -1 * (offset % blockSize());
+    return -1 * (offset % get_block_size());
 }
 
 inline size_t
-object::blockEnd(size_t offset) const
+object::get_block_end(size_t offset) const
 {
-    if (offset + blockBase(offset) + blockSize() > size_)
+    if (offset + get_block_base(offset) + get_block_size() > size_)
         return size_ - offset;
     else
-        return size_t(ssize_t(blockSize()) + blockBase(offset));
+        return size_t(ssize_t(get_block_size()) + get_block_base(offset));
 }
 
 inline size_t
-object::blockSize() const
+object::get_block_size() const
 {
     return BlockSize_;
 }
@@ -88,41 +138,68 @@ object::size() const
     return size_;
 }
 
-template <typename T>
-hal::event_t
-object::coherenceOp(hal::event_t (protocol_interface::*op)(block_ptr, T &, gmacError_t &),
-                    T &param,
-                    gmacError_t &err)
+template <typename F>
+hal::event_ptr
+object::coherence_op(F f, gmacError_t &err)
 {
-    hal::event_t ret;
-    vector_block::const_iterator i;
-    for(i = blocks_.begin(); i != blocks_.end(); i++) {
-        ret = (protocol_.*op)(*i, param, err);
-        if(err != gmacSuccess) break;
+    hal::event_ptr ret;
+    err = gmacSuccess;
+    for(const_locking_iterator i  = get_block(0, NULL);
+                              i != blocks_.end();
+    		                ++i) {
+        if (err == gmacSuccess) {
+            ret = f(*i);
+        }
+        if (err == gmacSuccess) {
+            set_last_event(ret);
+        }
     }
     return ret;
 }
 
-inline hal::event_t
-object::acquire(GmacProtection &prot, gmacError_t &err)
+inline hal::event_ptr
+object::coherence_op(hal::event_ptr (protocol::*f)(block_ptr, gmacError_t &), gmacError_t &err)
+{
+    hal::event_ptr ret;
+    for (const_locking_iterator i  = get_block(0, NULL);
+                               i != blocks_.end();
+                             ++i) {
+        ret = (protocol_.*f)(*i, err);
+        if (err != gmacSuccess) break;
+        set_last_event(ret);
+    }
+    return ret;
+}
+
+inline hal::event_ptr
+object::acquire(GmacProtection prot, gmacError_t &err)
 {
     lock_write();
-    hal::event_t ret;
+    hal::event_ptr ret;
     TRACE(LOCAL, "Acquiring object %p?", addr_);
-    if (released_ == true) {
+    if (released_) {
         TRACE(LOCAL, "Acquiring object %p", addr_);
-        ret = coherenceOp<GmacProtection>(&protocol_interface::acquire, prot, err);
+
+        ret = coherence_op(protocol_member(protocol::acquire, prot, err), err);
+        if (err == gmacSuccess) {
+            set_last_event(ret);
+        }
     }
     released_ = false;
     unlock();
     return ret;
 }
 
-inline hal::event_t 
-object::release(gmacError_t &err)
+inline hal::event_ptr 
+object::release(bool flushDirty, gmacError_t &err)
 {
-    hal::event_t ret;
+    hal::event_ptr ret;
     lock_write();
+    TRACE(LOCAL, "Releasing object %p?", addr_);
+    if (flushDirty && !released_) {
+        TRACE(LOCAL, "Releasing object %p", addr_);
+        ret = coherence_op(&protocol::release, err);
+    }
     released_ = true;
     unlock();
     err = gmacSuccess;
@@ -139,103 +216,40 @@ object::is_released() const
     return ret;
 }
 
-inline hal::event_t
-object::releaseBlocks(gmacError_t &err)
-{
-    lock_write();
-    hal::event_t ret;
-
-    TRACE(LOCAL, "Releasing object %p?", addr_);
-    if (released_ == false) {
-        TRACE(LOCAL, "Releasing object %p", addr_);
-        ret = coherenceOp(&protocol_interface::release, err);
-    }
-
-    released_ = true;
-    unlock();
-    return ret;
-}
-
 #ifdef USE_VM
 inline gmacError_t
 object::acquireWithBitmap()
 {
     lock_read();
-    gmacError_t ret = coherenceOp(&protocol_interface::acquireWithBitmap);
+    gmacError_t ret = coherence_op(&protocol::acquireWithBitmap);
     unlock();
     return ret;
 }
 #endif
 
-template <typename P1, typename P2>
-gmacError_t
-object::forEachBlock(gmacError_t (protocol_interface::*op)(block_ptr, P1 &, P2), P1 &p1, P2 p2)
+inline hal::event_ptr 
+object::to_host(gmacError_t &err)
 {
     lock_read();
-    gmacError_t ret = gmacSuccess;
-    vector_block::iterator i;
-    for(i = blocks_.begin(); i != blocks_.end(); i++) {
-        //ret = ((*i)->*f)(p1, p2);
-        ret = (protocol_.*op)(*i, p1, p2);
+    hal::event_ptr ret = coherence_op(&protocol::to_host, err);
+    if (err == gmacSuccess) {
+        set_last_event(ret);
     }
     unlock();
     return ret;
 }
 
-inline hal::event_t 
-object::toHost(gmacError_t &err)
+inline hal::event_ptr
+object::to_device(gmacError_t &err)
 {
     lock_read();
-    hal::event_t ret= coherenceOp(&protocol_interface::toHost, err);
+    hal::event_ptr ret = coherence_op(&protocol::release, err);
+    if (err == gmacSuccess) {
+        set_last_event(ret);
+    }
     unlock();
     return ret;
 }
-
-inline hal::event_t
-object::toAccelerator(gmacError_t &err)
-{
-    lock_read();
-    hal::event_t ret = coherenceOp(&protocol_interface::release, err);
-    unlock();
-    return ret;
-}
-
-#if 0
-inline gmacError_t
-object::copyToBuffer(core::io_buffer &buffer, size_t size,
-                     size_t bufferOffset, size_t objectOffset)
-{
-    lock_read();
-    gmacError_t ret = memoryOp(&protocol_interface::copyToBuffer, buffer, size,
-                               bufferOffset, objectOffset);
-    unlock();
-    return ret;
-}
-
-inline gmacError_t object::copyFromBuffer(core::io_buffer &buffer, size_t size,
-                                          size_t bufferOffset, size_t objectOffset)
-{
-    lock_read();
-    gmacError_t ret = memoryOp(&protocol_interface::copyFromBuffer, buffer, size,
-                               bufferOffset, objectOffset);
-    unlock();
-    return ret;
-}
-#endif
-
-#if 0
-inline gmacError_t object::copyObjectToObject(object &dst, size_t dstOff,
-                                              object &src, size_t srcOff, size_t count)
-{
-    dst.lock_write();
-    src.lock_write();
-        gmacError_t ret = memoryOp(&protocol_interface::copyFromBuffer, buffer, size,
-        bufferOffset, objectOffset);
-    dst.unlock();
-    src.unlock();
-    return ret;
-}
-#endif
 
 }}
 

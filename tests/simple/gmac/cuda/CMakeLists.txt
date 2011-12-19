@@ -27,7 +27,7 @@ source_group(${current_GROUP} FILES
     gmacMemcpy.cu
     gmacMemset.cu
     gmacFile.cu
-    gmacMigration.cu
+#    gmacMigration.cu
     gmacMeminfo.cu
     gmacRandomAccess.cu
     gmacStencil.cu
@@ -39,7 +39,7 @@ source_group(${current_GROUP} FILES
     gmacTexture.cu
     gmacCompressCommon.cu
     gmacCompress.cu
-    gmacPingPong.cu
+#    gmacPingPong.cu
     NBody_GMAC/NBody.h
     NBody_GMAC/NBody.cu
 )
@@ -93,9 +93,9 @@ add_executable(gmacThreading ${threading} gmacThreading.cu)
 target_link_libraries(gmacThreading test-common gmac-cuda)
 
 # gmacSharedVecAdd
-cuda_compile(sharedVecAdd gmacSharedVecAdd.cu)
-add_executable(gmacSharedVecAdd ${sharedVecAdd}  gmacSharedVecAdd.cu)
-target_link_libraries(gmacSharedVecAdd test-common gmac-cuda)
+# cuda_compile(sharedVecAdd gmacSharedVecAdd.cu)
+# add_executable(gmacSharedVecAdd ${sharedVecAdd}  gmacSharedVecAdd.cu)
+# target_link_libraries(gmacSharedVecAdd test-common gmac-cuda)
 
 # gmacFileVecAdd
 cuda_compile(fileVecAdd gmacFileVecAdd.cu)
@@ -113,9 +113,9 @@ add_executable(gmacMatrixMul ${matrixMul}  gmacMatrixMul.cu)
 target_link_libraries(gmacMatrixMul test-common gmac-cuda)
 
 # gmacSharedMatrixMul
-cuda_compile(sharedMatrixMul gmacSharedMatrixMul.cu)
-add_executable(gmacSharedMatrixMul ${sharedMatrixMul}  gmacSharedMatrixMul.cu)
-target_link_libraries(gmacSharedMatrixMul test-common gmac-cuda)
+# cuda_compile(sharedMatrixMul gmacSharedMatrixMul.cu)
+# add_executable(gmacSharedMatrixMul ${sharedMatrixMul}  gmacSharedMatrixMul.cu)
+# target_link_libraries(gmacSharedMatrixMul test-common gmac-cuda)
 
 # gmacRandomAccess
 cuda_compile(randomAccess gmacRandomAccess.cu)
@@ -153,9 +153,9 @@ add_executable(gmacFile ${gfile}  gmacFile.cu)
 target_link_libraries(gmacFile test-common gmac-cuda)
 
 # gmacMigration
-cuda_compile(migration gmacMigration.cu)
-add_executable(gmacMigration ${migration}  gmacMigration.cu)
-target_link_libraries(gmacMigration test-common gmac-cuda)
+# cuda_compile(migration gmacMigration.cu)
+# add_executable(gmacMigration ${migration}  gmacMigration.cu)
+# target_link_libraries(gmacMigration test-common gmac-cuda)
 
 # gmacMeminfo
 cuda_compile(meminfo gmacMeminfo.cu)
@@ -177,9 +177,9 @@ target_link_libraries(gmacConstant test-common gmac-cuda)
 
 if(NOT CMAKE_SYSTEM_NAME MATCHES "Windows")
 # gmacPingPong
-cuda_compile(pingpong gmacPingPong.cu)
-add_executable(gmacPingPong ${pingpong}  gmacPingPong.cu)
-target_link_libraries(gmacPingPong test-common gmac-cuda)
+# cuda_compile(pingpong gmacPingPong.cu)
+# add_executable(gmacPingPong ${pingpong}  gmacPingPong.cu)
+# target_link_libraries(gmacPingPong test-common gmac-cuda)
 
 # gmacCompress
 cuda_compile(compress gmacCompressCommon.cu gmacCompress.cu)
@@ -187,9 +187,9 @@ add_executable(gmacCompress ${compress}  gmacCompressCommon.cu gmacCompress.cu)
 target_link_libraries(gmacCompress test-common gmac-cuda)
 
 # gmacCompress
-cuda_compile(compressSend gmacCompressCommon.cu gmacCompressSend.cu)
-add_executable(gmacCompressSend ${compressSend}  gmacCompressCommon.cu gmacCompressSend.cu)
-target_link_libraries(gmacCompressSend test-common gmac-cuda)
+# cuda_compile(compressSend gmacCompressCommon.cu gmacCompressSend.cu)
+# add_executable(gmacCompressSend ${compressSend}  gmacCompressCommon.cu gmacCompressSend.cu)
+# target_link_libraries(gmacCompressSend test-common gmac-cuda)
 endif(NOT CMAKE_SYSTEM_NAME MATCHES "Windows")
 
 option(USE_OPENGL "Enable building OpenGL tests" OFF)
@@ -243,11 +243,11 @@ install(TARGETS cudaVecAdd          DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS gmacThreadVecAdd    DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS cudaThreadVecAdd    DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS gmacThreading       DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS gmacSharedVecAdd    DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+#install(TARGETS gmacSharedVecAdd    DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS gmacFileVecAdd      DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS cudaFileVecAdd      DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS gmacMatrixMul       DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS gmacSharedMatrixMul DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+#install(TARGETS gmacSharedMatrixMul DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS gmacRandomAccess    DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS gmacStencil         DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS gmacThreadStencil   DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
@@ -255,15 +255,15 @@ install(TARGETS cudaThreadStencil   DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS gmacMemcpy          DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS gmacMemset          DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS gmacFile            DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS gmacMigration       DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+#install(TARGETS gmacMigration       DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS gmacMeminfo         DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS gmacTexture         DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS gmacConstant        DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
 
 if(NOT CMAKE_SYSTEM_NAME MATCHES "Windows")
-install(TARGETS gmacPingPong     DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+#install(TARGETS gmacPingPong     DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS gmacCompress     DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
-install(TARGETS gmacCompressSend DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+#install(TARGETS gmacCompressSend DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
 endif(NOT CMAKE_SYSTEM_NAME MATCHES "Windows")
 ################################################################################################
 

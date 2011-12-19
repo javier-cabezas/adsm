@@ -67,59 +67,59 @@ TEST_F(ObjectMapTest, Coherence) {
     ObjectMap &map = mode->getAddressSpace();
 	ASSERT_TRUE(&map != NULL);	
 
-	protocol_interface &proto = map.getProtocol();
+	protocol &proto = map.get_protocol();
 	ASSERT_TRUE(&proto != NULL);
 	
-    object *obj1 = proto.createObject(*mode, Size_, NULL, GMAC_PROT_READ, 0);
-	object *obj2 = proto.createObject(*mode, Size_, NULL, GMAC_PROT_READWRITE, 0);
+    object *obj1 = proto.create_object(*mode, Size_, NULL, GMAC_PROT_READ, 0);
+	object *obj2 = proto.create_object(*mode, Size_, NULL, GMAC_PROT_READWRITE, 0);
 
 	hostptr_t addr1 = obj1->addr();
 	hostptr_t addr2 = obj2->addr();
 
-	ASSERT_FALSE(map.hasModifiedObjects());
+	ASSERT_FALSE(map.has_modified_objects());
 	ASSERT_TRUE(map.size() == 0);
-    ASSERT_TRUE(map.memorySize() == 0);
+    ASSERT_TRUE(map.get_memory_size() == 0);
 	ASSERT_EQ(gmacSuccess, map.releaseObjects());
-	ASSERT_TRUE(map.releasedObjects());
-	ASSERT_EQ(gmacSuccess, map.acquireObjects());	
+	ASSERT_TRUE(map.released_objects());
+	ASSERT_EQ(gmacSuccess, map.acquire_objects());	
 
 	ASSERT_TRUE(map.addObject(*obj1));	
-	ASSERT_TRUE(map.hasModifiedObjects());
+	ASSERT_TRUE(map.has_modified_objects());
 	ASSERT_TRUE(map.size() == 1);
-	ASSERT_TRUE(map.memorySize() == Size_);
+	ASSERT_TRUE(map.get_memory_size() == Size_);
 	ASSERT_EQ(gmacSuccess, map.releaseObjects());
-	ASSERT_TRUE(map.releasedObjects());
-	ASSERT_EQ(gmacSuccess, map.acquireObjects());
+	ASSERT_TRUE(map.released_objects());
+	ASSERT_EQ(gmacSuccess, map.acquire_objects());
 	
 	ASSERT_TRUE(map.hasObject(*obj1));
 	ASSERT_TRUE(map.hasObject(*obj2) == 0);
 
-	ASSERT_EQ(obj1, map.getObject(addr1, Size_));
-	ASSERT_NE(obj1, map.getObject(addr2, Size_));
+	ASSERT_EQ(obj1, map.get_object(addr1, Size_));
+	ASSERT_NE(obj1, map.get_object(addr2, Size_));
 
     ASSERT_TRUE(map.addObject(*obj2));
-	ASSERT_TRUE(map.hasModifiedObjects());
+	ASSERT_TRUE(map.has_modified_objects());
 	ASSERT_TRUE(map.size() == 2);
-	ASSERT_TRUE(map.memorySize() == 2 * Size_);	
+	ASSERT_TRUE(map.get_memory_size() == 2 * Size_);	
 	ASSERT_EQ(gmacSuccess, map.releaseObjects());
-	ASSERT_TRUE(map.releasedObjects());
-    ASSERT_EQ(gmacSuccess, map.acquireObjects());
+	ASSERT_TRUE(map.released_objects());
+    ASSERT_EQ(gmacSuccess, map.acquire_objects());
 
 	ASSERT_TRUE(map.removeObject(*obj1));
-	ASSERT_FALSE(map.hasModifiedObjects());
+	ASSERT_FALSE(map.has_modified_objects());
 	ASSERT_TRUE(map.size() == 1);
-	ASSERT_TRUE(map.memorySize() == Size_);	
+	ASSERT_TRUE(map.get_memory_size() == Size_);	
 	ASSERT_EQ(gmacSuccess, map.releaseObjects());
-	ASSERT_TRUE(map.releasedObjects());
-    ASSERT_EQ(gmacSuccess, map.acquireObjects());
+	ASSERT_TRUE(map.released_objects());
+    ASSERT_EQ(gmacSuccess, map.acquire_objects());
 
     ASSERT_TRUE(map.removeObject(*obj2));
-	ASSERT_FALSE(map.hasModifiedObjects());
+	ASSERT_FALSE(map.has_modified_objects());
 	ASSERT_TRUE(map.size() == 0);
-    ASSERT_TRUE(map.memorySize() == 0);	
+    ASSERT_TRUE(map.get_memory_size() == 0);	
 	ASSERT_EQ(gmacSuccess, map.releaseObjects());
-	ASSERT_TRUE(map.releasedObjects());
-	ASSERT_EQ(gmacSuccess, map.acquireObjects());
+	ASSERT_TRUE(map.released_objects());
+	ASSERT_EQ(gmacSuccess, map.acquire_objects());
 
     obj1->decRef();
 	obj2->decRef();

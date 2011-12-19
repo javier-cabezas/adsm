@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010, 2011 University of Illinois
+/* Copyright (c) 2009-2011sity of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -105,6 +105,7 @@ public:
     unsigned get_number_of_devices() const;
     bool are_all_devices_integrated() const;
     gmacError_t get_device_info(unsigned deviceId, GmacDeviceInfo &info);
+    gmacError_t get_device_free_mem(unsigned deviceId, size_t &freeMem);
 };
 
 }}}

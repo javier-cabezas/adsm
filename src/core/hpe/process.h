@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010, 2011 University of Illinois
+/* Copyright (c) 2009-2011sity of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -43,8 +43,8 @@ WITH THE SOFTWARE.  */
 #include "include/gmac/types.h"
 
 #include "util/lock.h"
-#include "util/Private.h"
-#include "util/UniquePtr.h"
+#include "util/private.h"
+#include "util/smart_ptr.h"
 #include "util/stl/locked_map.h"
 
 #include "core/process.h"

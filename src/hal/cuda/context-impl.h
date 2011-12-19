@@ -1,7 +1,7 @@
 #ifndef GMAC_HAL_CUDA_CONTEXT_IMPL_H_
 #define GMAC_HAL_CUDA_CONTEXT_IMPL_H_
 
-#include "util/Logger.h"
+#include "trace/logger.h"
 
 namespace __impl { namespace hal { namespace cuda {
 
@@ -24,22 +24,6 @@ ptr_t
 buffer_t::get_device_addr()
 {
     return get_context().get_device_addr_from_pinned(addr_);
-}
-
-
-inline
-gmacError_t
-list_event::sync()
-{
-    gmacError_t ret = gmacSuccess;
-    for (Parent::iterator it  = Parent::begin();
-            it != Parent::end();
-            it++) {
-        ret = (*it).sync();
-        if (ret != gmacSuccess) break;
-    }
-
-    return ret;
 }
 
 inline

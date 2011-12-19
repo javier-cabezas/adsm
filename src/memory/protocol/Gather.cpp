@@ -19,7 +19,7 @@
 #define MIN min
 #endif
 
-namespace __impl { namespace memory { namespace protocol_interface {
+namespace __impl { namespace memory { namespace protocol {
 
 
 GatherBase::GatherBase(size_t limit) :
@@ -48,14 +48,14 @@ GatherBase::State GatherBase::state(GmacProtection prot) const
 }
 
 
-void GatherBase::deleteObject(object &obj)
+void GatherBase::delete_object(object &obj)
 {
     obj.release();
 }
 
 
 
-bool GatherBase::needUpdate(const block &b) const
+bool GatherBase::needs_update(const block &b) const
 {
     const StateBlock<State> &block = dynamic_cast<const StateBlock<State> &>(b);
     switch(block.state()) {        
@@ -85,7 +85,7 @@ gmacError_t GatherBase::signal_read(block &b, hostptr_t addr)
         goto exit_func; // Somebody already fixed it
     }
 
-    ret = block.toHost();
+    ret = block.to_host();
     if(ret != gmacSuccess) goto exit_func;
     memory_ops::protect(block.addr(), block.size(), GMAC_PROT_READ);
     block.state(ReadOnly);
@@ -120,7 +120,7 @@ gmacError_t GatherBase::signal_write(block &b, hostptr_t addr)
             memory_ops::protect(start, count, GMAC_PROT_READWRITE);
             goto exit_func; // Somebody already fixed it
         case Invalid:          
-            ret = block.toHost();
+            ret = block.to_host();
             if(ret != gmacSuccess) goto exit_func;
             if (!block.isSequentialAccess()) {
                 start = block.getSubBlockAddr(addr);
@@ -215,7 +215,7 @@ gmacError_t GatherBase::acquireWithBitmap(block &b)
 	return ret;
 }
 
-gmacError_t GatherBase::mapToAccelerator(block &b)
+gmacError_t GatherBase::map_to_device(block &b)
 {
     memory::StateBlock<State> &block = dynamic_cast<memory::StateBlock<State> &>(b);
     ASSERTION(block.state() == HostOnly);
@@ -226,7 +226,7 @@ gmacError_t GatherBase::mapToAccelerator(block &b)
     return gmacSuccess;
 }
 
-gmacError_t GatherBase::unmapFromAccelerator(block &b)
+gmacError_t GatherBase::unmap_from_device(block &b)
 {
     memory::StateBlock<State> &block = dynamic_cast<memory::StateBlock<State> &>(b);
     TRACE(LOCAL,"Unmapping block from accelerator %p", block.addr());
@@ -237,7 +237,7 @@ gmacError_t GatherBase::unmapFromAccelerator(block &b)
         case ReadOnly:
             break;
         case Invalid:
-            ret = block.toHost();
+            ret = block.to_host();
             if(ret != gmacSuccess) break;
     }
     if(memory_ops::protect(block.addr(), block.size(), GMAC_PROT_READWRITE) < 0)
@@ -253,7 +253,7 @@ void GatherBase::addDirty(block &block)
     if(limit_ == size_t(-1)) return;
     while(dbl_.size() > limit_) {
         block *b = dbl_.pop();
-        b->coherenceOp(&protocol_interface::release);
+        b->coherence_op(&protocol::release);
     }
     return;
 }
@@ -265,7 +265,7 @@ gmacError_t GatherBase::releaseObjects()
     lock(); 
     while(dbl_.empty() == false) {
         block *b = dbl_.pop();
-        b->coherenceOp(&protocol_interface::release);
+        b->coherence_op(&protocol::release);
     }
     unlock();
     return gmacSuccess;
@@ -306,7 +306,7 @@ gmacError_t GatherBase::release(block &b)
                 float(b.getSubBlocks()) * util::params::ParamGatherRatio) {
                 //ret = block.toGatherBuffer();
             } else {
-                ret = block.toAccelerator();
+                ret = block.to_device();
                 if(ret != gmacSuccess) break;
                 if(memory_ops::protect(block.addr(), block.size(), GMAC_PROT_READ) < 0)
                     FATAL("Unable to set memory permissions");
@@ -321,13 +321,13 @@ gmacError_t GatherBase::release(block &b)
     return ret;
 }
 
-gmacError_t GatherBase::deleteBlock(block &block)
+gmacError_t GatherBase::remove_block(block &block)
 {
     dbl_.remove(dynamic_cast<StateBlock<State> &>(block));
     return gmacSuccess;
 }
 
-gmacError_t GatherBase::toHost(block &b)
+gmacError_t GatherBase::to_host(block &b)
 {
     TRACE(LOCAL,"Sending block to host: %p", b.addr());
     gmacError_t ret = gmacSuccess;
@@ -337,7 +337,7 @@ gmacError_t GatherBase::toHost(block &b)
             TRACE(LOCAL,"Invalid block");
 			if(memory_ops::protect(block.addr(), block.size(), GMAC_PROT_READ) < 0)
                 FATAL("Unable to set memory permissions");
-            ret = block.toHost();
+            ret = block.to_host();
             if(ret != gmacSuccess) break;
             block.state(ReadOnly);
             break;
@@ -354,7 +354,7 @@ gmacError_t GatherBase::toHost(block &b)
     return ret;
 }
 
-gmacError_t GatherBase::toAccelerator(block &b)
+gmacError_t GatherBase::to_device(block &b)
 {
     TRACE(LOCAL,"Sending block to accelerator: %p", b.addr());
     gmacError_t ret = gmacSuccess;
@@ -362,7 +362,7 @@ gmacError_t GatherBase::toAccelerator(block &b)
     switch(block.state()) {
         case Dirty:
             TRACE(LOCAL,"Dirty block");
-            ret = block.toAccelerator();
+            ret = block.to_device();
             if(ret != gmacSuccess) break;
             if(memory_ops::protect(block.addr(), block.size(), GMAC_PROT_READ) < 0)
                 FATAL("Unable to set memory permissions");

@@ -48,9 +48,9 @@ TEST_F(AddressSpaceTest, Creation) {
 TEST_F(AddressSpaceTest, object) {
 	__impl::memory::ObjectMap &map = Mode_->getAddressSpace();
 	ASSERT_TRUE(&map != NULL);
-	__impl::memory::protocol_interface &proto = map.getProtocol();
+	__impl::memory::protocol &proto = map.get_protocol();
 	ASSERT_TRUE(&proto != NULL);
-	object *object = proto.createObject(*Mode_, Size_, NULL, GMAC_PROT_READ, 0);
+	object *object = proto.create_object(*Mode_, Size_, NULL, GMAC_PROT_READ, 0);
 	ASSERT_TRUE(object != NULL);
 	
 	hostptr_t ptr = object->addr();
@@ -59,9 +59,9 @@ TEST_F(AddressSpaceTest, object) {
 	ASSERT_TRUE(aSpace != NULL);
 	ASSERT_TRUE(aSpace->addObject(*object));
 	ASSERT_TRUE(aSpace->hasObject(*object));
-	ASSERT_EQ(object, aSpace->getObject(ptr, Size_));
+	ASSERT_EQ(object, aSpace->get_object(ptr, Size_));
     
 	ASSERT_TRUE(aSpace->removeObject(*object));
 	ASSERT_FALSE(aSpace->hasObject(*object));
-	ASSERT_NE(object, aSpace->getObject(ptr, Size_)); 
+	ASSERT_NE(object, aSpace->get_object(ptr, Size_)); 
 }

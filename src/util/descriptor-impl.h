@@ -1,7 +1,7 @@
 #ifndef GMAC_UTIL_DESCRIPTOR_IMPL_H_
 #define GMAC_UTIL_DESCRIPTOR_IMPL_H_
 
-#include "util/Logger.h"
+#include "trace/logger.h"
 
 namespace __impl { namespace util {
 

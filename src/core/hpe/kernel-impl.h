@@ -19,7 +19,7 @@ kernel::arg_list::add_object(hostptr_t ptr, /* unsigned index, */GmacProtection 
     TRACE(LOCAL, "Adding object to argument list");
     // NOTE:
     // Path used by OpenCL, since KernelLaunch objects can be reused
-    usedObjects_.push_back(memory::ObjectInfo(ptr, prot));
+    usedObjects_.push_back(memory::object_access_info(ptr, prot));
 }
 
 inline

@@ -9,14 +9,17 @@
 
 #include "hal/types-detail.h"
 
-#include "util/Logger.h"
+#include "trace/logger.h"
+
+#include "util/lock.h"
 #include "util/unique.h"
 
 namespace __impl { namespace hal { namespace opencl {
 
 class GMAC_LOCAL _event_common_t {
-    friend class device;
     friend class context_t;
+    friend class device;
+    friend class event_ptr;
     friend class kernel_t;
     stream_t *stream_;
 
@@ -42,11 +45,10 @@ public:
 class GMAC_LOCAL _event_t :
     public hal::detail::_event_t<implementation_traits>,
     public _event_common_t,
-    public gmac::util::mutex<_event_t>,
     public util::unique<_event_t> {
 
     friend class context_t;
-    friend class event_t;
+    friend class list_event;
 
     typedef hal::detail::_event_t<implementation_traits> Parent;
 
@@ -67,22 +69,37 @@ public:
     void operator()(_event_t *ev);
 };
 
-class GMAC_LOCAL event_t {
+class GMAC_LOCAL event_ptr {
     friend class context_t;
     friend class kernel_t;
+    friend class list_event;
 
 private:
     util::shared_ptr<_event_t> ptrEvent_;
 
-    event_t(bool async, _event_t::type t, context_t &context);
+    event_ptr(bool async, _event_t::type t, context_t &context);
+
+    inline
+    void reset()
+    {
+        ptrEvent_.reset();
+    }
+
+    inline
+    util::shared_ptr<_event_t>
+    get_shared_ptr()
+    {
+        return ptrEvent_;
+    }
 
 public:
     typedef _event_t event_type;
+    typedef _event_t::type type;
 
     /**
      * Default constructor. Creates an empty event
      */
-    event_t();
+    event_ptr();
 
 #ifdef USE_CXX0X
     /**
@@ -90,14 +107,22 @@ public:
      *
      * \param event Source event for the move
      */
-    event_t(event_t &&event);
+    event_ptr(event_ptr &&event);
 #endif
     /**
      * Copy constructor
      *
      * \param event Source event for the copy
      */
-    event_t(const event_t &event);
+    event_ptr(const event_ptr &event);
+
+    /**
+     * Assignment operator. Copies the given event to this one
+     *
+     * \param event Source event for the copy
+     * \return A reference to the implicit event
+     */
+    event_ptr &operator=(const event_ptr &event);
 
 #ifdef USE_CXX0X
     /**
@@ -106,45 +131,54 @@ public:
      * \param event Source event for the copy
      * \return A reference to the implicit event
      */
-    event_t &operator=(event_t &&event);
+    event_ptr &operator=(event_ptr &&event);
 #endif
-    /**
-     * Assignment operator. Copies the given event to this one
-     *
-     * \param event Source event for the copy
-     * \return A reference to the implicit event
-     */
-    event_t &operator=(const event_t &event);
 
-    /**
-     * Blocks execution until the event has been completed. The event must be bound to an operation
-     *
-     * \return The error code of the operation bound to the event
-     */
-    gmacError_t sync();
+    inline
+    operator bool() const
+    {
+        return bool(ptrEvent_);
+    }
 
-    /**
-     * Sets the event as completed. The event must be bound to an operation
-     */
-    void set_synced();
+    _event_t *operator->()
+    {
+        return ptrEvent_.get();
+    }
 
-    void begin(stream_t &stream);
-
-    void invalidate();
-
-    /**
-     * Tells whether the event must be bound to an operation or not
-     *
-     * \return A boolean that tells whether the event must be bound to an operation or not
-     */
-    bool is_valid() const;
-
-    _event_t &operator*();
-
-    cl_event &operator()();
+    _event_t &operator*()
+    {
+        return *ptrEvent_.get();
+    }
 
     template <typename F>
     void add_trigger(F fun);
+};
+
+typedef hal::detail::list_event<implementation_traits> list_event_detail;
+
+class GMAC_LOCAL list_event :
+    public list_event_detail,
+    protected std::list<util::shared_ptr<_event_t> >,
+    public util::locker_rw<hal::detail::_event_t<implementation_traits> > {
+    typedef std::list<util::shared_ptr<_event_t> > Parent;
+
+    friend class context_t;
+    friend class kernel_t;
+
+protected:
+    typedef util::locker_rw<hal::detail::_event_t<implementation_traits> > locker;
+    void set_synced();
+
+    cl_event *get_event_array(stream_t &stream, unsigned &nevents);
+    cl_event *get_event_array(unsigned &nevents);
+public:
+    ~list_event();
+
+    gmacError_t sync();
+
+    size_t size() const;
+
+    void add_event(event_ptr event);
 };
 
 }}}
