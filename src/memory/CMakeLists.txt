@@ -38,11 +38,11 @@ set(memory_SRC
     protocol/lazy.cpp
     protocol/common/list_block.h
     protocol/common/list_block-impl.h
-    protocol/common/block_state.h
-    protocol/common/block_state-impl.h
-    protocol/common/block_state.cpp
-    protocol/lazy/block_state.h
-    protocol/lazy/block_state-impl.h
+    protocol/common/block.h
+    protocol/common/block-impl.h
+    protocol/common/block.cpp
+    protocol/lazy/block.h
+    protocol/lazy/block-impl.h
     protocol/lazy/lazy_types.h
 )
 

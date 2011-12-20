@@ -319,7 +319,7 @@ manager::releaseObjects(core::address_space_ptr aspace, const list_addr &addrs)
 
     memory::map_object &map = aspace->get_object_map();
     if (addrs.size() == 0) { // Release all objects
-        TRACE(LOCAL,"Releasing Objects");
+        TRACE(LOCAL,"Releasing objects");
         if (map.has_modified_objects()) {
             // Mark objects as released
             evt = map.release_objects(false, ret);
@@ -332,7 +332,7 @@ manager::releaseObjects(core::address_space_ptr aspace, const list_addr &addrs)
             map.release_objects();
         }
     } else { // Release given objects
-        TRACE(LOCAL,"Releasing call Objects");
+        TRACE(LOCAL,"Releasing call objects");
         list_addr::const_iterator it;
         for (it = addrs.begin(); it != addrs.end(); it++) {
             object_ptr obj = map.get_object(it->first);
