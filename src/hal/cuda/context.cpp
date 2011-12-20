@@ -43,11 +43,7 @@ context_t::copy_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stre
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
 
     if (dependencies != NULL) {
-        err = dependencies->sync();
-
-        if (err != gmacSuccess) {
-            return event_ptr();
-        }
+        dependencies->set_barrier(stream);
     }
 
     event_ptr ret(false, get_event_type(dst, src), *this);
@@ -110,11 +106,7 @@ context_t::copy_backend(ptr_t dst, device_input &input, size_t count, stream_t &
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
 
     if (dependencies != NULL) {
-        err = dependencies->sync();
-
-        if (err != gmacSuccess) {
-            return event_ptr();
-        }
+        dependencies->set_barrier(stream);
     }
 
     TRACE(LOCAL, "IO -> D copy ("FMT_SIZE" bytes) on stream: %p", count, stream());
@@ -152,11 +144,7 @@ context_t::copy_backend(device_output &output, const ptr_t src, size_t count, st
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
 
     if (dependencies != NULL) {
-        err = dependencies->sync();
-
-        if (err != gmacSuccess) {
-            return event_ptr();
-        }
+        dependencies->set_barrier(stream);
     }
 
     TRACE(LOCAL, "D -> IO copy ("FMT_SIZE" bytes) on stream: %p", count, stream());
@@ -197,11 +185,7 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
 
     if (dependencies != NULL) {
-        err = dependencies->sync();
-
-        if (err != gmacSuccess) {
-            return event_ptr();
-        }
+        dependencies->set_barrier(stream);
     }
 
     event_ptr ret(true, get_event_type(dst, src), *this);
@@ -254,7 +238,7 @@ context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t
         res = cuMemcpyDtoHAsync(dst.get_host_addr(), src.get_device_addr(), count, stream());
 
         // Perform memcpy after asynchronous copy
-        ret.add_trigger(util::do_func(memcpy, buffer->get_addr(), src.get_host_addr(), count));
+        ret.add_trigger(do_func(memcpy, buffer->get_addr(), src.get_host_addr(), count));
     } else if (dst.is_host_ptr() &&
                src.is_host_ptr()) {
         TRACE(LOCAL, "H (%p) -> H (%p) copy ("FMT_SIZE" bytes) on stream: "FMT_ID,
@@ -284,11 +268,7 @@ context_t::copy_async_backend(ptr_t dst, device_input &input, size_t count, stre
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
 
     if (dependencies != NULL) {
-        err = dependencies->sync();
-
-        if (err != gmacSuccess) {
-            return event_ptr();
-        }
+        dependencies->set_barrier(stream);
     }
 
     TRACE(LOCAL, "IO -> D async copy ("FMT_SIZE" bytes) on stream: %p", count, stream());
@@ -326,11 +306,7 @@ context_t::copy_async_backend(device_output &output, const ptr_t src, size_t cou
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
 
     if (dependencies != NULL) {
-        err = dependencies->sync();
-
-        if (err != gmacSuccess) {
-            return event_ptr();
-        }
+        dependencies->set_barrier(stream);
     }
 
     TRACE(LOCAL, "D -> IO async copy ("FMT_SIZE" bytes) on stream: %p", count, stream());
@@ -371,11 +347,7 @@ context_t::memset_backend(ptr_t dst, int c, size_t count, stream_t &stream, list
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
 
     if (dependencies != NULL) {
-        err = dependencies->sync();
-
-        if (err != gmacSuccess) {
-            return event_ptr();
-        }
+        dependencies->set_barrier(stream);
     }
 
     set();
@@ -404,11 +376,7 @@ context_t::memset_async_backend(ptr_t dst, int c, size_t count, stream_t &stream
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
 
     if (dependencies != NULL) {
-        err = dependencies->sync();
-
-        if (err != gmacSuccess) {
-            return event_ptr();
-        }
+        dependencies->set_barrier(stream);
     }
 
     set();

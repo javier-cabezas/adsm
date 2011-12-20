@@ -35,7 +35,6 @@ public:
         const size_t *get_dims_offset() const;
         const size_t *get_dims_global() const;
         const size_t *get_dims_group() const;
-
     };
 
     class GMAC_LOCAL arg_list :

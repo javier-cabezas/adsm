@@ -20,6 +20,8 @@ class GMAC_LOCAL _event_common_t {
     friend class device;
     friend class event_ptr;
     friend class kernel_t;
+    friend class list_event;
+
     stream_t *stream_;
 
 protected:
@@ -153,8 +155,12 @@ class GMAC_LOCAL list_event :
     protected std::list<event_ptr> {
     typedef std::list<event_ptr> Parent;
 
+    friend class context_t;
+    friend class kernel_t;
+
+    void set_barrier(stream_t &stream);
+    void set_synced();
 public:
-    list_event() { printf("Creating event list\n"); }
     gmacError_t sync();
 
     void add_event(event_ptr event); 
