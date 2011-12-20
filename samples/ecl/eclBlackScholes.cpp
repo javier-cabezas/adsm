@@ -1,10 +1,12 @@
 #include <cstdio>
 #include <cstdlib>
-#include <cmath>
 
-#include <gmac/opencl.h>
+#include "gmac/opencl.h"
 
-#include "eclBlackScholesKernel.cl"
+#include "utils.h"
+#include "debug.h"
+
+#include "../eclBlackScholesKernel.cl"
 
 #define GROUP_SIZE 256
 #define S_LOWER_LIMIT 10.0f
@@ -71,6 +73,8 @@ blackScholesCPU(cl_float *randArray, cl_int width, cl_int height, cl_float *host
 
 int main(int argc, char *argv[])
 {
+    gmactime_t s, t, S, T;
+
     cl_uint samples = 256 * 256 * 4;
     size_t blockSizeX = 1;
     size_t blockSizeY = 1;
@@ -81,7 +85,6 @@ int main(int argc, char *argv[])
     cl_float *hostPutPrice = NULL;
     cl_uint width = 64;
     cl_uint height = 64;
-	ecl_error ret;
 
     /* Calculate width and height from samples */
     samples = samples / 4;
@@ -94,25 +97,26 @@ int main(int argc, char *argv[])
     width = tempVar1;
     height = width;
 
-    ret = eclCompileSource(code);
-	assert(ret == eclSuccess);
-	ecl_accelerator_info info;
-    eclGetAcceleratorInfo(0, &info);
-	
+    assert(eclCompileSource(code) == eclSuccess);
+    ecl_accelerator_info info;
+    assert(eclGetAcceleratorInfo(0, &info) == eclSuccess);
+
+    getTime(&s);
     // Alloc & init input data
-    ret = eclMalloc((void **)&randArray, width * height * sizeof(cl_float4));
-	assert(ret == eclSuccess);
-    ret = eclMalloc((void **)&deviceCallPrice, width * height * sizeof(cl_float4));
-	assert(ret == eclSuccess);
-    ret = eclMalloc((void **)&devicePutPrice, width * height * sizeof(cl_float4));
-	assert(ret == eclSuccess);
+    assert(eclMalloc((void **)&randArray, width * height * sizeof(cl_float4)) == eclSuccess);
+    assert(eclMalloc((void **)&deviceCallPrice, width * height * sizeof(cl_float4)) == eclSuccess);
+    assert(eclMalloc((void **)&devicePutPrice, width * height * sizeof(cl_float4)) == eclSuccess);
     hostCallPrice = (cl_float*)malloc(width * height * sizeof(cl_float4));
     if(hostCallPrice == NULL)
         return 0;
     hostPutPrice = (cl_float*)malloc(width * height * sizeof(cl_float4));
     if(hostPutPrice == NULL)
         return 0;
+    getTime(&t);
+    printTime(&s, &t, "Alloc: ", "\n");
 
+    getTime(&S);
+    getTime(&s);
     // random initialisation of input
     for(cl_uint i = 0; i < width * height * 4; i++)
         randArray[i] = (float)rand() / (float)RAND_MAX;
@@ -121,24 +125,25 @@ int main(int argc, char *argv[])
     eclMemset(devicePutPrice, 0, width * height * sizeof(cl_float4));
     eclMemset(hostCallPrice, 0, width * height * sizeof(cl_float4));
     eclMemset(hostPutPrice, 0, width * height * sizeof(cl_float4));
+    getTime(&t);
+    printTime(&s, &t, "Init: ", "\n");
 
     // Call the kernel
+    getTime(&s);
     size_t globalThreads[2] = {width, height};
     size_t localThreads[2] = {blockSizeX, blockSizeY};
     ecl_kernel kernel;
-    ret = eclGetKernel("blackScholes", &kernel);
-	assert(ret == eclSuccess);
-    ret = eclSetKernelArgPtr(kernel, 0, randArray);
-	assert(ret == eclSuccess);
-    ret = eclSetKernelArg(kernel, 1, sizeof(width), &width);
-	assert(ret == eclSuccess);
-    ret = eclSetKernelArgPtr(kernel, 2, deviceCallPrice);
-	assert(ret == eclSuccess);
-    ret = eclSetKernelArgPtr(kernel, 3, devicePutPrice);
-	assert(ret == eclSuccess);
-    ret = eclCallNDRange(kernel, 2, NULL, globalThreads, localThreads);
-	assert(ret == eclSuccess);
+    assert(eclGetKernel("blackScholes", &kernel) == eclSuccess);
+    assert(eclSetKernelArgPtr(kernel, 0, randArray) == eclSuccess);
+    assert(eclSetKernelArg(kernel, 1, sizeof(width), &width) == eclSuccess);
+    assert(eclSetKernelArgPtr(kernel, 2, deviceCallPrice) == eclSuccess);
+    assert(eclSetKernelArgPtr(kernel, 3, devicePutPrice) == eclSuccess);
+    assert(eclCallNDRange(kernel, 2, NULL, globalThreads, localThreads) == eclSuccess);
 
+    getTime(&t);
+    printTime(&s, &t, "Run: ", "\n");
+
+    getTime(&s);
     printf("deviceCallPrice£º\n");
     for(cl_uint i = 0; i < width; i++) {
         printf("%f ", deviceCallPrice[i]);
@@ -157,7 +162,10 @@ int main(int argc, char *argv[])
     for(cl_uint i = 0; i < width; i++) {
         printf("%f ", hostPutPrice[i]);
     }
+    getTime(&t);
+    printTime(&s, &t, "Print: ", "\n");
 
+    getTime(&s);
     float error = 0.0f;
     float ref = 0.0f;
     bool callPriceResult = true;
@@ -201,7 +209,12 @@ int main(int argc, char *argv[])
     } else {
         printf("Passed!\n");
     }
+    getTime(&t);
+    printTime(&s, &t, "Check: ", "\n");
+    getTime(&T);
+    printTime(&S, &T, "Total: ", "\n");
 
+    getTime(&s);
     free(hostPutPrice);
     hostPutPrice = NULL;
     free(hostCallPrice);
@@ -212,6 +225,7 @@ int main(int argc, char *argv[])
     eclFree(devicePutPrice);
     eclFree(deviceCallPrice);
     eclFree(randArray);
-
+    getTime(&t);
+    printTime(&s, &t, "Free: ", "\n");
     return 0;
 }
