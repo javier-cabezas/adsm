@@ -55,8 +55,10 @@ int main(int argc, char *argv[])
     // Init input data
     getTime(&s);
     begin = s;
-    randInitMax(a, 10.f, vecSize);
-    randInitMax(b, 10.f, vecSize);
+    //randInitMax(a, 10.f, vecSize);
+    //randInitMax(b, 10.f, vecSize);
+    init(a, vecSize, 1.f);
+    init(b, vecSize, 2.f);
     getTime(&t);
     printTime(&s, &t, "Init: ", "\n");
 
@@ -90,6 +92,8 @@ int main(int argc, char *argv[])
     getTime(&t);
     printTime(&s, &t, "Free: ", "\n");
     printTime(&begin, &end, "Total: ", "\n");
+
+    printf("%f vs %f\n", sum, check);
 
     return sum != check;
 }

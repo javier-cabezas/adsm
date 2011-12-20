@@ -13,7 +13,7 @@ map_object::acquire_objects(GmacProtection prot, gmacError_t &err)
     iterator i;
     lock_read();
     for(i = begin(); i != end(); i++) {
-        ret = (*i->second).release(prot, err);
+        ret = (*i->second).acquire(prot, err);
         if(err != gmacSuccess) {
             unlock();
             return ret;
