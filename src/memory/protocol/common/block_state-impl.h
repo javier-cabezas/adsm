@@ -31,14 +31,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_PROTOCOL_COMMON_BLOCKSTATE_IMPL_H_
-#define GMAC_MEMORY_PROTOCOL_COMMON_BLOCKSTATE_IMPL_H_
+#ifndef GMAC_MEMORY_PROTOCOL_COMMON_BLOCK_IMPL_H_
+#define GMAC_MEMORY_PROTOCOL_COMMON_BLOCK_IMPL_H_
 
 namespace __impl {
 namespace memory { namespace protocols { namespace common {
 
 inline
-block_state::block_state(object &parent, hostptr_t addr, hostptr_t shadow, size_t size) :
+block::block(object &parent, hostptr_t addr, hostptr_t shadow, size_t size) :
     Lock("block"),
     parent_(parent),
     size_(size),
@@ -49,49 +49,49 @@ block_state::block_state(object &parent, hostptr_t addr, hostptr_t shadow, size_
 {
 }
 
-inline const block_state::bounds
-block_state::get_bounds() const
+inline const block::bounds
+block::get_bounds() const
 {
     // No need for lock -- addr_ is never modified
     return bounds(addr_, addr_ + size_);
 }
 
 inline size_t
-block_state::size() const
+block::size() const
 {
     return size_;
 }
 
 inline hostptr_t
-block_state::get_shadow() const
+block::get_shadow() const
 {
     return shadow_;
 }
 
 inline
 unsigned
-block_state::get_faults_cache_write() const
+block::get_faults_cache_write() const
 {
     return faultsCacheWrite_;
 }
 
 inline
 unsigned
-block_state::get_faults_cache_read() const
+block::get_faults_cache_read() const
 {
     return faultsCacheRead_;
 }
 
 inline
 void
-block_state::reset_faults_cache_write()
+block::reset_faults_cache_write()
 {
     faultsCacheWrite_ = 0;
 }
 
 inline
 void
-block_state::reset_faults_cache_read()
+block::reset_faults_cache_read()
 {
     faultsCacheRead_ = 0;
 }

@@ -97,7 +97,7 @@ gmacError_t APICALL
 
     address_space_ptr aspace = get_current_vdevice().get_address_space();
 
-    ptr_t tmp = __impl::memory::getManager().translate(aspace, ptr);
+    ptr_t tmp = __impl::memory::get_manager().translate(aspace, ptr);
     if (!tmp) {
         ret = gmacErrorInvalidValue;
         thread::set_last_error(ret);
@@ -110,7 +110,7 @@ gmacError_t APICALL
     cl_mem tmpMem;
     if (tmp.get_offset() > 0) {
         size_t size;
-        size = __impl::memory::getManager().getAllocSize(aspace, ptr, ret);
+        size = __impl::memory::get_manager().getAllocSize(aspace, ptr, ret);
         ASSERTION(ret == gmacSuccess);
         tmpMem = args->get_subbuffer(aspace->get_hal_context()(), ptr, tmp, size);
     } else {
@@ -160,8 +160,8 @@ gmacError_t APICALL
 #if defined(SEPARATE_COMMAND_QUEUES)
         ret = gmacThreadSynchronize(*(kernel::launch *)kernel.impl_);
 #else
-        ret = __impl::memory::getManager().acquireObjects(dev.get_address_space(),
-                                                          args->get_objects());
+        ret = __impl::memory::get_manager().acquireObjects(dev.get_address_space(),
+                                                           args->get_objects());
 #endif
         conf->launch = launch;
     }

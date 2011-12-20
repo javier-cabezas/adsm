@@ -3,8 +3,6 @@
 
 #include "core/address_space.h"
 
-#include "block_state.h"
-
 namespace __impl { namespace memory {
 
 template<typename ProtocolTraits>
@@ -102,8 +100,8 @@ object_state<ProtocolTraits>::object_state(protocol &protocol,
     
 }
 
-template<typename State>
-object_state<State>::~object_state()
+template<typename ProtocolTraits>
+object_state<ProtocolTraits>::~object_state()
 {
     if (ownerShortcut_) ownerShortcut_->unmap(addr_, size_);
     if (shadow_ != NULL) memory_ops::unshadow(shadow_, size_);
@@ -111,41 +109,41 @@ object_state<State>::~object_state()
     TRACE(LOCAL, "Destroying BlockGroup @ %p", addr_);
 }
 
-template<typename State>
+template<typename ProtocolTraits>
 inline accptr_t
-object_state<State>::get_device_addr(const hostptr_t addr) const
+object_state<ProtocolTraits>::get_device_addr(const hostptr_t addr) const
 {
     return deviceAddr_ + (addr - addr_);
 }
 
-template<typename State>
+template<typename ProtocolTraits>
 inline accptr_t
-object_state<State>::get_device_addr() const
+object_state<ProtocolTraits>::get_device_addr() const
 {
     return get_device_addr(addr_);
 }
 
-template<typename State>
+template<typename ProtocolTraits>
 inline core::address_space_ptr
-object_state<State>::get_owner()
+object_state<ProtocolTraits>::get_owner()
 {
     ASSERTION(bool(ownerShortcut_));
 
     return ownerShortcut_;
 }
 
-template<typename State>
+template<typename ProtocolTraits>
 inline core::address_space_const_ptr
-object_state<State>::get_owner() const
+object_state<ProtocolTraits>::get_owner() const
 {
     ASSERTION(bool(ownerShortcut_));
 
     return ownerShortcut_;
 }
 
-template<typename State>
+template<typename ProtocolTraits>
 inline gmacError_t
-object_state<State>::add_owner(core::address_space_ptr owner)
+object_state<ProtocolTraits>::add_owner(core::address_space_ptr owner)
 {
     ASSERTION(!ownerShortcut_);
     ownerShortcut_ = owner;
@@ -157,9 +155,9 @@ object_state<State>::add_owner(core::address_space_ptr owner)
 }
 
 // TODO: move checks to DBC
-template<typename State>
+template<typename ProtocolTraits>
 inline gmacError_t
-object_state<State>::remove_owner(core::address_space_const_ptr owner)
+object_state<ProtocolTraits>::remove_owner(core::address_space_const_ptr owner)
 {
     ASSERTION(ownerShortcut_ == owner);
 
@@ -179,9 +177,9 @@ object_state<State>::remove_owner(core::address_space_const_ptr owner)
 }
 
 // TODO Receive a aspace
-template<typename State>
+template<typename ProtocolTraits>
 inline gmacError_t
-object_state<State>::map_to_device()
+object_state<ProtocolTraits>::map_to_device()
 {
     ASSERTION(bool(ownerShortcut_));
 
@@ -201,9 +199,9 @@ object_state<State>::map_to_device()
 }
 
 // TODO Receive a aspace
-template <typename State>
+template <typename ProtocolTraits>
 inline gmacError_t
-object_state<State>::unmap_from_device()
+object_state<ProtocolTraits>::unmap_from_device()
 {
     gmacError_t ret;
 

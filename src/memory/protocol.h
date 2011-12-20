@@ -48,7 +48,7 @@ namespace __impl {
 namespace memory {
 namespace protocols { namespace common {
 class block_state;
-typedef util::shared_ptr<block_state> block_ptr;
+typedef util::shared_ptr<block> block_ptr;
 }}
 class object;
 

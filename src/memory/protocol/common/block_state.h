@@ -65,9 +65,9 @@ enum Statistic {
 };
 extern const char *StatisticName[];
 
-class GMAC_LOCAL block_state :
-    public gmac::util::mutex<block_state> {
-    typedef gmac::util::mutex<block_state> Lock;
+class GMAC_LOCAL block :
+    public gmac::util::mutex<block> {
+    typedef gmac::util::mutex<block> Lock;
 protected:
     /** Object that contains the block */
     object &parent_;
@@ -92,7 +92,7 @@ protected:
      * \param shadow Shadow host memory mapping that is always read/write
      * \param size Size (in bytes) of the memory block
      */
-    block_state(object &parent, hostptr_t addr, hostptr_t shadow, size_t size);
+    block(object &parent, hostptr_t addr, hostptr_t shadow, size_t size);
 
 public:
     typedef util::bounds<hostptr_t> bounds;
@@ -147,8 +147,8 @@ public:
     virtual gmacError_t dump(std::ostream &stream, Statistic stat) = 0;
 };
 
-typedef util::shared_ptr<block_state> block_ptr;
-typedef util::shared_ptr<const block_state> block_const_ptr;
+typedef util::shared_ptr<block> block_ptr;
+typedef util::shared_ptr<const block> block_const_ptr;
 
 }}}}
 
