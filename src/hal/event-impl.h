@@ -18,13 +18,6 @@ _event_t<I>::_event_t(bool async, type t, context_parent_t &context) :
 
 template <typename I>
 inline
-_event_t<I>::~_event_t()
-{
-    printf("Hello\n");
-}
-
-template <typename I>
-inline
 typename I::context &
 _event_t<I>::get_context()
 {

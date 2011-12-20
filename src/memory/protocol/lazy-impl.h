@@ -6,17 +6,17 @@
 namespace __impl { namespace memory { namespace protocols {
 
 template<typename T>
-inline Lazy<T>::Lazy(bool eager) :
+inline lazy<T>::lazy(bool eager) :
     gmac::memory::protocols::lazy_base(eager)
 {}
 
 template<typename T>
-inline Lazy<T>::~Lazy()
+inline lazy<T>::~lazy()
 {}
 
 template<typename T>
 memory::object *
-Lazy<T>::create_object(size_t size, hostptr_t cpuPtr,
+lazy<T>::create_object(size_t size, hostptr_t cpuPtr,
                        GmacProtection prot, unsigned flags)
 {
     gmacError_t err;

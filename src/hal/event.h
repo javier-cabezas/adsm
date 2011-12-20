@@ -52,10 +52,6 @@ protected:
     _event_t(bool async, type t, context_parent_t &context);
 
 public:
-    virtual ~_event_t();
-
-    virtual gmacError_t sync() = 0;
-
     context_parent_t &get_context();
 
     type get_type() const;
@@ -69,10 +65,13 @@ public:
     bool is_synced() const;
 };
 
+typedef hal::detail::list_event<implementation_traits> list_event_detail;
+
 template <typename I>
-class GMAC_LOCAL list_event {
+class GMAC_LOCAL list_event :
+    public list_event_detail {
+    virtual void add_event(typename I::event_ptr event) = 0;
 public:
-    virtual void add_event(typename I::event event) = 0;
 };
 
 }

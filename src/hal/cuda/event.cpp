@@ -47,6 +47,29 @@ list_event::sync()
 }
 
 void
+list_event::set_barrier(stream_t &stream)
+{
+    stream.get_context().set();
+
+    for (Parent::iterator it  = Parent::begin();
+                          it != Parent::end();
+                          it++) {
+        CUresult res = cuStreamWaitEvent(stream(), (*it)->eventEnd_, 0);
+        ASSERTION(res == CUDA_SUCCESS, "Error adding barrier");
+    }
+}
+
+void
+list_event::set_synced()
+{
+    for (Parent::iterator it  = Parent::begin();
+            it != Parent::end();
+            it++) {
+        (**it).set_synced();
+    }
+}
+
+void
 list_event::add_event(event_ptr event) 
 {
     Parent::push_back(event);

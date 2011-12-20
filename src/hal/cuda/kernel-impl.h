@@ -49,7 +49,7 @@ kernel_t::launch::execute(list_event_detail &_dependencies, gmacError_t &err)
 {
     event_ptr ret;
     list_event &dependencies = reinterpret_cast<list_event &>(_dependencies);
-    err = dependencies.sync();
+    dependencies.set_barrier(get_stream());
 
     if (err == gmacSuccess) {
         ret = execute(err);
@@ -62,14 +62,10 @@ inline
 event_ptr
 kernel_t::launch::execute(event_ptr event, gmacError_t &err)
 {
-    event_ptr ret;
-    err = event->sync();
+    list_event dependencies;
+    dependencies.add_event(event);
 
-    if (err == gmacSuccess) {
-        ret = execute(err);
-    }
-
-    return ret;
+    return execute(dependencies, err);
 }
 
 inline

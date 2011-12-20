@@ -39,9 +39,9 @@ WITH THE SOFTWARE.  */
 namespace __impl { namespace memory { namespace protocols {
 
 template <typename T>
-class GMAC_LOCAL Lazy :
+class GMAC_LOCAL lazy :
 	public gmac::memory::protocols::lazy_base {
-    DBC_FORCE_TEST(Lazy<T>)
+    DBC_FORCE_TEST(lazy<T>)
 
 public:
     /**
@@ -49,10 +49,10 @@ public:
      *
      * \param eager Tells if the protocol uses eager update
      */
-    explicit Lazy(bool eager);
+    explicit lazy(bool eager);
 
     /// Default destructor
-    virtual ~Lazy();
+    virtual ~lazy();
 
     // Protocol Interface
     memory::object *create_object(size_t size, hostptr_t cpuPtr, GmacProtection prot, unsigned flags);

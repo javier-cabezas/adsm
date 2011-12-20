@@ -39,17 +39,17 @@ WITH THE SOFTWARE.  */
 namespace __dbc { namespace memory { namespace protocols {
 
 template <typename T>
-class GMAC_LOCAL Lazy :
-    public __impl::memory::protocols::Lazy<T>,
+class GMAC_LOCAL lazy :
+    public __impl::memory::protocols::lazy<T>,
     public virtual Contract {
-    DBC_TESTED(__impl::memory::protocols::Lazy<T>)
+    DBC_TESTED(__impl::memory::protocols::lazy<T>)
 
-    typedef __impl::memory::protocols::Lazy<T> parent;
+    typedef __impl::memory::protocols::lazy<T> parent;
 
 protected:
 public:
-    Lazy(bool eager);
-    virtual ~Lazy();
+    lazy(bool eager);
+    virtual ~lazy();
 };
 
 }}}

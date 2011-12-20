@@ -6,13 +6,13 @@
 namespace __dbc { namespace memory { namespace protocols {
 
 template <typename T>
-Lazy<T>::Lazy(bool eager) :
+lazy<T>::lazy(bool eager) :
     parent(eager)
 {
 }
 
 template <typename T>
-Lazy<T>::~Lazy()
+lazy<T>::~lazy()
 {
 }
 
