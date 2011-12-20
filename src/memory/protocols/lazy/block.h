@@ -36,7 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include "util/ReusableObject.h"
 
-#include "memory/protocol/common/block.h"
+#include "memory/protocols/common/block.h"
 
 namespace __impl {
 namespace memory {

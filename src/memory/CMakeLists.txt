@@ -29,32 +29,32 @@ set(memory_SRC
     allocator/slab.h
     allocator/slab-impl.h
     allocator/slab.cpp
-    protocol/Gather.h
-    protocol/Gather-impl.h
-    protocol/Gather.cpp
-    protocol/lazy_base.h
-    protocol/lazy.h
-    protocol/lazy-impl.h
-    protocol/lazy.cpp
-    protocol/common/list_block.h
-    protocol/common/list_block-impl.h
-    protocol/common/block.h
-    protocol/common/block-impl.h
-    protocol/common/block.cpp
-    protocol/lazy/block.h
-    protocol/lazy/block-impl.h
-    protocol/lazy/lazy_types.h
+    protocols/Gather.h
+    protocols/Gather-impl.h
+    protocols/Gather.cpp
+    protocols/lazy_base.h
+    protocols/lazy.h
+    protocols/lazy-impl.h
+    protocols/lazy.cpp
+    protocols/common/list_block.h
+    protocols/common/list_block-impl.h
+    protocols/common/block.h
+    protocols/common/block-impl.h
+    protocols/common/block.cpp
+    protocols/lazy/block.h
+    protocols/lazy/block-impl.h
+    protocols/lazy/lazy_types.h
 )
 
 set(memory_DBC
-    dbc/block.h
-    dbc/block.cpp
     dbc/manager.h
     dbc/manager.cpp
-    protocol/dbc/lazy.h
-    protocol/dbc/lazy-impl.h
-    protocol/dbc/lazy_base.h
-    protocol/dbc/lazy.cpp
+    protocols/dbc/lazy.h
+    protocols/dbc/lazy-impl.h
+    protocols/dbc/lazy_base.h
+    protocols/dbc/lazy.cpp
+    protocols/common/dbc/block.h
+    protocols/common/dbc/block.cpp
 )
 
 # dbc/object.h

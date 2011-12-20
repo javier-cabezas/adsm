@@ -54,6 +54,6 @@ public:
 
 }}}
 
-#include "memory/protocol/dbc/lazy-impl.h"
+#include "memory/protocols/dbc/lazy-impl.h"
 
 #endif

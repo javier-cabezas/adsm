@@ -1,8 +1,6 @@
 #ifndef GMAC_MEMORY_PROTOCOL_DBC_LAZY_IMPL_H_
 #define GMAC_MEMORY_PROTOCOL_DBC_LAZY_IMPL_H_
 
-#include "memory/protocol/lazy/lazy_types.h"
-
 namespace __dbc { namespace memory { namespace protocols {
 
 template <typename T>
