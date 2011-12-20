@@ -3,11 +3,6 @@ add_subdirectory(${OS_DIR})
 
 set(memory_SRC
     allocator.h
-    block.h
-    block-impl.h
-    block.cpp
-    block_state.h
-    block_state-impl.h
     handler.h
     handler.cpp
     object_mapped.h

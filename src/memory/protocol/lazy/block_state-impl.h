@@ -36,7 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include <sstream>
 
-#include "memory/block_state.h"
+#include "core/address_space.h"
 
 #if defined(USE_SUBBLOCK_TRACKING) || defined(USE_VM)
 
@@ -706,7 +706,7 @@ block_state::block() const
 
 inline
 block::block(object &parent, hostptr_t addr, hostptr_t shadow, size_t size, State init) :
-    common::block_state(parent, addr, shadow, size),
+    common::block(parent, addr, shadow, size),
     state_(init)
 #ifdef DEBUG
     , faultsRead_(0),

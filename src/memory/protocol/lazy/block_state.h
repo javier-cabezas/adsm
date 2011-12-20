@@ -34,7 +34,6 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_MEMORY_PROTOCOL_LAZY_BLOCKSTATE_H_
 #define GMAC_MEMORY_PROTOCOL_LAZY_BLOCKSTATE_H_
 
-#include "memory/block.h"
 #include "util/ReusableObject.h"
 
 #include "memory/protocol/common/block_state.h"
@@ -144,7 +143,7 @@ public:
 #endif
 
 class GMAC_LOCAL block :
-    public common::block_state {
+    public common::block {
 #if defined(USE_SUBBLOCK_TRACKING)
     friend class StrideInfo;
     friend class BlockTreeInfo;
