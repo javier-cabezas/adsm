@@ -90,7 +90,7 @@ void initGmac(void)
 
 namespace __impl {
     namespace core {
-        core::process &getProcess() { return *Process_; }
+        core::process &get_process() { return *Process_; }
         namespace hpe {
             //Mode &getCurrentVirtualDevice() { return __impl::core::hpe::thread::get_current_thread().getCurrentVirtualDevice(); }
             process &getProcess() { return *Process_; }
@@ -99,9 +99,9 @@ namespace __impl {
     }
 
     namespace memory {
-        manager &getManager() { return *Manager_; }
-        bool hasAllocator() { return Allocator_ != NULL; }
-        allocator_interface &getAllocator() { return *Allocator_; }
+        manager &get_manager() { return *Manager_; }
+        bool has_allocator() { return Allocator_ != NULL; }
+        allocator_interface &get_allocator() { return *Allocator_; }
     }
 }
 
@@ -132,7 +132,7 @@ static void InitThread(const bool &isRunTimeThread)
     gmac::trace::StartThread("CPU");
     isRunTimeThread_.set(&isRunTimeThread);
     enterGmac();
-    __impl::core::hpe::getProcess().initThread();
+    __impl::core::hpe::get_process().initThread();
     gmac::trace::SetThreadState(__impl::trace::Running);
     exitGmac();
 }
@@ -142,7 +142,7 @@ static void FiniThread()
     enterGmac();
     gmac::trace::SetThreadState(gmac::trace::Idle);
     // Modes and Contexts already destroyed in Process destructor
-    __impl::core::hpe::getProcess().finiThread();
+    __impl::core::hpe::get_process().finiThread();
     exitGmac();
 }
 

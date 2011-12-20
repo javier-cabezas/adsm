@@ -43,6 +43,8 @@ WITH THE SOFTWARE.  */
 
 #include "block.h"
 
+#if 0
+
 namespace __impl {
 
 namespace core {
@@ -59,7 +61,7 @@ class object_state;
 
 template <typename State>
 class GMAC_LOCAL block_state :
-    public gmac::memory::block,
+    public memory::protocols::common::block_state,
     public State,
     util::gmac_base<block_state<State> > {
 protected:
@@ -118,8 +120,8 @@ public:
 	}
 };
 
-
 }}
+#endif
 
 #include "block_state-impl.h"
 

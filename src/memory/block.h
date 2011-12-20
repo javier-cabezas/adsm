@@ -42,10 +42,9 @@ WITH THE SOFTWARE.  */
 #include "trace/logger.h"
 #include "util/lock.h"
 #include "util/misc.h"
-#include "util/Reference.h"
 
 #include "util/smart_ptr.h"
-
+#if 0
 /** Description for __impl. */
 namespace __impl {
 
@@ -100,48 +99,6 @@ protected:
 public:
     typedef util::bounds<hostptr_t> bounds;
 
-    /**
-     * Host memory address bounds of the block
-     * \return The host memory address bounds of the block
-     */
-    const bounds get_bounds() const;
-
-    /**
-     *  Block size
-     * \return Size in bytes of the memory block
-     */
-    size_t size() const;
-
-protected:
-#if 0
-    /**
-     * Ensures that the host memory has a valid and accessible copy of the data
-     * \return Error code
-     */
-    virtual hal::event_ptr to_accelerator(unsigned blockOff, size_t count, gmacError_t &err) = 0;
-    hal::event_ptr to_accelerator(gmacError_t &err)
-    {
-        return to_accelerator(0, size_, err);
-    }
-
-    /**
-     * Ensures that the host memory has a valid and accessible copy of the data
-     * \return Error code
-     */
-    hal::event_ptr to_host(gmacError_t &err)
-    {
-        return to_host(0, size_, err);
-    }
-
-    /**
-     * Ensures that the host memory has a valid and accessible copy of the data
-     * \param blockOff Offset within the block
-     * \param count Size (in bytes)
-     * \return Error code
-     */
-    virtual hal::event_ptr to_host(unsigned blockOff, size_t count, gmacError_t &err) = 0;
-#endif
-
 public:
     /**
      * Get memory block owner
@@ -177,7 +134,9 @@ public:
 #include "block-impl.h"
 
 #ifdef USE_DBC
-#include "memory/dbc/block.h"
+//#include "memory/dbc/block.h"
+#endif
+
 #endif
 
 #endif

@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2011 Universityversity of Illinois
+/* Copyright (c) 2009-2011 University of Illinoisllinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -43,16 +43,13 @@ WITH THE SOFTWARE.  */
 #include "util/lock.h"
 #include "util/locked_object.h"
 
+#include "block_state.h"
+
 namespace __impl {
-
-namespace core {
-    class Mode;
-}
-
 namespace memory {
-class block;
 
 namespace protocols {
+namespace common {
 
 //! FIFO list of blocks
 class GMAC_LOCAL list_block :
@@ -102,7 +99,7 @@ public:
     void remove(block_ptr block);
 };
 
-}}}
+}}}}
 
 #include "list_block-impl.h"
 

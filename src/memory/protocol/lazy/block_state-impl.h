@@ -688,7 +688,7 @@ namespace __impl {
 namespace memory {
 namespace protocols {
 namespace lazy_types {
-
+#if 0
 inline
 block &
 block_state::block()
@@ -702,10 +702,12 @@ block_state::block() const
 {
 	return *(const lazy_types::block *)this;
 }
+#endif
 
 inline
-block_state::block_state(protocol_state init) :
-    common::block_state<lazy_types::State>(init)
+block::block(object &parent, hostptr_t addr, hostptr_t shadow, size_t size, State init) :
+    common::block_state(parent, addr, shadow, size),
+    state_(init)
 #ifdef DEBUG
     , faultsRead_(0),
     faultsWrite_(0),
@@ -715,47 +717,53 @@ block_state::block_state(protocol_state init) :
 {
 }
 
+inline State
+block::get_state() const
+{
+    return state_;
+}
+
 inline void
-block_state::set_state(protocol_state state, hostptr_t /* addr */)
+block::set_state(lazy_types::State state, hostptr_t /* addr */)
 {
     state_ = state;
 }
 
 inline
 hal::event_ptr
-block_state::sync_to_device(gmacError_t &err)
+block::sync_to_device(gmacError_t &err)
 {
-    TRACE(LOCAL, "Transfer block to device: %p", block().get_bounds().start);
+    TRACE(LOCAL, "Transfer block to device: %p", get_bounds().start);
 
 #ifdef DEBUG
     transfersToAccelerator_++;
 #endif
     hal::event_ptr ret;
-    ret = block().get_owner()->copy_async(block().get_device_addr(),
-                                          hal::ptr_t(block().get_shadow()),
-                                          block().size(), err);
+    ret = get_owner()->copy_async(get_device_addr(),
+                                  hal::ptr_t(get_shadow()),
+                                  size(), err);
     return ret;
 }
 
 inline
 hal::event_ptr
-block_state::sync_to_host(gmacError_t &err)
+block::sync_to_host(gmacError_t &err)
 {
-    TRACE(LOCAL, "Transfer block to host: %p", block().get_bounds().start);
+    TRACE(LOCAL, "Transfer block to host: %p", get_bounds().start);
 
 #ifdef DEBUG
     transfersToHost_++;
 #endif
     hal::event_ptr ret;
-    err = block().get_owner()->copy(hal::ptr_t(block().get_shadow()),
-                                    block().get_device_addr(),
-                                    block().size());
+    err = get_owner()->copy(hal::ptr_t(get_shadow()),
+                            get_device_addr(),
+                            size());
     return ret;
 }
 
 inline
 void
-block_state::read(const hostptr_t /*addr*/)
+block::read(const hostptr_t /*addr*/)
 {
 #ifdef DEBUG
     faultsRead_++;
@@ -765,7 +773,7 @@ block_state::read(const hostptr_t /*addr*/)
 
 inline
 void
-block_state::write(const hostptr_t /*addr*/)
+block::write(const hostptr_t /*addr*/)
 {
 #ifdef DEBUG
     faultsWrite_++;
@@ -775,28 +783,28 @@ block_state::write(const hostptr_t /*addr*/)
 
 inline
 bool
-block_state::is(protocol_state state) const
+block::is(lazy_types::State state) const
 {
     return state_ == state;
 }
 
 inline
 int
-block_state::protect(GmacProtection prot)
+block::protect(GmacProtection prot)
 {
-    return memory_ops::protect(block().get_bounds().start, block().size(), prot);
+    return memory_ops::protect(get_bounds().start, size(), prot);
 }
 
 inline
 int
-block_state::unprotect()
+block::unprotect()
 {
-    return memory_ops::protect(block().get_bounds().start, block().size(), GMAC_PROT_READWRITE);
+    return memory_ops::protect(get_bounds().start, size(), GMAC_PROT_READWRITE);
 }
 
 inline
 void
-block_state::acquired()
+block::acquired()
 {
 #ifdef DEBUG
     faultsRead_ = 0;
@@ -808,7 +816,7 @@ block_state::acquired()
 
 inline
 void
-block_state::released()
+block::released()
 {
 #ifdef DEBUG
     faultsRead_ = 0;
@@ -818,9 +826,27 @@ block_state::released()
     state_ = lazy_types::ReadOnly;
 }
 
+inline core::address_space_ptr
+block::get_owner() const
+{
+    return parent_.get_owner();
+}
+
+inline accptr_t
+block::get_device_addr(const hostptr_t addr) const
+{
+    return parent_.get_device_addr(addr);
+}
+
+inline accptr_t
+block::get_device_addr() const
+{
+    return get_device_addr(this->addr_);
+}
+
 inline
 gmacError_t
-block_state::dump(std::ostream &stream, common::Statistic stat)
+block::dump(std::ostream &stream, common::Statistic stat)
 {
 #ifdef DEBUG
     if (stat == common::PAGE_FAULTS_READ) {

@@ -98,7 +98,7 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
        (size * nmemb == 0)) return __libc_fread(buf, size, nmemb, stream);
 
     enterGmac();
-    manager &manager = getManager();
+    manager &manager = get_manager();
     address_space_ptr aspaceDst = manager.owner(hostptr_t(buf));
 
     if(!aspaceDst) {
@@ -129,7 +129,7 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
        (size * nmemb == 0)) return __libc_fwrite(buf, size, nmemb, stream);
 
 	enterGmac();
-    manager &manager = getManager();
+    manager &manager = get_manager();
     address_space_ptr aspaceSrc = manager.owner(hostptr_t(buf));
 
     if(!aspaceSrc) {

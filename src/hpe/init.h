@@ -51,7 +51,7 @@ namespace __impl {
     }
 
     namespace memory {
-        manager &getManager();
+        manager &get_manager();
     }
 }
 

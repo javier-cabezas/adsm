@@ -14,9 +14,9 @@ using __impl::core::IOBuffer;
 using __impl::core::Mode;
 using __impl::core::Process;
 
-using __impl::memory::getManager;
+using __impl::memory::get_manager;
 using __impl::core::getMode;
-using __impl::core::getProcess;
+using __impl::core::get_process;
 
 using __impl::memory::manager;
 
@@ -54,7 +54,7 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
                                                   recvbuf, recvcount, recvtype, source, recvtag, comm, status);
     if(__MPI_Sendrecv == NULL) mpiInit();
 
-    Process &proc = getProcess();
+    Process &proc = get_process();
 	// Check if GMAC owns any of the buffers to be transferred
 	Mode *srcMode = proc.get_owner(hostptr_t(sendbuf));
 	Mode *dstMode = proc.get_owner(hostptr_t(recvbuf));
@@ -68,7 +68,7 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
     enterGmac();
 
     Mode &mode = getMode(*dstMode);
-    manager &manager = getManager();
+    manager &manager = get_manager();
 
     gmacError_t err;
     int ret, ret2;
@@ -175,7 +175,7 @@ int __gmac_MPI_Send( void *buf, int count, MPI_Datatype datatype, int dest, int 
     if(__MPI_Send == NULL) mpiInit();
 
 	// Check if GMAC owns any of the buffers to be transferred
-	Mode *srcMode = getProcess().get_owner(hostptr_t(buf));
+	Mode *srcMode = get_process().get_owner(hostptr_t(buf));
 
 	if (srcMode == NULL) {
         return func(buf, count, datatype, dest, tag, comm);
@@ -186,7 +186,7 @@ int __gmac_MPI_Send( void *buf, int count, MPI_Datatype datatype, int dest, int 
     enterGmac();
 
     Mode &mode = getMode(*srcMode);
-    manager &manager = getManager();
+    manager &manager = get_manager();
 
     gmacError_t err;
     int ret;
@@ -271,7 +271,7 @@ int MPI_Recv( void *buf, int count, MPI_Datatype datatype, int source, int tag, 
     if(__MPI_Recv == NULL) mpiInit();
 
 	// Locate memory regions (if any)
-	Mode *dstMode = getProcess().get_owner(hostptr_t(buf));
+	Mode *dstMode = get_process().get_owner(hostptr_t(buf));
 
 	if (dstMode == NULL) {
         return __MPI_Recv(buf, count, datatype, source, tag, comm, status);
@@ -282,7 +282,7 @@ int MPI_Recv( void *buf, int count, MPI_Datatype datatype, int source, int tag, 
     enterGmac();
 
     Mode &mode = getMode(*dstMode);
-    manager &manager = getManager();
+    manager &manager = get_manager();
 
     gmacError_t err;
     int ret;

@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2011 Universityversity of Illinois
+/* Copyright (c) 2009-2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -40,8 +40,22 @@ WITH THE SOFTWARE.  */
 
 #include "hal/types.h"
 
+#include "util/misc.h"
+
 namespace __impl {
-namespace memory { namespace protocols { namespace common {
+
+namespace core {
+    class address_space;
+
+    typedef util::shared_ptr<address_space> address_space_ptr;
+    typedef util::shared_ptr<const address_space> address_space_const_ptr;
+}
+
+namespace memory {
+
+class object;
+
+namespace protocols { namespace common {
 
 enum Statistic {
     PAGE_FAULTS_READ              = 0,
@@ -51,26 +65,72 @@ enum Statistic {
 };
 extern const char *StatisticName[];
 
-template <typename T>
-class GMAC_LOCAL block_state {
-public:
-    typedef T protocol_state;
+class GMAC_LOCAL block_state :
+    public gmac::util::mutex<block_state> {
+    typedef gmac::util::mutex<block_state> Lock;
 protected:
-    T state_;
+    /** Object that contains the block */
+    object &parent_;
+
+    /** Block size (in bytes) */
+    size_t size_;
+
+    /** Host address where for applications to access the block. */
+    hostptr_t addr_;
+
+    /** Shadow host memory mapping that is always read/write. */
+    hostptr_t shadow_;
 
     unsigned faultsCacheWrite_;
     unsigned faultsCacheRead_;
 
+    /**
+     * Default constructor
+     *
+     * \param parent Object containing the block
+     * \param addr Host memory address for applications to accesss the block
+     * \param shadow Shadow host memory mapping that is always read/write
+     * \param size Size (in bytes) of the memory block
+     */
+    block_state(object &parent, hostptr_t addr, hostptr_t shadow, size_t size);
+
 public:
-    block_state(protocol_state state);
+    typedef util::bounds<hostptr_t> bounds;
+
+    /**
+     * Host memory address bounds of the block
+     * \return The host memory address bounds of the block
+     */
+    const bounds get_bounds() const;
+
+    /**
+     *  Block size
+     * \return Size in bytes of the memory block
+     */
+    size_t size() const;
+
+    /**
+     * Get memory block owner
+     * \return Owner of the memory block
+     */
+    virtual core::address_space_ptr get_owner() const = 0;
+
+    /**
+     * Get memory block address at the accelerator
+     * \return Accelerator memory address of the block
+     */
+    virtual accptr_t get_device_addr(const hostptr_t addr) const = 0;
+
+    /**
+     * Get memory block address at the accelerator
+     * \return Accelerator memory address of the block
+     */
+    virtual accptr_t get_device_addr() const = 0;
+
+    hostptr_t get_shadow() const;
 
     virtual hal::event_ptr sync_to_device(gmacError_t &err) = 0;
     virtual hal::event_ptr sync_to_host(gmacError_t &err) = 0;
-
-    virtual bool is(protocol_state state) const = 0;
-
-    protocol_state get_state() const;
-    virtual void set_state(protocol_state state, hostptr_t addr = NULL) = 0;
 
     unsigned get_faults_cache_write() const;
     unsigned get_faults_cache_read() const;
@@ -78,8 +138,17 @@ public:
     void reset_faults_cache_write();
     void reset_faults_cache_read();
 
+    /**
+     * Dump statistics about the memory block
+     * \param param Stream to dump the statistics to
+     * \param stat Statistic to be dumped
+     * \return Error code
+     */
     virtual gmacError_t dump(std::ostream &stream, Statistic stat) = 0;
 };
+
+typedef util::shared_ptr<block_state> block_ptr;
+typedef util::shared_ptr<const block_state> block_const_ptr;
 
 }}}}
 

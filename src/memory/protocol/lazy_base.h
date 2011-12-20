@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2011 Universityversity of Illinois
+/* Copyright (c) 2009-2011 University of Illinoisllinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -43,12 +43,9 @@ WITH THE SOFTWARE.  */
 
 #include "common/list_block.h"
 #include "lazy/block_state.h"
+#include "lazy/lazy_types.h"
 
 namespace __impl {
-
-namespace core {
-    class Mode;
-}
 
 namespace memory {
 class object;
@@ -72,7 +69,7 @@ class GMAC_LOCAL lazy_base : public protocol, handler,
 
 protected:
     /** Return the state corresponding to a memory protection
-     *ock
+     *
      * \param prot Memory protection
      * \return Protocol state
      */
@@ -85,7 +82,7 @@ protected:
     size_t limit_;
 
     /// Dirty block list. List of all memory blocks in Dirty state
-    list_block dbl_;
+    common::list_block dbl_;
 
     /// Add a new block to the Dirty Block List
     void add_dirty(lazy_types::block_ptr block);
@@ -103,66 +100,67 @@ public:
     // Protocol Interface
     void delete_object(object &obj);
 
-    bool needs_update(const block_ptr block) const;
+    bool needs_update(common::block_const_ptr block) const;
 
-    TESTABLE hal::event_ptr signal_read(block_ptr block, hostptr_t addr, gmacError_t &err);
+    TESTABLE hal::event_ptr signal_read(common::block_ptr block, hostptr_t addr, gmacError_t &err);
 
-    TESTABLE hal::event_ptr signal_write(block_ptr block, hostptr_t addr, gmacError_t &err);
+    TESTABLE hal::event_ptr signal_write(common::block_ptr block, hostptr_t addr, gmacError_t &err);
 
-    TESTABLE hal::event_ptr acquire(block_ptr block, GmacProtection prot, gmacError_t &err);
+    TESTABLE hal::event_ptr acquire(common::block_ptr block, GmacProtection prot, gmacError_t &err);
 
-    TESTABLE hal::event_ptr release(block_ptr block, gmacError_t &err);
+    TESTABLE hal::event_ptr release(common::block_ptr block, gmacError_t &err);
 
 #ifdef USE_VM
-    hal::event_ptr acquireWithBitmap(block_ptr block, gmacError_t &err);
+    hal::event_ptr acquireWithBitmap(common::block_ptr block, gmacError_t &err);
 #endif
 
     TESTABLE hal::event_ptr release_all(gmacError_t &err);
     //gmacError_t releasedAll();
 
-    TESTABLE hal::event_ptr map_to_device(block_ptr block, gmacError_t &err);
+    TESTABLE hal::event_ptr map_to_device(common::block_ptr block, gmacError_t &err);
 
-    TESTABLE hal::event_ptr unmap_from_device(block_ptr block, gmacError_t &err);
+    TESTABLE hal::event_ptr unmap_from_device(common::block_ptr block, gmacError_t &err);
 
-    TESTABLE hal::event_ptr remove_block(block_ptr block, gmacError_t &err);
+    TESTABLE hal::event_ptr remove_block(common::block_ptr block, gmacError_t &err);
 
-    TESTABLE hal::event_ptr to_host(block_ptr block, gmacError_t &err);
+    TESTABLE hal::event_ptr to_host(common::block_ptr block, gmacError_t &err);
 
 #if 0
-    hal::event_ptr to_device(block_ptr block, gmacError_t &err);
+    hal::event_ptr to_device(common::block_ptr block, gmacError_t &err);
 
-    TESTABLE gmacError_t copyToBuffer(block_ptr block, core::io_buffer &buffer, size_t size,
+    TESTABLE gmacError_t copyToBuffer(common::block_ptr block, core::io_buffer &buffer, size_t size,
                                       size_t bufferOffset, size_t blockOffset);
 
-    TESTABLE gmacError_t copyFromBuffer(block_ptr block, core::io_buffer &buffer, size_t size,
+    TESTABLE gmacError_t copyFromBuffer(common::block_ptr block, core::io_buffer &buffer, size_t size,
                                         size_t bufferOffset, size_t blockOffset);
 #endif
 
-    TESTABLE hal::event_ptr memset(block_ptr block, size_t blockOffset, int v, size_t size,
-                                 gmacError_t &err);
+    TESTABLE hal::event_ptr memset(common::block_ptr block, size_t blockOffset, int v, size_t size,
+                                   gmacError_t &err);
 
     TESTABLE hal::event_ptr flush_dirty(gmacError_t &err);
 
     //bool isInAccelerator(block_ptr block);
-    hal::event_ptr copy_block_to_block(block_ptr d, size_t dstOffset, block_ptr s, size_t srcOffset, size_t count, gmacError_t &err);
+    hal::event_ptr copy_block_to_block(common::block_ptr d, size_t dstOffset,
+                                       common::block_ptr s, size_t srcOffset, size_t count, gmacError_t &err);
 
-    hal::event_ptr copy_to_block(block_ptr dst, size_t dstOffset,
-                             hostptr_t src,
-                             size_t count, gmacError_t &err);
+    hal::event_ptr copy_to_block(common::block_ptr dst, size_t dstOffset,
+                                 hostptr_t src,
+                                 size_t count, gmacError_t &err);
 
     hal::event_ptr copy_from_block(hostptr_t dst,
-                               block_ptr src, size_t srcOffset,
-                               size_t count, gmacError_t &err);
+                                   common::block_ptr src, size_t srcOffset,
+                                   size_t count, gmacError_t &err);
 
     hal::event_ptr to_io_device(hal::device_output &output,
-                              block_ptr src, size_t srcffset,
-                              size_t count, gmacError_t &err);
-
-    hal::event_ptr from_io_device(block_ptr dst, size_t dstOffset,
-                                hal::device_input &input,
+                                common::block_ptr src, size_t srcffset,
                                 size_t count, gmacError_t &err);
 
-    gmacError_t dump(block_ptr block, std::ostream &out, common::Statistic stat);
+    hal::event_ptr from_io_device(common::block_ptr dst, size_t dstOffset,
+                                  hal::device_input &input,
+                                  size_t count, gmacError_t &err);
+
+    gmacError_t dump(common::block_ptr block, std::ostream &out, common::Statistic stat);
 };
 
 }}}

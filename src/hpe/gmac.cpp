@@ -130,7 +130,7 @@ gmacMigrate(unsigned acc)
     gmacError_t ret = gmacSuccess;
     enterGmacExclusive();
     gmac::trace::EnterCurrentFunction();
-    ret = getProcess().migrate(acc);
+    ret = get_process().migrate(acc);
     gmac::trace::ExitCurrentFunction();
     thread::get_current_thread().set_last_error(ret);
     exitGmac();
@@ -249,7 +249,7 @@ gmacMemoryMap(void *cpuPtr, size_t count, GmacProtection prot)
     gmac::trace::EnterCurrentFunction();
     // TODO Remove alignment constraints?
     count = (int(count) < getpagesize())? getpagesize(): count;
-    ret = getManager().map(cpuPtr, count, prot);
+    ret = get_manager().map(cpuPtr, count, prot);
     gmac::trace::ExitCurrentFunction();
         exitGmac();
     return ret;
@@ -272,7 +272,7 @@ gmacMemoryUnmap(void *cpuPtr, size_t count)
     gmac::trace::EnterCurrentFunction();
     // TODO Remove alignment constraints?
     count = (int(count) < getpagesize())? getpagesize(): count;
-    ret = getManager().unmap(cpuPtr, count);
+    ret = get_manager().unmap(cpuPtr, count);
     gmac::trace::ExitCurrentFunction();
         exitGmac();
     return ret;
@@ -294,12 +294,12 @@ gmacMalloc(void **cpuPtr, size_t count)
     }
     enterGmac();
     gmac::trace::EnterCurrentFunction();
-    if(hasAllocator() && count < (BlockSize / 2)) {
-        *cpuPtr = getAllocator().alloc(thread::get_current_thread().get_current_virtual_device().get_address_space(), count, hostptr_t(RETURN_ADDRESS));
+    if(has_allocator() && count < (BlockSize / 2)) {
+        *cpuPtr = get_allocator().alloc(thread::get_current_thread().get_current_virtual_device().get_address_space(), count, hostptr_t(RETURN_ADDRESS));
     }
     else {
         count = (int(count) < getpagesize())? getpagesize(): count;
-        ret = getManager().alloc(thread::get_current_thread().get_current_virtual_device().get_address_space(), (hostptr_t *) cpuPtr, count);
+        ret = get_manager().alloc(thread::get_current_thread().get_current_virtual_device().get_address_space(), (hostptr_t *) cpuPtr, count);
     }
     gmac::trace::ExitCurrentFunction();
     thread::get_current_thread().set_last_error(ret);
@@ -320,7 +320,7 @@ gmacGlobalMalloc(void **cpuPtr, size_t count, GmacGlobalMallocType hint)
     enterGmac();
     gmac::trace::EnterCurrentFunction();
     count = (count < (size_t)getpagesize()) ? (size_t)getpagesize(): count;
-    ret = getManager().globalAlloc(thread::get_current_thread().get_current_virtual_device().get_address_space(), (hostptr_t *)cpuPtr, count, hint);
+    ret = get_manager().globalAlloc(thread::get_current_thread().get_current_virtual_device().get_address_space(), (hostptr_t *)cpuPtr, count, hint);
     gmac::trace::ExitCurrentFunction();
     thread::get_current_thread().set_last_error(ret);
     exitGmac();
@@ -341,8 +341,8 @@ gmacFree(void *cpuPtr)
     }
     gmac::trace::EnterCurrentFunction();
     address_space_ptr aspace = thread::get_current_thread().get_current_virtual_device().get_address_space();
-    if(hasAllocator() == false || getAllocator().free(aspace, hostptr_t(cpuPtr)) == false) {
-        ret = getManager().free(aspace, hostptr_t(cpuPtr));
+    if(has_allocator() == false || get_allocator().free(aspace, hostptr_t(cpuPtr)) == false) {
+        ret = get_manager().free(aspace, hostptr_t(cpuPtr));
     }
     gmac::trace::ExitCurrentFunction();
     thread::get_current_thread().set_last_error(ret);
@@ -356,7 +356,7 @@ gmacPtr(const void *ptr)
 {
     accptr_t ret = accptr_t(0);
     enterGmac();
-    ret = getManager().translate(thread::get_current_thread().get_current_virtual_device().get_address_space(), hostptr_t(ptr));
+    ret = get_manager().translate(thread::get_current_thread().get_current_virtual_device().get_address_space(), hostptr_t(ptr));
     exitGmac();
     TRACE(GLOBAL, "Translate %p to %p", ptr, ret.get_device_addr());
     return __gmac_accptr_t(ret.get_device_addr());
@@ -368,7 +368,7 @@ gmacLaunch(__impl::core::hpe::kernel::launch_ptr launch)
     gmacError_t ret = gmacSuccess;
     vdevice &dev = launch->get_virtual_device();
     address_space_ptr aspace = dev.get_address_space();
-    manager &manager = getManager();
+    manager &manager = get_manager();
     TRACE(GLOBAL, "Flush the memory used in the kernel");
     const std::list<__impl::memory::object_access_info> &objects = launch->get_arg_list().get_objects();
     // If the launch object does not contain objects, assume all the objects
@@ -425,7 +425,7 @@ gmacThreadSynchronize(kernel::launch_ptr launch)
         vdevice &dev = thread::get_current_thread().get_current_virtual_device();
         dev.wait(launch);
         TRACE(GLOBAL, "Memory Sync");
-        ret = getManager().acquireObjects(dev.get_address_space(), launch->get_arg_list().get_objects());
+        ret = get_manager().acquireObjects(dev.get_address_space(), launch->get_arg_list().get_objects());
     }
     return ret;
 }
@@ -443,7 +443,7 @@ gmacThreadSynchronize()
         address_space_ptr aspace = dev.get_address_space();
         dev.wait();
         TRACE(GLOBAL, "Memory Sync");
-        ret = getManager().acquireObjects(aspace);
+        ret = get_manager().acquireObjects(aspace);
     }
 
     gmac::trace::ExitCurrentFunction();
@@ -469,7 +469,7 @@ gmacMemset(void *s, int c, size_t size)
 {
     enterGmac();
     void *ret = s;
-    getManager().memset(thread::get_current_thread().get_current_virtual_device().get_address_space(), hostptr_t(s), c, size);
+    get_manager().memset(thread::get_current_thread().get_current_virtual_device().get_address_space(), hostptr_t(s), c, size);
     exitGmac();
     return ret;
 }
@@ -483,13 +483,13 @@ gmacMemcpy(void *dst, const void *src, size_t size)
     void *ret = dst;
 
     // Locate memory regions (if any)
-    __impl::core::address_space_ptr aspaceDst = getManager().owner(hostptr_t(dst), size);
-    __impl::core::address_space_ptr aspaceSrc = getManager().owner(hostptr_t(src), size);
+    __impl::core::address_space_ptr aspaceDst = get_manager().owner(hostptr_t(dst), size);
+    __impl::core::address_space_ptr aspaceSrc = get_manager().owner(hostptr_t(src), size);
     if (!aspaceDst && !aspaceSrc) {
         exitGmac();
         return ::memcpy(dst, src, size);
     }
-    getManager().memcpy(thread::get_current_thread().get_current_virtual_device().get_address_space(), hostptr_t(dst), hostptr_t(src), size);
+    get_manager().memcpy(thread::get_current_thread().get_current_virtual_device().get_address_space(), hostptr_t(dst), hostptr_t(src), size);
 
     exitGmac();
     return ret;
@@ -501,7 +501,7 @@ GMAC_API void APICALL
 gmacSend(THREAD_T id)
 {
     enterGmac();
-    getProcess().send((THREAD_T)id);
+    get_process().send((THREAD_T)id);
     exitGmac();
 }
 
@@ -510,7 +510,7 @@ GMAC_API void APICALL
 gmacReceive()
 {
     enterGmac();
-    getProcess().receive();
+    get_process().receive();
     exitGmac();
 }
 
@@ -519,7 +519,7 @@ GMAC_API void APICALL
 gmacSendReceive(THREAD_T id)
 {
     enterGmac();
-    getProcess().sendReceive((THREAD_T)id);
+    get_process().sendReceive((THREAD_T)id);
     exitGmac();
 }
 
@@ -528,7 +528,7 @@ GMAC_API void APICALL
 gmacCopy(THREAD_T id)
 {
     enterGmac();
-    getProcess().copy((THREAD_T)id);
+    get_process().copy((THREAD_T)id);
     exitGmac();
 }
 #endif
@@ -540,7 +540,7 @@ GMAC_API gmacError_t APICALL
 __gmacFlushDirty()
 {
     enterGmac();
-    gmacError_t ret = getManager().flush_dirty(thread::get_current_thread().get_current_virtual_device());
+    gmacError_t ret = get_manager().flush_dirty(thread::get_current_thread().get_current_virtual_device());
     thread::get_current_thread().set_last_error(ret);
     exitGmac();
     return ret;

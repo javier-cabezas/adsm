@@ -123,14 +123,14 @@ public:
      *
      * \return A reference to the parent process
      */
-    core::Process &getProcess();
+    core::Process &get_process();
 
     /**
      * Gets the parent process of the map
      *
      * \return A reference to the parent process
      */
-    const core::Process &getProcess() const;
+    const core::Process &get_process() const;
 #endif
 
     /**

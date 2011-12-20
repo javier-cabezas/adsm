@@ -7,8 +7,8 @@
 
 namespace __impl { namespace memory {
 
-template<typename State>
-inline void object_state<State>::modified_object()
+template<typename ProtocolTraits>
+inline void object_state<ProtocolTraits>::modified_object()
 {
     ASSERTION(bool(ownerShortcut_));
 
@@ -32,20 +32,20 @@ malloc_accelerator(core::address_space &aspace, hostptr_t addr, size_t size, acc
     return ret;
 }
 
-template<typename State>
+template<typename ProtocolTraits>
 gmacError_t
-object_state<State>::repopulate_blocks(core::address_space &aspace)
+object_state<ProtocolTraits>::repopulate_blocks(core::address_space &aspace)
 {
     FATAL("Not implemented");
 
     // Repopulate the block-set
     ptroff_t offset = 0;
     for (const_locking_iterator i = begin(); i != end(); ++i) {
-        block_state<State> &oldBlock = *dynamic_cast<block_state<State> *>(*i);
-        block_state<State> *newBlock = new block_state<State>(oldBlock.getProtocol(),
-                                                                addr_   + offset,
-                                                                shadow_ + offset,
-                                                                oldBlock.size(), oldBlock.getState());
+        typename ProtocolTraits::block &oldBlock = *dynamic_cast<typename ProtocolTraits::block *>(*i);
+        typename ProtocolTraits::block *newBlock = new typename ProtocolTraits::block(oldBlock.getProtocol(),
+                                                                             addr_   + offset,
+                                                                             shadow_ + offset,
+                                                                             oldBlock.size(), oldBlock.getState());
 
         *i = newBlock;
 
@@ -58,12 +58,12 @@ object_state<State>::repopulate_blocks(core::address_space &aspace)
     return gmacSuccess;
 }
 
-template<typename State>
-object_state<State>::object_state(protocol &protocol,
-                              hostptr_t hostAddr,
-                              size_t size,
-                              typename State::protocol_state init,
-                              gmacError_t &err) :
+template<typename ProtocolTraits>
+object_state<ProtocolTraits>::object_state(protocol &protocol,
+                                           hostptr_t hostAddr,
+                                           size_t size,
+                                           typename ProtocolTraits::State init,
+                                           gmacError_t &err) :
     object(protocol, hostAddr, size),
     shadow_(NULL),
     hasUserMemory_(hostAddr != NULL),
@@ -92,8 +92,8 @@ object_state<State>::object_state(protocol &protocol,
     while (size > 0) {
         size_t blockSize = (size > BlockSize_) ? BlockSize_ : size;
         mark += blockSize;
-        block_ptr block(new block_state<State>(*this, addr_ + offset,
-                                               shadow_ + offset, blockSize, init));
+        typename ProtocolTraits::block_ptr block(new typename ProtocolTraits::block(*this, addr_ + offset,
+                                                                                    shadow_ + offset, blockSize, init));
         blocks_.push_back(block);
         size -= blockSize;
         offset += ptroff_t(blockSize);

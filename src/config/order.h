@@ -62,11 +62,6 @@ void Fini(void);
 }
 
 namespace core {
-class Accelerator;
-class IOBuffer;
-class Mode;
-class Context;
-class Process;
 
 void apiInit(void);
 void contextInit(void);

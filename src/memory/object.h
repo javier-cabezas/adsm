@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2011 Universityversity of Illinois
+/* Copyright (c) 2009-2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -57,8 +57,6 @@ namespace core {
 
 namespace memory {
 
-class block;
-
 /**
  * Base abstraction of the memory allocations managed by GMAC. Objects are
  * divided into blocks, which are the unit of coherence
@@ -86,7 +84,7 @@ protected:
     /// Object size in bytes
     size_t size_;
 
-    typedef std::vector<block_ptr> vector_block;
+    typedef std::vector<protocols::common::block_ptr> vector_block;
     /// Collection of blocks forming the object
     vector_block blocks_;
 
@@ -134,7 +132,7 @@ protected:
      * \sa __impl::memory::Block::to_host
      * \sa __impl::memory::Block::toAccelerator
      */
-    hal::event_ptr coherence_op(hal::event_ptr (protocol::*op)(block_ptr, gmacError_t &),
+    hal::event_ptr coherence_op(hal::event_ptr (protocol::*op)(protocols::common::block_ptr, gmacError_t &),
                                 gmacError_t &err);
 
     template <typename F>

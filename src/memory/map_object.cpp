@@ -87,13 +87,13 @@ map_object::size() const
 
 #if 0
 core::Process &
-map_object::getProcess()
+map_object::get_process()
 {
     return parent_;
 }
 
 const core::Process &
-map_object::getProcess() const
+map_object::get_process() const
 {
     return parent_;
 }
