@@ -122,7 +122,7 @@ public:
      * \param err A reference to a variable to store the error value
      * \return The size of the allocation
      */
-    size_t getAllocSize(core::address_space_ptr aspace, hostptr_t addr, gmacError_t &err) const;
+    size_t get_alloc_size(core::address_space_ptr aspace, hostptr_t addr, gmacError_t &err) const;
 
     /**
      * Allocate private shared memory.
@@ -167,7 +167,7 @@ public:
     TESTABLE accptr_t translate(core::address_space_ptr aspace, hostptr_t addr);
 
 
-    core::address_space_ptr owner(hostptr_t addr, size_t size = 0);
+    core::address_space_ptr get_owner(hostptr_t addr, size_t size = 0);
 
     /**
      * Get the CPU ownership of all objects bound to the current execution mode
@@ -176,7 +176,7 @@ public:
      * objects are acquired
      * \return Error code
      */
-    gmacError_t acquireObjects(core::address_space_ptr aspace, const list_addr &addrs = AllAddresses);
+    gmacError_t acquire_objects(core::address_space_ptr aspace, const list_addr &addrs = AllAddresses);
 
     /**
      * Release the CPU ownership of all objects bound to the current execution
@@ -186,7 +186,7 @@ public:
      * objects are released
      * \return Error code
      */
-    gmacError_t releaseObjects(core::address_space_ptr aspace, const list_addr &addrs = AllAddresses);
+    gmacError_t release_objects(core::address_space_ptr aspace, const list_addr &addrs = AllAddresses);
 
     /**
      * Notify a memory fault caused by a load operation
@@ -203,32 +203,6 @@ public:
      * \return True if the Manager was able to fix the fault condition
      */
     TESTABLE bool signal_write(core::address_space_ptr aspace, hostptr_t addr);
-
-#if 0
-    /**
-     * Copy data from a memory object to an I/O buffer
-     * \param mode Execution mode requesting the transfer
-     * \param buffer Destionation I/O buffer to copy the data to
-     * \param bufferOff Offset within the buffer to copy data to
-     * \param addr Host memory address corresponding to a memory object to copy
-     * data from
-     * \param size Size (in bytes) of the data to be copied
-     * \return Error code
-     */
-    TESTABLE gmacError_t toIOBuffer(core::address_space_ptr aspace, core::io_buffer &buffer, size_t bufferOff, const hostptr_t addr, size_t size);
-
-    /**
-     * Copy data from an I/O buffer to a memory object
-     * \param mode Execution mode requesting the transfer
-     * \param addr Host memory address corresponding to a memory object to copy
-     * data to
-     * \param buffer Source I/O buffer to copy the data from
-     * \param bufferOff Offset within the buffer to copy data from
-     * \param size Size (in bytes) of the data to be copied
-     * \return Error code
-     */
-    TESTABLE gmacError_t fromIOBuffer(core::address_space_ptr aspace, hostptr_t addr, core::io_buffer &buffer, size_t bufferOff, size_t size);
-#endif
 
     gmacError_t from_io_device(core::address_space_ptr aspace, hostptr_t addr, hal::device_input &input, size_t count);
 
@@ -257,7 +231,7 @@ public:
      */
     TESTABLE gmacError_t memcpy(core::address_space_ptr aspace, hostptr_t dst, const hostptr_t src, size_t size);
 
-    gmacError_t flushDirty(core::address_space_ptr aspace);
+    gmacError_t flush_dirty(core::address_space_ptr aspace);
 };
 
 }}

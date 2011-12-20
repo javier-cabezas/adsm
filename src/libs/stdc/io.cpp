@@ -99,7 +99,7 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
 
     enterGmac();
     manager &manager = get_manager();
-    address_space_ptr aspaceDst = manager.owner(hostptr_t(buf));
+    address_space_ptr aspaceDst = manager.get_owner(hostptr_t(buf));
 
     if(!aspaceDst) {
         exitGmac();
@@ -130,7 +130,7 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
 
 	enterGmac();
     manager &manager = get_manager();
-    address_space_ptr aspaceSrc = manager.owner(hostptr_t(buf));
+    address_space_ptr aspaceSrc = manager.get_owner(hostptr_t(buf));
 
     if(!aspaceSrc) {
         exitGmac();
