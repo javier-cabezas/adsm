@@ -31,8 +31,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_PROTOCOL_COMMON_BLOCKSTATE_H_
-#define GMAC_MEMORY_PROTOCOL_COMMON_BLOCKSTATE_H_
+#ifndef GMAC_MEMORY_PROTOCOL_COMMON_BLOCK_H_
+#define GMAC_MEMORY_PROTOCOL_COMMON_BLOCK_H_
 
 #include <ostream>
 
@@ -152,7 +152,7 @@ typedef util::shared_ptr<const block> block_const_ptr;
 
 }}}}
 
-#include "block_state-impl.h"
+#include "block-impl.h"
 
 #endif /* BLOCKINFO_H */
 

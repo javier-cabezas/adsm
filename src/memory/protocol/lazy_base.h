@@ -1,5 +1,5 @@
-/* Copyright (c) 2009-2011 University of Illinoisllinois
-                   Universitat Politecnica de Catalunya
+/* Copyright (c) 2009-2011 University of Illinois
+                           Universitat Politecnica de Catalunya
                    All rights reserved.
 
 Developed by: IMPACT Research Group / Grup de Sistemes Operatius
@@ -42,7 +42,7 @@ WITH THE SOFTWARE.  */
 #include "util/lock.h"
 
 #include "common/list_block.h"
-#include "lazy/block_state.h"
+#include "lazy/block.h"
 #include "lazy/lazy_types.h"
 
 namespace __impl {

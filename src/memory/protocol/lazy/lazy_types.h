@@ -34,7 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_MEMORY_PROTOCOL_LAZYTYPES_H
 #define GMAC_MEMORY_PROTOCOL_LAZYTYPES_H
 
-#include "block_state.h"
+#include "block.h"
 
 namespace __impl {
 namespace memory { namespace protocols {

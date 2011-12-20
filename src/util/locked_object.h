@@ -1,5 +1,5 @@
-/* Copyright (c) 2009-2011 University of Illinoisllinois
-                   Universitat Politecnica de Catalunya
+/* Copyright (c) 2009-2011 University of Illinois
+                           Universitat Politecnica de Catalunya
                    All rights reserved.
 
 Developed by: IMPACT Research Group / Grup de Sistemes Operatius
