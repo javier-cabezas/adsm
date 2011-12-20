@@ -42,7 +42,7 @@ WITH THE SOFTWARE.  */
 #include "util/lock.h"
 #include "util/NonCopyable.h"
 
-#include "protocol/common/block.h"
+#include "protocols/common/block.h"
 
 namespace __impl {
 
