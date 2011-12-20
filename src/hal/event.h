@@ -65,11 +65,8 @@ public:
     bool is_synced() const;
 };
 
-typedef hal::detail::list_event<implementation_traits> list_event_detail;
-
 template <typename I>
-class GMAC_LOCAL list_event :
-    public list_event_detail {
+class GMAC_LOCAL list_event {
     virtual void add_event(typename I::event_ptr event) = 0;
 public:
 };
