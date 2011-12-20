@@ -1,3 +1,16 @@
+GMAC 11.12 Release Notes (12/22/2011)
+
+Bug Fixes
+---------
+ - Fixed bugs in the following sample files: clBitonicSort, eclBitonicSort, eclBlackScholes, eclBitonicSort_cplusplus
+
+Known Issues
+------------
+ - Only one GMAC version (32-bit or 64-bit) can be installed
+ - On Windows, if the samples are compiled, the user needs to remove by hand the GMAC directory before reinstalling
+ - On Windows, for NVIDIA OpenCL, the user has to modify by hand the path to the OpenCL.lib file in the sample projects
+
+
 GMAC 11.11 Release Notes (11/15/2011)
 
 New Features
