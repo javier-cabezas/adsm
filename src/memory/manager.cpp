@@ -214,7 +214,7 @@ gmacError_t manager::free(core::address_space_ptr aspace, hostptr_t addr)
 }
 
 size_t
-manager::getAllocSize(core::address_space_ptr aspace, const hostptr_t addr, gmacError_t &err) const
+manager::get_alloc_size(core::address_space_ptr aspace, const hostptr_t addr, gmacError_t &err) const
 {
     size_t ret = 0;
     trace::EnterCurrentFunction();
@@ -258,7 +258,7 @@ manager::translate(core::address_space_ptr aspace, const hostptr_t addr)
 }
 
 core::address_space_ptr
-manager::owner(hostptr_t addr, size_t size)
+manager::get_owner(hostptr_t addr, size_t size)
 {
     core::address_space_ptr aspace;
 
@@ -272,7 +272,7 @@ manager::owner(hostptr_t addr, size_t size)
 }
 
 gmacError_t
-manager::acquireObjects(core::address_space_ptr aspace, const list_addr &addrs)
+manager::acquire_objects(core::address_space_ptr aspace, const list_addr &addrs)
 {
     trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
@@ -311,7 +311,7 @@ manager::acquireObjects(core::address_space_ptr aspace, const list_addr &addrs)
 }
 
 gmacError_t
-manager::releaseObjects(core::address_space_ptr aspace, const list_addr &addrs)
+manager::release_objects(core::address_space_ptr aspace, const list_addr &addrs)
 {
     trace::EnterCurrentFunction();
     gmacError_t ret = gmacSuccess;
@@ -363,99 +363,6 @@ manager::releaseObjects(core::address_space_ptr aspace, const list_addr &addrs)
     trace::ExitCurrentFunction();
     return ret;
 }
-
-#if 0
-gmacError_t manager::toIOBuffer(core::address_space_ptr current, core::io_buffer &buffer, size_t bufferOff, const hostptr_t addr, size_t count)
-{
-    if (count > (buffer.size() - bufferOff)) return gmacErrorInvalidSize;
-    trace::EnterCurrentFunction();
-    gmacError_t ret = gmacSuccess;
-    size_t off = 0;
-    do {
-        // Check if the address range belongs to one GMAC object
-        core::address_space_ptr aspace = get_owner(addr + off);
-        if (aspace == NULL) {
-            trace::ExitCurrentFunction();
-            return gmacErrorInvalidValue;
-        }
-
-#ifdef USE_VM
-        CFATAL(aspace->released_objects() == false, "Acquiring bitmap on released objects");
-        vm::Bitmap &bitmap = aspace->getBitmap();
-        if (bitmap.isReleased()) {
-            bitmap.acquire();
-            aspace->for_each_object(&object::acquireWithBitmap);
-        }
-#endif
-
-        memory::map_object &map = aspace->get_object_map();
-        object *obj = map.get_object(addr + off);
-        if (!obj) {
-            trace::ExitCurrentFunction();
-            return gmacErrorInvalidValue;
-        }
-        // Compute sizes for the current object
-        size_t objCount = obj->addr() + obj->size() - (addr + off);
-        size_t c = objCount <= count - off? objCount: count - off;
-        size_t objOff = addr - obj->addr();
-        // Handle objects with no memory in the accelerator
-        ret = obj->copyToBuffer(buffer, c, bufferOff + off, objOff);
-        obj->decRef();
-        if(ret != gmacSuccess) {
-            trace::ExitCurrentFunction();
-            return ret;
-        }
-        off += objCount;
-        TRACE(LOCAL,"Copying from obj %p: "FMT_SIZE" of "FMT_SIZE, obj->addr(), c, count);
-    } while(addr + off < addr + count);
-    trace::ExitCurrentFunction();
-    return ret;
-}
-
-gmacError_t manager::fromIOBuffer(core::address_space_ptr current, hostptr_t addr, core::io_buffer &buffer, size_t bufferOff, size_t count)
-{
-    if (count > (buffer.size() - bufferOff)) return gmacErrorInvalidSize;
-    trace::EnterCurrentFunction();
-    gmacError_t ret = gmacSuccess;
-    size_t off = 0;
-    do {
-        // Check if the address range belongs to one GMAC object
-        core::address_space_ptr aspace = get_owner(addr + off);
-        if (aspace == NULL) {
-            trace::ExitCurrentFunction();
-            return gmacErrorInvalidValue;
-        }
-#ifdef USE_VM
-        CFATAL(aspace->released_objects() == false, "Acquiring bitmap on released objects");
-        vm::Bitmap &bitmap = mode->getBitmap();
-        if (bitmap.isReleased()) {
-            bitmap.acquire();
-            mode->for_each_object(&object::acquireWithBitmap);
-        }
-#endif
-        memory::map_object &map = aspace->get_object_map();
-        object *obj = map.get_object(addr + off);
-        if (!obj) {
-            trace::ExitCurrentFunction();
-            return gmacErrorInvalidValue;
-        }
-        // Compute sizes for the current object
-        size_t objCount = obj->addr() + obj->size() - (addr + off);
-        size_t c = objCount <= count - off? objCount: count - off;
-        size_t objOff = addr - obj->addr();
-        ret = obj->copyFromBuffer(buffer, c, bufferOff + off, objOff);
-        obj->decRef();
-        if(ret != gmacSuccess) {
-            trace::ExitCurrentFunction();
-            return ret;
-        }
-        off += objCount;
-        TRACE(LOCAL,"Copying to obj %p: "FMT_SIZE" of "FMT_SIZE, obj->addr(), c, count);
-    } while(addr + off < addr + count);
-    trace::ExitCurrentFunction();
-    return ret;
-}
-#endif
 
 bool
 manager::signal_read(core::address_space_ptr aspace, hostptr_t addr)
@@ -519,7 +426,7 @@ gmacError_t
 manager::memset(core::address_space_ptr aspace, hostptr_t s, int c, size_t size)
 {
     trace::EnterCurrentFunction();
-    core::address_space_ptr aspaceOwner = owner(s, size);
+    core::address_space_ptr aspaceOwner = get_owner(s, size);
 
     if (!aspaceOwner) {
         ::memset(s, c, size);
@@ -615,8 +522,8 @@ manager::memcpy(core::address_space_ptr aspace, hostptr_t dst, const hostptr_t s
                 size_t size)
 {
     trace::EnterCurrentFunction();
-    core::address_space_ptr aspaceDst = owner(dst, size);
-    core::address_space_ptr aspaceSrc = owner(src, size);
+    core::address_space_ptr aspaceDst = get_owner(dst, size);
+    core::address_space_ptr aspaceSrc = get_owner(src, size);
 
     if(!aspaceDst && !aspaceSrc) {
         ::memcpy(dst, src, size);
@@ -693,7 +600,7 @@ manager::memcpy(core::address_space_ptr aspace, hostptr_t dst, const hostptr_t s
 }
 
 gmacError_t
-manager::flushDirty(core::address_space_ptr aspace)
+manager::flush_dirty(core::address_space_ptr aspace)
 {
     gmacError_t ret;
     hal::event_ptr evt;
@@ -714,7 +621,7 @@ manager::from_io_device(core::address_space_ptr aspace, hostptr_t addr,
     size_t off = 0;
     do {
         // Check if the address range belongs to one GMAC object
-        core::address_space_ptr aspace = owner(addr + off);
+        core::address_space_ptr aspace = get_owner(addr + off);
         if (!aspace) {
             trace::ExitCurrentFunction();
             return gmacErrorInvalidValue;
@@ -750,7 +657,7 @@ manager::to_io_device(hal::device_output &output, core::address_space_ptr aspace
     size_t off = 0;
     do {
         // Check if the address range belongs to one GMAC object
-        core::address_space_ptr aspace = owner(addr + off);
+        core::address_space_ptr aspace = get_owner(addr + off);
         if (!aspace) {
             trace::ExitCurrentFunction();
             return gmacErrorInvalidValue;

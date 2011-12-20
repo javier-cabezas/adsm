@@ -100,36 +100,6 @@ manager::signal_write(address_space_ptr_impl aspace, hostptr_t addr)
     return ret;
 }
 
-#if 0
-gmacError_t
-manager::toIOBuffer(address_space_ptr_impl aspace, io_buffer_impl &buffer, size_t bufferOff, const hostptr_t addr, size_t size)
-{
-    // PRECONDITIONS
-    REQUIRES(addr != NULL);
-    REQUIRES(size > 0);
-    REQUIRES(size <= buffer.size() - bufferOff);
-    // CALL IMPLEMENTATION
-    gmacError_t ret = parent::toIOBuffer(aspace, buffer, bufferOff, addr, size);
-    // POSTCONDITIONS
-
-    return ret;
-}
-
-gmacError_t
-manager::fromIOBuffer(address_space_ptr_impl aspace, hostptr_t addr, io_buffer_impl &buffer, size_t bufferOff, size_t size)
-{
-    // PRECONDITIONS
-    REQUIRES(addr != NULL);
-    REQUIRES(size > 0);
-    REQUIRES(size <= buffer.size() - bufferOff);
-    // CALL IMPLEMENTATION
-    gmacError_t ret = parent::fromIOBuffer(aspace, addr, buffer, bufferOff, size);
-    // POSTCONDITIONS
-
-    return ret;
-}
-#endif
-
 gmacError_t
 manager::memcpy(address_space_ptr_impl aspace, hostptr_t dst, const hostptr_t src, size_t n)
 {

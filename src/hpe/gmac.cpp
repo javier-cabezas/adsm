@@ -373,7 +373,7 @@ gmacLaunch(__impl::core::hpe::kernel::launch_ptr launch)
     const std::list<__impl::memory::object_access_info> &objects = launch->get_arg_list().get_objects();
     // If the launch object does not contain objects, assume all the objects
     // in the mode are released
-    ret = manager.releaseObjects(aspace, objects);
+    ret = manager.release_objects(aspace, objects);
     CFATAL(ret == gmacSuccess, "Error releasing objects");
 
     TRACE(GLOBAL, "Kernel Launch");
@@ -385,7 +385,7 @@ gmacLaunch(__impl::core::hpe::kernel::launch_ptr launch)
         // TODO: wait for the event instead for the device
         dev.wait();
         TRACE(GLOBAL, "Memory Sync");
-        ret = manager.acquireObjects(aspace, objects);
+        ret = manager.acquire_objects(aspace, objects);
         CFATAL(ret == gmacSuccess, "Error waiting for kernel");
     }
 
@@ -425,7 +425,7 @@ gmacThreadSynchronize(kernel::launch_ptr launch)
         vdevice &dev = thread::get_current_thread().get_current_virtual_device();
         dev.wait(launch);
         TRACE(GLOBAL, "Memory Sync");
-        ret = get_manager().acquireObjects(dev.get_address_space(), launch->get_arg_list().get_objects());
+        ret = get_manager().acquire_objects(dev.get_address_space(), launch->get_arg_list().get_objects());
     }
     return ret;
 }
@@ -443,7 +443,7 @@ gmacThreadSynchronize()
         address_space_ptr aspace = dev.get_address_space();
         dev.wait();
         TRACE(GLOBAL, "Memory Sync");
-        ret = get_manager().acquireObjects(aspace);
+        ret = get_manager().acquire_objects(aspace);
     }
 
     gmac::trace::ExitCurrentFunction();
@@ -483,8 +483,8 @@ gmacMemcpy(void *dst, const void *src, size_t size)
     void *ret = dst;
 
     // Locate memory regions (if any)
-    __impl::core::address_space_ptr aspaceDst = get_manager().owner(hostptr_t(dst), size);
-    __impl::core::address_space_ptr aspaceSrc = get_manager().owner(hostptr_t(src), size);
+    __impl::core::address_space_ptr aspaceDst = get_manager().get_owner(hostptr_t(dst), size);
+    __impl::core::address_space_ptr aspaceSrc = get_manager().get_owner(hostptr_t(src), size);
     if (!aspaceDst && !aspaceSrc) {
         exitGmac();
         return ::memcpy(dst, src, size);
