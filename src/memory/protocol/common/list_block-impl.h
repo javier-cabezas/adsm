@@ -6,8 +6,7 @@
 #include "memory/block.h"
 #include "memory/vm/Model.h"
 
-namespace __impl { namespace memory { namespace protocols {
-
+namespace __impl { namespace memory { namespace protocols { namespace common {
 
 inline
 list_block::list_block() :
@@ -63,6 +62,6 @@ inline void list_block::remove(block_ptr block)
     return;
 }
 
-}}}
+}}}}
 
 #endif

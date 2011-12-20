@@ -1,3 +1,4 @@
+#if 0
 #ifdef USE_DBC
 
 #include "memory/block.h"
@@ -15,6 +16,7 @@ block::block(hostptr_t addr, hostptr_t shadow, size_t size) :
 
 }}
 
+#endif
 #endif
 
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

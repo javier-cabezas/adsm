@@ -37,64 +37,64 @@ WITH THE SOFTWARE.  */
 namespace __impl {
 namespace memory { namespace protocols { namespace common {
 
-template <typename T>
 inline
-block_state<T>::block_state(protocol_state state) :
-    state_(state),
+block_state::block_state(object &parent, hostptr_t addr, hostptr_t shadow, size_t size) :
+    Lock("block"),
+    parent_(parent),
+    size_(size),
+    addr_(addr),
+    shadow_(shadow),
     faultsCacheWrite_(0),
     faultsCacheRead_(0)
 {
 }
 
-template <typename T>
-inline
-T
-block_state<T>::get_state() const
+inline const block_state::bounds
+block_state::get_bounds() const
 {
-    return state_;
+    // No need for lock -- addr_ is never modified
+    return bounds(addr_, addr_ + size_);
 }
 
-template <typename T>
+inline size_t
+block_state::size() const
+{
+    return size_;
+}
+
+inline hostptr_t
+block_state::get_shadow() const
+{
+    return shadow_;
+}
+
 inline
 unsigned
-block_state<T>::get_faults_cache_write() const
+block_state::get_faults_cache_write() const
 {
     return faultsCacheWrite_;
 }
 
-template <typename T>
 inline
 unsigned
-block_state<T>::get_faults_cache_read() const
+block_state::get_faults_cache_read() const
 {
     return faultsCacheRead_;
 }
 
-template <typename T>
 inline
 void
-block_state<T>::reset_faults_cache_write()
+block_state::reset_faults_cache_write()
 {
     faultsCacheWrite_ = 0;
 }
 
-template <typename T>
 inline
 void
-block_state<T>::reset_faults_cache_read()
+block_state::reset_faults_cache_read()
 {
     faultsCacheRead_ = 0;
 }
-
-#if 0
-template <typename T>
-inline
-void
-block_state<T>::set_state(protocol_state state)
-{
-    state_ = state;
-}
-#endif
 
 }}}}
 

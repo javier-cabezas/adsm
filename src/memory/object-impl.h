@@ -6,8 +6,8 @@
 #include <fstream>
 #include <sstream>
 
+#include "memory.h"
 #include "protocol.h"
-#include "block.h"
 
 #include "trace/logger.h"
 
@@ -139,7 +139,7 @@ object::coherence_op(F f, gmacError_t &err)
 }
 
 inline hal::event_ptr
-object::coherence_op(hal::event_ptr (protocol::*f)(block_ptr, gmacError_t &), gmacError_t &err)
+object::coherence_op(hal::event_ptr (protocol::*f)(protocols::common::block_ptr, gmacError_t &), gmacError_t &err)
 {
     hal::event_ptr ret;
     for (const_locking_iterator i  = begin();

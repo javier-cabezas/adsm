@@ -48,7 +48,7 @@ protected:
     virtual ~lazy_base();
 
     typedef __impl::memory::protocols::lazy_base parent;
-    typedef __impl::memory::block_ptr block_ptr_impl;
+    typedef __impl::memory::protocols::common::block_ptr block_ptr_impl;
     typedef __impl::memory::object object_impl;
     typedef __impl::memory::protocols::lazy_types::State state_impl;
     typedef __impl::memory::protocols::lazy_types::block lazy_block_impl;

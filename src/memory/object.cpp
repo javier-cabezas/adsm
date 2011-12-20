@@ -55,7 +55,7 @@ object::to_io_device(hal::device_output &output, size_t objOff, size_t count)
     size_t off = 0;
     const_locking_iterator i = get_block(objOff, &blockOffset);
     for(; count > 0 && i != end(); ++i) {
-        block_ptr block = *i;
+        protocols::common::block_ptr block = *i;
         size_t blockSize = block->size() - blockOffset;
         blockSize = count < blockSize? count: blockSize;
         event = protocol_.to_io_device(output,
@@ -78,7 +78,7 @@ object::from_io_device(size_t objOff, hal::device_input &input, size_t count)
     size_t off = 0;
     const_locking_iterator i = get_block(objOff, &blockOffset);
     for(; i != end() && count > 0; ++i) {
-        block_ptr block = *i;
+        protocols::common::block_ptr block = *i;
         size_t blockSize = block->size() - blockOffset;
         blockSize = count < blockSize? count: blockSize;
         event = protocol_.from_io_device(block, blockOffset,
@@ -99,7 +99,7 @@ gmacError_t object::memset(size_t offset, int v, size_t size)
     size_t blockOffset = 0;
     const_locking_iterator i = get_block(offset, &blockOffset);
     for(; i != end() && size > 0; ++i) {
-        block_ptr block = *i;
+        protocols::common::block_ptr block = *i;
         size_t blockSize = block->size() - blockOffset;
         blockSize = size < blockSize? size: blockSize;
         event = protocol_.memset(block, blockOffset, v, blockSize, ret);
@@ -118,7 +118,7 @@ object::memcpy_to_object(size_t objOff, const hostptr_t src, size_t size)
     size_t off = 0;
     const_locking_iterator i = get_block(objOff, &blockOffset);
     for(; i != end() && size > 0; ++i) {
-        block_ptr block = *i;
+        protocols::common::block_ptr block = *i;
         size_t blockSize = block->size() - blockOffset;
         blockSize = size < blockSize? size: blockSize;
         event = protocol_.copy_to_block(block, blockOffset,
@@ -195,7 +195,7 @@ object::memcpy_from_object(hostptr_t dst, size_t objOff, size_t size)
     for (const_locking_iterator i  = get_block(objOff);
                                 i != end() && size > 0;
                               ++i) {
-        block_ptr block = *i;
+        protocols::common::block_ptr block = *i;
         size_t blockSize = block->size() - blockOffset;
         blockSize = size < blockSize? size: blockSize;
         event = protocol_.copy_from_block(dst + off,

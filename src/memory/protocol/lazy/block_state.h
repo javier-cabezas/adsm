@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2011 Universityversity of Illinois
+/* Copyright (c) 2009-2011 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -39,15 +39,18 @@ WITH THE SOFTWARE.  */
 
 #include "memory/protocol/common/block_state.h"
 
-#include "lazy_types.h"
-
 namespace __impl {
 namespace memory {
-
-template <typename State> class StateBlock;
-
 namespace protocols {
 namespace lazy_types {
+
+//! Protocol states
+enum State {
+    ReadOnly = 0, /*!< Valid copy of the data in both host and accelerator memory */
+    Invalid  = 1, /*!< Valid copy of the data in accelerator memory */
+    Dirty    = 2, /*!< Valid copy of the data in host memory */
+    HostOnly = 3  /*!< Data only allowed in host memory */
+};
 
 #if defined(USE_SUBBLOCK_TRACKING) || defined(USE_VM)
 template <typename T>
@@ -95,7 +98,7 @@ struct GMAC_LOCAL BlockTreeState : public util::reusable<BlockTreeState> {
 
 class GMAC_LOCAL StrideInfo {
 protected:
-    lazy_types::block &block_;
+    block &block_;
 
     unsigned stridedFaults_;
     long_t stride_;
@@ -103,7 +106,7 @@ protected:
     hostptr_t firstAddr_;
 
 public:
-    StrideInfo(lazy_types::block &block);
+    StrideInfo(block &block);
 
     void signal_write(hostptr_t addr);
 
@@ -120,7 +123,7 @@ class GMAC_LOCAL BlockTreeInfo {
 public:
     typedef std::pair<unsigned, unsigned> Pair;
 protected:
-    lazy_types::block &block_;
+    block &block_;
 
     unsigned treeStateLevels_;
     BlockTreeState *treeState_;
@@ -129,7 +132,7 @@ protected:
 
     Pair increment(unsigned subBlock);
 public:
-    BlockTreeInfo(lazy_types::block &block);
+    BlockTreeInfo(block &block);
     ~BlockTreeInfo();
 
     void signal_write(const hostptr_t addr);
@@ -140,16 +143,15 @@ public:
 
 #endif
 
-class GMAC_LOCAL block_state :
-    public common::block_state<lazy_types::State> {
+class GMAC_LOCAL block :
+    public common::block_state {
 #if defined(USE_SUBBLOCK_TRACKING)
     friend class StrideInfo;
     friend class BlockTreeInfo;
 #endif
 
 protected:
-    lazy_types::block &block();
-    const lazy_types::block &block() const;
+    State state_;
 
 #if defined(USE_SUBBLOCK_TRACKING)
     //const lazy::Block &block();
@@ -193,9 +195,10 @@ protected:
 #endif
 
 public:
-    block_state(lazy_types::State init);
+    block(object &parent, hostptr_t addr, hostptr_t shadow, size_t size, State init);
 
-    void set_state(protocol_state state, hostptr_t addr = NULL);
+    State get_state() const;
+    void set_state(State state, hostptr_t addr = NULL);
 
 #if 0
     bool hasState(protocol_state state) const;
@@ -207,13 +210,36 @@ public:
     void read(const hostptr_t addr);
     void write(const hostptr_t addr);
 
-    bool is(protocol_state state) const;
+    bool is(State state) const;
 
     int protect(GmacProtection prot);
     int unprotect();
 
     void acquired();
     void released();
+
+    /**
+     * Get memory block owner
+     *
+     * \return A reference to the owner mode of the memory block
+     */
+    core::address_space_ptr get_owner() const;
+
+    /**
+     * Get memory block address at the accelerator
+     *
+     * \param current Execution mode requesting the operation
+     * \param addr Address within the block
+     * \return Accelerator memory address of the block
+     */
+    accptr_t get_device_addr(const hostptr_t addr) const;
+
+    /**
+     * Get memory block address at the accelerator
+     *
+     * \return Accelerator memory address of the block
+     */
+    accptr_t get_device_addr() const;
 
     gmacError_t dump(std::ostream &stream, common::Statistic stat);
 };

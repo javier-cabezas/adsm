@@ -49,12 +49,9 @@ namespace core {
 
 namespace memory {
 
-template <typename T>
-class block_state;
-
-template<typename State>
+template <typename ProtocolTraits>
 class GMAC_LOCAL object_state :
-    util::gmac_base<object_state<State> >,
+    util::gmac_base<object_state<ProtocolTraits> >,
     public memory::object {
 protected:
     hostptr_t shadow_;
@@ -67,7 +64,7 @@ protected:
 
     void modified_object();
 public:
-    object_state(protocol &protocol, hostptr_t cpuAddr, size_t size, typename State::protocol_state init, gmacError_t &err);
+    object_state(protocol &protocol, hostptr_t cpuAddr, size_t size, typename ProtocolTraits::State init, gmacError_t &err);
     virtual ~object_state();
 
     accptr_t get_device_addr(const hostptr_t addr) const;

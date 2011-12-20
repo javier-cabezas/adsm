@@ -34,28 +34,25 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_MEMORY_PROTOCOL_LAZYTYPES_H
 #define GMAC_MEMORY_PROTOCOL_LAZYTYPES_H
 
-namespace __impl {
-namespace memory {
-template <typename State> class block_state;
+#include "block_state.h"
 
-namespace protocols {
+namespace __impl {
+namespace memory { namespace protocols {
 
 namespace lazy_types {
-class block_state;
-
-//! Protocol states
-enum State {
-    ReadOnly = 0, /*!< Valid copy of the data in both host and accelerator memory */
-    Invalid  = 1, /*!< Valid copy of the data in accelerator memory */
-    Dirty    = 2, /*!< Valid copy of the data in host memory */
-    HostOnly = 3 /*< Data only allowed in host memory */
-};
-
-typedef memory::block_state<lazy_types::block_state> block;
 typedef __impl::util::shared_ptr<block> block_ptr;
 typedef __impl::util::shared_ptr<const block> block_const_ptr;
+}
 
-}}}}
+struct lazy_traits {
+typedef lazy_types::block block;
+typedef lazy_types::block_ptr block_ptr;
+typedef lazy_types::block_const_ptr block_const_ptr;
+
+typedef lazy_types::State State;
+};
+
+}}}
 
 #endif /* LAZYTYPES_H */
 

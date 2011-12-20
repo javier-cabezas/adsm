@@ -38,18 +38,16 @@ WITH THE SOFTWARE.  */
 
 namespace __impl {
     namespace core {
-        class Mode;
-        Mode &getMode(Mode &mode) GMAC_LOCAL;
         class process;
-        process &getProcess() GMAC_LOCAL;
+        process &get_process() GMAC_LOCAL;
     }
     namespace memory {
         class allocator_interface;
-        allocator_interface &getAllocator() GMAC_LOCAL;
-        bool hasAllocator() GMAC_LOCAL;
+        allocator_interface &get_allocator() GMAC_LOCAL;
+        bool has_allocator() GMAC_LOCAL;
 
         class manager;
-        manager &getManager() GMAC_LOCAL;
+        manager &get_manager() GMAC_LOCAL;
     }
 }
 

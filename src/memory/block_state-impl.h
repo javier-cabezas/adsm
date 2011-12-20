@@ -7,15 +7,16 @@
 
 namespace __impl { namespace memory {
 
-template<typename State>
+#if 0
 inline
-block_state<State>::block_state(object_state<State> &parent,
-                                hostptr_t hostAddr,
-                                hostptr_t shadowAddr,
-                                size_t size,
-                                typename State::protocol_state init) :
-    gmac::memory::block(hostAddr, shadowAddr, size),
-    State(init),
+template<typename State>
+block_state::block_state(object_state<State> &parent,
+                         hostptr_t hostAddr,
+                         hostptr_t shadowAddr,
+                         size_t size,
+                         lazy_types::State init) :
+    memory::protocols::common::block_state(hostAddr, shadowAddr, size),
+    state_(init),
     parent_(parent)
 {
 }
@@ -40,7 +41,7 @@ block_state<State>::get_device_addr() const
 {
     return get_device_addr(this->addr_);
 }
-
+#endif
 }}
 
 #endif

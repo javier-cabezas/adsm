@@ -62,21 +62,21 @@ protocol *ProtocolInit(unsigned flags)
         }
         if(0 != (flags & 0x1)) {
             ret = new gmac::memory::protocols::Lazy<
-                memory::object_state<protocols::lazy_types::block_state> >(eager);
+                memory::object_state<protocols::lazy_traits> >(eager);
         } else {
             ret = new gmac::memory::protocols::Lazy<
-                memory::object_state<protocols::lazy_types::block_state> >(eager);
+                memory::object_state<protocols::lazy_traits> >(eager);
         }
     }
 #ifdef USE_VM
     else if(strcasecmp(config::params::protocol, "Gather") == 0) {
         if(0 != (flags & 0x1)) {
             ret = new gmac::memory::protocol::Lazy<
-                memory::object_state<protocol::lazy_types::block_state> >(eager);
+                memory::object_state<protocol::lazy_traits> >(eager);
         }
         else {
             ret = new gmac::memory::protocol::Lazy<
-                memory::object_state<protocol::lazy_types::block_state> >(eager);
+                memory::object_state<protocol::lazy_traits> >(eager);
         }
     }
 #endif
