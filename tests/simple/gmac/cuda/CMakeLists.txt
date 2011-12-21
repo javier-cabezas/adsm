@@ -17,6 +17,7 @@ source_group(${current_GROUP} FILES
     gmacGetAccInfo.cpp
     cudaVecAdd.cu
     gmacThreadVecAdd.cu
+    gmacThreadVecAdd2.cu
     cudaThreadVecAdd.cu
     gmacThreading.cu
     gmacSharedVecAdd.cu
@@ -79,6 +80,11 @@ target_link_libraries(cudaVecAdd test-common ${CUDA_CUDART_LIBRARY} ${CMAKE_THRE
 cuda_compile(threadVecAdd gmacThreadVecAdd.cu)
 add_executable(gmacThreadVecAdd ${threadVecAdd} gmacThreadVecAdd.cu)
 target_link_libraries(gmacThreadVecAdd test-common gmac-cuda)
+
+# gmacThreadVecAdd2
+cuda_compile(threadVecAdd2 gmacThreadVecAdd2.cu)
+add_executable(gmacThreadVecAdd2 ${threadVecAdd2} gmacThreadVecAdd2.cu)
+target_link_libraries(gmacThreadVecAdd2 test-common gmac-cuda)
 
 # cudaThreadVecAdd
 cuda_compile(threadVecAdd cudaThreadVecAdd.cu)
