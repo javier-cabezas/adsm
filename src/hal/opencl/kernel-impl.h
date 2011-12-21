@@ -5,13 +5,13 @@ namespace __impl { namespace hal { namespace opencl {
 
 inline
 kernel_t::kernel_t(cl_kernel func, const std::string &name) :
-    Parent(func, name)
+    parent(func, name)
 {
 }
 
 inline 
 kernel_t::launch_ptr
-kernel_t::launch_config(Parent::config &conf, Parent::arg_list &args, stream_t &stream)
+kernel_t::launch_config(parent::config &conf, parent::arg_list &args, stream_t &stream)
 {
     launch_ptr ret(new launch(*this, (kernel_t::config &) conf,
                               (kernel_t::arg_list &) args, stream));

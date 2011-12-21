@@ -48,13 +48,13 @@ uint8_t buddy::index(register uint32_t x) const
 
 uint32_t buddy::round(register uint32_t x) const
 {
-    x--;
+    --x;
     x |= x >> 1;
     x |= x >> 2;
     x |= x >> 4;
     x |= x >> 8;
     x |= x >> 16;
-    x++;
+    ++x;
 
     return x;
 }
@@ -95,7 +95,7 @@ void buddy::put_to_list(off_t addr, uint8_t i)
     long_t mask = ~((1 << (i + 1)) - 1);
     List &list = _tree[i];
     List::iterator buddy;
-    for(buddy = list.begin(); buddy != list.end(); buddy++) {
+    for(buddy = list.begin(); buddy != list.end(); ++buddy) {
         if((*buddy & mask) != (addr & mask))
             continue;
         TRACE(LOCAL,"Merging 0x%x and 0x%x into a %d chunk", addr, *buddy, 1 << (i + 1));

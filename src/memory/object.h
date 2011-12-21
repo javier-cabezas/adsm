@@ -64,9 +64,10 @@ namespace memory {
 class GMAC_LOCAL object :
     protected gmac::util::lock_rw<object>,
     public util::unique<object> {
+    DBC_FORCE_TEST(object)
+
     typedef gmac::util::lock_rw<object> Lock;
 
-    // DBC_FORCE_TEST(object)
 public:
     typedef util::bounds<host_ptr> bounds;
 
@@ -283,7 +284,6 @@ public:
      */
     hal::event_ptr to_device(gmacError_t &err);
 
-
     /**
      * Dump object information to a file
      *
@@ -310,8 +310,8 @@ public:
      */
     TESTABLE hal::event_ptr signal_write(host_ptr addr, gmacError_t &err);
 
-    gmacError_t to_io_device(hal::device_output &output, size_t objOff, size_t count);
-    gmacError_t from_io_device(size_t objOff, hal::device_input &input, size_t count);
+    TESTABLE gmacError_t to_io_device(hal::device_output &output, size_t offset, size_t count);
+    TESTABLE gmacError_t from_io_device(size_t offset, hal::device_input &input, size_t count);
 
     /**
      * Initializes a memory range within the object to a specific value
@@ -349,8 +349,8 @@ public:
      * \param count Size (in bytes) of the data to be copied
      * \return Error code
      */
-    gmacError_t memcpy_to_object(size_t objOffset,
-                                 host_const_ptr src, size_t count);
+    TESTABLE gmacError_t memcpy_to_object(size_t objOffset,
+                                          host_const_ptr src, size_t count);
 
     /** Copy data from object to object
      * \param dstObj Destination object
@@ -361,9 +361,9 @@ public:
      * \param count Size (in bytes) of the data to be copied
      * \return Error code
      */
-    gmacError_t memcpy_object_to_object(object &dstObj, size_t dstOffset,
-                                        size_t srcOffset,
-                                        size_t count);
+    TESTABLE gmacError_t memcpy_object_to_object(object &dstObj, size_t dstOffset,
+                                                 size_t srcOffset,
+                                                 size_t count);
 
     /**
      * Copies data from an object to host memory
@@ -373,8 +373,8 @@ public:
      * \param count Size (in bytes) of the data to be copied
      * \return Error code
      */
-    gmacError_t memcpy_from_object(host_ptr dst,
-                                   size_t objOffset, size_t count);
+    TESTABLE gmacError_t memcpy_from_object(host_ptr dst,
+                                            size_t objOffset, size_t count);
     
     hal::event_ptr get_last_event(hal::event_ptr::type type) const;
 };
@@ -384,7 +384,7 @@ public:
 #include "object-impl.h"
 
 #ifdef USE_DBC
-//#include "memory/dbc/object.h"
+#include "memory/dbc/object.h"
 #endif
 
 #endif

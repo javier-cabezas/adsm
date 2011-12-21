@@ -34,7 +34,7 @@ StreamOut &operator<<(StreamOut &os, const Application &app)
 	std::map<int32_t, Task *>::const_iterator i;
 	os << app.sons_.size();
 	os << "(";
-	for(i = app.sons_.begin(); i != app.sons_.end(); i++) {
+	for(i = app.sons_.begin(); i != app.sons_.end(); ++i) {
 		if(i != app.sons_.begin()) os << ",";
 		os << i->second->size() << ":" << 0;
 	}

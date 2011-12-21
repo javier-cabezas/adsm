@@ -49,6 +49,10 @@ set(memory_SRC
 set(memory_DBC
     dbc/manager.h
     dbc/manager.cpp
+    dbc/object.h
+    dbc/object.cpp
+    dbc/object_state.h
+    dbc/object_state-impl.h
     protocols/dbc/lazy.h
     protocols/dbc/lazy-impl.h
     protocols/dbc/lazy_base.h
@@ -56,8 +60,5 @@ set(memory_DBC
     protocols/common/dbc/block.h
     protocols/common/dbc/block.cpp
 )
-
-# dbc/object.h
-# dbc/object.cpp
 
 add_gmac_sources(gmac-memory ${memory_SRC} ${memory_DBC})
