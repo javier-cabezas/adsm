@@ -89,7 +89,7 @@ void AddressSpace::addOwner(Process &proc, Mode &mode)
     memory::ObjectMap &global = proc.global();
     iterator i;
     global.lockWrite();
-    for(i = global.begin(); i != global.end(); i++) {
+    for(i = global.begin(); i != global.end(); ++i) {
         i->second->addOwner(mode);
     }
     global.unlock();
@@ -100,7 +100,7 @@ void AddressSpace::removeOwner(Process &proc, Mode &mode)
     memory::ObjectMap &global = proc.global();
     iterator i;
     global.lockWrite();
-    for (i = global.begin(); i != global.end(); i++) {
+    for (i = global.begin(); i != global.end(); ++i) {
         i->second->removeOwner(mode);
     }
     global.unlock();
