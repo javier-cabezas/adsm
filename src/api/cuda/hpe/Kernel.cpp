@@ -2,7 +2,6 @@
 #include "api/cuda/hpe/Kernel.h"
 #include "api/cuda/hpe/Mode.h"
 
-#include "trace/Tracer.h"
 
 namespace __impl { namespace cuda { namespace hpe {
 
