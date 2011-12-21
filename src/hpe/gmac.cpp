@@ -110,10 +110,10 @@ gmacGetFreeMemory(unsigned acc, size_t *freeMemory)
 {
     enterGmacExclusive();
     gmac::trace::EnterCurrentFunction();
-    size_t total;
     gmacError_t ret = gmacSuccess;
     __impl::core::hpe::Process &process = getProcess();
     if (acc < process.nAccelerators() && freeMemory != NULL) {
+        size_t total;
         Accelerator &accelerator = process.getAccelerator(acc);
         accelerator.getMemInfo(*freeMemory, total);
     } else {

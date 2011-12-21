@@ -46,7 +46,7 @@ void QueueMap::cleanup()
 {
     QueueMap::iterator q;
     lockWrite();
-    for(q = Parent::begin(); q != Parent::end(); q++)
+    for(q = Parent::begin(); q != Parent::end(); ++q)
         delete q->second;
     clear();
     unlock();
@@ -195,7 +195,7 @@ gmacError_t Process::globalMalloc(memory::Object &object)
 {
     ModeMap::iterator i;
     lockRead();
-    for(i = modes_.begin(); i != modes_.end(); i++) {
+    for(i = modes_.begin(); i != modes_.end(); ++i) {
         if(object.addOwner(*i->first) != gmacSuccess) goto cleanup;
     }
     unlock();
@@ -204,7 +204,7 @@ gmacError_t Process::globalMalloc(memory::Object &object)
 
 cleanup:
     ModeMap::iterator j;
-    for(j = modes_.begin(); j != i; j++) {
+    for(j = modes_.begin(); j != i; ++j) {
         object.removeOwner(*j->first);
     }
     unlock();
@@ -217,7 +217,7 @@ gmacError_t Process::globalFree(memory::Object &object)
     if(global_.removeObject(object) == false) return gmacErrorInvalidValue;
     ModeMap::iterator i;
     lockRead();
-    for(i = modes_.begin(); i != modes_.end(); i++) {
+    for(i = modes_.begin(); i != modes_.end(); ++i) {
         object.removeOwner(*i->first);
     }
     unlock();
@@ -233,13 +233,12 @@ gmacError_t Process::migrate(int acc)
         Thread::setCurrentMode(mode);
         return gmacSuccess;
     }
-    Mode &mode = Thread::getCurrentMode();
     gmacError_t ret = gmacSuccess;
     TRACE(LOCAL,"Migrating execution mode");
 #ifndef USE_MMAP
+    Mode &mode = Thread::getCurrentMode();
     if (int(mode.getAccelerator().id()) != acc) {
         // Create a new context in the requested accelerator
-        //ret = _accs[acc]->bind(mode);
         ret = mode.moveTo(*accs_[acc]);
     }
 #else
@@ -319,7 +318,7 @@ bool Process::allIntegrated()
 {
     bool ret = true;
     std::vector<AcceleratorPtr>::iterator a;
-    for(a = accs_.begin(); a != accs_.end(); a++) {
+    for(a = accs_.begin(); a != accs_.end(); ++a) {
         ret = ret && (*a)->integrated();
     }
     return ret;
@@ -332,7 +331,7 @@ Process::prepareForCall()
     ModeMap::iterator i;
     lockRead();
     if (global_.size() > 0) {
-        for(i = modes_.begin(); i != modes_.end(); i++) {
+        for(i = modes_.begin(); i != modes_.end(); ++i) {
             ret = i->first->prepareForCall();
             if (ret != gmacSuccess) break;
         }
