@@ -47,7 +47,7 @@ void
 Test::TestCase::setEnvironment()
 {
     std::vector<KeyVal>::const_iterator it;
-    for (it = keyvals_.begin(); it != keyvals_.end(); it++) {
+    for (it = keyvals_.begin(); it != keyvals_.end(); ++it) {
         ::_putenv((it->first + "=" + it->second).c_str());
     }
     ::_putenv("PATH=.");

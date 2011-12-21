@@ -60,7 +60,7 @@ std::ostream &pcf(std::ostream &os)
 			if(types.empty()) continue;
 			EventName::TypeTable::const_iterator t;
 			os << std::endl << "VALUES" << std::endl;
-			for(t = types.begin(); t != types.end(); t++) {
+			for(t = types.begin(); t != types.end(); ++t) {
 				os << t->first << " " << t->second << std::endl;
 			}
 			os << std::endl;

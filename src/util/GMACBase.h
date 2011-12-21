@@ -114,7 +114,7 @@ class Debug :
     {
         if (params::ParamDebugPrintDebugInfo == true) {
             MapTypes::const_iterator it;
-            for (it = mapTypes_.begin(); it != mapTypes_.end(); it++) {
+            for (it = mapTypes_.begin(); it != mapTypes_.end(); ++it) {
                 printf("DEBUG INFORMATION FOR CLASS: %s\n", it->first.c_str());
                 it->second();
             }

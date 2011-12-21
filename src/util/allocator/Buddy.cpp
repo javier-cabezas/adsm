@@ -95,7 +95,7 @@ void Buddy::putToList(off_t addr, uint8_t i)
     long_t mask = ~((1 << (i + 1)) - 1);
     List &list = _tree[i];
     List::iterator buddy;
-    for(buddy = list.begin(); buddy != list.end(); buddy++) {
+    for(buddy = list.begin(); buddy != list.end(); ++buddy) {
         if((*buddy & mask) != (addr & mask))
             continue;
         TRACE(LOCAL,"Merging 0x%x and 0x%x into a %d chunk", addr, *buddy, 1 << (i + 1));
