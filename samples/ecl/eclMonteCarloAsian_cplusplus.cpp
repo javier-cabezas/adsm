@@ -428,6 +428,7 @@ int main(int argc, char *argv[])
 	ret = kernel.setArg(5, priceDeriv);
 	assert(ret == eclSuccess);
 	cl_float timeStep = maturity / (noOfSum - 1);
+#endif
 	// Initialize random number generator
 	srand(1);
 	for(int k = 0; k < steps; k++) {
@@ -466,6 +467,7 @@ int main(int argc, char *argv[])
 		attributes.timeStep[2] = timeStep;
 		attributes.timeStep[3] = timeStep;
 		
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 		// Set appropriate arguments to the kernel 
 		ret = kernel.setArg(0, attributes);
 		assert(ret == eclSuccess);
