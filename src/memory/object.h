@@ -124,7 +124,6 @@ protected:
     const_locking_iterator begin() const;
     const_locking_iterator end() const;
 
-
     /** Execute a coherence operation on all the blocks of the object
      *
      * \param op Coherence operation to be performed
