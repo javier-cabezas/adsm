@@ -99,7 +99,7 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
 
     enterGmac();
     manager &manager = get_manager();
-    address_space_ptr aspaceDst = manager.get_owner(hostptr_t(buf));
+    address_space_ptr aspaceDst = manager.get_owner(host_ptr(buf));
 
     if(!aspaceDst) {
         exitGmac();
@@ -110,7 +110,7 @@ size_t SYMBOL(fread)(void *buf, size_t size, size_t nmemb, FILE *stream)
 
     stdc_input op(stream, size);
 
-    manager.from_io_device(aspaceDst, hostptr_t(buf), op, size * nmemb);
+    manager.from_io_device(aspaceDst, host_ptr(buf), op, size * nmemb);
     ssize_t ret = op.get_result();
 
 	gmac::trace::SetThreadState(gmac::trace::Running);
@@ -130,7 +130,7 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
 
 	enterGmac();
     manager &manager = get_manager();
-    address_space_ptr aspaceSrc = manager.get_owner(hostptr_t(buf));
+    address_space_ptr aspaceSrc = manager.get_owner(host_ptr(buf));
 
     if(!aspaceSrc) {
         exitGmac();
@@ -141,7 +141,7 @@ size_t SYMBOL(fwrite)(const void *buf, size_t size, size_t nmemb, FILE *stream)
 
     stdc_output op(stream, size);
 
-    manager.to_io_device(op, aspaceSrc, hostptr_t(buf), size * nmemb);
+    manager.to_io_device(op, aspaceSrc, host_ptr(buf), size * nmemb);
     ssize_t ret = op.get_result();
 
 	gmac::trace::SetThreadState(gmac::trace::Running);

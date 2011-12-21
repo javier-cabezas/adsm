@@ -4,7 +4,7 @@
 
 namespace __impl { namespace util { namespace allocator {
 
-buddy::buddy(hostptr_t addr, size_t size) :
+buddy::buddy(host_ptr addr, size_t size) :
     gmac::util::mutex<buddy>("Buddy"),
     addr_(addr),
     size_(round((uint32_t)size)),
@@ -108,7 +108,7 @@ void buddy::put_to_list(off_t addr, uint8_t i)
 
 }
 
-hostptr_t buddy::get(size_t &size)
+host_ptr buddy::get(size_t &size)
 {
     uint8_t i = index((uint32_t)size);
     uint32_t realSize = (uint32_t) 1 << i;
@@ -122,7 +122,7 @@ hostptr_t buddy::get(size_t &size)
     return addr_ + off;
 }
 
-void buddy::put(hostptr_t addr, size_t size)
+void buddy::put(host_ptr addr, size_t size)
 {
     uint8_t i = index((uint32_t)size);
     off_t off = off_t(addr - addr_);

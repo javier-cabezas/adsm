@@ -4,7 +4,7 @@
 
 namespace __dbc { namespace util { namespace allocator {
 
-buddy::buddy(hostptr_t addr, size_t size) :
+buddy::buddy(host_ptr addr, size_t size) :
     __impl::util::allocator::buddy(addr, size)
 {}
 
@@ -19,15 +19,15 @@ void buddy::put_to_list(off_t addr, uint8_t i)
     return __impl::util::allocator::buddy::put_to_list(addr, i);
 }
 
-hostptr_t buddy::get(size_t &size)
+host_ptr buddy::get(size_t &size)
 {
     REQUIRES(size > 0);
-    hostptr_t ret = __impl::util::allocator::buddy::get(size);
+    host_ptr ret = __impl::util::allocator::buddy::get(size);
     ENSURES(ret == NULL || (ret >= addr_ && ret <= (addr_ + size_ - size)));
     return ret;
 }
 
-void buddy::put(hostptr_t addr, size_t size)
+void buddy::put(host_ptr addr, size_t size)
 {
     REQUIRES(addr >= addr_ && addr <= (addr_ + size_ - size));
     REQUIRES(size > 0);

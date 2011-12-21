@@ -5,7 +5,7 @@
 
 namespace __dbc { namespace memory {
 
-block::block(hostptr_t addr, hostptr_t shadow, size_t size) :
+block::block(host_ptr addr, host_ptr shadow, size_t size) :
     __impl::memory::block(addr, shadow, size)
 {
     // PRECONDITIONS

@@ -70,7 +70,7 @@ code_repository::code_repository(const vector_module_descriptor & dVector)
 {
     CUmodule mod;
     vector_module_descriptor::const_iterator it;
-    for (it = dVector.begin(); it != dVector.end(); it++) {
+    for (it = dVector.begin(); it != dVector.end(); ++it) {
         module_descriptor &d = *(*it);
         const void *fatBin_ = d.fatBin_;
         TRACE(LOCAL, "module image: %p", fatBin_);
@@ -85,7 +85,7 @@ code_repository::code_repository(const vector_module_descriptor & dVector)
         CFATAL(res == CUDA_SUCCESS, "Error loading module: %d", res);
 
         module_descriptor::vector_kernel::const_iterator k;
-        for (k = d.kernels_.begin(); k != d.kernels_.end(); k++) {
+        for (k = d.kernels_.begin(); k != d.kernels_.end(); ++k) {
             TRACE(LOCAL, "Registering kernel: %s", k->get_name().c_str());
             CUfunction func;
             res = cuModuleGetFunction(&func, mod, k->get_name().c_str());
@@ -93,7 +93,7 @@ code_repository::code_repository(const vector_module_descriptor & dVector)
         }
 
         module_descriptor::vector_variable::const_iterator v;
-        for (v = d.variables_.begin(); v != d.variables_.end(); v++) {
+        for (v = d.variables_.begin(); v != d.variables_.end(); ++v) {
             map_variable_name::const_iterator f;
             f = variablesByName_.find(v->get_name());
             if (f != variablesByName_.end()) {
@@ -105,7 +105,7 @@ code_repository::code_repository(const vector_module_descriptor & dVector)
             }
         }
 
-        for (v = d.constants_.begin(); v != d.constants_.end(); v++) {
+        for (v = d.constants_.begin(); v != d.constants_.end(); ++v) {
             map_variable_name::const_iterator f;
             f = constantsByName_.find(v->get_name());
             if (f != constantsByName_.end()) {
@@ -117,7 +117,7 @@ code_repository::code_repository(const vector_module_descriptor & dVector)
         }
 
         module_descriptor::vector_texture::const_iterator t;
-        for (t = d.textures_.begin(); t != d.textures_.end(); t++) {
+        for (t = d.textures_.begin(); t != d.textures_.end(); ++t) {
             textures_.insert(map_texture::value_type(t->get_key(), texture_t(*t, mod)));
         }
 
@@ -128,12 +128,12 @@ code_repository::code_repository(const vector_module_descriptor & dVector)
 code_repository::~code_repository()
 {
     map_kernel::iterator it;
-    for (it = kernels_.begin(); it != kernels_.end(); it++) {
+    for (it = kernels_.begin(); it != kernels_.end(); ++it) {
         delete it->second;
     }
 #ifdef CALL_CUDA_ON_DESTRUCTION
     std::vector<CUmodule>::const_iterator m;
-    for(m = mods_.begin(); m != mods_.end(); m++) {
+    for(m = mods_.begin(); m != mods_.end(); ++m) {
         CUresult ret = cuModuleUnload(*m);
         ASSERTION(ret == CUDA_SUCCESS);
     }

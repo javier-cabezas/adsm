@@ -110,7 +110,7 @@ gmacError_t object::memset(size_t offset, int v, size_t size)
 }
 
 gmacError_t
-object::memcpy_to_object(size_t objOff, const hostptr_t src, size_t size)
+object::memcpy_to_object(size_t objOff, host_const_ptr src, size_t size)
 {
     hal::event_ptr event;
     gmacError_t ret = gmacSuccess;
@@ -122,8 +122,8 @@ object::memcpy_to_object(size_t objOff, const hostptr_t src, size_t size)
         size_t blockSize = block->size() - blockOffset;
         blockSize = size < blockSize? size: blockSize;
         event = protocol_.copy_to_block(block, blockOffset,
-                                             src + off,
-                                             blockSize, ret);
+                                               src + off,
+                                               blockSize, ret);
         //block.memoryOp(op, buffer, blockSize, bufferOffset, blockOffset);
         blockOffset = 0;
         off  += blockSize;
@@ -186,7 +186,7 @@ object::memcpy_object_to_object(object &dstObj, size_t dstOffset, size_t srcOffs
 }
 
 gmacError_t
-object::memcpy_from_object(hostptr_t dst, size_t objOff, size_t size)
+object::memcpy_from_object(host_ptr dst, size_t objOff, size_t size)
 {
     hal::event_ptr event;
     gmacError_t ret = gmacSuccess;
@@ -209,7 +209,7 @@ object::memcpy_from_object(hostptr_t dst, size_t objOff, size_t size)
 }
 
 hal::event_ptr
-object::signal_read(hostptr_t addr, gmacError_t &err)
+object::signal_read(host_ptr addr, gmacError_t &err)
 {
     hal::event_ptr ret;
     lock_read();
@@ -224,7 +224,7 @@ object::signal_read(hostptr_t addr, gmacError_t &err)
 }
 
 hal::event_ptr
-object::signal_write(hostptr_t addr, gmacError_t &err)
+object::signal_write(host_ptr addr, gmacError_t &err)
 {
     hal::event_ptr ret;
     lock_read();

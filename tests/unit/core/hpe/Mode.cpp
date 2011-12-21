@@ -48,7 +48,7 @@ TEST_F(ModeTest, MemoryObject) {
     object *obj = map.get_protocol().create_object(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(obj != NULL);
     map.addObject(*obj);
-    const hostptr_t addr = obj->addr();
+    const host_ptr addr = obj->addr();
     ASSERT_TRUE(addr != 0);
     obj->decRef();
 
@@ -73,7 +73,7 @@ TEST_F(ModeTest, MemoryObjectMap){
     ASSERT_TRUE(map.addObject(*obj));
 	ASSERT_TRUE(map.hasObject(*obj));
 
-	hostptr_t ptr = obj->addr();
+	host_ptr ptr = obj->addr();
 	size_t size_ = obj->size();
     for(size_t s = 0; s < size_; s++) {
        ptr[s] = (s & 0xff);
@@ -101,7 +101,7 @@ TEST_F(ModeTest, MemoryObjectMap){
 }
 
 TEST_F(ModeTest, Memory) {
-    hostptr_t fakePtr = (uint8_t *) 0xcafebabe;
+    host_ptr fakePtr = (uint8_t *) 0xcafebabe;
     accptr_t addr(0);
     ASSERT_EQ(gmacSuccess, Mode_->map(addr, fakePtr, Size_));
     ASSERT_TRUE(addr != 0);
@@ -116,34 +116,34 @@ TEST_F(ModeTest, MemoryCopy) {
     ASSERT_TRUE(dst != NULL);
     memset(src, 0x5a, Size_ * sizeof(int));
     accptr_t addr(0);
-    ASSERT_EQ(gmacSuccess, Mode_->map(addr, hostptr_t(src), Size_ * sizeof(int)));
+    ASSERT_EQ(gmacSuccess, Mode_->map(addr, host_ptr(src), Size_ * sizeof(int)));
     ASSERT_TRUE(addr != 0);
-    ASSERT_EQ(gmacSuccess, Mode_->copyToAccelerator(addr, hostptr_t(src), Size_ * sizeof(int)));
-    ASSERT_EQ(gmacSuccess, Mode_->copyToHost(hostptr_t(dst), addr, Size_ * sizeof(int)));
+    ASSERT_EQ(gmacSuccess, Mode_->copyToAccelerator(addr, host_ptr(src), Size_ * sizeof(int)));
+    ASSERT_EQ(gmacSuccess, Mode_->copyToHost(host_ptr(dst), addr, Size_ * sizeof(int)));
     for(size_t i = 0; i < Size_; i++) ASSERT_EQ(0x5a5a5a5a, dst[i]);
     memset(src, 0x5b, Size_ * sizeof(int));
 	accptr_t addr2(0);
-	ASSERT_EQ(gmacSuccess, Mode_->map(addr2, hostptr_t(dst), Size_ * sizeof(int)));
+	ASSERT_EQ(gmacSuccess, Mode_->map(addr2, host_ptr(dst), Size_ * sizeof(int)));
     ASSERT_TRUE(addr2 != 0);
-	ASSERT_EQ(gmacSuccess, Mode_->copyToAccelerator(addr, hostptr_t(src), Size_ * sizeof(int)));
+	ASSERT_EQ(gmacSuccess, Mode_->copyToAccelerator(addr, host_ptr(src), Size_ * sizeof(int)));
 	ASSERT_EQ(gmacSuccess, Mode_->copyAccelerator(addr2, addr, Size_ * sizeof(int)));
-	ASSERT_EQ(gmacSuccess, Mode_->copyToHost(hostptr_t(dst), addr2, Size_ * sizeof(int)));
+	ASSERT_EQ(gmacSuccess, Mode_->copyToHost(host_ptr(dst), addr2, Size_ * sizeof(int)));
     for(size_t i = 0; i < Size_; i++) ASSERT_EQ(0x5b5b5b5b, dst[i]);
-    ASSERT_EQ(gmacSuccess, Mode_->unmap(hostptr_t(src), Size_ * sizeof(int)));
-	ASSERT_EQ(gmacSuccess, Mode_->unmap(hostptr_t(dst), Size_ * sizeof(int)));
+    ASSERT_EQ(gmacSuccess, Mode_->unmap(host_ptr(src), Size_ * sizeof(int)));
+	ASSERT_EQ(gmacSuccess, Mode_->unmap(host_ptr(dst), Size_ * sizeof(int)));
     delete[] dst;
     delete[] src;
 }
 
 TEST_F(ModeTest, MemorySet) {
-    hostptr_t fakePtr = (uint8_t *) 0xcafebabe;
+    host_ptr fakePtr = (uint8_t *) 0xcafebabe;
     accptr_t addr(0);
     ASSERT_EQ(gmacSuccess, Mode_->map(addr, fakePtr, Size_ * sizeof(int)));
     ASSERT_TRUE(addr != 0);
     ASSERT_EQ(gmacSuccess, Mode_->memset(addr, 0x5a, Size_ * sizeof(int)));
 
     int *dst = new int[Size_];
-    ASSERT_EQ(gmacSuccess, Mode_->copyToHost(hostptr_t(dst), addr, Size_ * sizeof(int)));
+    ASSERT_EQ(gmacSuccess, Mode_->copyToHost(host_ptr(dst), addr, Size_ * sizeof(int)));
     for(size_t i = 0; i < Size_; i++) ASSERT_EQ(0x5a5a5a5a, dst[i]);
 
     ASSERT_EQ(gmacSuccess, Mode_->unmap(fakePtr, Size_ * sizeof(int)));
@@ -160,7 +160,7 @@ TEST_F(ModeTest, IOBuffer) {
     ASSERT_EQ(0, memcmp(buffer.addr(), mem, Size_ * sizeof(int)));
 
     accptr_t addr(0);
-    hostptr_t fakePtr = (uint8_t *)0xcafecafe;
+    host_ptr fakePtr = (uint8_t *)0xcafecafe;
     ASSERT_EQ(gmacSuccess, Mode_->map(addr, fakePtr, Size_ * sizeof(int)));
     ASSERT_EQ(gmacSuccess, Mode_->bufferToAccelerator(addr, buffer, Size_ * sizeof(int)));
     ASSERT_EQ(gmacSuccess, buffer.wait());

@@ -43,7 +43,7 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace memory { namespace allocator {
 
-typedef std::list<hostptr_t> ObjectList;
+typedef std::list<host_ptr> ObjectList;
 
 /**
  * Arenas used by the caches of the slab allocator
@@ -52,7 +52,7 @@ typedef std::list<hostptr_t> ObjectList;
  */
 class GMAC_LOCAL arena {
 protected:
-    hostptr_t ptr_;
+    host_ptr ptr_;
     size_t size_;
 
     ObjectList objects_;
@@ -64,16 +64,16 @@ public:
     arena(manager &manager, util::shared_ptr<core::address_space> aspace, size_t objSize);
     ~arena();
 
-    inline hostptr_t address() const { return ptr_; }
-    hostptr_t key() const;
+    inline host_ptr address() const { return ptr_; }
+    host_ptr key() const;
     const ObjectList &objects() const;
 
     bool valid() const;
     bool full() const;
     bool empty() const;
 
-    hostptr_t get();
-    void put(hostptr_t obj);
+    host_ptr get();
+    void put(host_ptr obj);
 };
 
 /**
@@ -88,7 +88,7 @@ protected:
     size_t objectSize;
     size_t arenaSize;
 
-    typedef std::map<hostptr_t, arena *> map_arena;
+    typedef std::map<host_ptr, arena *> map_arena;
     map_arena arenas;
 
     manager &manager_;
@@ -100,8 +100,8 @@ public:
     static cache &get(long key, size_t size);
     static void cleanup();
 
-    hostptr_t get();
-    void put(hostptr_t obj);
+    host_ptr get();
+    void put(host_ptr obj);
 
 };
 

@@ -6,7 +6,7 @@
 namespace __impl { namespace hal { namespace opencl {
 
 inline
-buffer_t::buffer_t(hostptr_t addr, cl_mem devPtr, size_t size, context_t &context) :
+buffer_t::buffer_t(host_ptr addr, cl_mem devPtr, size_t size, context_t &context) :
     Parent(size, context),
     addr_(addr),
     devPtr_(devPtr)
@@ -14,7 +14,7 @@ buffer_t::buffer_t(hostptr_t addr, cl_mem devPtr, size_t size, context_t &contex
 }
 
 inline
-hostptr_t
+host_ptr
 buffer_t::get_addr()
 {
     return addr_;
@@ -29,7 +29,7 @@ buffer_t::get_device_addr()
 
 inline
 ptr_t
-context_t::get_device_addr_from_pinned(hostptr_t addr)
+context_t::get_device_addr_from_pinned(host_ptr addr)
 {
     FATAL("NOT SUPPORTED IN OPENCL");
 

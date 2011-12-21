@@ -1,5 +1,5 @@
 /* Copyright (c) 2009-2011 University of Illinois
-                   Universitat Politecnica de Catalunya
+                           Universitat Politecnica de Catalunya
                    All rights reserved.
 
 Developed by: IMPACT Research Group / Grup de Sistemes Operatius
@@ -70,7 +70,7 @@ public:
      * \param flags Protocool specific flags
      * \return Pointer to the created object
      */
-    virtual object *create_object(size_t size, hostptr_t cpuPtr,
+    virtual object *create_object(size_t size, host_ptr cpuPtr,
                                   GmacProtection prot, unsigned flags) = 0;
 
     /**
@@ -101,7 +101,7 @@ public:
      * \warning This method assumes that the block is not modified during its
      * execution
      */
-    virtual hal::event_ptr signal_read(protocols::common::block_ptr block, hostptr_t addr, gmacError_t &err) = 0;
+    virtual hal::event_ptr signal_read(protocols::common::block_ptr block, host_ptr addr, gmacError_t &err) = 0;
 
     /**
      * Signal handler for faults caused due to memory writes
@@ -112,7 +112,7 @@ public:
      * \warning This method assumes that the block is not modified during its
      * execution
      */
-    virtual hal::event_ptr signal_write(protocols::common::block_ptr block, hostptr_t addr, gmacError_t &err) = 0;
+    virtual hal::event_ptr signal_write(protocols::common::block_ptr block, host_ptr addr, gmacError_t &err) = 0;
 
     /** Acquires the ownership of a memory block for the CPU
      *
@@ -240,10 +240,10 @@ public:
                                                size_t count, gmacError_t &err) = 0;
 
     virtual hal::event_ptr copy_to_block(protocols::common::block_ptr dst, size_t dstOffset,
-                                         hostptr_t src,
+                                         host_const_ptr src,
                                          size_t count, gmacError_t &err) = 0;
 
-    virtual hal::event_ptr copy_from_block(hostptr_t dst,
+    virtual hal::event_ptr copy_from_block(host_ptr dst,
                                            protocols::common::block_ptr src, size_t srcOffset,
                                            size_t count, gmacError_t &err) = 0;
 
@@ -256,17 +256,6 @@ public:
                                           size_t count, gmacError_t &err) = 0;
 
     virtual gmacError_t dump(protocols::common::block_ptr block, std::ostream &out, protocols::common::Statistic stat) = 0;
-
-#if 0
-    typedef hal::event_ptr (protocol::*CoherenceOp)(block_ptr, gmacError_t &err);
-
-    typedef hal::event_ptr (protocol::*CopyOp1To)(block_ptr, size_t, const hostptr_t, size_t, gmacError_t &);
-    typedef hal::event_ptr (protocol::*CopyOp1From)(hostptr_t, block_ptr, size_t, size_t, gmacError_t &);
-    typedef hal::event_ptr (protocol::*CopyOp2)(block_ptr, size_t, block_ptr, size_t, size_t, gmacError_t &);
-
-    typedef hal::event_ptr (protocol::*DeviceOpTo)(hal::device_output &, block_ptr, size_t, size_t, gmacError_t &);
-    typedef hal::event_ptr (protocol::*DeviceOpFrom)(block_ptr, size_t, hal::device_input &, size_t, gmacError_t &);
-#endif
 };
 
 typedef std::list<object *> ListObject;

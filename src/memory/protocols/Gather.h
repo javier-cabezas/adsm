@@ -132,9 +132,9 @@ public:
 
     bool needs_update(const block &block) const;
 
-    gmacError_t signal_read(block &block, hostptr_t addr);
+    gmacError_t signal_read(block &block, host_ptr addr);
 
-    gmacError_t signal_write(block &block, hostptr_t addr);
+    gmacError_t signal_write(block &block, host_ptr addr);
 
     gmacError_t acquire(block &obj);
 
@@ -177,7 +177,7 @@ public:
     virtual ~Gather();
 
     // Protocol Interface
-    memory::object *create_object(size_t size, hostptr_t cpuPtr,
+    memory::object *create_object(size_t size, host_ptr cpuPtr,
         GmacProtection prot, unsigned flags);
 };
 

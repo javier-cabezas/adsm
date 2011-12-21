@@ -1,5 +1,5 @@
-/* Copyright (c) 2009, 2010 University of Illinois
-                   Universitat Politecnica de Catalunya
+/* Copyright (c) 2009-2011 University of Illinois
+                           Universitat Politecnica de Catalunya
                    All rights reserved.
 
 Developed by: IMPACT Research Group / Grup de Sistemes Operatius
@@ -36,11 +36,13 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace hal {
 
-template <typename Ptr, typename C>
+template <typename HPtr, typename Ptr, typename C>
 class GMAC_LOCAL _ptr_t {
+    friend class _ptr_t<host_ptr, Ptr, C>;
+    friend class _ptr_t<host_const_ptr, Ptr, C>;
 protected:
     Ptr ptrDev_;
-    hostptr_t ptrHost_;
+    HPtr ptrHost_;
 
     C *ctx_;
 
@@ -48,9 +50,11 @@ public:
     _ptr_t();
     _ptr_t(Ptr ptr, C *ctx);
     _ptr_t(typename Ptr::backend_type value, C *ctx);
-    explicit _ptr_t(hostptr_t ptr);
+    explicit _ptr_t(host_ptr ptr);
+    explicit _ptr_t(host_const_ptr ptr);
 
-    _ptr_t(const _ptr_t &ptr);
+    _ptr_t(const _ptr_t<host_ptr, Ptr, C> &ptr);
+    _ptr_t(const _ptr_t<host_const_ptr, Ptr, C> &ptr);
 
     operator bool() const;
 
@@ -75,7 +79,7 @@ public:
 
     typename Ptr::backend_type
     get_device_addr() const;
-    hostptr_t
+    HPtr
     get_host_addr() const;
 
     size_t

@@ -490,7 +490,7 @@ GMAC_API cudaError_t APICALL cudaMemcpy2DToArray(struct cudaArray *dst, size_t w
 	enterGmac();
 	cudaError_t ret = cudaSuccess;
     __impl::memory::manager &manager = __impl::memory::get_manager();
-    __impl::util::shared_ptr<__impl::core::address_space> aspace = manager.owner(hostptr_t(src));
+    __impl::util::shared_ptr<__impl::core::address_space> aspace = manager.get_owner(host_ptr(src));
     if(aspace == NULL) {
 #if CUDA_VERSION >= 3020
         __cudaMemcpy2D((CUarray)dst, wOffset, hOffset, src, spitch, width, height);
@@ -501,7 +501,7 @@ GMAC_API cudaError_t APICALL cudaMemcpy2DToArray(struct cudaArray *dst, size_t w
 #endif
     }
     else {
-        long_t dummy = manager.translate(aspace, hostptr_t(src)).get_device_addr();
+        long_t dummy = manager.translate(aspace, host_ptr(src)).get_device_addr();
 #if CUDA_VERSION >= 3020
         __cudaInternalMemcpy2D((CUarray)dst, wOffset, hOffset, (CUdeviceptr)(dummy), spitch, width, height);
 #else

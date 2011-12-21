@@ -129,7 +129,7 @@ public:
      * power of two
      * \return Error code
      */
-    TESTABLE gmacError_t map(accptr_t &dst, hostptr_t src, size_t count, unsigned align = 1);
+    TESTABLE gmacError_t map(accptr_t &dst, host_ptr src, size_t count, unsigned align = 1);
 
     /**
      * Unmaps the memory previously mapped by map
@@ -137,7 +137,7 @@ public:
      * \param count Size of the unmapping
      * \return Error code
      */
-    TESTABLE gmacError_t unmap(hostptr_t addr, size_t count);
+    TESTABLE gmacError_t unmap(host_ptr addr, size_t count);
 
     /**
      * Copies data from system memory to accelerator memory
@@ -146,7 +146,7 @@ public:
      * \param count Number of bytes to be copied
      * \return Error code
      */
-    TESTABLE gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t count);
+    TESTABLE gmacError_t copyToAccelerator(accptr_t acc, host_const_ptr host, size_t count);
 
     /**
      * Copies data from accelerator memory to system memory
@@ -155,7 +155,7 @@ public:
      * \param count Number of bytes to be copied
      * \return Error code
      */
-    TESTABLE gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t count);
+    TESTABLE gmacError_t copyToHost(host_ptr host, const accptr_t acc, size_t count);
 
     /** Copies data from accelerator memory to accelerator memory
      * \param dst Destination accelerator memory

@@ -55,8 +55,8 @@ protected:
     typedef __impl::util::shared_ptr<lazy_block_impl> lazy_block_ptr_impl;
 
 public:
-    __impl::hal::event_ptr signal_read(block_ptr_impl block, hostptr_t addr, gmacError_t &err);
-    __impl::hal::event_ptr signal_write(block_ptr_impl block, hostptr_t addr, gmacError_t &err);
+    __impl::hal::event_ptr signal_read(block_ptr_impl block, host_ptr addr, gmacError_t &err);
+    __impl::hal::event_ptr signal_write(block_ptr_impl block, host_ptr addr, gmacError_t &err);
 
     __impl::hal::event_ptr acquire(block_ptr_impl obj, GmacProtection prot, gmacError_t &err);
     __impl::hal::event_ptr release(block_ptr_impl block, gmacError_t &err);

@@ -73,8 +73,8 @@ TEST_F(ObjectMapTest, Coherence) {
     object *obj1 = proto.create_object(*mode, Size_, NULL, GMAC_PROT_READ, 0);
 	object *obj2 = proto.create_object(*mode, Size_, NULL, GMAC_PROT_READWRITE, 0);
 
-	hostptr_t addr1 = obj1->addr();
-	hostptr_t addr2 = obj2->addr();
+	host_ptr addr1 = obj1->addr();
+	host_ptr addr2 = obj2->addr();
 
 	ASSERT_FALSE(map.has_modified_objects());
 	ASSERT_TRUE(map.size() == 0);

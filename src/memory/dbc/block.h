@@ -42,7 +42,7 @@ class GMAC_LOCAL block :
     DBC_TESTED(__impl::memory::block)
 
 protected:
-	block(hostptr_t addr, hostptr_t shadow, size_t size);
+	block(host_ptr addr, host_ptr shadow, size_t size);
 };
 
 }}

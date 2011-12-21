@@ -35,14 +35,14 @@ map_object::statsInit()
 #endif
 
 object_ptr
-map_object::map_find(const hostptr_t addr, size_t size) const
+map_object::map_find(host_const_ptr addr, size_t size) const
 {
     map_object::const_iterator i;
     object_ptr ret;
     lock_read();
     const uint8_t *limit = (const uint8_t *)addr + size;
     i = upper_bound(addr);
-    if(i != end() && i->second->get_bounds().start <= limit) {
+    if (i != end() && i->second->get_bounds().start <= limit) {
     	ret = object_ptr(i->second);
     }
     unlock();
@@ -117,7 +117,7 @@ map_object::remove_object(object &obj)
     lock_write();
     iterator i = find(obj.get_bounds().end);
     bool ret = (i != end());
-    if(ret == true) {
+    if (ret == true) {
 #if defined(DEBUG)
         if (config::params::Stats) {
             unsigned dump = AtomicInc(StatDumps_);
@@ -141,7 +141,7 @@ map_object::remove_object(object &obj)
 }
 
 object_ptr
-map_object::get_object(const hostptr_t addr, size_t size) const
+map_object::get_object(host_const_ptr addr, size_t size) const
 {
     // Lock already acquired in map_find
     return map_find(addr, size);
@@ -153,7 +153,7 @@ map_object::get_memory_size() const
     size_t total = 0;
     const_iterator i;
     lock_read();
-    for(i = begin(); i != end(); i++) {
+    for (i = begin(); i != end(); ++i) {
         total += i->second->size();
     }
     unlock();
@@ -190,6 +190,5 @@ map_object::acquire_objects()
     unlock();
     return gmacSuccess;
 }
-
 
 }}

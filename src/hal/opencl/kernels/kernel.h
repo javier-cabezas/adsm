@@ -46,7 +46,7 @@ public:
         //const void *params_[256];
 
         typedef std::pair<cl_mem, unsigned> cl_mem_ref;
-        typedef std::map<hostptr_t, cl_mem_ref> map_subbuffer;
+        typedef std::map<host_ptr, cl_mem_ref> map_subbuffer;
         class map_global_subbuffer :
             protected std::map<cl_context, map_subbuffer>,
             protected gmac::util::spinlock<map_global_subbuffer> {
@@ -73,7 +73,7 @@ public:
         };
 
         typedef std::pair<cl_context, map_subbuffer::iterator> cache_entry;
-        typedef std::map<hostptr_t, cache_entry> cache_subbuffer;
+        typedef std::map<host_ptr, cache_entry> cache_subbuffer;
 
         static map_global_subbuffer mapSubBuffer_;
 
@@ -87,7 +87,7 @@ public:
 
         unsigned get_nargs() const;
         gmacError_t set_arg(kernel_t &k, const void *arg, size_t size, unsigned index);
-        cl_mem get_subbuffer(cl_context context, hostptr_t host, ptr_t dev, size_t size);
+        cl_mem get_subbuffer(cl_context context, host_ptr host, ptr_t dev, size_t size);
     };
 
     class GMAC_LOCAL launch :

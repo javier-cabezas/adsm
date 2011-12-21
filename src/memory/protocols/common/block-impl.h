@@ -38,7 +38,7 @@ namespace __impl {
 namespace memory { namespace protocols { namespace common {
 
 inline
-block::block(object &parent, hostptr_t addr, hostptr_t shadow, size_t size) :
+block::block(object &parent, host_ptr addr, host_ptr shadow, size_t size) :
     Lock("block"),
     parent_(parent),
     size_(size),
@@ -62,7 +62,7 @@ block::size() const
     return size_;
 }
 
-inline hostptr_t
+inline host_ptr
 block::get_shadow() const
 {
     return shadow_;

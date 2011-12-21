@@ -69,7 +69,7 @@ bool GatherBase::needs_update(const block &b) const
     return false;
 }
 
-gmacError_t GatherBase::signal_read(block &b, hostptr_t addr)
+gmacError_t GatherBase::signal_read(block &b, host_ptr addr)
 {
     trace::EnterCurrentFunction();
 	StateBlock<State> &block = dynamic_cast<StateBlock<State> &>(b);
@@ -95,13 +95,13 @@ exit_func:
     return ret;
 }
 
-gmacError_t GatherBase::signal_write(block &b, hostptr_t addr)
+gmacError_t GatherBase::signal_write(block &b, host_ptr addr)
 {
     trace::EnterCurrentFunction();
     StateBlock<State> &block = dynamic_cast<StateBlock<State> &>(b);
     gmacError_t ret = gmacSuccess;
 
-    hostptr_t start;
+    host_ptr start;
     size_t count;
 
     switch(block.state()) {

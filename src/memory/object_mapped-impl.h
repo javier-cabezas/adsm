@@ -32,7 +32,7 @@ object_mapped::release(core::address_space_ptr current)
 }
 #endif
 
-inline hostptr_t object_mapped::addr() const
+inline host_ptr object_mapped::addr() const
 {
     return addr_.get_host_addr();
 }
@@ -42,12 +42,12 @@ inline size_t object_mapped::size() const
     return size_;
 }
 
-inline void object_mapped::remove(hostptr_t addr)
+inline void object_mapped::remove(host_ptr addr)
 {
     set_.remove(addr);
 }
 
-inline object_mapped_ptr object_mapped::get_object(const hostptr_t addr)
+inline object_mapped_ptr object_mapped::get_object(host_const_ptr addr)
 {
     return set_.get_object(addr);
 }

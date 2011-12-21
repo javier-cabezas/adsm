@@ -55,10 +55,10 @@ class protocol;
 //! A map of objects that is not bound to any Mode
 class GMAC_LOCAL map_object :
     protected gmac::util::lock_rw<map_object>,
-    protected std::map<const hostptr_t, object_ptr>,
+    protected std::map<host_const_ptr, object_ptr>,
     public util::NonCopyable {
 protected:
-    typedef std::map<const hostptr_t, object_ptr> Parent;
+    typedef std::map<host_const_ptr, object_ptr> Parent;
     typedef gmac::util::lock_rw<map_object> Lock;
 
 #if 0
@@ -90,7 +90,7 @@ protected:
      * found
      * \return First object inside the memory range. NULL if no object is found
      */
-    object_ptr map_find(const hostptr_t addr, size_t size) const;
+    object_ptr map_find(host_const_ptr addr, size_t size) const;
 public:
     /**
      * Default constructor
@@ -158,7 +158,7 @@ public:
      * located
      * \return First object within the memory range. NULL if no object is found
      */
-    virtual object_ptr get_object(const hostptr_t addr, size_t size = 0) const;
+    virtual object_ptr get_object(host_const_ptr addr, size_t size = 0) const;
 
     /**
      * Get the amount of memory consumed by all objects in the map
@@ -199,7 +199,7 @@ public:
 
 #ifdef DEBUG
     gmacError_t dumpObjects(const std::string &dir, std::string prefix, protocols::common::Statistic stat) const;
-    gmacError_t dumpObject(const std::string &dir, std::string prefix, protocols::common::Statistic stat, hostptr_t ptr) const;
+    gmacError_t dumpObject(const std::string &dir, std::string prefix, protocols::common::Statistic stat, host_ptr ptr) const;
 #endif
 
     /**

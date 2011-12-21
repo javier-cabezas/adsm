@@ -16,7 +16,7 @@ arena::arena(manager &manager, core::address_space_ptr aspace, size_t objSize) :
 {
     gmacError_t ret = manager_.alloc(aspace_, &ptr_, memory::BlockSize_);
     if(ret != gmacSuccess) { ptr_ = NULL; return; }
-    for(size_t s = 0; s < memory::BlockSize_; s += objSize, size_++) {
+    for(size_t s = 0; s < memory::BlockSize_; s += objSize, ++size_) {
         TRACE(LOCAL,"Arena %p pushes %p ("FMT_SIZE" bytes)", this, (void *)(ptr_ + s), objSize);
         objects_.push_back(ptr_ + s);
     }
@@ -35,16 +35,16 @@ arena::~arena()
 cache::~cache()
 {
     map_arena::iterator i;
-    for(i = arenas.begin(); i != arenas.end(); i++) {
+    for(i = arenas.begin(); i != arenas.end(); ++i) {
         delete i->second;
     }
 }
 
-hostptr_t cache::get()
+host_ptr cache::get()
 {
     map_arena::iterator i;
     lock();
-    for(i = arenas.begin(); i != arenas.end(); i++) {
+    for(i = arenas.begin(); i != arenas.end(); ++i) {
         if(i->second->empty()) continue;
         TRACE(LOCAL,"Cache %p gets memory from arena %p", this, i->second);
         unlock();
@@ -59,7 +59,7 @@ hostptr_t cache::get()
     }
     TRACE(LOCAL,"Cache %p creates new arena %p with key %p", this, a, a->key());
     arenas.insert(map_arena::value_type(a->key(), a));
-    hostptr_t ptr = a->get();
+    host_ptr ptr = a->get();
     unlock();
     return ptr;
 }

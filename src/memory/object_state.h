@@ -54,21 +54,24 @@ class GMAC_LOCAL object_state :
     util::gmac_base<object_state<ProtocolTraits> >,
     public memory::object {
 protected:
-    hostptr_t shadow_;
+    host_ptr shadow_;
     bool hasUserMemory_;
 
-    accptr_t deviceAddr_;
+    hal::ptr_t deviceAddr_;
     core::address_space_ptr ownerShortcut_;
 
     gmacError_t repopulate_blocks(core::address_space &aspace);
 
     void modified_object();
 public:
-    object_state(protocol &protocol, hostptr_t cpuAddr, size_t size, typename ProtocolTraits::State init, gmacError_t &err);
+    object_state(protocol &protocol, host_ptr cpuAddr, size_t size, typename ProtocolTraits::State init, gmacError_t &err);
     virtual ~object_state();
 
-    accptr_t get_device_addr(const hostptr_t addr) const;
-    accptr_t get_device_addr() const;
+    hal::ptr_t get_device_addr(host_ptr addr);
+    hal::ptr_t get_device_addr();
+
+    hal::ptr_const_t get_device_const_addr(host_const_ptr addr) const;
+    hal::ptr_const_t get_device_const_addr() const;
 
     core::address_space_ptr get_owner();
     core::address_space_const_ptr get_owner() const;

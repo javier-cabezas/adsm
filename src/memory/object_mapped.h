@@ -1,5 +1,5 @@
-/* Copyright (c) 2009, 2010 University of Illinois
-                   Universitat Politecnica de Catalunya
+/* Copyright (c) 2009-2011 University of Illinois
+                           Universitat Politecnica de Catalunya
                    All rights reserved.
 
 Developed by: IMPACT Research Group / Grup de Sistemes Operatius
@@ -57,12 +57,12 @@ typedef util::shared_ptr<object_mapped> object_mapped_ptr;
     using host memory addresses
 */
 class GMAC_LOCAL set_object_mapped :
-protected std::map<void *, object_mapped_ptr>,
+protected std::map<host_const_ptr, object_mapped_ptr>,
     public gmac::util::lock_rw<set_object_mapped> {
 protected:
     friend class object_mapped;
 
-    typedef std::map<void *, object_mapped_ptr> Parent;
+    typedef std::map<host_const_ptr, object_mapped_ptr> Parent;
     typedef gmac::util::lock_rw<set_object_mapped> Lock;
 
     //! Inster a host mapped object in the set
@@ -77,7 +77,7 @@ protected:
         \param addr Host memory address within the host mapped object
         \return Host mapped object containing the memory address. NULL if not found
     */
-    object_mapped_ptr get_object(hostptr_t addr) const;
+    object_mapped_ptr get_object(host_const_ptr addr) const;
 public:
     //! Default constructor
     set_object_mapped();
@@ -90,7 +90,7 @@ public:
         \param addr Memory address within the block to be removed
         \return True if an object was removed
     */
-    bool remove(hostptr_t addr);
+    bool remove(host_const_ptr addr);
 };
 
 //! A memory object that only resides in host memory, but that is accessible from the accelerator
@@ -108,7 +108,7 @@ protected:
     hal::ptr_t alloc(core::address_space_ptr aspace, gmacError_t &err);
     void free(core::address_space_ptr aspace);
 
-    accptr_t getAccPtr(core::address_space_ptr aspace) const;
+    hal::ptr_t getAccPtr(core::address_space_ptr aspace) const;
 
     core::address_space_ptr owner_;
 public:
@@ -133,7 +133,7 @@ public:
      * 
      * \return Starting host memory address of the object
      */
-    hostptr_t addr() const;
+    host_ptr addr() const;
 
     /**
      * Get the size (in bytes) of the object
@@ -149,14 +149,14 @@ public:
      * \param addr Host memory address within the object
      * \return Accelerator memory address where the requested host memory address is mapped
      */
-    accptr_t get_device_addr(core::address_space_ptr current, const hostptr_t addr) const;
+    hal::ptr_t get_device_addr(core::address_space_ptr current, host_const_ptr addr) const;
 
     /**
      * Remove a host mapped object from the list of all present host mapped object
      *
      * \param addr Host memory address within the object to be removed
      */
-    static void remove(hostptr_t addr);
+    static void remove(host_ptr addr);
 
     /**
      * Get the host mapped memory object that contains a given host memory address
@@ -164,7 +164,7 @@ public:
      * \param addr Host memory address within the object
      * \return Host mapped object cotainig the host memory address. NULL if not found
      */
-    static object_mapped_ptr get_object(const hostptr_t addr);
+    static object_mapped_ptr get_object(host_const_ptr addr);
 };
 
 }}

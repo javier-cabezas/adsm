@@ -1,5 +1,5 @@
 /* Copyright (c) 2009-2011 University of Illinois
-                   Universitat Politecnica de Catalunya
+                           Universitat Politecnica de Catalunya
                    All rights reserved.
 
 Developed by: IMPACT Research Group / Grup de Sistemes Operatius
@@ -76,10 +76,10 @@ protected:
     size_t size_;
 
     /** Host address where for applications to access the block. */
-    hostptr_t addr_;
+    host_ptr addr_;
 
     /** Shadow host memory mapping that is always read/write. */
-    hostptr_t shadow_;
+    host_ptr shadow_;
 
     unsigned faultsCacheWrite_;
     unsigned faultsCacheRead_;
@@ -92,10 +92,10 @@ protected:
      * \param shadow Shadow host memory mapping that is always read/write
      * \param size Size (in bytes) of the memory block
      */
-    block(object &parent, hostptr_t addr, hostptr_t shadow, size_t size);
+    block(object &parent, host_ptr addr, host_ptr shadow, size_t size);
 
 public:
-    typedef util::bounds<hostptr_t> bounds;
+    typedef util::bounds<host_ptr> bounds;
 
     /**
      * Host memory address bounds of the block
@@ -119,15 +119,35 @@ public:
      * Get memory block address at the accelerator
      * \return Accelerator memory address of the block
      */
-    virtual accptr_t get_device_addr(const hostptr_t addr) const = 0;
+    virtual hal::ptr_t get_device_addr(host_ptr addr) = 0;
 
     /**
      * Get memory block address at the accelerator
      * \return Accelerator memory address of the block
      */
-    virtual accptr_t get_device_addr() const = 0;
+    inline
+    hal::ptr_t get_device_addr()
+    {
+        return get_device_addr(addr_);
+    }
 
-    hostptr_t get_shadow() const;
+    /**
+     * Get memory block address at the accelerator
+     * \return Accelerator memory address of the block
+     */
+    virtual hal::ptr_const_t get_device_const_addr(host_const_ptr addr) const = 0;
+
+    /**
+     * Get memory block address at the accelerator
+     * \return Accelerator memory address of the block
+     */
+    inline
+    hal::ptr_const_t get_device_const_addr() const
+    {
+        return get_device_const_addr(addr_);
+    }
+
+    host_ptr get_shadow() const;
 
     virtual hal::event_ptr sync_to_device(gmacError_t &err) = 0;
     virtual hal::event_ptr sync_to_host(gmacError_t &err) = 0;

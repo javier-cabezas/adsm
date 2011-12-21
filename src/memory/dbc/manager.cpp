@@ -39,7 +39,7 @@ manager::unmap(void *addr, size_t size)
 }
 #endif
 gmacError_t
-manager::alloc(address_space_ptr_impl aspace, hostptr_t *addr, size_t size)
+manager::alloc(address_space_ptr_impl aspace, host_ptr *addr, size_t size)
 {
     // PRECONDITIONS
     REQUIRES(size > 0);
@@ -65,7 +65,7 @@ manager::globalAlloc(void **addr, size_t size, GmacGlobalMallocType hint)
 #endif
 
 gmacError_t
-manager::free(address_space_ptr_impl aspace, hostptr_t addr)
+manager::free(address_space_ptr_impl aspace, host_ptr addr)
 {
     // PRECONDITIONS
     REQUIRES(addr != NULL);
@@ -77,7 +77,7 @@ manager::free(address_space_ptr_impl aspace, hostptr_t addr)
 }
 
 bool
-manager::signal_read(address_space_ptr_impl aspace, hostptr_t addr)
+manager::signal_read(address_space_ptr_impl aspace, host_ptr addr)
 {
     // PRECONDITIONS
     REQUIRES(addr != NULL);
@@ -89,7 +89,7 @@ manager::signal_read(address_space_ptr_impl aspace, hostptr_t addr)
 }
 
 bool
-manager::signal_write(address_space_ptr_impl aspace, hostptr_t addr)
+manager::signal_write(address_space_ptr_impl aspace, host_ptr addr)
 {
     // PRECONDITIONS
     REQUIRES(addr != NULL);
@@ -101,7 +101,7 @@ manager::signal_write(address_space_ptr_impl aspace, hostptr_t addr)
 }
 
 gmacError_t
-manager::memcpy(address_space_ptr_impl aspace, hostptr_t dst, const hostptr_t src, size_t n)
+manager::memcpy(address_space_ptr_impl aspace, host_ptr dst, host_const_ptr src, size_t n)
 {
     // PRECONDITIONS
     REQUIRES(src != NULL);
@@ -115,7 +115,7 @@ manager::memcpy(address_space_ptr_impl aspace, hostptr_t dst, const hostptr_t sr
 }
 
 gmacError_t
-manager::memset(address_space_ptr_impl aspace, hostptr_t dst, int c, size_t n)
+manager::memset(address_space_ptr_impl aspace, host_ptr dst, int c, size_t n)
 {
     // PRECONDITIONS
     REQUIRES(dst != NULL);

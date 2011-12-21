@@ -35,7 +35,7 @@ protected:
     type get_type() const;
 
 public:
-    virtual hostptr_t get_addr() = 0;
+    virtual host_ptr get_addr() = 0;
     virtual typename I::ptr get_device_addr() = 0;
     typename I::context &get_context();
     const typename I::context &get_context() const;
@@ -106,7 +106,7 @@ protected:
 
     queue_event<I> queueEvents_;
 
-    hostptr_t get_memory(size_t size);
+    host_ptr get_memory(size_t size);
     void put_memory(void *ptr, size_t size);
 
     typename I::buffer *get_input_buffer(size_t size, typename I::stream &stream, typename I::event_ptr event);
@@ -120,14 +120,14 @@ protected:
 
     context_t(typename B::context context, D &device);
 
-    virtual typename I::event_ptr copy_backend(typename I::ptr dst, const typename I::ptr src, size_t count, typename I::stream &stream, list_event<I> *dependencies, gmacError_t &err) = 0;
+    virtual typename I::event_ptr copy_backend(typename I::ptr dst, typename I::ptr_const src, size_t count, typename I::stream &stream, list_event<I> *dependencies, gmacError_t &err) = 0;
     virtual typename I::event_ptr copy_backend(typename I::ptr dst, device_input &input, size_t count, typename I::stream &stream, list_event<I> *dependencies, gmacError_t &err) = 0;
-    virtual typename I::event_ptr copy_backend(device_output &output, const typename I::ptr src, size_t count, typename I::stream &stream, list_event<I> *dependencies, gmacError_t &err) = 0;
+    virtual typename I::event_ptr copy_backend(device_output &output, typename I::ptr_const src, size_t count, typename I::stream &stream, list_event<I> *dependencies, gmacError_t &err) = 0;
     virtual typename I::event_ptr memset_backend(typename I::ptr dst, int c, size_t count, typename I::stream &stream, list_event<I> *dependencies, gmacError_t &err) = 0;
 
-    virtual typename I::event_ptr copy_async_backend(typename I::ptr dst, const typename I::ptr src, size_t count, typename I::stream &stream, list_event<I> *dependencies, gmacError_t &err) = 0;
+    virtual typename I::event_ptr copy_async_backend(typename I::ptr dst, typename I::ptr_const src, size_t count, typename I::stream &stream, list_event<I> *dependencies, gmacError_t &err) = 0;
     virtual typename I::event_ptr copy_async_backend(typename I::ptr dst, device_input &input, size_t count, typename I::stream &stream, list_event<I> *dependencies, gmacError_t &err) = 0;
-    virtual typename I::event_ptr copy_async_backend(device_output &output, const typename I::ptr src, size_t count, typename I::stream &stream, list_event<I> *dependencies, gmacError_t &err) = 0;
+    virtual typename I::event_ptr copy_async_backend(device_output &output, typename I::ptr_const src, size_t count, typename I::stream &stream, list_event<I> *dependencies, gmacError_t &err) = 0;
     virtual typename I::event_ptr memset_async_backend(typename I::ptr dst, int c, size_t count, typename I::stream &stream, list_event<I> *dependencies, gmacError_t &err) = 0;
 
 public:
@@ -143,29 +143,29 @@ public:
     virtual gmacError_t free(typename I::ptr acc) = 0;
     virtual gmacError_t free_host_pinned(typename I::ptr ptr) = 0;
 
-    typename I::event_ptr copy(typename I::ptr dst, const typename I::ptr src, size_t count, typename I::stream &stream, list_event<I> &dependencies, gmacError_t &err);
-    typename I::event_ptr copy(typename I::ptr dst, const typename I::ptr src, size_t count, typename I::stream &stream, typename I::event_ptr event, gmacError_t &err);
-    typename I::event_ptr copy(typename I::ptr dst, const typename I::ptr src, size_t count, typename I::stream &stream, gmacError_t &err);
+    typename I::event_ptr copy(typename I::ptr dst, typename I::ptr_const src, size_t count, typename I::stream &stream, list_event<I> &dependencies, gmacError_t &err);
+    typename I::event_ptr copy(typename I::ptr dst, typename I::ptr_const src, size_t count, typename I::stream &stream, typename I::event_ptr event, gmacError_t &err);
+    typename I::event_ptr copy(typename I::ptr dst, typename I::ptr_const src, size_t count, typename I::stream &stream, gmacError_t &err);
 
     typename I::event_ptr copy(typename I::ptr dst, device_input &input, size_t count, typename I::stream &stream, list_event<I> &dependencies, gmacError_t &err);
     typename I::event_ptr copy(typename I::ptr dst, device_input &input, size_t count, typename I::stream &stream, typename I::event_ptr event, gmacError_t &err);
     typename I::event_ptr copy(typename I::ptr dst, device_input &input, size_t count, typename I::stream &stream, gmacError_t &err);
 
-    typename I::event_ptr copy(device_output &output, const typename I::ptr src, size_t count, typename I::stream &stream, list_event<I> &dependencies, gmacError_t &err);
-    typename I::event_ptr copy(device_output &output, const typename I::ptr src, size_t count, typename I::stream &stream, typename I::event_ptr event, gmacError_t &err);
-    typename I::event_ptr copy(device_output &output, const typename I::ptr src, size_t count, typename I::stream &stream, gmacError_t &err);
+    typename I::event_ptr copy(device_output &output, typename I::ptr_const src, size_t count, typename I::stream &stream, list_event<I> &dependencies, gmacError_t &err);
+    typename I::event_ptr copy(device_output &output, typename I::ptr_const src, size_t count, typename I::stream &stream, typename I::event_ptr event, gmacError_t &err);
+    typename I::event_ptr copy(device_output &output, typename I::ptr_const src, size_t count, typename I::stream &stream, gmacError_t &err);
 
-    typename I::event_ptr copy_async(typename I::ptr dst, const typename I::ptr src, size_t count, typename I::stream &stream, list_event<I> &dependencies, gmacError_t &err);
-    typename I::event_ptr copy_async(typename I::ptr dst, const typename I::ptr src, size_t count, typename I::stream &stream, typename I::event_ptr event, gmacError_t &err);
-    typename I::event_ptr copy_async(typename I::ptr dst, const typename I::ptr src, size_t count, typename I::stream &stream, gmacError_t &err);
+    typename I::event_ptr copy_async(typename I::ptr dst, typename I::ptr_const src, size_t count, typename I::stream &stream, list_event<I> &dependencies, gmacError_t &err);
+    typename I::event_ptr copy_async(typename I::ptr dst, typename I::ptr_const src, size_t count, typename I::stream &stream, typename I::event_ptr event, gmacError_t &err);
+    typename I::event_ptr copy_async(typename I::ptr dst, typename I::ptr_const src, size_t count, typename I::stream &stream, gmacError_t &err);
 
     typename I::event_ptr copy_async(typename I::ptr dst, device_input &input, size_t count, typename I::stream &stream, list_event<I> &dependencies, gmacError_t &err);
     typename I::event_ptr copy_async(typename I::ptr dst, device_input &input, size_t count, typename I::stream &stream, typename I::event_ptr event, gmacError_t &err);
     typename I::event_ptr copy_async(typename I::ptr dst, device_input &input, size_t count, typename I::stream &stream, gmacError_t &err);
 
-    typename I::event_ptr copy_async(device_output &output, const typename I::ptr src, size_t count, typename I::stream &stream, list_event<I> &dependencies, gmacError_t &err);
-    typename I::event_ptr copy_async(device_output &output, const typename I::ptr src, size_t count, typename I::stream &stream, typename I::event_ptr event, gmacError_t &err);
-    typename I::event_ptr copy_async(device_output &output, const typename I::ptr src, size_t count, typename I::stream &stream, gmacError_t &err);
+    typename I::event_ptr copy_async(device_output &output, typename I::ptr_const src, size_t count, typename I::stream &stream, list_event<I> &dependencies, gmacError_t &err);
+    typename I::event_ptr copy_async(device_output &output, typename I::ptr_const src, size_t count, typename I::stream &stream, typename I::event_ptr event, gmacError_t &err);
+    typename I::event_ptr copy_async(device_output &output, typename I::ptr_const src, size_t count, typename I::stream &stream, gmacError_t &err);
 
     typename I::event_ptr memset(typename I::ptr dst, int c, size_t count, typename I::stream &stream, list_event<I> &dependencies, gmacError_t &err);
     typename I::event_ptr memset(typename I::ptr dst, int c, size_t count, typename I::stream &stream, typename I::event_ptr event, gmacError_t &err);

@@ -6,14 +6,14 @@
 namespace __impl { namespace hal { namespace cuda {
 
 inline
-buffer_t::buffer_t(hostptr_t addr, size_t size, context_t &context) :
+buffer_t::buffer_t(host_ptr addr, size_t size, context_t &context) :
     Parent(size, context),
     addr_(addr)
 {
 }
 
 inline
-hostptr_t
+host_ptr
 buffer_t::get_addr()
 {
     return addr_;
@@ -36,7 +36,7 @@ context_t::set()
 
 inline
 ptr_t
-context_t::get_device_addr_from_pinned(hostptr_t addr)
+context_t::get_device_addr_from_pinned(host_ptr addr)
 {
     ptr_t ret(0, NULL);
     set();

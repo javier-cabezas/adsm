@@ -14,9 +14,9 @@ inline void object_state<ProtocolTraits>::modified_object()
 }
 
 static inline gmacError_t
-malloc_accelerator(core::address_space &aspace, hostptr_t addr, size_t size, accptr_t &acceleratorAddr)
+malloc_accelerator(core::address_space &aspace, host_ptr addr, size_t size, hal::ptr_t &acceleratorAddr)
 {
-    acceleratorAddr = accptr_t();
+    acceleratorAddr = hal::ptr_t();
     // Allocate accelerator memory
 #ifdef USE_VM
     gmacError_t ret = aspace.map(, acceleratorAddr, addr, size, unsigned(SubBlockSize_));
@@ -58,14 +58,14 @@ object_state<ProtocolTraits>::repopulate_blocks(core::address_space &aspace)
 
 template<typename ProtocolTraits>
 object_state<ProtocolTraits>::object_state(protocol &protocol,
-                                           hostptr_t hostAddr,
+                                           host_ptr hostAddr,
                                            size_t size,
                                            typename ProtocolTraits::State init,
                                            gmacError_t &err) :
     object(protocol, hostAddr, size),
     shadow_(NULL),
     hasUserMemory_(hostAddr != NULL),
-    deviceAddr_(0)
+    deviceAddr_()
 {
     err = gmacSuccess;
 
@@ -85,7 +85,7 @@ object_state<ProtocolTraits>::object_state(protocol &protocol,
         return;
     }
 
-    hostptr_t mark = addr_;
+    host_ptr mark = addr_;
     ptroff_t offset = 0;
     while (size > 0) {
         size_t blockSize = (size > BlockSize_) ? BlockSize_ : size;
@@ -110,17 +110,32 @@ object_state<ProtocolTraits>::~object_state()
 }
 
 template<typename ProtocolTraits>
-inline accptr_t
-object_state<ProtocolTraits>::get_device_addr(const hostptr_t addr) const
+inline hal::ptr_t
+object_state<ProtocolTraits>::get_device_addr(host_ptr addr)
 {
     return deviceAddr_ + (addr - addr_);
 }
 
 template<typename ProtocolTraits>
-inline accptr_t
-object_state<ProtocolTraits>::get_device_addr() const
+inline hal::ptr_const_t
+object_state<ProtocolTraits>::get_device_const_addr(host_const_ptr addr) const
+{
+    hal::ptr_t ret = deviceAddr_ + (addr - addr_);
+    return hal::ptr_const_t(ret);
+}
+
+template<typename ProtocolTraits>
+inline hal::ptr_t
+object_state<ProtocolTraits>::get_device_addr()
 {
     return get_device_addr(addr_);
+}
+
+template<typename ProtocolTraits>
+inline hal::ptr_const_t
+object_state<ProtocolTraits>::get_device_const_addr() const
+{
+    return get_device_const_addr(addr_);
 }
 
 template<typename ProtocolTraits>
@@ -186,7 +201,7 @@ object_state<ProtocolTraits>::map_to_device()
     lock_write();
 
     // Allocate accelerator memory in the new aspace
-    accptr_t newDeviceAddr(0);
+    hal::ptr_t newDeviceAddr;
 
     gmacError_t ret = malloc_accelerator(*ownerShortcut_, addr_, size_, newDeviceAddr);
     if (ret == gmacSuccess) {

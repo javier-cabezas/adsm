@@ -6,7 +6,7 @@
 namespace __impl { namespace memory { namespace allocator {
 
 inline
-hostptr_t arena::key() const
+host_ptr arena::key() const
 {
     ASSERTION(ptr_ != NULL);
     return ptr_ + memory::BlockSize_;
@@ -40,18 +40,18 @@ bool arena::empty() const
 }
 
 inline
-hostptr_t arena::get()
+host_ptr arena::get()
 {
     ASSERTION(ptr_ != NULL);
     ASSERTION(objects_.empty() == false);
-    hostptr_t ret = objects_.front();
+    host_ptr ret = objects_.front();
     objects_.pop_front();
     TRACE(LOCAL,"Arena %p has "FMT_SIZE" available objects", this, objects_.size());
     return ret;
 }
 
 inline
-void arena::put(hostptr_t obj)
+void arena::put(host_ptr obj)
 {
     ASSERTION(ptr_ != NULL);
     objects_.push_back(obj);
@@ -68,7 +68,7 @@ cache::cache(manager &manager, util::shared_ptr<core::address_space> aspace, siz
 
 
 inline
-void cache::put(hostptr_t obj)
+void cache::put(host_ptr obj)
 {
     lock();
     map_arena::iterator i;

@@ -19,7 +19,7 @@ int ProtBits[] = {
 
 static map_file Files;
 
-int memory_ops::protect(hostptr_t addr, size_t count, GmacProtection prot)
+int memory_ops::protect(host_ptr addr, size_t count, GmacProtection prot)
 {
     trace::EnterCurrentFunction();
     TRACE(GLOBAL, "Setting memory permisions to %d @ %p - %p", prot, addr, addr + count);
@@ -29,10 +29,10 @@ int memory_ops::protect(hostptr_t addr, size_t count, GmacProtection prot)
     return 0;
 }
 
-hostptr_t memory_ops::map(hostptr_t addr, size_t count, GmacProtection prot)
+host_ptr memory_ops::map(host_ptr addr, size_t count, GmacProtection prot)
 {
     trace::EnterCurrentFunction();
-    hostptr_t cpuAddr = NULL;
+    host_ptr cpuAddr = NULL;
     char tmp[FILENAME_MAX];
 
     // Create new shared memory file
@@ -51,7 +51,7 @@ hostptr_t memory_ops::map(hostptr_t addr, size_t count, GmacProtection prot)
     }
 
     if (addr == NULL) {
-        cpuAddr = hostptr_t(mmap(addr, count, ProtBits[prot], MAP_SHARED, fd, 0));
+        cpuAddr = host_ptr(mmap(addr, count, ProtBits[prot], MAP_SHARED, fd, 0));
         TRACE(GLOBAL, "Getting map: %d @ %p - %p", prot, cpuAddr, addr + count);
     } else {
         cpuAddr = addr;
@@ -74,7 +74,7 @@ hostptr_t memory_ops::map(hostptr_t addr, size_t count, GmacProtection prot)
     return cpuAddr;
 }
 
-hostptr_t memory_ops::shadow(hostptr_t addr, size_t count)
+host_ptr memory_ops::shadow(host_ptr addr, size_t count)
 {
     trace::EnterCurrentFunction();
     TRACE(GLOBAL, "Getting shadow mapping for %p (%zd bytes)", addr, count);
@@ -85,22 +85,22 @@ hostptr_t memory_ops::shadow(hostptr_t addr, size_t count)
     }
     off_t offset = off_t(addr - entry.address());
 #if defined(__APPLE__)
-    hostptr_t ret = hostptr_t(mmap(NULL, count, ProtBits[GMAC_PROT_READWRITE], MAP_SHARED, entry.fd(), offset));
+    host_ptr ret = host_ptr(mmap(NULL, count, ProtBits[GMAC_PROT_READWRITE], MAP_SHARED, entry.fd(), offset));
 #else
-    hostptr_t ret = hostptr_t(mmap(NULL, count, ProtBits[GMAC_PROT_READWRITE], MAP_SHARED | MAP_POPULATE, entry.fd(), offset));
+    host_ptr ret = host_ptr(mmap(NULL, count, ProtBits[GMAC_PROT_READWRITE], MAP_SHARED | MAP_POPULATE, entry.fd(), offset));
 #endif
     trace::ExitCurrentFunction();
     return ret;
 } 
 
-void memory_ops::unshadow(hostptr_t addr, size_t count)
+void memory_ops::unshadow(host_ptr addr, size_t count)
 {
     trace::EnterCurrentFunction();
     ::munmap(addr, count);
     trace::ExitCurrentFunction();
 }
 
-void memory_ops::unmap(hostptr_t addr, size_t count)
+void memory_ops::unmap(host_ptr addr, size_t count)
 {
     trace::EnterCurrentFunction();
     map_file_entry entry = Files.find(addr);

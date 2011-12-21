@@ -15,7 +15,7 @@ lazy_base::~lazy_base()
 }
 
 __impl::hal::event_ptr
-lazy_base::signal_read(block_ptr_impl _block, hostptr_t addr, gmacError_t &err)
+lazy_base::signal_read(block_ptr_impl _block, host_ptr addr, gmacError_t &err)
 {
 	REQUIRES(bool(_block));
 
@@ -28,7 +28,7 @@ lazy_base::signal_read(block_ptr_impl _block, hostptr_t addr, gmacError_t &err)
 }
 
 __impl::hal::event_ptr
-lazy_base::signal_write(block_ptr_impl _block, hostptr_t addr, gmacError_t &err)
+lazy_base::signal_write(block_ptr_impl _block, host_ptr addr, gmacError_t &err)
 {
 	REQUIRES(bool(_block));
 

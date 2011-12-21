@@ -79,9 +79,9 @@ TEST_F(ObjectTest, Blocks)
     __impl::memory::ObjectMap &map = mode.getAddressSpace();
     object *object = map.get_protocol().create_object(Process_->getResourceManager(), Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
-    hostptr_t start = object->addr();
+    host_ptr start = object->addr();
     ASSERT_TRUE(start != NULL);
-    hostptr_t end = object->end();
+    host_ptr end = object->end();
     ASSERT_TRUE(end != NULL);
     size_t get_block_size = object->get_block_size();
     ASSERT_GT(get_block_size, 0U);
@@ -105,7 +105,7 @@ TEST_F(ObjectTest, Coherence)
     object->add_owner(mode);
     map.addObject(*object);
 
-    hostptr_t ptr = object->addr();
+    host_ptr ptr = object->addr();
     for(size_t s = 0; s < object->size(); s++) {
        ptr[s] = (s & 0xff);
     }
@@ -136,7 +136,7 @@ TEST_F(ObjectTest, IOBuffer)
 
     __impl::core::IOBuffer &buffer = mode.createIOBuffer(Size_, GMAC_PROT_READWRITE);
 
-    hostptr_t ptr = buffer.addr();
+    host_ptr ptr = buffer.addr();
     for(size_t s = 0; s < buffer.size(); s++) {
         ptr[s] = (s & 0xff);
     }

@@ -52,12 +52,12 @@ Node::Node(unsigned level, Bitmap &root, size_t nEntries, std::vector<unsigned> 
     TRACE(LOCAL, "Mask : %lx", mask_);
 
     if (nextEntries_.size() > 0) {
-        entriesHost_ = hostptr_t(::malloc(nEntries * sizeof(uint8_t)));
+        entriesHost_ = host_ptr(::malloc(nEntries * sizeof(uint8_t)));
         ::memset(entriesHost_, 0, nEntries * sizeof(uint8_t));
     } else {
         entriesHost_ = NULL;
     }
-    entriesAccHost_ = hostptr_t(::malloc(nEntries * sizeof(uint8_t)));
+    entriesAccHost_ = host_ptr(::malloc(nEntries * sizeof(uint8_t)));
     TRACE(LOCAL, "Allocating memory: %p", entriesHost_);
     ::memset(entriesAccHost_, 0, nEntries * sizeof(uint8_t));
 }
@@ -292,8 +292,8 @@ Bitmap::Bitmap(core::Mode &mode, unsigned bits) :
     if (rootEntries == 0) rootEntries = 1;
     rootEntries_ = rootEntries;
 
-    bitmap_ = new hostptr_t[rootEntries];
-    ::memset(bitmap_, 0, rootEntries * sizeof(hostptr_t));
+    bitmap_ = new host_ptr[rootEntries];
+    ::memset(bitmap_, 0, rootEntries * sizeof(host_ptr));
 
     shiftBlock_ = int(log2(util::params::ParamPageSize));
     shiftPage_  = shiftBlock_ - int(log2(util::params::ParamSubBlocks));

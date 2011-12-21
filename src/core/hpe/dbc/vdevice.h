@@ -36,6 +36,7 @@ WITH THE SOFTWARE.  */
 
 namespace __dbc { namespace core { namespace hpe {
 
+#if 0
 class GMAC_LOCAL vdevice :
     public __impl::core::hpe::vdevice,
     public virtual Contract {
@@ -56,11 +57,11 @@ public:
     vdevice(process_impl &proc, AddressSpaceImpl &aSpace);
     virtual ~vdevice();
 
-    gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1);
-    gmacError_t unmap(hostptr_t addr, size_t size);
-    gmacError_t copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size);
-    gmacError_t copyToHost(hostptr_t host, const accptr_t acc, size_t size);
-    gmacError_t copyAccelerator(accptr_t dst, const accptr_t src, size_t size);
+    gmacError_t map(hal::ptr_t &dst, host_ptr src, size_t size, unsigned align = 1);
+    gmacError_t unmap(host_ptr addr, size_t size);
+    gmacError_t copyToAccelerator(hal::ptr_t acc, host_const_ptr host, size_t size);
+    gmacError_t copyToHost(host_ptr host, const accptr_t acc, size_t size);
+    gmacError_t copyAccelerator(hal::ptr_t dst, const accptr_t src, size_t size);
     gmacError_t memset(accptr_t addr, int c, size_t size);
     gmacError_t bufferToAccelerator(accptr_t dst, IOBufferImpl &buffer, size_t size, size_t off = 0);
     gmacError_t acceleratorToBuffer(IOBufferImpl &buffer, const accptr_t dst, size_t size, size_t off = 0);
@@ -70,6 +71,7 @@ public:
     gmacError_t moveTo(AcceleratorImpl &acc);
 #endif
 };
+#endif
 
 }}}
 

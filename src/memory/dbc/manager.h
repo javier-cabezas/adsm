@@ -78,7 +78,7 @@ public:
      * \param size Size (in bytes) of shared memory to be allocated
      * \return Error code
      */
-    gmacError_t alloc(address_space_ptr_impl aspace, hostptr_t *addr, size_t size);
+    gmacError_t alloc(address_space_ptr_impl aspace, host_ptr *addr, size_t size);
 
     /**
      * Release shared memory
@@ -86,7 +86,7 @@ public:
      * \param addr Memory address of the shared memory chunk to be released
      * \return Error code
      */
-    gmacError_t free(address_space_ptr_impl aspace, hostptr_t addr);
+    gmacError_t free(address_space_ptr_impl aspace, host_ptr addr);
 
     /**
      * Notify a memory fault caused by a load operation
@@ -94,7 +94,7 @@ public:
      * \param addr Host memory address causing the memory fault
      * \return True if the Manager was able to fix the fault condition
      */
-    bool signal_read(address_space_ptr_impl aspace, hostptr_t addr);
+    bool signal_read(address_space_ptr_impl aspace, host_ptr addr);
 
     /**
      * Notify a memory fault caused by a store operation
@@ -102,7 +102,7 @@ public:
      * \param addr Host memory address causing the memory fault
      * \return True if the Manager was able to fix the fault condition
      */
-    bool signal_write(address_space_ptr_impl aspace, hostptr_t addr);
+    bool signal_write(address_space_ptr_impl aspace, host_ptr addr);
 
     /**
      * Initialize to a given value the contents of a host address of a memory
@@ -114,7 +114,7 @@ public:
      * \param size Size (in bytes) of the memory to initialize
      * \return Error code
      */
-    gmacError_t memset(address_space_ptr_impl aspace, hostptr_t dst, int c, size_t size);
+    gmacError_t memset(address_space_ptr_impl aspace, host_ptr dst, int c, size_t size);
 
     /**
      * Copy data from and/or to host memory addresses of memory objects
@@ -125,7 +125,7 @@ public:
      * to a memory object
      * \param size Size (in bytes) of the amoun of data to be copied
      */
-    gmacError_t memcpy(address_space_ptr_impl aspace, hostptr_t dst, const hostptr_t src, size_t size);
+    gmacError_t memcpy(address_space_ptr_impl aspace, host_ptr dst, host_const_ptr src, size_t size);
 
 };
 

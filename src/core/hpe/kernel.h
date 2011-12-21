@@ -62,7 +62,7 @@ public:
          * \param ptr Address of the object to be added
          * \param prot Access type of the object in the GPU
          */
-        void add_object(hostptr_t ptr, /* unsigned index, */GmacProtection prot);
+        void add_object(host_ptr ptr, /* unsigned index, */GmacProtection prot);
 
         typedef std::list<memory::object_access_info> list_object_info;
         /**

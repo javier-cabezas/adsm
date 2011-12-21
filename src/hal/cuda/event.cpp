@@ -37,8 +37,8 @@ list_event::sync()
 {
     gmacError_t ret = gmacSuccess;
     for (Parent::iterator it  = Parent::begin();
-            it != Parent::end();
-            it++) {
+                          it != Parent::end();
+                        ++it) {
         ret = (*it)->sync();
         if (ret != gmacSuccess) break;
     }
@@ -53,7 +53,7 @@ list_event::set_barrier(stream_t &stream)
 
     for (Parent::iterator it  = Parent::begin();
                           it != Parent::end();
-                          it++) {
+                        ++it) {
         CUresult res = cuStreamWaitEvent(stream(), (*it)->eventEnd_, 0);
         ASSERTION(res == CUDA_SUCCESS, "Error adding barrier");
     }
@@ -63,8 +63,8 @@ void
 list_event::set_synced()
 {
     for (Parent::iterator it  = Parent::begin();
-            it != Parent::end();
-            it++) {
+                          it != Parent::end();
+                        ++it) {
         (**it).set_synced();
     }
 }

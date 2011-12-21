@@ -81,7 +81,7 @@ void initGmac(void)
 
     std::list<__impl::hal::device *>::iterator it;
 
-    for (it = devices.begin(); it != devices.end(); it++) {
+    for (it = devices.begin(); it != devices.end(); ++it) {
         Process_->get_resource_manager().register_device(**it);
     }
 

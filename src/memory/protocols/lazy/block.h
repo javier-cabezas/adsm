@@ -1,5 +1,5 @@
 /* Copyright (c) 2009-2011 University of Illinois
-                   Universitat Politecnica de Catalunya
+                           Universitat Politecnica de Catalunya
                    All rights reserved.
 
 Developed by: IMPACT Research Group / Grup de Sistemes Operatius
@@ -101,17 +101,17 @@ protected:
 
     unsigned stridedFaults_;
     long_t stride_;
-    hostptr_t lastAddr_;
-    hostptr_t firstAddr_;
+    host_ptr lastAddr_;
+    host_ptr firstAddr_;
 
 public:
     StrideInfo(block &block);
 
-    void signal_write(hostptr_t addr);
+    void signal_write(host_ptr addr);
 
     unsigned getStridedFaults() const;
     bool isStrided() const;
-    hostptr_t getFirstAddr() const;
+    host_ptr getFirstAddr() const;
     long_t getStride() const;
 
     void reset();
@@ -134,7 +134,7 @@ public:
     BlockTreeInfo(block &block);
     ~BlockTreeInfo();
 
-    void signal_write(const hostptr_t addr);
+    void signal_write(host_const_ptr addr);
     Pair getUnprotectInfo();
 
     void reset();
@@ -144,6 +144,7 @@ public:
 
 class GMAC_LOCAL block :
     public common::block {
+    typedef common::block parent;
 #if defined(USE_SUBBLOCK_TRACKING)
     friend class StrideInfo;
     friend class BlockTreeInfo;
@@ -178,26 +179,26 @@ protected:
     StrideInfo strideInfo_;
     BlockTreeInfo treeInfo_;
 
-    void setSubBlock(const hostptr_t addr, protocol_state state);
+    void setSubBlock(host_const_ptr addr, protocol_state state);
     void setSubBlock(long_t subBlock, protocol_state state);
     void setAll(protocol_state state);
 
     void reset();
 
-    hostptr_t getSubBlockAddr(const hostptr_t addr) const;
-    hostptr_t getSubBlockAddr(unsigned index) const;
+    host_ptr getSubBlockAddr(host_const_ptr addr) const;
+    host_ptr getSubBlockAddr(unsigned index) const;
     unsigned getSubBlocks() const;
     size_t getSubBlockSize() const;
 
-    void writeStride(const hostptr_t addr);
-    void writeTree(const hostptr_t addr);
+    void writeStride(host_const_ptr addr);
+    void writeTree(host_const_ptr addr);
 #endif
 
 public:
-    block(object &parent, hostptr_t addr, hostptr_t shadow, size_t size, State init);
+    block(object &parent, host_ptr addr, host_ptr shadow, size_t size, State init);
 
     State get_state() const;
-    void set_state(State state, hostptr_t addr = NULL);
+    void set_state(State state, host_ptr addr = NULL);
 
 #if 0
     bool hasState(protocol_state state) const;
@@ -206,8 +207,8 @@ public:
     hal::event_ptr sync_to_device(gmacError_t &err);
     hal::event_ptr sync_to_host(gmacError_t &err);     
 
-    void read(const hostptr_t addr);
-    void write(const hostptr_t addr);
+    void read(host_const_ptr addr);
+    void write(host_const_ptr addr);
 
     bool is(State state) const;
 
@@ -227,18 +228,34 @@ public:
     /**
      * Get memory block address at the accelerator
      *
-     * \param current Execution mode requesting the operation
      * \param addr Address within the block
      * \return Accelerator memory address of the block
      */
-    accptr_t get_device_addr(const hostptr_t addr) const;
+    hal::ptr_t get_device_addr(host_ptr addr);
+
+    inline
+    hal::ptr_t get_device_addr()
+    {
+        return parent::get_device_addr();
+    }
 
     /**
      * Get memory block address at the accelerator
      *
+     * \param addr Address within the block
      * \return Accelerator memory address of the block
      */
-    accptr_t get_device_addr() const;
+    hal::ptr_const_t get_device_const_addr(host_const_ptr addr) const;
+
+    /**
+      * Get memory block address at the accelerator
+      * \return Accelerator memory address of the block
+      */
+    inline
+    hal::ptr_const_t get_device_const_addr() const
+    {
+        return parent::get_device_const_addr();
+    }
 
     gmacError_t dump(std::ostream &stream, common::Statistic stat);
 };

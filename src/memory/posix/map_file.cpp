@@ -9,9 +9,9 @@ map_file::map_file() :
 map_file::~map_file()
 { }
 
-bool map_file::insert(int fd, hostptr_t address, size_t size)
+bool map_file::insert(int fd, host_ptr address, size_t size)
 {
-	hostptr_t key = address + size;
+	host_ptr key = address + size;
 	lock_write();
 	std::pair<Parent::iterator, bool> ret = Parent::insert(
 		Parent::value_type(key, map_file_entry(fd, address, size)));
@@ -19,7 +19,7 @@ bool map_file::insert(int fd, hostptr_t address, size_t size)
 	return ret.second;
 }
 
-bool map_file::remove(hostptr_t address)
+bool map_file::remove(host_ptr address)
 {
 	bool ret = true;
 	lock_write();
@@ -30,7 +30,7 @@ bool map_file::remove(hostptr_t address)
 	return ret;
 }
 
-const map_file_entry map_file::find(hostptr_t address) const
+const map_file_entry map_file::find(host_ptr address) const
 {
 	map_file_entry ret(-1, NULL, 0);
 	lock_read();

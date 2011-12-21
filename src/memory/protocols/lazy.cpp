@@ -65,7 +65,7 @@ bool lazy_base::needs_update(common::block_const_ptr b) const
 }
 
 hal::event_ptr
-lazy_base::signal_read(common::block_ptr b, hostptr_t addr, gmacError_t &err)
+lazy_base::signal_read(common::block_ptr b, host_ptr addr, gmacError_t &err)
 {
     trace::EnterCurrentFunction();
     lazy_types::block_ptr block = util::static_pointer_cast<lazy_types::block>(b);
@@ -96,7 +96,7 @@ exit_func:
 }
 
 hal::event_ptr
-lazy_base::signal_write(common::block_ptr b, hostptr_t addr, gmacError_t &err)
+lazy_base::signal_write(common::block_ptr b, host_ptr addr, gmacError_t &err)
 {
     trace::EnterCurrentFunction();
     lazy_types::block_ptr block = util::static_pointer_cast<lazy_types::block>(b);
@@ -406,10 +406,10 @@ lazy_base::copy_block_to_block(common::block_ptr d, size_t dstOff,
         // Copy acc-acc
         if (dst->get_owner()->has_direct_copy(src->get_owner())) {
             ret = dst->get_owner()->copy_async(dst->get_device_addr() + dstOff,
-                                           src->get_device_addr() + srcOff, count, err);
+                                               src->get_device_const_addr() + srcOff, count, err);
         } else {
             ret = dst->get_owner()->copy_async(dst->get_device_addr() + dstOff,
-                                           hal::ptr_t(src->get_shadow() + srcOff), count, err);
+                                               hal::ptr_const_t(src->get_shadow() + srcOff), count, err);
         }
     } else if (src->get_state() == lazy_types::Dirty && dst->get_state() == lazy_types::Dirty) {
         // memcpy
@@ -422,10 +422,10 @@ lazy_base::copy_block_to_block(common::block_ptr d, size_t dstOff,
         // memcpy
         if (dst->get_owner()->has_direct_copy(src->get_owner())) {
             ret = dst->get_owner()->copy_async(dst->get_device_addr() + dstOff,
-                                           src->get_device_addr() + srcOff, count, err);
+                                               src->get_device_const_addr() + srcOff, count, err);
         } else {
             ret = dst->get_owner()->copy_async(dst->get_device_addr() + dstOff,
-                                           hal::ptr_t(src->get_shadow() + srcOff), count, err);
+                                               hal::ptr_const_t(src->get_shadow() + srcOff), count, err);
         }
         if (err == gmacSuccess) {
             ::memcpy(dst->get_shadow() + dstOff, src->get_shadow() + srcOff, count);
@@ -436,15 +436,15 @@ lazy_base::copy_block_to_block(common::block_ptr d, size_t dstOff,
         // Copy acc-to-acc
         if (dst->get_owner()->has_direct_copy(src->get_owner())) {
             ret = dst->get_owner()->copy_async(dst->get_device_addr() + dstOff,
-                                           src->get_device_addr() + srcOff, count, err);
+                                               src->get_device_const_addr() + srcOff, count, err);
         } else {
             ret = dst->get_owner()->copy_async(dst->get_device_addr() + dstOff,
-                                           hal::ptr_t(src->get_shadow() + srcOff), count, err);
+                                               hal::ptr_const_t(src->get_shadow() + srcOff), count, err);
         }
         // acc-to-host
         if (err == gmacSuccess) {
             ret = src->get_owner()->copy_async(hal::ptr_t(dst->get_shadow() + dstOff),
-                                           src->get_device_addr() + srcOff, count, err);
+                                               src->get_device_const_addr() + srcOff, count, err);
         }
     } else if (src->get_state() == lazy_types::Invalid &&
                dst->get_state() == lazy_types::Dirty) {
@@ -452,18 +452,18 @@ lazy_base::copy_block_to_block(common::block_ptr d, size_t dstOff,
         // acc-to-host
         
         ret = src->get_owner()->copy_async(hal::ptr_t(dst->get_shadow() + dstOff),
-                                       src->get_device_addr() + srcOff, count, err);
+                                           src->get_device_const_addr() + srcOff, count, err);
     } else if (src->get_state() == lazy_types::Dirty &&
                dst->get_state() == lazy_types::Invalid) {
         TRACE(LOCAL, "D -> I");
         // host-to-acc
         ret = dst->get_owner()->copy_async(dst->get_device_addr() + dstOff,
-                                       hal::ptr_t(src->get_shadow() + srcOff), count, err);
+                                           hal::ptr_const_t(src->get_shadow() + srcOff), count, err);
     } else if (src->get_state() == lazy_types::Dirty &&
                dst->get_state() == lazy_types::ReadOnly) {
         // host-to-acc
         ret = dst->get_owner()->copy_async(dst->get_device_addr() + dstOff,
-                                       hal::ptr_t(src->get_shadow() + srcOff), count, err);
+                                           hal::ptr_const_t(src->get_shadow() + srcOff), count, err);
         TRACE(LOCAL, "D -> R");
         // host-to-host
         if (err == gmacSuccess) {
@@ -481,7 +481,7 @@ lazy_base::copy_block_to_block(common::block_ptr d, size_t dstOff,
 
 hal::event_ptr
 lazy_base::copy_to_block(common::block_ptr d, size_t dstOff,
-                         hostptr_t src,
+                         host_const_ptr src,
                          size_t count, gmacError_t &err)
 {
     lazy_types::block_ptr dst = util::static_pointer_cast<lazy_types::block>(d);
@@ -494,7 +494,7 @@ lazy_base::copy_to_block(common::block_ptr d, size_t dstOff,
         TRACE(LOCAL, "-> I");
         // Copy acc-acc
         ret = dst->get_owner()->copy_async(dst->get_device_addr() + dstOff,
-                                       hal::ptr_t(src), count, err);
+                                           hal::ptr_const_t(src), count, err);
     } else if (dst->get_state() == lazy_types::Dirty) {
         // memcpy
         TRACE(LOCAL, "-> D");
@@ -503,7 +503,7 @@ lazy_base::copy_to_block(common::block_ptr d, size_t dstOff,
         TRACE(LOCAL, "-> R");
         // Copy acc-to-acc
         ret = dst->get_owner()->copy_async(dst->get_device_addr() + dstOff,
-                                       hal::ptr_t(src), count, err);
+                                           hal::ptr_const_t(src), count, err);
         // memcpy
         ::memcpy(dst->get_shadow() + dstOff, src, count);
     }
@@ -513,7 +513,7 @@ lazy_base::copy_to_block(common::block_ptr d, size_t dstOff,
 }
 
 hal::event_ptr
-lazy_base::copy_from_block(hostptr_t dst,
+lazy_base::copy_from_block(host_ptr dst,
                            common::block_ptr s, size_t srcOff,
                            size_t count, gmacError_t &err)
 {
@@ -527,7 +527,7 @@ lazy_base::copy_from_block(hostptr_t dst,
         TRACE(LOCAL, "I ->");
         // Copy acc-acc
         ret = src->get_owner()->copy_async(hal::ptr_t(dst),
-                                           src->get_device_addr() + srcOff, count, err);
+                                           src->get_device_const_addr() + srcOff, count, err);
     } else if (src->get_state() == lazy_types::Dirty) {
         // memcpy
         TRACE(LOCAL, "D ->");
@@ -536,7 +536,7 @@ lazy_base::copy_from_block(hostptr_t dst,
         TRACE(LOCAL, "R ->");
         // Copy acc-to-acc
         ret = src->get_owner()->copy_async(hal::ptr_t(dst),
-                                           src->get_device_addr() + srcOff, count, err);
+                                           src->get_device_const_addr() + srcOff, count, err);
         // memcpy
         ::memcpy(dst, src->get_shadow() + srcOff, count);
     }
@@ -560,7 +560,7 @@ lazy_base::to_io_device(hal::device_output &output,
         TRACE(LOCAL, "I ->");
         // Copy acc-disk
         ret = src->get_owner()->copy_async(output,
-                                       src->get_device_addr() + srcOff, count, err);
+                                           src->get_device_const_addr() + srcOff, count, err);
     } else if (src->get_state() == lazy_types::Dirty) {
         // write to device
         TRACE(LOCAL, "D ->");
@@ -569,7 +569,7 @@ lazy_base::to_io_device(hal::device_output &output,
         TRACE(LOCAL, "R ->");
         // Copy acc-to-disk
         ret = src->get_owner()->copy_async(output,
-                                       src->get_device_addr() + srcOff, count, err);
+                                           src->get_device_const_addr() + srcOff, count, err);
     }
 
     TRACE(LOCAL, "Finished");
@@ -603,7 +603,7 @@ lazy_base::from_io_device(common::block_ptr d, size_t dstOff,
 
         // Copy host-to-acc
         ret = dst->get_owner()->copy_async(dst->get_device_addr() + dstOff,
-        		                       hal::ptr_t(dst->get_shadow() + dstOff), count, err);
+        		                           hal::ptr_const_t(dst->get_shadow() + dstOff), count, err);
     }
 
     TRACE(LOCAL, "Finished");

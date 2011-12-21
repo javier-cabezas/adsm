@@ -15,7 +15,7 @@ namespace __impl { namespace memory {
 
 #define protocol_member(f,...) util::bind(std::mem_fn(&f), &protocol_, std::placeholders::_1, __VA_ARGS__)
 
-inline object::object(protocol &protocol, hostptr_t addr, size_t size) :
+inline object::object(protocol &protocol, host_ptr addr, size_t size) :
     Lock("object"),
     protocol_(protocol),
     addr_(addr),

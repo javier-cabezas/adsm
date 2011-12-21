@@ -7,7 +7,7 @@
 namespace __impl { namespace hal { namespace opencl {
 
 static event_ptr::type
-get_event_type(ptr_t dst, ptr_t src)
+get_event_type(ptr_t dst, ptr_const_t src)
 {
     if (dst.is_device_ptr() &&
         src.is_device_ptr()) {
@@ -34,7 +34,7 @@ get_event_type(ptr_t dst, device_input &/* input */)
 }
 
 static event_ptr::type
-get_event_type(device_output &/* output */, ptr_t src)
+get_event_type(device_output &/* output */, ptr_const_t src)
 {
     return event_ptr::type::TransferToHost;
 }
@@ -73,7 +73,7 @@ context_t::dispose_event(_event_t &event)
 
 
 event_ptr 
-context_t::copy_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
+context_t::copy_backend(ptr_t dst, ptr_const_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     cl_event *events = NULL;
     unsigned nevents = 0;
@@ -97,7 +97,7 @@ context_t::copy_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stre
                                                 dst.get_offset(),      src.get_offset(), count,
                                                 nevents, events, &(*ret)());
         } else {
-            hostptr_t host = get_memory(count);
+            host_ptr host = get_memory(count);
 
             res = clEnqueueReadBuffer(stream(), src.get_device_addr(), CL_FALSE,
                                                 src.get_offset(), count,
@@ -166,7 +166,7 @@ context_t::copy_backend(ptr_t dst, device_input &input, size_t count, stream_t &
     TRACE(LOCAL, "IO -> D copy ("FMT_SIZE" bytes) on stream: "FMT_ID, count, stream.get_print_id());
     event_ptr ret(false, get_event_type(dst, input), *this);
 
-    hostptr_t host = get_memory(count);
+    host_ptr host = get_memory(count);
 
     bool ok = input.read(host, count);
 
@@ -197,7 +197,7 @@ context_t::copy_backend(ptr_t dst, device_input &input, size_t count, stream_t &
 }
 
 event_ptr
-context_t::copy_backend(device_output &output, const ptr_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
+context_t::copy_backend(device_output &output, ptr_const_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     cl_event *events = NULL;
     unsigned nevents = 0;
@@ -210,7 +210,7 @@ context_t::copy_backend(device_output &output, const ptr_t src, size_t count, st
     TRACE(LOCAL, "D -> IO copy ("FMT_SIZE" bytes) on stream: "FMT_ID, count, stream.get_print_id());
     event_ptr ret(false, get_event_type(output, src), *this);
 
-    hostptr_t host = get_memory(count);
+    host_ptr host = get_memory(count);
 
     cl_int res;
 
@@ -248,7 +248,7 @@ context_t::copy_backend(device_output &output, const ptr_t src, size_t count, st
 }
 
 event_ptr 
-context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
+context_t::copy_async_backend(ptr_t dst, ptr_const_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     cl_event *events = NULL;
     unsigned nevents = 0;
@@ -364,7 +364,7 @@ context_t::copy_async_backend(ptr_t dst, device_input &input, size_t count, stre
     event_ptr ret(true, get_event_type(dst, input), *this);
 
     //buffer_t &buffer = stream.get_buffer(count);
-    hostptr_t mem = get_memory(count);
+    host_ptr mem = get_memory(count);
 
     bool ok = input.read(mem, count);
 
@@ -395,7 +395,7 @@ context_t::copy_async_backend(ptr_t dst, device_input &input, size_t count, stre
 }
 
 event_ptr
-context_t::copy_async_backend(device_output &output, const ptr_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
+context_t::copy_async_backend(device_output &output, ptr_const_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     cl_event *events = NULL;
     unsigned nevents = 0;
@@ -408,7 +408,7 @@ context_t::copy_async_backend(device_output &output, const ptr_t src, size_t cou
     TRACE(LOCAL, "D -> IO async copy ("FMT_SIZE" bytes) on stream: "FMT_ID, count, stream.get_print_id());
     event_ptr ret(false, get_event_type(output, src), *this);
 
-    hostptr_t host = get_memory(count);
+    host_ptr host = get_memory(count);
 
     cl_int res;
 
@@ -552,7 +552,7 @@ context_t::alloc_host_pinned(size_t size, GmacProtection hint, gmacError_t &err)
     return ptr_t();
 #if 0
     cl_mem devPtr;
-    hostptr_t hostPtr;
+    host_ptr hostPtr;
     cl_int res;
 
     unsigned flags = CL_MEM_ALLOC_HOST_PTR;
@@ -579,7 +579,7 @@ buffer_t *
 context_t::alloc_buffer(size_t size, GmacProtection hint, stream_t &stream, gmacError_t &err)
 {
     cl_int res;
-    hostptr_t hostPtr = 0;
+    host_ptr hostPtr = 0;
 
     // TODO: add a parater to specify accesibility of the buffer from the device
     cl_mem_flags flags = CL_MEM_ALLOC_HOST_PTR;
@@ -609,12 +609,12 @@ context_t::alloc_buffer(size_t size, GmacProtection hint, stream_t &stream, gmac
 
         TRACE(LOCAL, "mapping buffer on context "FMT_ID" using stream "FMT_ID, this->get_print_id(), stream.get_print_id());
 
-        hostPtr = (hostptr_t) clEnqueueMapBuffer(stream(), devPtr, CL_TRUE, mapFlags, 0, size, 0, NULL, NULL, &res);
+        hostPtr = (host_ptr) clEnqueueMapBuffer(stream(), devPtr, CL_TRUE, mapFlags, 0, size, 0, NULL, NULL, &res);
     }
 
     buffer_t *ret = NULL;
     if (res == CL_SUCCESS) {
-        ret = new buffer_t(hostptr_t(hostPtr), devPtr, size, *this);
+        ret = new buffer_t(host_ptr(hostPtr), devPtr, size, *this);
     }
 
     ASSERTION(res == CL_SUCCESS);
