@@ -50,7 +50,7 @@ namespace memory { namespace allocator {
 class GMAC_LOCAL slab : public memory::allocator_interface {
 protected:
     class GMAC_LOCAL map_address :
-    	public std::map<hostptr_t, cache *>,
+    	public std::map<host_const_ptr, cache *>,
     	gmac::util::lock_rw<map_address> {
     	typedef gmac::util::lock_rw<map_address> lock;
     protected:
@@ -84,8 +84,8 @@ protected:
 public:
     slab(manager &manager);
 
-    virtual hostptr_t alloc(core::address_space_ptr current, const size_t size, const hostptr_t addr);
-    virtual bool free(core::address_space_ptr current, const hostptr_t addr);
+    host_ptr alloc(core::address_space_ptr current, const size_t size, host_const_ptr addr);
+    bool free(core::address_space_ptr current, host_ptr addr);
 };
 
 }}}

@@ -49,9 +49,9 @@ protected:
     off_t get_from_list(uint8_t i);
     void put_to_list(off_t addr, uint8_t i);
 public:
-    buddy(hostptr_t addr, size_t size);
-    hostptr_t get(size_t &size);
-    void put(hostptr_t addr, size_t size);
+    buddy(host_ptr addr, size_t size);
+    host_ptr get(size_t &size);
+    void put(host_ptr addr, size_t size);
 };
 
 }}}

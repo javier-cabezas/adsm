@@ -44,7 +44,7 @@ TEST_F(IOBufferTest, ToAccelerator) {
 
     ASSERT_TRUE(memset(buffer.addr(), 0x7a, buffer.size()) == buffer.addr());
 
-    hostptr_t fakePtr = (uint8_t *) 0xcafebabe;
+    host_ptr fakePtr = (uint8_t *) 0xcafebabe;
     accptr_t addr(0);
     ASSERT_EQ(gmacSuccess, Mode_->map(addr, fakePtr, Size_));
 
@@ -56,7 +56,7 @@ TEST_F(IOBufferTest, ToAccelerator) {
     int *dst = NULL;
     dst = new int[Size_ / sizeof(int)];
     ASSERT_TRUE(dst != NULL);
-    ASSERT_EQ(gmacSuccess, Mode_->copyToHost(hostptr_t(dst), addr, Size_));
+    ASSERT_EQ(gmacSuccess, Mode_->copyToHost(host_ptr(dst), addr, Size_));
     for(size_t i = 0; i < Size_ / sizeof(int); i++) ASSERT_EQ(0x7a7a7a7a, dst[i]);
 
     ASSERT_EQ(gmacSuccess, Mode_->unmap(fakePtr, Size_));
@@ -71,7 +71,7 @@ TEST_F(IOBufferTest, ToHost) {
     ASSERT_EQ(buffer.addr() + Size_, buffer.end()); 
 	ASSERT_TRUE(buffer.async());
 
-    hostptr_t fakePtr = (uint8_t *) 0xcafebabe;
+    host_ptr fakePtr = (uint8_t *) 0xcafebabe;
     accptr_t addr(0);
     ASSERT_EQ(gmacSuccess, Mode_->map(addr, fakePtr, Size_));
     ASSERT_EQ(gmacSuccess, Mode_->memset(addr, 0x5b, Size_));

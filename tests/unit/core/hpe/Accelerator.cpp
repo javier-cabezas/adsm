@@ -48,19 +48,19 @@ TEST_F(AcceleratorTest, Memory) {
     size_t count = Process_->nAccelerators();
     for(unsigned n = 0; n < count; n++) {
         Accelerator &acc = Process_->getAccelerator(n);
-        ASSERT_TRUE(acc.map(device, hostptr_t(buffer), Size_ * sizeof(int)) == gmacSuccess);
+        ASSERT_TRUE(acc.map(device, host_ptr(buffer), Size_ * sizeof(int)) == gmacSuccess);
         ASSERT_TRUE(device != 0);
-        ASSERT_TRUE(acc.copyToAccelerator(device, hostptr_t(buffer), Size_ * sizeof(int), Thread::getCurrentVirtualDevice()) == gmacSuccess);
-        ASSERT_TRUE(acc.copyToHost(hostptr_t(canary), device, Size_ * sizeof(int), Thread::getCurrentVirtualDevice()) == gmacSuccess);
+        ASSERT_TRUE(acc.copyToAccelerator(device, host_ptr(buffer), Size_ * sizeof(int), Thread::getCurrentVirtualDevice()) == gmacSuccess);
+        ASSERT_TRUE(acc.copyToHost(host_ptr(canary), device, Size_ * sizeof(int), Thread::getCurrentVirtualDevice()) == gmacSuccess);
         ASSERT_TRUE(memcmp(buffer, canary, Size_ * sizeof(int)) == 0);  //compare mem size
-        ASSERT_TRUE(acc.unmap(hostptr_t(buffer), Size_ * sizeof(int)) == gmacSuccess);
+        ASSERT_TRUE(acc.unmap(host_ptr(buffer), Size_ * sizeof(int)) == gmacSuccess);
     }
     delete[] canary;
     delete[] buffer;
 }
 
 TEST_F(AcceleratorTest, Aligment) {
-    const hostptr_t fakePtr = (uint8_t *) 0xcafebabe;
+    const host_ptr fakePtr = (uint8_t *) 0xcafebabe;
     const int max = 32 * 1024 * 1024;
     size_t count = Process_->nAccelerators();
     for(unsigned i = 0; i < count; i++) {

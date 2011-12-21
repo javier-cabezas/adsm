@@ -16,7 +16,7 @@ inline lazy<T>::~lazy()
 
 template<typename T>
 memory::object *
-lazy<T>::create_object(size_t size, hostptr_t cpuPtr,
+lazy<T>::create_object(size_t size, host_ptr cpuPtr,
                        GmacProtection prot, unsigned flags)
 {
     gmacError_t err;

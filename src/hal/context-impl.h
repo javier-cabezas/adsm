@@ -68,13 +68,13 @@ queue_event<I>::push(typename I::event &event)
 }
 
 template <typename D, typename B, typename I>
-hostptr_t
+host_ptr
 context_t<D, B, I>::get_memory(size_t size)
 {
-    hostptr_t mem = (hostptr_t) mapMemory_.pop(size);
+    host_ptr mem = (host_ptr) mapMemory_.pop(size);
 
     if (mem == NULL) {
-        mem = (hostptr_t) malloc(size);
+        mem = (host_ptr) malloc(size);
     }
 
     return mem;
@@ -132,7 +132,7 @@ context_t<D, B, I>::operator()() const
 
 template <typename D, typename B, typename I>
 typename I::event_ptr 
-context_t<D, B, I>::copy(typename I::ptr dst, const typename I::ptr src, size_t count, typename I::stream &stream, list_event<I> &_dependencies, gmacError_t &err)
+context_t<D, B, I>::copy(typename I::ptr dst, typename I::ptr_const src, size_t count, typename I::stream &stream, list_event<I> &_dependencies, gmacError_t &err)
 {
     typename I::event_ptr ret = copy_backend(dst, src, count, stream, &_dependencies, err);
     if (err == gmacSuccess) {
@@ -144,7 +144,7 @@ context_t<D, B, I>::copy(typename I::ptr dst, const typename I::ptr src, size_t 
 
 template <typename D, typename B, typename I>
 typename I::event_ptr 
-context_t<D, B, I>::copy(typename I::ptr dst, const typename I::ptr src, size_t count, typename I::stream &stream, typename I::event_ptr event, gmacError_t &err)
+context_t<D, B, I>::copy(typename I::ptr dst, typename I::ptr_const src, size_t count, typename I::stream &stream, typename I::event_ptr event, gmacError_t &err)
 {
     typename I::event_list list;
     list.add_event(event);
@@ -159,7 +159,7 @@ context_t<D, B, I>::copy(typename I::ptr dst, const typename I::ptr src, size_t 
 
 template <typename D, typename B, typename I>
 typename I::event_ptr 
-context_t<D, B, I>::copy(typename I::ptr dst, const typename I::ptr src, size_t count, typename I::stream &stream, gmacError_t &err)
+context_t<D, B, I>::copy(typename I::ptr dst, typename I::ptr_const src, size_t count, typename I::stream &stream, gmacError_t &err)
 {
     return copy_backend(dst, src, count, stream, NULL, err);
 }
@@ -198,7 +198,7 @@ context_t<D, B, I>::copy(typename I::ptr dst, device_input &input, size_t count,
 
 template <typename D, typename B, typename I>
 typename I::event_ptr
-context_t<D, B, I>::copy(device_output &output, const typename I::ptr src, size_t count, typename I::stream &stream, list_event<I> &_dependencies, gmacError_t &err)
+context_t<D, B, I>::copy(device_output &output, typename I::ptr_const src, size_t count, typename I::stream &stream, list_event<I> &_dependencies, gmacError_t &err)
 {
     typename I::event_ptr ret = copy_backend(output, src, count, stream, &_dependencies, err);
     if (err == gmacSuccess) {
@@ -210,7 +210,7 @@ context_t<D, B, I>::copy(device_output &output, const typename I::ptr src, size_
 
 template <typename D, typename B, typename I>
 typename I::event_ptr
-context_t<D, B, I>::copy(device_output &output, const typename I::ptr src, size_t count, typename I::stream &stream, typename I::event_ptr event, gmacError_t &err)
+context_t<D, B, I>::copy(device_output &output, typename I::ptr_const src, size_t count, typename I::stream &stream, typename I::event_ptr event, gmacError_t &err)
 {
     typename I::event_list list;
     list.add_event(event);
@@ -225,14 +225,14 @@ context_t<D, B, I>::copy(device_output &output, const typename I::ptr src, size_
 
 template <typename D, typename B, typename I>
 typename I::event_ptr
-context_t<D, B, I>::copy(device_output &output, const typename I::ptr src, size_t count, typename I::stream &stream, gmacError_t &err)
+context_t<D, B, I>::copy(device_output &output, typename I::ptr_const src, size_t count, typename I::stream &stream, gmacError_t &err)
 {
     return copy_backend(output, src, count, stream, NULL, err);
 }
 
 template <typename D, typename B, typename I>
 typename I::event_ptr 
-context_t<D, B, I>::copy_async(typename I::ptr dst, const typename I::ptr src, size_t count, typename I::stream &stream, list_event<I> &_dependencies, gmacError_t &err)
+context_t<D, B, I>::copy_async(typename I::ptr dst, typename I::ptr_const src, size_t count, typename I::stream &stream, list_event<I> &_dependencies, gmacError_t &err)
 {
     typename I::event_ptr ret = copy_async_backend(dst, src, count, stream, &_dependencies, err);
     if (err == gmacSuccess) {
@@ -244,7 +244,7 @@ context_t<D, B, I>::copy_async(typename I::ptr dst, const typename I::ptr src, s
 
 template <typename D, typename B, typename I>
 typename I::event_ptr 
-context_t<D, B, I>::copy_async(typename I::ptr dst, const typename I::ptr src, size_t count, typename I::stream &stream, typename I::event_ptr event, gmacError_t &err)
+context_t<D, B, I>::copy_async(typename I::ptr dst, typename I::ptr_const src, size_t count, typename I::stream &stream, typename I::event_ptr event, gmacError_t &err)
 {
     typename I::event_list list;
     list.add_event(event);
@@ -259,7 +259,7 @@ context_t<D, B, I>::copy_async(typename I::ptr dst, const typename I::ptr src, s
 
 template <typename D, typename B, typename I>
 typename I::event_ptr 
-context_t<D, B, I>::copy_async(typename I::ptr dst, const typename I::ptr src, size_t count, typename I::stream &stream, gmacError_t &err)
+context_t<D, B, I>::copy_async(typename I::ptr dst, typename I::ptr_const src, size_t count, typename I::stream &stream, gmacError_t &err)
 {
     return copy_async_backend(dst, src, count, stream, NULL, err);
 }
@@ -300,7 +300,7 @@ context_t<D, B, I>::copy_async(typename I::ptr dst, device_input &input, size_t 
 
 template <typename D, typename B, typename I>
 typename I::event_ptr
-context_t<D, B, I>::copy_async(device_output &output, const typename I::ptr src, size_t count, typename I::stream &stream, list_event<I> &_dependencies, gmacError_t &err)
+context_t<D, B, I>::copy_async(device_output &output, typename I::ptr_const src, size_t count, typename I::stream &stream, list_event<I> &_dependencies, gmacError_t &err)
 {
     typename I::event_ptr ret = copy_async_backend(output, src, count, stream, &_dependencies, err);
     if (err == gmacSuccess) {
@@ -312,7 +312,7 @@ context_t<D, B, I>::copy_async(device_output &output, const typename I::ptr src,
 
 template <typename D, typename B, typename I>
 typename I::event_ptr
-context_t<D, B, I>::copy_async(device_output &output, const typename I::ptr src, size_t count, typename I::stream &stream, typename I::event_ptr event, gmacError_t &err)
+context_t<D, B, I>::copy_async(device_output &output, typename I::ptr_const src, size_t count, typename I::stream &stream, typename I::event_ptr event, gmacError_t &err)
 {
     typename I::event_list list;
     list.add_event(event);
@@ -327,7 +327,7 @@ context_t<D, B, I>::copy_async(device_output &output, const typename I::ptr src,
 
 template <typename D, typename B, typename I>
 typename I::event_ptr
-context_t<D, B, I>::copy_async(device_output &output, const typename I::ptr src, size_t count, typename I::stream &stream, gmacError_t &err)
+context_t<D, B, I>::copy_async(device_output &output, typename I::ptr_const src, size_t count, typename I::stream &stream, gmacError_t &err)
 {
     return copy_async_backend(output, src, count, stream, NULL, err);
 }

@@ -18,7 +18,7 @@ bool set_object_mapped::add_object(object_mapped &obj)
     return ret.second;
 }
 
-object_mapped_ptr set_object_mapped::get_object(hostptr_t addr) const
+object_mapped_ptr set_object_mapped::get_object(host_const_ptr addr) const
 {
     object_mapped_ptr obj;
     lock_read();
@@ -31,7 +31,7 @@ object_mapped_ptr set_object_mapped::get_object(hostptr_t addr) const
     return obj;
 }
 
-bool set_object_mapped::remove(hostptr_t addr)
+bool set_object_mapped::remove(host_const_ptr addr)
 {
     lock_write();
     Parent::iterator i = Parent::upper_bound(addr);
@@ -62,14 +62,14 @@ object_mapped::~object_mapped()
     TRACE(LOCAL, "Destroying Host Mapped Object @ %p", addr_.get_host_addr());
 }
 
-accptr_t
-object_mapped::get_device_addr(core::address_space_ptr current, const hostptr_t addr) const
+hal::ptr_t
+object_mapped::get_device_addr(core::address_space_ptr current, host_const_ptr addr) const
 {
     //ASSERTION(current == owner_);
-    accptr_t ret = accptr_t(0);
+    hal::ptr_t ret;
     if(addr_) {
         unsigned offset = unsigned(addr - addr_.get_host_addr());
-        accptr_t acceleratorAddr = getAccPtr(current);
+        hal::ptr_t acceleratorAddr = getAccPtr(current);
         ret = acceleratorAddr + offset;
     }
     return ret;
@@ -91,14 +91,14 @@ object_mapped::free(core::address_space_ptr aspace)
     aspace->free_host_pinned(addr_);
 }
 
-accptr_t
+hal::ptr_t
 object_mapped::getAccPtr(core::address_space_ptr aspace) const
 {
 #if 0
     gmacError_t err;
     return aspace->get_host_pinned_mapping(addr_.get_host_addr(), err);
 #endif
-    return accptr_t(0);
+    return hal::ptr_t();
 }
 
 }}

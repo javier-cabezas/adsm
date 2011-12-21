@@ -62,10 +62,10 @@ address_space::destroy_io_buffer(core::io_buffer &buffer)
 #endif
 
 gmacError_t
-address_space::map(hal::ptr_t &dst, hostptr_t src, size_t count, unsigned align)
+address_space::map(hal::ptr_t &dst, host_ptr src, size_t count, unsigned align)
 {
     gmacError_t ret;
-    hal::ptr_t acc(0);
+    hal::ptr_t acc;
     if (align > 1) {
         count += align;
     }
@@ -86,7 +86,7 @@ address_space::map(hal::ptr_t &dst, hostptr_t src, size_t count, unsigned align)
 }
 
 gmacError_t
-address_space::unmap(hostptr_t addr, size_t count)
+address_space::unmap(host_ptr addr, size_t count)
 {
     gmacError_t ret = gmacSuccess;
     map_addresses::iterator it = mapDeviceAddresses_.find(addr);
@@ -121,9 +121,9 @@ address_space::free_host_pinned(hal::ptr_t ptr)
 }
 
 hal::ptr_t
-address_space::get_host_pinned_mapping(hostptr_t ptr, gmacError_t &err)
+address_space::get_host_pinned_mapping(host_ptr ptr, gmacError_t &err)
 {
-    hal::ptr_t ret(0);
+    hal::ptr_t ret;
     map_buffers::iterator it;
     it = mapPinnedBuffers_.find(ptr);
 
@@ -138,7 +138,7 @@ address_space::get_host_pinned_mapping(hostptr_t ptr, gmacError_t &err)
 }
 
 gmacError_t
-address_space::copy(hal::ptr_t dst, const hal::ptr_t src, size_t count)
+address_space::copy(hal::ptr_t dst, hal::ptr_const_t src, size_t count)
 {
     gmacError_t ret;
 
@@ -170,30 +170,6 @@ address_space::copy(hal::ptr_t dst, const hal::ptr_t src, size_t count)
     return ret;
 }
 
-#if 0
-gmacError_t
-address_space::copy(hostptr_t host, const hal::ptr_t acc, size_t count)
-{
-    gmacError_t ret;
-
-    // TODO: use the event
-    // hal::event_ptr event =
-        ctx_.copy(host, acc, count, streamToHost_, ret);
-    return ret;
-}
-
-gmacError_t
-address_space::copy(hal::ptr_t dst, const hal::ptr_t src, size_t count)
-{
-    gmacError_t ret;
-
-    // TODO: use the event
-    // hal::event_ptr event =
-        ctx_.copy(dst, src, count, streamAccelerator_, ret);
-    return ret;
-}
-#endif
-
 gmacError_t
 address_space::copy(hal::ptr_t dst, hal::device_input &input, size_t count)
 {
@@ -206,7 +182,7 @@ address_space::copy(hal::ptr_t dst, hal::device_input &input, size_t count)
 }
 
 gmacError_t
-address_space::copy(hal::device_output &output, const hal::ptr_t src, size_t count)
+address_space::copy(hal::device_output &output, hal::ptr_const_t src, size_t count)
 {
     gmacError_t ret;
 
@@ -217,7 +193,7 @@ address_space::copy(hal::device_output &output, const hal::ptr_t src, size_t cou
 }
 
 hal::event_ptr
-address_space::copy_async(hal::ptr_t dst, const hal::ptr_t src, size_t count, gmacError_t &err)
+address_space::copy_async(hal::ptr_t dst, hal::ptr_const_t src, size_t count, gmacError_t &err)
 {
     hal::event_ptr ret;
 
@@ -242,24 +218,6 @@ address_space::copy_async(hal::ptr_t dst, const hal::ptr_t src, size_t count, gm
 
 }
 
-#if 0
-hal::event_ptr
-address_space::copy_async(hostptr_t host, const hal::ptr_t acc, size_t count, gmacError_t &err)
-{
-    // TODO: use the event
-    hal::event_ptr ret = ctx_.copy_async(host, acc, count, streamToHost_, err);
-    return ret;
-}
-
-hal::event_ptr
-address_space::copy_async(hal::ptr_t dst, const hal::ptr_t src, size_t count, gmacError_t &err)
-{
-    // TODO: use the event
-    hal::event_ptr ret = ctx_.copy_async(dst, src, count, streamAccelerator_, err);
-    return ret;
-}
-#endif
-
 hal::event_ptr
 address_space::copy_async(hal::ptr_t dst, hal::device_input &input, size_t count, gmacError_t &err)
 {
@@ -268,7 +226,7 @@ address_space::copy_async(hal::ptr_t dst, hal::device_input &input, size_t count
 }
 
 hal::event_ptr
-address_space::copy_async(hal::device_output &output, const hal::ptr_t src, size_t count, gmacError_t &err)
+address_space::copy_async(hal::device_output &output, hal::ptr_const_t src, size_t count, gmacError_t &err)
 {
     hal::event_ptr ret = ctx_.copy_async(output, src, count, streamToHost_, err);
     return ret;

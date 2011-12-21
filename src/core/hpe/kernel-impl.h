@@ -14,7 +14,7 @@ kernel::arg_list::get_objects() const
 
 inline
 void
-kernel::arg_list::add_object(hostptr_t ptr, /* unsigned index, */GmacProtection prot)
+kernel::arg_list::add_object(host_ptr ptr, /* unsigned index, */GmacProtection prot)
 {
     TRACE(LOCAL, "Adding object to argument list");
     // NOTE:

@@ -53,7 +53,7 @@ list_event::~list_event()
 {
     for (Parent::iterator it  = Parent::begin();
                           it != Parent::end();
-                          it++) {
+                        ++it) {
         cl_int res = clReleaseEvent((**it)());
         ASSERTION(res == CL_SUCCESS);
     }
@@ -90,9 +90,9 @@ list_event::get_event_array(stream_t &stream, unsigned &nevents)
     cl_event *ret = NULL;
     if (Parent::size() > 0) {
         nevents = 0;
-        for (Parent::iterator it = Parent::begin();
-             it != Parent::end();
-             it++) {
+        for (Parent::iterator it  = Parent::begin();
+                              it != Parent::end();
+                            ++it) {
             locker::lock_read(**it);
             if (((*it)->get_stream().get_print_id() != stream.get_print_id()) &&
                 !(*it)->is_synced()) {
@@ -103,9 +103,9 @@ list_event::get_event_array(stream_t &stream, unsigned &nevents)
         ret = new cl_event[nevents];
 
         unsigned i = 0;
-        for (Parent::iterator it = Parent::begin();
-             it != Parent::end();
-             it++) {
+        for (Parent::iterator it  = Parent::begin();
+                              it != Parent::end();
+                            ++it) {
             if (((*it)->get_stream().get_print_id() != stream.get_print_id()) &&
                 !(*it)->is_synced()) {
                 ret[i++] = (**it)();
@@ -126,9 +126,9 @@ list_event::get_event_array(unsigned &nevents)
     cl_event *ret = NULL;
     if (Parent::size() > 0) {
         nevents = 0;
-        for (Parent::iterator it = Parent::begin();
-             it != Parent::end();
-             it++) {
+        for (Parent::iterator it  = Parent::begin();
+                              it != Parent::end();
+                            ++it) {
             locker::lock_read(**it);
             if (!(*it)->is_synced()) {
                 nevents++;

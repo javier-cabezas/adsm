@@ -61,7 +61,7 @@ TEST_F(ManagerTest, Alloc)
     ASSERT_TRUE(manager != NULL);
     
     for(size_t size = 4096; size < Size_; size *= 2) {
-        hostptr_t ptr = NULL;
+        host_ptr ptr = NULL;
         ASSERT_EQ(gmacSuccess, manager->alloc(Thread::getCurrentVirtualDevice(), &ptr, size));
         ASSERT_TRUE(ptr != NULL);
 
@@ -77,7 +77,7 @@ TEST_F(ManagerTest, GlobalAllocReplicated)
     ASSERT_TRUE(manager != NULL);
     
     for(size_t size = 4096; size < Size_; size *= 2) {
-        hostptr_t ptr = NULL;
+        host_ptr ptr = NULL;
         ASSERT_EQ(gmacSuccess, manager->globalAlloc(Thread::getCurrentVirtualDevice(), &ptr, size,
                                                     GMAC_GLOBAL_MALLOC_REPLICATED));
         ASSERT_TRUE(ptr != NULL);
@@ -95,7 +95,7 @@ TEST_F(ManagerTest, GlobalAllocCentralized)
     ASSERT_TRUE(manager != NULL);
     
     for(size_t size = 4096; size < Size_; size *= 2) {
-        hostptr_t ptr = NULL;
+        host_ptr ptr = NULL;
         ASSERT_EQ(gmacSuccess, manager->globalAlloc(Thread::getCurrentVirtualDevice(), &ptr, size,
                                                     GMAC_GLOBAL_MALLOC_CENTRALIZED));
         ASSERT_TRUE(ptr != NULL);
@@ -112,7 +112,7 @@ TEST_F(ManagerTest, Coherence)
     manager *manager = new manager(*Process_);
     ASSERT_TRUE(manager != NULL);
 
-    hostptr_t ptr = NULL;
+    host_ptr ptr = NULL;
     ASSERT_EQ(gmacSuccess, manager->alloc(Thread::getCurrentVirtualDevice(), &ptr, Size_));
     ASSERT_TRUE(ptr != NULL);
     ASSERT_TRUE(manager->translate(Thread::getCurrentVirtualDevice(), ptr).get() != 0);
@@ -155,7 +155,7 @@ TEST_F(ManagerTest, IOBufferWrite)
     manager *manager = new manager(*Process_);
     ASSERT_TRUE(manager != NULL);
 
-    hostptr_t ptr = NULL;
+    host_ptr ptr = NULL;
     ASSERT_EQ(gmacSuccess, manager->alloc(Thread::getCurrentVirtualDevice(), &ptr, Size_));
     ASSERT_TRUE(ptr != NULL);
     ASSERT_TRUE(manager->translate(Thread::getCurrentVirtualDevice(), ptr).get() != 0);
@@ -186,7 +186,7 @@ TEST_F(ManagerTest, IOBufferRead)
     manager *manager = new manager(*Process_);
     ASSERT_TRUE(manager != NULL);
 
-    hostptr_t ptr = NULL;
+    host_ptr ptr = NULL;
     ASSERT_EQ(gmacSuccess, manager->alloc(Thread::getCurrentVirtualDevice(), &ptr, Size_));
     ASSERT_TRUE(ptr != NULL);
     ASSERT_TRUE(manager->translate(Thread::getCurrentVirtualDevice(), ptr).get() != 0);

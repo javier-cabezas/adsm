@@ -5,7 +5,24 @@
 
 namespace __impl { namespace memory { namespace allocator {
 
-cache &slab::create_cache(core::address_space_ptr aspace, map_cache &map, long_t key, size_t size)
+slab::~slab()
+{
+    map_aspace::iterator i;
+    aspaces_.lock_write();
+    for(i = aspaces_.begin(); i != aspaces_.end(); ++i) {
+        map_cache &map = i->second;
+        map_cache::iterator j;
+        for(j = map.begin(); j != map.end(); ++j) {
+            delete j->second;
+        }
+        map.clear();
+    }
+    aspaces_.clear();
+    aspaces_.unlock();
+}
+
+cache &
+slab::create_cache(core::address_space_ptr aspace, map_cache &map, long_t key, size_t size)
 {
     cache *cache = new __impl::memory::allocator::cache(manager_, aspace, size);
     std::pair<map_cache::iterator, bool> ret = map.insert(map_cache::value_type(key, cache));
@@ -13,7 +30,8 @@ cache &slab::create_cache(core::address_space_ptr aspace, map_cache &map, long_t
     return *cache;
 }
 
-cache &slab::get(core::address_space_ptr current, long_t key, size_t size)
+cache &
+slab::get(core::address_space_ptr current, long_t key, size_t size)
 {
     map_cache *map = NULL;
     map_aspace::iterator i;
@@ -37,7 +55,8 @@ cache &slab::get(core::address_space_ptr current, long_t key, size_t size)
     }
 }
 
-void slab::cleanup(core::address_space_ptr current)
+void
+slab::cleanup(core::address_space_ptr current)
 {
     map_aspace::iterator i;
     aspaces_.lock_read();
@@ -45,7 +64,7 @@ void slab::cleanup(core::address_space_ptr current)
     aspaces_.unlock();
     if(i == aspaces_.end()) return;
     map_cache::iterator j;
-    for(j = i->second.begin(); j != i->second.end(); j++) {
+    for(j = i->second.begin(); j != i->second.end(); ++j) {
         delete j->second;
     }
     i->second.clear();
@@ -54,11 +73,12 @@ void slab::cleanup(core::address_space_ptr current)
     aspaces_.unlock();
 }
 
-hostptr_t slab::alloc(core::address_space_ptr current, size_t size, hostptr_t addr)
+host_ptr
+slab::alloc(core::address_space_ptr current, size_t size, host_const_ptr addr)
 {
     cache &cache = get(current, long_t(addr), size);
     TRACE(LOCAL,"Using cache %p", &cache);
-    hostptr_t ret = cache.get();
+    host_ptr ret = cache.get();
     if(ret == NULL) return NULL;
     addresses_.lock_write();
     addresses_.insert(map_address::value_type(ret, &cache));
@@ -67,7 +87,8 @@ hostptr_t slab::alloc(core::address_space_ptr current, size_t size, hostptr_t ad
     return ret;
 }
 
-bool slab::free(core::address_space_ptr current, hostptr_t addr)
+bool
+slab::free(core::address_space_ptr current, host_ptr addr)
 {
     addresses_.lock_write();
     map_address::iterator i = addresses_.find(addr);

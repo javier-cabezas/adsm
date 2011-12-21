@@ -14,25 +14,25 @@ void ContextTest::Memory(Mode &mode, Context &ctx)
 	int *canary  = new int[Size_];
 
     accptr_t device(0);
-    ASSERT_TRUE(mode.map(device, hostptr_t(buffer), Size_ * sizeof(int)) == gmacSuccess); 
+    ASSERT_TRUE(mode.map(device, host_ptr(buffer), Size_ * sizeof(int)) == gmacSuccess); 
     ASSERT_TRUE(device != 0);
 
     memset(buffer, 0xa5, Size_ * sizeof(int));
     memset(canary, 0x5a, Size_ * sizeof(int));
 
-    ASSERT_TRUE(ctx.copyToAccelerator(device, hostptr_t(buffer), Size_ * sizeof(int)) == gmacSuccess);
+    ASSERT_TRUE(ctx.copyToAccelerator(device, host_ptr(buffer), Size_ * sizeof(int)) == gmacSuccess);
     ASSERT_TRUE(memcmp(buffer, canary, Size_ * sizeof(int)) != 0);
-    ASSERT_TRUE(ctx.copyToHost(hostptr_t(canary), device, Size_ * sizeof(int)) == gmacSuccess);
+    ASSERT_TRUE(ctx.copyToHost(host_ptr(canary), device, Size_ * sizeof(int)) == gmacSuccess);
     ASSERT_TRUE(memcmp(buffer, canary, Size_ * sizeof(int)) == 0);
 
     memset(buffer,  0, Size_ * sizeof(int));
     memset(canary,  0, Size_ * sizeof(int));
     ASSERT_TRUE(memcmp(buffer, canary, Size_ * sizeof(int)) == 0);
 
-    ASSERT_TRUE(ctx.copyToHost(hostptr_t(buffer), device, Size_ * sizeof(int)) == gmacSuccess);
+    ASSERT_TRUE(ctx.copyToHost(host_ptr(buffer), device, Size_ * sizeof(int)) == gmacSuccess);
     ASSERT_TRUE(memcmp(buffer, canary, Size_ * sizeof(int)) != 0);
 
-    ASSERT_TRUE(mode.unmap(hostptr_t(buffer),  Size_ * sizeof(int)) == gmacSuccess);
+    ASSERT_TRUE(mode.unmap(host_ptr(buffer),  Size_ * sizeof(int)) == gmacSuccess);
 
 	delete[] canary;
 	delete[] buffer;

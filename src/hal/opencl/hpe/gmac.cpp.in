@@ -90,7 +90,7 @@ gmacError_t APICALL
 gmacError_t APICALL
 @OPENCL_API_PREFIX@SetKernelArgPtrComplex(@OPENCL_API_PREFIX@_kernel k, unsigned index, const void *_ptr, GmacProtection prot)
 {
-    hostptr_t ptr = hostptr_t(_ptr);
+    host_ptr ptr = host_ptr(_ptr);
 
     enterGmac();
     gmacError_t ret = gmacSuccess;
@@ -110,7 +110,7 @@ gmacError_t APICALL
     cl_mem tmpMem;
     if (tmp.get_offset() > 0) {
         size_t size;
-        size = __impl::memory::get_manager().getAllocSize(aspace, ptr, ret);
+        size = __impl::memory::get_manager().get_alloc_size(aspace, ptr, ret);
         ASSERTION(ret == gmacSuccess);
         tmpMem = args->get_subbuffer(aspace->get_hal_context()(), ptr, tmp, size);
     } else {
@@ -160,8 +160,8 @@ gmacError_t APICALL
 #if defined(SEPARATE_COMMAND_QUEUES)
         ret = gmacThreadSynchronize(*(kernel::launch *)kernel.impl_);
 #else
-        ret = __impl::memory::get_manager().acquireObjects(dev.get_address_space(),
-                                                           args->get_objects());
+        ret = __impl::memory::get_manager().acquire_objects(dev.get_address_space(),
+                                                            args->get_objects());
 #endif
         conf->launch = launch;
     }

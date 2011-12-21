@@ -87,7 +87,7 @@ void AllocationMapTest::Release(cl_mem mem)
 TEST_F(AllocationMapTest, Insertion)
 {
     gmac::core::AllocationMap map_;
-    hostptr_t host((hostptr_t)0xcafecafe);
+    host_ptr host((host_ptr)0xcafecafe);
 #if defined(USE_CUDA)
     accptr_t device((accptr_t)0xcacacaca);
 #elif defined(USE_OPENCL)

@@ -5,7 +5,7 @@
 
 namespace __dbc { namespace memory {
 
-object::object(hostptr_t addr, size_t size) :
+object::object(host_ptr addr, size_t size) :
     __impl::memory::object(addr, size)
 {
 }
@@ -55,7 +55,7 @@ object::get_block_end(size_t offset) const
 }
 
 gmacError_t
-object::signal_read(hostptr_t addr)
+object::signal_read(host_ptr addr)
 {
     // PRECONDITIONS
     REQUIRES(addr >= addr_);
@@ -68,7 +68,7 @@ object::signal_read(hostptr_t addr)
 }
 
 gmacError_t
-object::signal_write(hostptr_t addr)
+object::signal_write(host_ptr addr)
 {
     // PRECONDITIONS
     REQUIRES(addr >= addr_);

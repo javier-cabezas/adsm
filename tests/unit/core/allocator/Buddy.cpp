@@ -26,11 +26,11 @@ long_t BuddyTest::Base_ = 0x1000;
 void *BuddyTest::BasePtr_ = (void *)Base_;
 
 TEST_F(BuddyTest, SimpleAllocations) {
-    buddy buddy(hostptr_t(BasePtr_), Size_);
+    buddy buddy(host_ptr(BasePtr_), Size_);
     ASSERT_TRUE(buddy.addr() == BasePtr_);
 
-    std::list<hostptr_t> allocs;
-    hostptr_t ret = 0;
+    std::list<host_ptr> allocs;
+    host_ptr ret = 0;
     for(unsigned n = 2; n < 32; n = n * 2) {
         size_t size = Size_ / n;
         ret = buddy.get(size);
@@ -44,7 +44,7 @@ TEST_F(BuddyTest, SimpleAllocations) {
     ASSERT_TRUE(ret == NULL);
     ASSERT_EQ(size, Size_ / 2);
 
-    std::list<hostptr_t>::const_iterator i;
+    std::list<host_ptr>::const_iterator i;
     unsigned n = 2;
     for(i = allocs.begin(); i != allocs.end(); i++) {
         buddy.put(*i, Size_ / n);
@@ -62,10 +62,10 @@ TEST_F(BuddyTest, RandomAllocations) {
     const int Allocations = 1024;
     const size_t MinMemory = 4 * 4096;
     size_t freeMemory = Size_;
-    buddy buddy(hostptr_t(BasePtr_), Size_);
+    buddy buddy(host_ptr(BasePtr_), Size_);
     ASSERT_TRUE(buddy.addr() == BasePtr_);
 
-    typedef std::map<hostptr_t, size_t> AllocMap;
+    typedef std::map<host_ptr, size_t> AllocMap;
     AllocMap map;
     srand(unsigned(time(NULL)));
     for(int i = 0; i < Allocations; i++) {
@@ -75,7 +75,7 @@ TEST_F(BuddyTest, RandomAllocations) {
 
         // Perform the allocation
         size_t check = s;
-        hostptr_t addr = buddy.get(s);
+        host_ptr addr = buddy.get(s);
         if(addr == NULL) {--i; continue; } // Too much memory, try again
         ASSERT_GE(s, check);
         std::pair<AllocMap::iterator, bool> p = map.insert(AllocMap::value_type(addr, s));

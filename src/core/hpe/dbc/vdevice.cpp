@@ -29,7 +29,7 @@ vdevice::vdevice(process_impl &proc, AddressSpaceImpl &aSpace) :
 
 
 gmacError_t
-vdevice::map(accptr_t &dst, hostptr_t src, size_t size, unsigned align)
+vdevice::map(accptr_t &dst, host_ptr src, size_t size, unsigned align)
 {
     REQUIRES(size > 0);
 
@@ -40,7 +40,7 @@ vdevice::map(accptr_t &dst, hostptr_t src, size_t size, unsigned align)
 }
 
 gmacError_t
-vdevice::unmap(hostptr_t addr, size_t size)
+vdevice::unmap(host_ptr addr, size_t size)
 {
     REQUIRES(addr != NULL);
 
@@ -51,7 +51,7 @@ vdevice::unmap(hostptr_t addr, size_t size)
 }
 
 gmacError_t
-vdevice::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size)
+vdevice::copyToAccelerator(accptr_t acc, host_const_ptr host, size_t size)
 {
     REQUIRES(acc != accptr_t(0));
     REQUIRES(host != NULL);
@@ -64,7 +64,7 @@ vdevice::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t size)
 }
 
 gmacError_t
-vdevice::copyToHost(hostptr_t host, const accptr_t acc, size_t size)
+vdevice::copyToHost(host_ptr host, const accptr_t acc, size_t size)
 {
     REQUIRES(host != NULL);
     REQUIRES(acc != accptr_t(0));

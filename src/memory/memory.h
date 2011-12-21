@@ -54,11 +54,11 @@ extern long_t SubBlockMask_;
 
 class GMAC_LOCAL memory_ops {
 public:
-    static int protect(hostptr_t addr, size_t count, GmacProtection prot);
-    static hostptr_t map(hostptr_t addr, size_t count, GmacProtection prot = GMAC_PROT_NONE);
-    static hostptr_t shadow(hostptr_t addr, size_t count);
-    static void unshadow(hostptr_t addr, size_t count);
-    static void unmap(hostptr_t addr, size_t count);
+    static int protect(host_ptr addr, size_t count, GmacProtection prot);
+    static host_ptr map(host_ptr addr, size_t count, GmacProtection prot = GMAC_PROT_NONE);
+    static host_ptr shadow(host_ptr addr, size_t count);
+    static void unshadow(host_ptr addr, size_t count);
+    static void unmap(host_ptr addr, size_t count);
 };
 
 #if defined(USE_VM) || defined(USE_SUBBLOCK_TRACKING)
@@ -96,7 +96,7 @@ T log2(T n, bool &isPower)
 #if 0
 static inline
 long_t
-GetSubBlock(const hostptr_t _addr)
+GetSubBlock(host_const_ptr _addr)
 {
     long_t addr = long_t(_addr);
     return (addr >> SubBlockShift_) & SubBlockMask_;
@@ -106,7 +106,7 @@ GetSubBlock(const hostptr_t _addr)
 
 static inline
 long_t
-GetSubBlockIndex(const hostptr_t _start, const hostptr_t _addr)
+GetSubBlockIndex(host_const_ptr _start, host_const_ptr _addr)
 {
     long_t start = long_t(_start);
     long_t addr = long_t(_addr);
@@ -115,25 +115,25 @@ GetSubBlockIndex(const hostptr_t _start, const hostptr_t _addr)
 }
 
 static inline
-hostptr_t
-GetBlockAddr(const hostptr_t _start, const hostptr_t _addr)
+host_ptr
+GetBlockAddr(host_const_ptr _start, host_const_ptr _addr)
 {
     long_t start = long_t(_start);
     long_t addr = long_t(_addr);
     long_t off = addr - start;
     long_t block = off / BlockSize_;
-    return hostptr_t(start + block * BlockSize_);
+    return host_ptr(start + block * BlockSize_);
 }
 
 static inline
-hostptr_t
-GetSubBlockAddr(const hostptr_t _start, const hostptr_t _addr)
+host_ptr
+GetSubBlockAddr(host_const_ptr _start, host_const_ptr _addr)
 {
     long_t start = long_t(_start);
     long_t addr  = long_t(_addr);
     long_t off = addr - start;
     long_t subBlock = off / SubBlockSize_;
-    return hostptr_t(start + subBlock * SubBlockSize_);
+    return host_ptr(start + subBlock * SubBlockSize_);
 }
 #endif
 

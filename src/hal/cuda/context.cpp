@@ -5,7 +5,7 @@
 namespace __impl { namespace hal { namespace cuda {
 
 static event_ptr::type
-get_event_type(ptr_t dst, ptr_t src)
+get_event_type(ptr_t dst, ptr_const_t src)
 {
     if (dst.is_device_ptr() &&
         src.is_device_ptr()) {
@@ -32,13 +32,13 @@ get_event_type(ptr_t dst, device_input &/* input */)
 }
 
 static event_ptr::type
-get_event_type(device_output &/* output */, ptr_t src)
+get_event_type(device_output &/* output */, ptr_const_t src)
 {
     return event_ptr::type::TransferToHost;
 }
 
 event_ptr 
-context_t::copy_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
+context_t::copy_backend(ptr_t dst, ptr_const_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
 
@@ -60,7 +60,7 @@ context_t::copy_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stre
         if (dst.get_context()->get_device().has_direct_copy(src.get_context()->get_device())) {
             res = cuMemcpyDtoD(dst.get_device_addr(), src.get_device_addr(), count);
         } else {
-            hostptr_t host = get_memory(count);
+            host_ptr host = get_memory(count);
 
             res = cuMemcpyDtoH(host, src.get_device_addr(), count);
             if (res == CUDA_SUCCESS) {
@@ -112,7 +112,7 @@ context_t::copy_backend(ptr_t dst, device_input &input, size_t count, stream_t &
     TRACE(LOCAL, "IO -> D copy ("FMT_SIZE" bytes) on stream: %p", count, stream());
     event_ptr ret(false, get_event_type(dst, input), *this);
 
-    hostptr_t host = get_memory(count);
+    host_ptr host = get_memory(count);
 
     bool ok = input.read(host, count);
 
@@ -139,7 +139,7 @@ context_t::copy_backend(ptr_t dst, device_input &input, size_t count, stream_t &
 }
 
 event_ptr
-context_t::copy_backend(device_output &output, const ptr_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
+context_t::copy_backend(device_output &output, ptr_const_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
 
@@ -150,7 +150,7 @@ context_t::copy_backend(device_output &output, const ptr_t src, size_t count, st
     TRACE(LOCAL, "D -> IO copy ("FMT_SIZE" bytes) on stream: %p", count, stream());
     event_ptr ret(false, get_event_type(output, src), *this);
 
-    hostptr_t host = get_memory(count);
+    host_ptr host = get_memory(count);
 
     CUresult res;
 
@@ -180,7 +180,7 @@ context_t::copy_backend(device_output &output, const ptr_t src, size_t count, st
 }
 
 event_ptr 
-context_t::copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
+context_t::copy_async_backend(ptr_t dst, ptr_const_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
 
@@ -275,7 +275,7 @@ context_t::copy_async_backend(ptr_t dst, device_input &input, size_t count, stre
     event_ptr ret(true, get_event_type(dst, input), *this);
 
     //buffer_t &buffer = stream.get_buffer(count);
-    hostptr_t mem = get_memory(count);
+    host_ptr mem = get_memory(count);
 
     bool ok = input.read(mem, count);
 
@@ -301,7 +301,7 @@ context_t::copy_async_backend(ptr_t dst, device_input &input, size_t count, stre
 }
 
 event_ptr
-context_t::copy_async_backend(device_output &output, const ptr_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
+context_t::copy_async_backend(device_output &output, ptr_const_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
 
@@ -312,7 +312,7 @@ context_t::copy_async_backend(device_output &output, const ptr_t src, size_t cou
     TRACE(LOCAL, "D -> IO async copy ("FMT_SIZE" bytes) on stream: %p", count, stream());
     event_ptr ret(true, get_event_type(output, src), *this);
 
-    hostptr_t host = get_memory(count);
+    host_ptr host = get_memory(count);
 
     CUresult res;
 
@@ -426,7 +426,7 @@ context_t::alloc_host_pinned(size_t size, GmacProtection hint, gmacError_t &err)
     CUresult res = cuMemHostAlloc(&addr, size, flags);
     err = cuda::error(res);
 
-    return ptr_t(hostptr_t(addr));
+    return ptr_t(host_ptr(addr));
 }
 
 buffer_t *
@@ -446,7 +446,7 @@ context_t::alloc_buffer(size_t size, GmacProtection hint, stream_t &/*stream*/, 
     TRACE(LOCAL, "Created buffer: %p ("FMT_SIZE")", addr, size);
     buffer_t *ret = NULL;
     if (res == CUDA_SUCCESS) {
-        ret = new buffer_t(hostptr_t(addr), size, *this);
+        ret = new buffer_t(host_ptr(addr), size, *this);
     }
 
     return ret;

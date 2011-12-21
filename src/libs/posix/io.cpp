@@ -104,7 +104,7 @@ ssize_t SYMBOL(read)(int fd, void *buf, size_t count)
 
     enterGmac();
     manager &manager = get_manager();
-    address_space_ptr aspaceDst = manager.get_owner(hostptr_t(buf));
+    address_space_ptr aspaceDst = manager.get_owner(host_ptr(buf));
 
     if (!aspaceDst) {
         exitGmac();
@@ -115,7 +115,7 @@ ssize_t SYMBOL(read)(int fd, void *buf, size_t count)
 
     posix_input op(fd);
 
-    manager.from_io_device(aspaceDst, hostptr_t(buf), op, count);
+    manager.from_io_device(aspaceDst, host_ptr(buf), op, count);
     ssize_t ret = op.get_result();
 
 	gmac::trace::SetThreadState(gmac::trace::Running);
@@ -135,7 +135,7 @@ ssize_t SYMBOL(write)(int fd, const void *buf, size_t count)
 
 	enterGmac();
     manager &manager = get_manager();
-    address_space_ptr aspaceSrc = manager.get_owner(hostptr_t(buf));
+    address_space_ptr aspaceSrc = manager.get_owner(host_ptr(buf));
 
     if (!aspaceSrc) {
         exitGmac();
@@ -146,7 +146,7 @@ ssize_t SYMBOL(write)(int fd, const void *buf, size_t count)
 
     posix_output op(fd);
 
-    manager.to_io_device(op, aspaceSrc, hostptr_t(buf), count);
+    manager.to_io_device(op, aspaceSrc, host_ptr(buf), count);
     ssize_t ret = op.get_result();
 
 	gmac::trace::SetThreadState(gmac::trace::Running);

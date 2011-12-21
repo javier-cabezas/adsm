@@ -5,7 +5,7 @@ namespace __impl { namespace hal { namespace opencl {
 kernel_t::arg_list::map_global_subbuffer kernel_t::arg_list::mapSubBuffer_;
 
 cl_mem
-kernel_t::arg_list::get_subbuffer(cl_context context, hostptr_t ptr, ptr_t accPtr, size_t size)
+kernel_t::arg_list::get_subbuffer(cl_context context, host_ptr ptr, ptr_t accPtr, size_t size)
 {
     cl_mem ret;
 

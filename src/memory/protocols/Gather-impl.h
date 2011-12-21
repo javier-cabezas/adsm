@@ -15,7 +15,7 @@ inline Gather<T>::~Gather()
 {}
 
 template<typename T>
-inline memory::object *Gather<T>::create_object(size_t size, hostptr_t cpuPtr, 
+inline memory::object *Gather<T>::create_object(size_t size, host_ptr cpuPtr, 
                                                GmacProtection prot, unsigned flags)
 {
     // TODO: get mode as parameter

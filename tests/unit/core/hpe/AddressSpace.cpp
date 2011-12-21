@@ -53,7 +53,7 @@ TEST_F(AddressSpaceTest, object) {
 	object *object = proto.create_object(*Mode_, Size_, NULL, GMAC_PROT_READ, 0);
 	ASSERT_TRUE(object != NULL);
 	
-	hostptr_t ptr = object->addr();
+	host_ptr ptr = object->addr();
 	ASSERT_TRUE(ptr != NULL);
 	AddressSpace *aSpace = new AddressSpace("TestASpace", *Process_);
 	ASSERT_TRUE(aSpace != NULL);

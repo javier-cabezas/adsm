@@ -1,5 +1,5 @@
 /* Copyright (c) 2009-2011 University of Illinois
-                   Universitat Politecnica de Catalunya
+                           Universitat Politecnica de Catalunya
                    All rights reserved.
 
 Developed by: IMPACT Research Group / Grup de Sistemes Operatius
@@ -63,7 +63,9 @@ typedef ULONG_PTR long_t;
 #define UNREFERENCED_PARAMETER(a)
 #endif
 
-typedef uint8_t * hostptr_t;
+typedef uint8_t *host_ptr;
+typedef const uint8_t *host_const_ptr;
+
 #define NIL ((void *) 0)
 
 #ifdef DEBUG

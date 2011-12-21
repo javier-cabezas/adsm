@@ -62,8 +62,9 @@ namespace protocols {
  * release operation. Data is transferred from accelerator memory to host memory
  * lazily, whenever it is needed by the application
  */
-class GMAC_LOCAL lazy_base : public protocol, handler,
-                            private gmac::util::mutex<lazy_base> {
+class GMAC_LOCAL lazy_base :
+    public protocol, handler,
+    private gmac::util::mutex<lazy_base> {
     DBC_FORCE_TEST(lazy_base)
     typedef gmac::util::mutex<lazy_base> Lock;
 
@@ -102,9 +103,9 @@ public:
 
     bool needs_update(common::block_const_ptr block) const;
 
-    TESTABLE hal::event_ptr signal_read(common::block_ptr block, hostptr_t addr, gmacError_t &err);
+    TESTABLE hal::event_ptr signal_read(common::block_ptr block, host_ptr addr, gmacError_t &err);
 
-    TESTABLE hal::event_ptr signal_write(common::block_ptr block, hostptr_t addr, gmacError_t &err);
+    TESTABLE hal::event_ptr signal_write(common::block_ptr block, host_ptr addr, gmacError_t &err);
 
     TESTABLE hal::event_ptr acquire(common::block_ptr block, GmacProtection prot, gmacError_t &err);
 
@@ -145,10 +146,10 @@ public:
                                        common::block_ptr s, size_t srcOffset, size_t count, gmacError_t &err);
 
     hal::event_ptr copy_to_block(common::block_ptr dst, size_t dstOffset,
-                                 hostptr_t src,
+                                 host_const_ptr src,
                                  size_t count, gmacError_t &err);
 
-    hal::event_ptr copy_from_block(hostptr_t dst,
+    hal::event_ptr copy_from_block(host_ptr dst,
                                    common::block_ptr src, size_t srcOffset,
                                    size_t count, gmacError_t &err);
 

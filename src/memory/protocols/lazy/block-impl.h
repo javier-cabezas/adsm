@@ -131,7 +131,7 @@ BlockTreeInfo::increment(unsigned subBlock)
 
 inline
 void
-BlockTreeInfo::signal_write(const hostptr_t addr)
+BlockTreeInfo::signal_write(host_const_ptr addr)
 {
     long_t currentSubBlock = GetSubBlockIndex(block_.addr(), addr);
 
@@ -169,7 +169,7 @@ StrideInfo::isStrided() const
     return stridedFaults_ > STRIDE_THRESHOLD;
 }
 
-inline hostptr_t
+inline host_ptr
 StrideInfo::getFirstAddr() const
 {
     return firstAddr_;
@@ -190,7 +190,7 @@ StrideInfo::reset()
 }
 
 inline void
-StrideInfo::signal_write(hostptr_t addr)
+StrideInfo::signal_write(host_ptr addr)
 {
     if (stridedFaults_ == 0) {
         stridedFaults_ = 1;
@@ -231,7 +231,7 @@ block_state::block() const
 
 inline
 void
-block_state::setSubBlock(const hostptr_t addr, protocol_state state)
+block_state::setSubBlock(host_const_ptr addr, protocol_state state)
 {
     setSubBlock(GetSubBlockIndex(block().addr(), addr), state);
 }
@@ -296,14 +296,14 @@ block_state::block_state(lazy_types::State init) :
 
 #if 0
 common::block_state<lazy_types::State>::protocol_state
-block_state::get_state(hostptr_t addr) const
+block_state::get_state(host_ptr addr) const
 {
     return protocol_state(subBlockState_[GetSubBlockIndex(block().addr(), addr)]);
 }
 #endif
 
 inline void
-block_state::set_state(protocol_state state, hostptr_t addr)
+block_state::set_state(protocol_state state, host_ptr addr)
 {
     if (addr == NULL) {
         setAll(state);
@@ -321,13 +321,13 @@ block_state::set_state(protocol_state state, hostptr_t addr)
     }
 }
 
-inline hostptr_t
-block_state::getSubBlockAddr(const hostptr_t addr) const
+inline host_ptr
+block_state::getSubBlockAddr(host_const_ptr addr) const
 {
     return GetSubBlockAddr(block().addr(), addr);
 }
 
-inline hostptr_t
+inline host_ptr
 block_state::getSubBlockAddr(unsigned index) const
 {
     return GetSubBlockAddr(block().addr(), block().addr() + index * SubBlockSize_);
@@ -476,7 +476,7 @@ block_state::sync_to_host(gmacError_t &err)
 }
 
 inline void
-block_state::read(const hostptr_t addr)
+block_state::read(host_const_ptr addr)
 {
     long_t currentSubBlock = GetSubBlockIndex(block().addr(), addr);
     faultsRead_++;
@@ -492,11 +492,11 @@ block_state::read(const hostptr_t addr)
 }
 
 inline void
-block_state::writeStride(const hostptr_t addr)
+block_state::writeStride(host_const_ptr addr)
 {
     strideInfo_.signal_write(addr);
     if (strideInfo_.isStrided()) {
-        for (hostptr_t cur = strideInfo_.getFirstAddr(); cur >= block().addr() &&
+        for (host_ptr cur = strideInfo_.getFirstAddr(); cur >= block().addr() &&
                 cur < (block().addr() + block().size());
                 cur += strideInfo_.getStride()) {
             long_t subBlock = GetSubBlockIndex(block().addr(), cur);
@@ -506,7 +506,7 @@ block_state::writeStride(const hostptr_t addr)
 }
 
 inline void
-block_state::writeTree(const hostptr_t addr)
+block_state::writeTree(host_const_ptr addr)
 {
     treeInfo_.signal_write(addr);
     BlockTreeInfo::Pair info = treeInfo_.getUnprotectInfo();
@@ -517,7 +517,7 @@ block_state::writeTree(const hostptr_t addr)
 }
 
 inline void
-block_state::write(const hostptr_t addr)
+block_state::write(host_const_ptr addr)
 {
     long_t currentSubBlock = GetSubBlockIndex(block().addr(), addr);
 
@@ -705,7 +705,7 @@ block_state::block() const
 #endif
 
 inline
-block::block(object &parent, hostptr_t addr, hostptr_t shadow, size_t size, State init) :
+block::block(object &parent, host_ptr addr, host_ptr shadow, size_t size, State init) :
     common::block(parent, addr, shadow, size),
     state_(init)
 #ifdef DEBUG
@@ -724,7 +724,7 @@ block::get_state() const
 }
 
 inline void
-block::set_state(lazy_types::State state, hostptr_t /* addr */)
+block::set_state(lazy_types::State state, host_ptr /* addr */)
 {
     state_ = state;
 }
@@ -739,8 +739,8 @@ block::sync_to_device(gmacError_t &err)
     transfersToAccelerator_++;
 #endif
     hal::event_ptr ret;
-    ret = get_owner()->copy_async(get_device_addr(),
-                                  hal::ptr_t(get_shadow()),
+    ret = get_owner()->copy_async(parent::get_device_addr(),
+                                  hal::ptr_const_t(get_shadow()),
                                   size(), err);
     return ret;
 }
@@ -756,14 +756,14 @@ block::sync_to_host(gmacError_t &err)
 #endif
     hal::event_ptr ret;
     err = get_owner()->copy(hal::ptr_t(get_shadow()),
-                            get_device_addr(),
+                            parent::get_device_const_addr(),
                             size());
     return ret;
 }
 
 inline
 void
-block::read(const hostptr_t /*addr*/)
+block::read(host_const_ptr /*addr*/)
 {
 #ifdef DEBUG
     faultsRead_++;
@@ -773,7 +773,7 @@ block::read(const hostptr_t /*addr*/)
 
 inline
 void
-block::write(const hostptr_t /*addr*/)
+block::write(host_const_ptr /*addr*/)
 {
 #ifdef DEBUG
     faultsWrite_++;
@@ -832,16 +832,16 @@ block::get_owner() const
     return parent_.get_owner();
 }
 
-inline accptr_t
-block::get_device_addr(const hostptr_t addr) const
+inline hal::ptr_t
+block::get_device_addr(host_ptr addr)
 {
     return parent_.get_device_addr(addr);
 }
 
-inline accptr_t
-block::get_device_addr() const
+inline hal::ptr_const_t
+block::get_device_const_addr(host_const_ptr addr) const
 {
-    return get_device_addr(this->addr_);
+    return parent_.get_device_const_addr(addr);
 }
 
 inline

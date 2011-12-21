@@ -36,8 +36,8 @@ platform::get_cl_device_array()
 
     unsigned i = 0;
     for (std::list<device *>::iterator it  = devices_.begin();
-            it != devices_.end();
-            it++) {
+                                       it != devices_.end();
+                                     ++it) {
         deviceIds[i++] = (*it)->openclDeviceId_;
     }
     return deviceIds;
@@ -309,7 +309,7 @@ device::get_info(GmacDeviceInfo &info)
                 }
                 else info_.driverRev = 0;
             }
-            delete driverName;
+            delete []driverName;
         }
 
 		isInfoInitialized_ = true;

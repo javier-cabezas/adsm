@@ -14,7 +14,7 @@ static DWORD ProtBits[] = {
 
 static map_file Files;
 
-int memory_ops::protect(hostptr_t addr, size_t count, GmacProtection prot)
+int memory_ops::protect(host_ptr addr, size_t count, GmacProtection prot)
 {
     TRACE(GLOBAL, "Setting memory permisions to %d @ %p - %p", prot, addr, addr + count);
 	DWORD old = 0;
@@ -23,16 +23,16 @@ int memory_ops::protect(hostptr_t addr, size_t count, GmacProtection prot)
     return 0;
 }
 
-hostptr_t memory_ops::map(hostptr_t addr, size_t count, GmacProtection prot)
+host_ptr memory_ops::map(host_ptr addr, size_t count, GmacProtection prot)
 {
-    hostptr_t cpuAddr = NULL;
+    host_ptr cpuAddr = NULL;
 
 	// Create anonymous file to be mapped
 	HANDLE handle = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, (DWORD)count, NULL);
 	if(handle == NULL) return NULL;
 	
 	// Create a view of the file in the previously allocated virtual memory range
-	if((cpuAddr = (hostptr_t)MapViewOfFileEx(handle, FILE_MAP_WRITE, 0, 0, (DWORD)count, addr)) == NULL) {
+	if((cpuAddr = (host_ptr)MapViewOfFileEx(handle, FILE_MAP_WRITE, 0, 0, (DWORD)count, addr)) == NULL) {
 		CloseHandle(handle);
 		return NULL;
 	}
@@ -47,24 +47,24 @@ hostptr_t memory_ops::map(hostptr_t addr, size_t count, GmacProtection prot)
     return cpuAddr;
 }
 
-hostptr_t memory_ops::shadow(hostptr_t addr, size_t count)
+host_ptr memory_ops::shadow(host_ptr addr, size_t count)
 {
 	TRACE(GLOBAL, "Getting shadow mapping for %p ("FMT_SIZE" bytes)", addr, count);
 	map_file_entry entry = Files.find(addr);
 	if(entry.handle() == NULL) return NULL;
 	off_t offset = off_t(addr - entry.address());
-	hostptr_t ret = (hostptr_t)MapViewOfFile(entry.handle(), FILE_MAP_WRITE, 0, (DWORD)offset, (DWORD)count);
+	host_ptr ret = (host_ptr)MapViewOfFile(entry.handle(), FILE_MAP_WRITE, 0, (DWORD)offset, (DWORD)count);
 	return ret;
 }
 
-void memory_ops::unshadow(hostptr_t addr, size_t /*count*/)
+void memory_ops::unshadow(host_ptr addr, size_t /*count*/)
 {
 	BOOL ret = UnmapViewOfFile(addr);
 	ASSERTION(ret == TRUE);
 }
 
 
-void memory_ops::unmap(hostptr_t addr, size_t /*count*/)
+void memory_ops::unmap(host_ptr addr, size_t /*count*/)
 {
 	map_file_entry entry = Files.find(addr);
 	if(Files.remove(addr) == false) return;

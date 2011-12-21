@@ -25,13 +25,13 @@ class GMAC_LOCAL buffer_t :
     public hal::detail::buffer_t<implementation_traits> {
     typedef hal::detail::buffer_t<implementation_traits> Parent;
 
-    hostptr_t addr_;
+    host_ptr addr_;
     cl_mem devPtr_;
 
 public:
-    buffer_t(hostptr_t addr, cl_mem devPtr, size_t size, context_t &context);
+    buffer_t(host_ptr addr, cl_mem devPtr, size_t size, context_t &context);
 
-    hostptr_t get_addr();
+    host_ptr get_addr();
     ptr_t get_device_addr();
 };
 
@@ -55,14 +55,14 @@ class GMAC_LOCAL context_t :
     buffer_t *alloc_buffer(size_t size, GmacProtection hint, stream_t &stream, gmacError_t &err);
     gmacError_t free_buffer(buffer_t &buffer);
 
-    event_ptr copy_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
+    event_ptr copy_backend(ptr_t dst, ptr_const_t src, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
     event_ptr copy_backend(ptr_t dst, device_input &input, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
-    event_ptr copy_backend(device_output &output, const ptr_t src, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
+    event_ptr copy_backend(device_output &output, ptr_const_t src, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
     event_ptr memset_backend(ptr_t dst, int c, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
 
-    event_ptr copy_async_backend(ptr_t dst, const ptr_t src, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
+    event_ptr copy_async_backend(ptr_t dst, ptr_const_t src, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
     event_ptr copy_async_backend(ptr_t dst, device_input &input, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
-    event_ptr copy_async_backend(device_output &output, const ptr_t src, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
+    event_ptr copy_async_backend(device_output &output, ptr_const_t src, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
     event_ptr memset_async_backend(ptr_t dst, int c, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
 
 public:
@@ -73,7 +73,7 @@ public:
     gmacError_t free(ptr_t acc);
     gmacError_t free_host_pinned(ptr_t ptr);
 
-    ptr_t get_device_addr_from_pinned(hostptr_t addr);
+    ptr_t get_device_addr_from_pinned(host_ptr addr);
 
     code_repository &get_code_repository();
 };

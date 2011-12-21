@@ -44,29 +44,29 @@ namespace __impl { namespace memory {
 class GMAC_LOCAL map_file_entry {
 protected:
 	HANDLE handle_;
-	hostptr_t address_;
+	host_ptr address_;
 	size_t size_;
 public:
-	inline map_file_entry(HANDLE handle, hostptr_t address, size_t size) :
+	inline map_file_entry(HANDLE handle, host_ptr address, size_t size) :
 	handle_(handle), address_(address), size_(size) {};
 	virtual ~map_file_entry() {};
 
 	inline HANDLE handle() const { return handle_; }
-	inline hostptr_t address() const { return address_; }
+	inline host_ptr address() const { return address_; }
 	inline size_t size() const { return size_; }
 };
 
-class GMAC_LOCAL map_file : protected std::map<hostptr_t, map_file_entry>, public gmac::util::lock_rw
+class GMAC_LOCAL map_file : protected std::map<host_ptr, map_file_entry>, public gmac::util::lock_rw
 {
 protected:
-	typedef std::map<hostptr_t, map_file_entry> Parent;
+	typedef std::map<host_ptr, map_file_entry> Parent;
 public:
 	map_file();
 	virtual ~map_file();
 
-	bool insert(HANDLE handle, hostptr_t address, size_t size);
-	bool remove(hostptr_t address);
-	const map_file_entry find(hostptr_t address) const;
+	bool insert(HANDLE handle, host_ptr address, size_t size);
+	bool remove(host_ptr address);
+	const map_file_entry find(host_ptr address) const;
 };
 
 }}

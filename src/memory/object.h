@@ -68,7 +68,7 @@ class GMAC_LOCAL object :
 
     // DBC_FORCE_TEST(object)
 public:
-    typedef util::bounds<hostptr_t> bounds;
+    typedef util::bounds<host_ptr> bounds;
 
 protected:
 #ifdef DEBUG
@@ -79,7 +79,7 @@ protected:
     protocol &protocol_;
 
     /// Object host memory address
-    hostptr_t addr_;
+    host_ptr addr_;
 
     /// Object size in bytes
     size_t size_;
@@ -145,7 +145,7 @@ protected:
      * \param addr Host memory address where the object begins
      * \param size Size (in bytes) of the memory object
      */
-    object(protocol &protocol, hostptr_t addr, size_t size);
+    object(protocol &protocol, host_ptr addr, size_t size);
 
 public:
     //! Default destructor
@@ -207,7 +207,16 @@ public:
      * \param addr Host memory address within the object
      * \return Accelerator memory address within the object
      */
-    virtual accptr_t get_device_addr(const hostptr_t addr) const = 0;
+    virtual hal::ptr_t get_device_addr(host_ptr addr) = 0;
+
+    /**
+     * Get the accelerator memory address where a host memory address from the object is mapped
+     *
+     * \param current Execution mode requesting the translation
+     * \param addr Host memory address within the object
+     * \return Accelerator memory address within the object
+     */
+    virtual hal::ptr_const_t get_device_const_addr(host_const_ptr addr) const = 0;
 
     /**
      * Get the owner of the object
@@ -292,7 +301,7 @@ public:
      * \param addr Host memory address causing the fault
      * \return Error code
      */
-    TESTABLE hal::event_ptr signal_read(hostptr_t addr, gmacError_t &err);
+    TESTABLE hal::event_ptr signal_read(host_ptr addr, gmacError_t &err);
 
     /**
      * Signal handler for faults caused due to memory writes
@@ -300,7 +309,7 @@ public:
      * \param addr Host memory address causing the fault
      * \return Error code
      */
-    TESTABLE hal::event_ptr signal_write(hostptr_t addr, gmacError_t &err);
+    TESTABLE hal::event_ptr signal_write(host_ptr addr, gmacError_t &err);
 
     gmacError_t to_io_device(hal::device_output &output, size_t objOff, size_t count);
     gmacError_t from_io_device(size_t objOff, hal::device_input &input, size_t count);
@@ -342,7 +351,7 @@ public:
      * \return Error code
      */
     gmacError_t memcpy_to_object(size_t objOffset,
-                                 const hostptr_t src, size_t count);
+                                 host_const_ptr src, size_t count);
 
     /** Copy data from object to object
      * \param dstObj Destination object
@@ -365,7 +374,7 @@ public:
      * \param count Size (in bytes) of the data to be copied
      * \return Error code
      */
-    gmacError_t memcpy_from_object(hostptr_t dst,
+    gmacError_t memcpy_from_object(host_ptr dst,
                                    size_t objOffset, size_t count);
     
     hal::event_ptr get_last_event(hal::event_ptr::type type) const;

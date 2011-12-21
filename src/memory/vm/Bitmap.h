@@ -86,8 +86,8 @@ protected:
     unsigned shift_;
 
     Bitmap &root_;
-    hostptr_t entriesHost_;
-    hostptr_t entriesAccHost_;
+    host_ptr entriesHost_;
+    host_ptr entriesAccHost_;
     accptr_t entriesAcc_;
 
     bool dirty_;

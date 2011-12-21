@@ -3,59 +3,77 @@
 
 namespace __impl { namespace hal {
 
-template <typename Ptr, typename C>
+template <typename HPtr, typename Ptr, typename C>
 inline
-_ptr_t<Ptr, C>::_ptr_t(Ptr ptr, C *ctx) :
+_ptr_t<HPtr, Ptr, C>::_ptr_t(Ptr ptr, C *ctx) :
     ptrDev_(ptr),
     ctx_(ctx)
 {
 }
 
-template <typename Ptr, typename C>
+template <typename HPtr, typename Ptr, typename C>
 inline
-_ptr_t<Ptr, C>::_ptr_t(typename Ptr::backend_type value, C *ctx) :
+_ptr_t<HPtr, Ptr, C>::_ptr_t(typename Ptr::backend_type value, C *ctx) :
     ptrDev_(value),
     ctx_(ctx)
 {
 }
 
-template <typename Ptr, typename C>
+template <typename HPtr, typename Ptr, typename C>
 inline
-_ptr_t<Ptr, C>::_ptr_t(hostptr_t ptr) :
+_ptr_t<HPtr, Ptr, C>::_ptr_t(host_ptr ptr) :
     ptrDev_(0),
     ptrHost_(ptr),
     ctx_(NULL)
 {
 }
 
-template <typename Ptr, typename C>
+template <typename HPtr, typename Ptr, typename C>
 inline
-_ptr_t<Ptr, C>::_ptr_t() :
+_ptr_t<HPtr, Ptr, C>::_ptr_t(host_const_ptr ptr) :
+    ptrDev_(0),
+    ptrHost_(ptr),
+    ctx_(NULL)
+{
+}
+
+template <typename HPtr, typename Ptr, typename C>
+inline
+_ptr_t<HPtr, Ptr, C>::_ptr_t() :
     ptrDev_(0),
     ptrHost_(0),
     ctx_(NULL)
 {
 }
 
-template <typename Ptr, typename C>
+template <typename HPtr, typename Ptr, typename C>
 inline
-_ptr_t<Ptr, C>::_ptr_t(const _ptr_t &ptr) :
+_ptr_t<HPtr, Ptr, C>::_ptr_t(const _ptr_t<host_ptr, Ptr, C> &ptr) :
     ptrDev_(ptr.ptrDev_),
     ptrHost_(ptr.ptrHost_),
     ctx_(ptr.ctx_)
 {
 }
 
-template <typename Ptr, typename C>
+template <typename HPtr, typename Ptr, typename C>
 inline
-_ptr_t<Ptr, C>::operator bool() const
+_ptr_t<HPtr, Ptr, C>::_ptr_t(const _ptr_t<host_const_ptr, Ptr, C> &ptr) :
+    ptrDev_(ptr.ptrDev_),
+    ptrHost_(ptr.ptrHost_),
+    ctx_(ptr.ctx_)
+{
+}
+
+template <typename HPtr, typename Ptr, typename C>
+inline
+_ptr_t<HPtr, Ptr, C>::operator bool() const
 {
     return ctx_ != NULL || ptrHost_ != NULL;
 }
 
-template <typename Ptr, typename C>
-inline _ptr_t<Ptr, C> &
-_ptr_t<Ptr, C>::operator=(const _ptr_t &ptr)
+template <typename HPtr, typename Ptr, typename C>
+inline _ptr_t<HPtr, Ptr, C> &
+_ptr_t<HPtr, Ptr, C>::operator=(const _ptr_t &ptr)
 {
     if (this != &ptr) {
         ptrDev_ = ptr.ptrDev_;
@@ -65,9 +83,9 @@ _ptr_t<Ptr, C>::operator=(const _ptr_t &ptr)
     return *this;
 }
 
-template <typename Ptr, typename C>
+template <typename HPtr, typename Ptr, typename C>
 inline bool
-_ptr_t<Ptr, C>::operator==(const _ptr_t &ptr) const
+_ptr_t<HPtr, Ptr, C>::operator==(const _ptr_t &ptr) const
 {
     bool ret;
     if (ctx_ == NULL) {
@@ -78,22 +96,22 @@ _ptr_t<Ptr, C>::operator==(const _ptr_t &ptr) const
     return ret;
 }
 
-template <typename Ptr, typename C>
+template <typename HPtr, typename Ptr, typename C>
 inline bool
-_ptr_t<Ptr, C>::operator==(long i) const
+_ptr_t<HPtr, Ptr, C>::operator==(long i) const
 {
     bool ret;
     if (ctx_ == NULL) {
-        ret = (ptrHost_ == hostptr_t(i));
+        ret = (ptrHost_ == HPtr(i));
     } else {
         ret = (ptrDev_ == i);
     }
     return ret;
 }
 
-template <typename Ptr, typename C>
+template <typename HPtr, typename Ptr, typename C>
 inline bool
-_ptr_t<Ptr, C>::operator!=(const _ptr_t &ptr) const
+_ptr_t<HPtr, Ptr, C>::operator!=(const _ptr_t &ptr) const
 {
     bool ret;
     if (ctx_ == NULL) {
@@ -104,13 +122,13 @@ _ptr_t<Ptr, C>::operator!=(const _ptr_t &ptr) const
     return ret;
 }
 
-template <typename Ptr, typename C>
+template <typename HPtr, typename Ptr, typename C>
 inline bool
-_ptr_t<Ptr, C>::operator!=(long i) const
+_ptr_t<HPtr, Ptr, C>::operator!=(long i) const
 {
     bool ret;
     if (ctx_ == NULL) {
-        ret = (ptrHost_ != hostptr_t(i));
+        ret = (ptrHost_ != HPtr(i));
     } else {
         ret = (ptrDev_ != i);
     }
@@ -118,9 +136,9 @@ _ptr_t<Ptr, C>::operator!=(long i) const
 
 }
 
-template <typename Ptr, typename C>
+template <typename HPtr, typename Ptr, typename C>
 inline bool
-_ptr_t<Ptr, C>::operator<(const _ptr_t &ptr) const
+_ptr_t<HPtr, Ptr, C>::operator<(const _ptr_t &ptr) const
 {
     bool ret;
     if (ctx_ == NULL) {
@@ -131,10 +149,10 @@ _ptr_t<Ptr, C>::operator<(const _ptr_t &ptr) const
     return ret;
 }
 
-template <typename Ptr, typename C>
+template <typename HPtr, typename Ptr, typename C>
 template <typename T>
-inline _ptr_t<Ptr, C> &
-_ptr_t<Ptr, C>::operator+=(const T &off)
+inline _ptr_t<HPtr, Ptr, C> &
+_ptr_t<HPtr, Ptr, C>::operator+=(const T &off)
 {
     if (ctx_ == NULL) {
         ptrHost_ += off;
@@ -144,64 +162,64 @@ _ptr_t<Ptr, C>::operator+=(const T &off)
     return *this;
 }
 
-template <typename Ptr, typename C>
+template <typename HPtr, typename Ptr, typename C>
 template <typename T>
-inline const _ptr_t<Ptr, C>
-_ptr_t<Ptr, C>::operator+(const T &off) const
+inline const _ptr_t<HPtr, Ptr, C>
+_ptr_t<HPtr, Ptr, C>::operator+(const T &off) const
 {
     _ptr_t ret(*this);
     ret += off;
     return ret;
 }
 
-template <typename Ptr, typename C>
+template <typename HPtr, typename Ptr, typename C>
 inline typename Ptr::backend_type
-_ptr_t<Ptr, C>::get_device_addr() const
+_ptr_t<HPtr, Ptr, C>::get_device_addr() const
 {
     ASSERTION(is_device_ptr());
     return ptrDev_.get();
 }
 
-template <typename Ptr, typename C>
-inline hostptr_t
-_ptr_t<Ptr, C>::get_host_addr() const
+template <typename HPtr, typename Ptr, typename C>
+inline HPtr
+_ptr_t<HPtr, Ptr, C>::get_host_addr() const
 {
     ASSERTION(is_host_ptr());
     return ptrHost_;
 }
 
-template <typename Ptr, typename C>
+template <typename HPtr, typename Ptr, typename C>
 inline size_t
-_ptr_t<Ptr, C>::get_offset() const
+_ptr_t<HPtr, Ptr, C>::get_offset() const
 {
     ASSERTION(is_device_ptr());
     return ptrDev_.offset();
 }
 
-template <typename Ptr, typename C>
+template <typename HPtr, typename Ptr, typename C>
 inline C *
-_ptr_t<Ptr, C>::get_context()
+_ptr_t<HPtr, Ptr, C>::get_context()
 {
     return ctx_;
 }
 
-template <typename Ptr, typename C>
+template <typename HPtr, typename Ptr, typename C>
 inline const C *
-_ptr_t<Ptr, C>::get_context() const
+_ptr_t<HPtr, Ptr, C>::get_context() const
 {
     return ctx_;
 }
 
-template <typename Ptr, typename C>
+template <typename HPtr, typename Ptr, typename C>
 inline bool
-_ptr_t<Ptr, C>::is_host_ptr() const
+_ptr_t<HPtr, Ptr, C>::is_host_ptr() const
 {
     return ctx_ == NULL;
 }
 
-template <typename Ptr, typename C>
+template <typename HPtr, typename Ptr, typename C>
 inline bool
-_ptr_t<Ptr, C>::is_device_ptr() const
+_ptr_t<HPtr, Ptr, C>::is_device_ptr() const
 {
     return ctx_ != NULL;
 }

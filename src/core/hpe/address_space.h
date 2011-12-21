@@ -79,8 +79,8 @@ class GMAC_LOCAL address_space :
 
     process &proc_;
 
-    typedef util::stl::locked_map<hostptr_t, hal::ptr_t> map_addresses;
-    typedef util::stl::locked_map<hostptr_t, hal::buffer_t *> map_buffers;
+    typedef util::stl::locked_map<host_ptr, hal::ptr_t> map_addresses;
+    typedef util::stl::locked_map<host_ptr, hal::buffer_t *> map_buffers;
 
     map_addresses mapDeviceAddresses_;
     map_buffers mapPinnedBuffers_;
@@ -99,23 +99,23 @@ public:
                   process &proc);
     virtual ~address_space();
 
-    gmacError_t map(hal::ptr_t &dst, hostptr_t src, size_t count, unsigned align = 1);
-    gmacError_t unmap(hostptr_t addr, size_t count);
+    gmacError_t map(hal::ptr_t &dst, host_ptr src, size_t count, unsigned align = 1);
+    gmacError_t unmap(host_ptr addr, size_t count);
 
     hal::ptr_t alloc_host_pinned(size_t count, gmacError_t &err);
     gmacError_t free_host_pinned(hal::ptr_t ptr);
 
-    hal::ptr_t get_host_pinned_mapping(hostptr_t ptr, gmacError_t &err);
+    hal::ptr_t get_host_pinned_mapping(host_ptr ptr, gmacError_t &err);
 
-    gmacError_t copy(hal::ptr_t dst, const hal::ptr_t src, size_t count);
+    gmacError_t copy(hal::ptr_t dst, hal::ptr_const_t src, size_t count);
 
     gmacError_t copy(hal::ptr_t dst, hal::device_input &input, size_t count);
-    gmacError_t copy(hal::device_output &output, const hal::ptr_t src, size_t count);
+    gmacError_t copy(hal::device_output &output, hal::ptr_const_t src, size_t count);
 
-    hal::event_ptr copy_async(hal::ptr_t dst, const hal::ptr_t src, size_t count, gmacError_t &err);
+    hal::event_ptr copy_async(hal::ptr_t dst, hal::ptr_const_t src, size_t count, gmacError_t &err);
 
     hal::event_ptr copy_async(hal::ptr_t dst, hal::device_input &input, size_t count, gmacError_t &err);
-    hal::event_ptr copy_async(hal::device_output &output, const hal::ptr_t src, size_t count, gmacError_t &err);
+    hal::event_ptr copy_async(hal::device_output &output, hal::ptr_const_t src, size_t count, gmacError_t &err);
 
     gmacError_t memset(hal::ptr_t addr, int c, size_t count);
     hal::event_ptr memset_async(hal::ptr_t addr, int c, size_t count, gmacError_t &err);
@@ -136,8 +136,8 @@ public:
 
 #ifdef USE_OPENCL
 #if 0
-    gmacError_t acquire(hostptr_t addr);
-    gmacError_t release(hostptr_t addr);
+    gmacError_t acquire(host_ptr addr);
+    gmacError_t release(host_ptr addr);
 #endif
 #endif
 

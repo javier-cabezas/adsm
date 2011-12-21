@@ -39,7 +39,7 @@ device::create_context(const SetSiblings &siblings, gmacError_t &err)
     ASSERTION(res == CUDA_SUCCESS);
 
 #ifdef USE_PEER_ACCESS
-    for (SetSiblings::iterator it = siblings.begin(); it != siblings.end(); it++) {
+    for (SetSiblings::iterator it = siblings.begin(); it != siblings.end(); ++it) {
         
     }
 #endif

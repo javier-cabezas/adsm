@@ -41,7 +41,7 @@ module_descriptor::create_modules(platform &plat, gmacError_t &err)
     code_repository repositories;
 
     vector_module_descriptor::const_iterator it;
-    for (it = ModuleDescriptors_.begin(); it != ModuleDescriptors_.end(); it++) {
+    for (it = ModuleDescriptors_.begin(); it != ModuleDescriptors_.end(); ++it) {
         module *ptr = new module(**it, plat, err);
         if (err != gmacSuccess) break;
         repositories.push_back(ptr);
@@ -49,7 +49,7 @@ module_descriptor::create_modules(platform &plat, gmacError_t &err)
 
 #if 0
     vector_module_descriptor::const_iterator it;
-    for (it = ModuleDescriptors_.begin(); it != ModuleDescriptors_.end(); it++) {
+    for (it = ModuleDescriptors_.begin(); it != ModuleDescriptors_.end(); ++it) {
         TRACE(GLOBAL, "Creating module: %p", (*it)->fatBin_);
         modules.push_back(new cuda::module(*(*it)));
     }
@@ -94,7 +94,7 @@ module::module(const module_descriptor &descriptor, platform &plat, gmacError_t 
 
             map_kernel map;
 
-            for (cl_uint i = 0; i < nkernels; i++) {
+            for (cl_uint i = 0; i < nkernels; ++i) {
                 size_t size;
                 res = clGetKernelInfo(kernels[i], CL_KERNEL_FUNCTION_NAME, 0, NULL, &size);
                 ASSERTION(res == CL_SUCCESS);
@@ -136,11 +136,11 @@ module::~module()
 {
     map_thread::iterator it;
 
-    for (it = kernelMaps_.begin(); it != kernelMaps_.end(); it++) {
+    for (it = kernelMaps_.begin(); it != kernelMaps_.end(); ++it) {
         map_kernel &kernels = it->second;
         map_kernel::iterator it2;
 
-        for (it2 = kernels.begin(); it2 != kernels.end(); it2++) {
+        for (it2 = kernels.begin(); it2 != kernels.end(); ++it2) {
             delete it2->second;
         }
     }
@@ -173,7 +173,7 @@ module::get_kernel(const std::string &name)
 
             map_kernel map;
 
-            for (cl_uint i = 0; i < kernels_.size(); i++) {
+            for (cl_uint i = 0; i < kernels_.size(); ++i) {
                 size_t size;
                 res = clGetKernelInfo(kernels[i], CL_KERNEL_FUNCTION_NAME, 0, NULL, &size);
                 ASSERTION(res == CL_SUCCESS);
@@ -213,8 +213,8 @@ code_repository::get_kernel(gmac_kernel_id_t key)
 {
     kernel_t *ret = NULL;
     for (Parent::const_iterator it  = Parent::begin();
-            it != Parent::end();
-            it++) {
+                                it != Parent::end();
+                              ++it) {
         ret = (*it)->get_kernel(key);
         if (ret != NULL) break;
     }
@@ -227,14 +227,13 @@ code_repository::get_kernel(const std::string &name)
 {
     kernel_t *ret = NULL;
     for (Parent::const_iterator it  = Parent::begin();
-            it != Parent::end();
-            it++) {
+                                it != Parent::end();
+                              ++it) {
         ret = (*it)->get_kernel(name);
         if (ret != NULL) break;
     }
 
     return ret;
 }
-
 
 }}}

@@ -49,7 +49,7 @@ class GMAC_LOCAL buddy : protected gmac::util::mutex<buddy> {
     DBC_FORCE_TEST(__impl::util::allocator::buddy)
 
 protected:
-    hostptr_t addr_;
+    host_ptr addr_;
     uint32_t size_;
     uint8_t index_;
 
@@ -64,12 +64,12 @@ protected:
     TESTABLE off_t get_from_list(uint8_t i);
     TESTABLE void put_to_list(off_t addr, uint8_t i);
 public:
-    buddy(hostptr_t addr, size_t size);
+    buddy(host_ptr addr, size_t size);
     ~buddy();
 
-    inline hostptr_t addr() const { return addr_; }
-    TESTABLE hostptr_t get(size_t &size);
-    TESTABLE void put(hostptr_t addr, size_t size);
+    inline host_ptr addr() const { return addr_; }
+    TESTABLE host_ptr get(size_t &size);
+    TESTABLE void put(host_ptr addr, size_t size);
 };
 
 }}}

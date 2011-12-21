@@ -12,9 +12,9 @@ map_object::acquire_objects(GmacProtection prot, gmacError_t &err)
     hal::event_ptr ret;
     iterator i;
     lock_read();
-    for(i = begin(); i != end(); i++) {
+    for (i = begin(); i != end(); ++i) {
         ret = (*i->second).acquire(prot, err);
-        if(err != gmacSuccess) {
+        if (err != gmacSuccess) {
             unlock();
             return ret;
         }
@@ -30,47 +30,8 @@ map_object::release_objects(bool flushDirty, gmacError_t &err)
     hal::event_ptr ret;
     iterator i;
     lock_read();
-    for(i = begin(); i != end(); i++) {
+    for (i = begin(); i != end(); ++i) {
         ret = (*i->second).release(flushDirty, err);
-        if(err != gmacSuccess) {
-            unlock();
-            return ret;
-        }
-    }
-    unlock();
-    return ret;
-}
-
-#if 0
-inline
-hal::event_ptr
-map_object::for_each_object(hal::event_ptr (object::*f)(gmacError_t &), gmacError_t &err)
-{
-    hal::event_ptr ret;
-    iterator i;
-    lock_read();
-    for(i = begin(); i != end(); i++) {
-        ret = ((*i->second).*f)(err);
-        if(err != gmacSuccess) {
-            unlock();
-            return ret;
-        }
-    }
-    unlock();
-    return ret;
-}
-#endif
-
-#if 0
-template <typename P1>
-hal::event_ptr
-map_object::for_each_object(hal::event_ptr (object::*f)(P1, gmacError_t &), P1 p1, gmacError_t &err)
-{
-    hal::event_ptr ret;
-    const_iterator i;
-    lock_read();
-    for(i = begin(); i != end(); i++) {
-        ret = ((*i->second).*f)(p1, err);
         if (err != gmacSuccess) {
             unlock();
             return ret;
@@ -79,37 +40,14 @@ map_object::for_each_object(hal::event_ptr (object::*f)(P1, gmacError_t &), P1 p
     unlock();
     return ret;
 }
-#endif
-
-#if 0
-template <typename F, typename... Args>
-hal::event_ptr
-map_object::for_each_object(F f, gmacError_t &err, Args... args)
-{
-    hal::event_ptr ret;
-    const_iterator i;
-    lock_read();
-    for(i = begin(); i != end(); i++) {
-        F tmp = f;
-        std::bind(tmp, *i->second, args..., err);
-        ret = tmp();
-        if (err != gmacSuccess) {
-            unlock();
-            return ret;
-        }
-    }
-    unlock();
-    return ret;
-}
-#endif
 
 #ifdef DEBUG
-inline
-gmacError_t map_object::dumpObjects(const std::string &dir, std::string prefix, protocols::common::Statistic stat) const
+inline gmacError_t
+map_object::dumpObjects(const std::string &dir, std::string prefix, protocols::common::Statistic stat) const
 {
     lock_read();
     const_iterator i;
-    for(i = begin(); i != end(); i++) {
+    for(i = begin(); i != end(); ++i) {
         object &obj = *(i->second);
         std::stringstream name;
         name << dir << prefix << "#" << obj.get_print_id() << "-" << obj.getDumps(stat) << "_" << protocols::common::StatisticName[stat];
@@ -125,7 +63,7 @@ gmacError_t map_object::dumpObjects(const std::string &dir, std::string prefix, 
 }
 
 inline
-gmacError_t map_object::dumpObject(const std::string &dir, std::string prefix, protocols::common::Statistic stat, hostptr_t ptr) const
+gmacError_t map_object::dumpObject(const std::string &dir, std::string prefix, protocols::common::Statistic stat, host_ptr ptr) const
 {
     object_ptr obj = get_object(ptr, 1);
     lock_read();

@@ -91,7 +91,7 @@ public:
      * \param addr Host address to be translated
      * \return Accelerator address
      */
-    virtual accptr_t translate(const hostptr_t addr) = 0;
+    virtual accptr_t translate(host_const_ptr addr) = 0;
 
     /**
      * Gets the protocol used by the process for the global objects
