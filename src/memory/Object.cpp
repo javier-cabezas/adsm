@@ -167,25 +167,21 @@ Object::memcpyObjectToObject(core::Mode &mode,
     if (__impl::util::params::ParamMemcpyAccToAcc &&
         dstObj.acceleratorAddr(dstOwner, dstPtr).pasId_ ==
         acceleratorAddr(srcOwner, srcPtr).pasId_) {
-        TRACE(LOCAL, "Using fast path!: %p -> %p ("FMT_SIZE")",        addr() + srcOffset,
-                                                                dstObj.addr() + dstOffset, size);
+        TRACE(LOCAL, "Using fast path: %p -> %p ("FMT_SIZE")",        addr() + srcOffset,
+                                                               dstObj.addr() + dstOffset, size);
         size_t dummyOffset = 0;
         BlockMap::const_iterator i = firstBlock(srcOffset, dummyOffset);
-        TRACE(LOCAL, "FP: %p "FMT_SIZE, dstObj.addr() + dstOffset, size);
         BlockMap::const_iterator j = dstObj.firstBlock(dstOffset, dummyOffset);
-        TRACE(LOCAL, "FP: %p vs %p "FMT_SIZE, j->second->addr(), dstObj.addr() + dstOffset, size);
         size_t left = size;
         while (left > 0) {
             size_t copySize = left < dstObj.blockEnd(dstOffset)? left: dstObj.blockEnd(dstOffset);
             // Single copy from the source to fill the buffer
             if (copySize <= blockEnd(srcOffset)) {
-                TRACE(LOCAL, "FP: Copying1: "FMT_SIZE" bytes", copySize);
                 ret = i->second->copyOp(&Protocol::copyBlockToBlock, *j->second, dstOffset % blockSize(), srcOffset % blockSize(), copySize);
                 ASSERTION(ret == gmacSuccess);
                 ++i;
             }
             else { // Two copies from the source to fill the buffer
-                TRACE(LOCAL, "FP: Copying2: "FMT_SIZE" bytes", copySize);
                 size_t firstCopySize = blockEnd(srcOffset);
                 size_t secondCopySize = copySize - firstCopySize;
 
@@ -206,8 +202,6 @@ Object::memcpyObjectToObject(core::Mode &mode,
             srcOffset += copySize;
             ++j;
         }
-
-        TRACE(LOCAL, "Fast path finished!");
 
         trace::ExitCurrentFunction();
         return ret;
