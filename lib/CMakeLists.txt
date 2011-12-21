@@ -1,10 +1,8 @@
 if(MAKE_TESTS)
     # Add Google Testing Framework Dependency
     set(gtest_DIR gtest-1.6.0)
-    set(gmock_DIR gmock-1.6.0)
     set(gtest_SRC
-        ${gtest_DIR}/src/gtest-all.cc
-        ${gmock_DIR}/src/gmock-all.cc)
+        ${gtest_DIR}/src/gtest-all.cc)
 
     include_directories(${gtest_DIR}/include ${gtest_DIR}
                         ${gmock_DIR}/include ${gmock_DIR})
