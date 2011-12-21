@@ -210,7 +210,7 @@ StreamOut &operator<<(StreamOut &of, const TraceReader &trace)
 	of << std::endl;
 
 	std::list<Record *>::const_iterator i;
-	for(i = trace.records_.begin(); i != trace.records_.end(); +i)
+	for(i = trace.records_.begin(); i != trace.records_.end(); ++i)
 		of << *(*i);
     return of;
 }
