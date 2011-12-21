@@ -23,10 +23,10 @@ CLBufferPool::cleanUp(stream_t stream)
 {
     CLMemMap::iterator it;
 
-    for(it = begin(); it != end(); it++) {
+    for(it = begin(); it != end(); ++it) {
         CLMemList::iterator jt;
         CLMemList list = it->second;
-        for (jt = list.begin(); jt != list.end(); jt++) {
+        for (jt = list.begin(); jt != list.end(); ++jt) {
             cl_int ret;
             ret = clEnqueueUnmapMemObject(stream, jt->first, jt->second, 0, NULL, NULL);
             ASSERTION(ret == CL_SUCCESS);
@@ -119,7 +119,7 @@ Accelerator::~Accelerator()
     // We cannot call OpenCL at destruction time because the library
     // might have been unloaded
     lock();
-    for(i = programs.begin(); i != programs.end(); i++) {
+    for(i = programs.begin(); i != programs.end(); ++i) {
         cl_int ret = clReleaseProgram(*i);
         ASSERTION(ret == CL_SUCCESS);
     }
@@ -314,7 +314,7 @@ Accelerator::getKernel(gmac_kernel_id_t k)
     TRACE(LOCAL, "Creating kernels");
     cl_int err = CL_SUCCESS;
     std::vector<cl_program>::const_iterator i;
-    for(i = programs.begin(); i != programs.end(); i++) {
+    for(i = programs.begin(); i != programs.end(); ++i) {
         lock();
         cl_kernel kernel = clCreateKernel(*i, k, &err);
         unlock();
@@ -342,7 +342,6 @@ gmacError_t Accelerator::prepareEmbeddedCLCode()
             char *params = cursor + strlen(CL_MAGIC);
 
             size_t fileSize = cursor - code;
-            size_t paramsSize = 0;
             char *file = new char[fileSize + 1];
             char *fileParams = NULL;
             ::memcpy(&file[0], code, fileSize);
@@ -350,7 +349,7 @@ gmacError_t Accelerator::prepareEmbeddedCLCode()
 
             cursor = ::strstr(cursor + 1, CL_MAGIC);
             if (cursor != params) {
-                paramsSize = cursor - params;
+                size_t paramsSize = cursor - params;
                 fileParams = new char[paramsSize + 1];
                 ::memcpy(fileParams, params, paramsSize);
                 fileParams[paramsSize] = '\0';
@@ -381,7 +380,7 @@ gmacError_t Accelerator::prepareCLCode(const char *code, const char *flags)
 
     cl_int ret;
     AcceleratorMap::iterator it;
-    for (it = Accelerators_->begin(); it != Accelerators_->end(); it++) {
+    for (it = Accelerators_->begin(); it != Accelerators_->end(); ++it) {
         cl_program program = clCreateProgramWithSource(
             it->first->ctx_, 1, &code, NULL, &ret);
         if (ret == CL_SUCCESS) {
@@ -417,7 +416,7 @@ gmacError_t Accelerator::prepareCLBinary(const unsigned char *binary, size_t siz
 
     cl_int ret;
     AcceleratorMap::iterator it;
-    for (it = Accelerators_->begin(); it != Accelerators_->end(); it++) {
+    for (it = Accelerators_->begin(); it != Accelerators_->end(); ++it) {
         cl_program program = clCreateProgramWithBinary(it->first->ctx_, 1, &it->first->device_, &size, &binary, NULL, &ret);
         if (ret == CL_SUCCESS) {
             // TODO use the callback parameter to allow background code compilation
@@ -781,7 +780,7 @@ void Accelerator::getAcceleratorInfo(GmacAcceleratorInfo &info)
                 }
                 else accInfo_.driverRev = 0;
             }
-            delete driverName;
+            delete [] driverName;
         }
 
         isInfoInitialized_ = true;
