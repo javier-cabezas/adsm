@@ -33,7 +33,7 @@ KernelConfig::KernelConfig(const KernelConfig & c) :
 {
     stack_ = new uint8_t[StackSize_];
     ArgsVector::const_iterator it;
-    for (it = c.begin(); it != c.end(); it++) {
+    for (it = c.begin(); it != c.end(); ++it) {
         pushArgument(it->ptr(), it->size(), it->offset());
     }
 }
@@ -57,7 +57,7 @@ KernelConfig &KernelConfig::operator=(const KernelConfig &c)
     shared_ = c.shared_;
     stream_ = c.stream_;
     ArgsVector::const_iterator it;
-    for (it = c.begin(); it != c.end(); it++) {
+    for (it = c.begin(); it != c.end(); ++it) {
         pushArgument(it->ptr(), it->size(), it->offset());
     }
     return *this;

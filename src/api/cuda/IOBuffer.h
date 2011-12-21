@@ -71,7 +71,7 @@ public:
     ~IOBuffer()
     {
         EventMap::iterator it;
-        for (it = map_.begin(); it != map_.end(); it++) {
+        for (it = map_.begin(); it != map_.end(); ++it) {
             cuEventDestroy(it->second.first);
             cuEventDestroy(it->second.second);
         }
