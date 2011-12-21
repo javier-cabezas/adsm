@@ -43,7 +43,6 @@ Mode::execute(core::hpe::KernelLaunch & launch)
     gmacError_t ret = prepareForCall();
     if(ret == gmacSuccess) {
         switchIn();
-        trace::SetThreadState(THREAD_T(getId()), trace::Running);
         ret = getAccelerator().execute(dynamic_cast<KernelLaunch &>(launch));
         switchOut();
     }
