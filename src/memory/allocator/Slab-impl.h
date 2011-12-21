@@ -9,10 +9,10 @@ inline Slab::~Slab()
 {
     ModeMap::iterator i;
     modes.lockWrite();
-    for(i = modes.begin(); i != modes.end(); i++) {
+    for(i = modes.begin(); i != modes.end(); ++i) {
         CacheMap &map = i->second;
         CacheMap::iterator j;
-        for(j = map.begin(); j != map.end(); j++) {
+        for(j = map.begin(); j != map.end(); ++j) {
             delete j->second;
         }
         map.clear();

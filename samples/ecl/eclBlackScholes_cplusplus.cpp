@@ -114,8 +114,10 @@ int main(int argc, char *argv[])
     if(hostCallPrice == NULL)
         return 0;
     hostPutPrice = (cl_float*)malloc(width * height * sizeof(cl_float4));
-    if(hostPutPrice == NULL)
+    if(hostPutPrice == NULL) {
+        free(hostCallPrice);
         return 0;
+    }
 
     // random initialisation of input
     for(cl_uint i = 0; i < width * height * 4; i++)

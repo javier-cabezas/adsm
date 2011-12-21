@@ -53,7 +53,6 @@ namespace core {
 
 namespace memory {
 class Object;
-class Block;
 
 template <typename State> class StateBlock;
 

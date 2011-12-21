@@ -17,7 +17,7 @@ Object::~Object()
     lockWrite();
     gmacError_t ret = coherenceOp(&Protocol::deleteBlock);
     ASSERTION(ret == gmacSuccess);
-    for(i = blocks_.begin(); i != blocks_.end(); i++) {
+    for(i = blocks_.begin(); i != blocks_.end(); ++i) {
         i->second->decRef();
     }
     blocks_.clear();
@@ -31,7 +31,7 @@ Object::firstBlock(size_t objectOffset, size_t &blockOffset) const
     if(i == blocks_.end()) return i;
     while(objectOffset >= i->second->size()) {
         objectOffset -= i->second->size();
-        i++;
+        ++i;
         if(i == blocks_.end()) return i;
     }
     blockOffset = objectOffset;
@@ -42,7 +42,7 @@ gmacError_t Object::coherenceOp(gmacError_t (Protocol::*f)(Block &))
 {
     gmacError_t ret = gmacSuccess;
     BlockMap::const_iterator i;
-    for(i = blocks_.begin(); i != blocks_.end(); i++) {
+    for(i = blocks_.begin(); i != blocks_.end(); ++i) {
         ret = i->second->coherenceOp(f);
         if(ret != gmacSuccess) break;
     }
@@ -55,7 +55,7 @@ gmacError_t Object::memoryOp(Protocol::MemoryOp op,
     gmacError_t ret = gmacSuccess;
     size_t blockOffset = 0;
     BlockMap::const_iterator i = firstBlock(objectOffset, blockOffset);
-    for(; i != blocks_.end() && size > 0; i++) {
+    for(; i != blocks_.end() && size > 0; ++i) {
         Block &block = *i->second;
         size_t blockSize = block.size() - blockOffset;
         blockSize = size < blockSize? size: blockSize;
@@ -74,7 +74,7 @@ gmacError_t Object::memset(size_t offset, int v, size_t size)
     gmacError_t ret = gmacSuccess;
     size_t blockOffset = 0;
     BlockMap::const_iterator i = firstBlock(offset, blockOffset);
-    for(; i != blocks_.end() && size > 0; i++) {
+    for(; i != blocks_.end() && size > 0; ++i) {
         Block &block = *i->second;
         size_t blockSize = block.size() - blockOffset;
         blockSize = size < blockSize? size: blockSize;
@@ -182,7 +182,7 @@ Object::memcpyObjectToObject(core::Mode &mode,
                 TRACE(LOCAL, "FP: Copying1: "FMT_SIZE" bytes", copySize);
                 ret = i->second->copyOp(&Protocol::copyBlockToBlock, *j->second, dstOffset % blockSize(), srcOffset % blockSize(), copySize);
                 ASSERTION(ret == gmacSuccess);
-                i++;
+                ++i;
             }
             else { // Two copies from the source to fill the buffer
                 TRACE(LOCAL, "FP: Copying2: "FMT_SIZE" bytes", copySize);
@@ -194,7 +194,7 @@ Object::memcpyObjectToObject(core::Mode &mode,
                                         srcOffset % blockSize(),
                                         firstCopySize);
                 ASSERTION(ret == gmacSuccess);
-                i++;
+                ++i;
                 ret = i->second->copyOp(&Protocol::copyBlockToBlock, *j->second,
                                         (dstOffset + firstCopySize) % blockSize(),
                                         (srcOffset + firstCopySize) % blockSize(),
@@ -204,13 +204,8 @@ Object::memcpyObjectToObject(core::Mode &mode,
             left -= copySize;
             dstOffset += copySize;
             srcOffset += copySize;
-            j++;
+            ++j;
         }
-
-#if 0
-        dstObj.unlock();
-        unlock();
-#endif
 
         TRACE(LOCAL, "Fast path finished!");
 

@@ -33,6 +33,8 @@ static void segvHandler(int s, siginfo_t *info, void *ctx)
 	unsigned long writeAccess = mCtx->gregs[REG_ERR] & 0x2;
 #elif defined(DARWIN)
 	unsigned long writeAccess = (*mCtx)->__es.__err & 0x2;
+#else
+    #error "Signal handler not support in this platform"
 #endif
     hostptr_t addr = hostptr_t(info->si_addr);
 

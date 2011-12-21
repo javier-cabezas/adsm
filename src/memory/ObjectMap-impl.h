@@ -11,7 +11,7 @@ ObjectMap::forEachObject(gmacError_t (Object::*f)(void))
 {
     iterator i;
     lockRead();
-    for(i = begin(); i != end(); i++) {
+    for(i = begin(); i != end(); ++i) {
         gmacError_t ret = (i->second->*f)();
         if(ret != gmacSuccess) {
             unlock();
@@ -46,7 +46,7 @@ gmacError_t ObjectMap::dumpObjects(const std::string &dir, std::string prefix, p
 {
     lockRead();
     const_iterator i;
-    for(i = begin(); i != end(); i++) {
+    for(i = begin(); i != end(); ++i) {
         Object &obj = *(i->second);
         std::stringstream name;
         name << dir << prefix << "#" << obj.getId() << "-" << obj.getDumps(stat) << "_" << protocol::common::StatisticName[stat];

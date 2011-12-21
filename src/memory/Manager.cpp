@@ -273,7 +273,7 @@ Manager::acquireObjects(core::Mode &mode, const ListAddr &addrs)
     } else {
         TRACE(LOCAL,"Acquiring call Objects");
         std::list<ObjectInfo>::const_iterator it;
-        for (it = addrs.begin(); it != addrs.end(); it++) {
+        for (it = addrs.begin(); it != addrs.end(); ++it) {
             Object *obj = map.getObject(it->first);
             if (obj == NULL) {
                 HostMappedObject *hostMappedObject = HostMappedObject::get(it->first);
@@ -321,7 +321,7 @@ Manager::releaseObjects(core::Mode &mode, const ListAddr &addrs)
     } else { // Release given objects
         TRACE(LOCAL,"Releasing call Objects");
         ListAddr::const_iterator it;
-        for (it = addrs.begin(); it != addrs.end(); it++) {
+        for (it = addrs.begin(); it != addrs.end(); ++it) {
             Object *obj = map.getObject(it->first);
             if (obj == NULL) {
                 HostMappedObject *hostMappedObject = HostMappedObject::get(it->first);

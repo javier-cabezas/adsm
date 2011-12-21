@@ -110,8 +110,10 @@ int main(int argc, char *argv[])
     if(hostCallPrice == NULL)
         return 0;
     hostPutPrice = (cl_float*)malloc(width * height * sizeof(cl_float4));
-    if(hostPutPrice == NULL)
+    if(hostPutPrice == NULL) {
+        free(hostCallPrice);
         return 0;
+    }
     getTime(&t);
     printTime(&s, &t, "Alloc: ", "\n");
 
