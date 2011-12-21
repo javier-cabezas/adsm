@@ -3,12 +3,11 @@
 #include <cassert>
 #include <cstring>
 
-#include "gmac/opencl"
+#include <gmac/opencl>
 
 #include "utils.h"
-#include "debug.h"
 
-#include "../eclBitonicSortKernel.cl"
+#include "eclBitonicSortKernel.cl"
 
 #define GROUP_SIZE 1
 
@@ -59,30 +58,25 @@ bubbleSortCPUReference(
 
 int main(int argc, char *argv[])
 {
-    gmactime_t s, t, S , T;
-
     cl_uint seed = 123;
     cl_uint *input = NULL;
     cl_uint *verificationInput;
+	ecl::error ret;
 
-    assert(ecl::compileSource(code) == eclSuccess);
+    ret = ecl::compileSource(code);
+	assert(ret == eclSuccess);
     setParam<cl_uint>(&sortDescending, sortDescendingStr, sortDescendingDefault);
     setParam<cl_uint>(&length, lengthStr, lengthDefault);
     setParam<cl_uint>(&stage, stageStr, stageDefault);
     setParam<cl_uint>(&passOfStage, passOfStageStr, passOfStageDefault);
 
-    getTime(&s);
     // Alloc
     input = new (ecl::allocator) cl_uint[length * sizeof(cl_uint)];
     assert(input != NULL);
     verificationInput = (cl_uint *) malloc(length*sizeof(cl_uint));
     if(verificationInput == NULL)
         return 0;
-    getTime(&t);
-    printTime(&s, &t, "Alloc: ", "\n");
 
-    getTime(&S);
-    getTime(&s);
     /* random initialisation of input */
     srand(seed);
     const cl_uint rangeMin = 0;
@@ -93,72 +87,63 @@ int main(int argc, char *argv[])
     }
 
     memcpy(verificationInput, input, length*sizeof(cl_uint));
-    getTime(&t);
-    printTime(&s, &t, "Init: ", "\n");
 
-    getTime(&s);
     // Print the input data
     printf("Unsorted Input: ");
     for(cl_uint i = 0; i < length; i++)
         printf("%d ", input[i]);
-    getTime(&t);
-    printTime(&s, &t, "\nPrint: ", "\n");
 
-    getTime(&s);
     cl_uint numStages = 0;
     for(cl_uint temp = length; temp > 1; temp >>= 1)
         ++numStages;
     ecl::config globalSize(length / 2);
     ecl::config localSize(GROUP_SIZE);
-    ecl::error err;
-    ecl::kernel kernel("bitonicSort", err);
-    assert(err == eclSuccess);
+	ecl::config globalWorkOffset(0);  
+    ecl::kernel kernel("bitonicSort", ret);
+    assert(ret == eclSuccess);
 #ifndef __GXX_EXPERIMENTAL_CXX0X__
-    assert(kernel.setArg(0, input) == eclSuccess);
-    assert(kernel.setArg(3, length) == eclSuccess);
-    assert(kernel.setArg(4, sortDescending) == eclSuccess);
+    ret = kernel.setArg(0, input);
+	assert(ret == eclSuccess);
+    ret = kernel.setArg(3, length);
+	assert(ret == eclSuccess);
+    ret = kernel.setArg(4, sortDescending);
+	assert(ret == eclSuccess);
     for(stage = 0; stage < numStages; ++stage) {
         /* stage of the algorithm */
-        assert(kernel.setArg(1, stage) == eclSuccess);
+        ret = kernel.setArg(1, stage);
+		assert(ret == eclSuccess);
         /* Every stage has stage+1 passes. */
         for(passOfStage = 0; passOfStage < stage + 1; ++passOfStage) {
             /* pass of the current stage */
-            assert(kernel.setArg(2, passOfStage) == eclSuccess);
-            assert(kernel.callNDRange(globalSize, localSize) == eclSuccess);
+            ret = kernel.setArg(2, passOfStage);
+			assert(ret == eclSuccess);
+            ret = kernel.callNDRange(globalSize, localSize, globalWorkOffset);
+			assert(ret == eclSuccess);
         }
     }
 #else
     for(cl_uint stage = 0; stage < numStages; ++stage) {
         for(cl_uint passOfStage = 0; passOfStage < stage + 1; ++passOfStage) {
-            assert(kernel(globalSize, localSize)(input, stage, passOfStage, length, sortDescending) == eclSuccess);
+            ret = kernel(globalSize, localSize)(input, stage, passOfStage, length, sortDescending);
+			assert(ret == eclSuccess);
         }
     }
 #endif
-    getTime(&t);
-    printTime(&s, &t, "Run: ", "\n");
 
     printf("Output: ");
     for(cl_uint i = 0; i < length; i++) {
         printf("%d ", input[i]);
     }
 
-    getTime(&s);
     bubbleSortCPUReference(verificationInput, length, sortDescending);
     if(memcmp(input, verificationInput, length*sizeof(cl_uint)) == 0) {
         printf("\nPassed!\n");
     } else {
         printf("\nFailed\n");
     }
-    getTime(&t);
-    printTime(&s, &t, "Check: ", "\n");
-    getTime(&T);
-    printTime(&S, &T, "Total: ", "\n");
 
-    getTime(&s);
     free(verificationInput);
     verificationInput = NULL;
     ecl::free(input);
-    getTime(&t);
-    printTime(&s, &t, "Free: ", "\n");
     return 0;
 }
