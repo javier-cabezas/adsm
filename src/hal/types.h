@@ -23,8 +23,8 @@ namespace __impl { namespace hal {
 
     typedef hal::cuda::buffer_t buffer_t;
 
-    typedef hal::cuda::ptr_t ptr_t;
-    typedef hal::cuda::ptr_const_t ptr_const_t;
+    typedef hal::cuda::ptr_t ptr;
+    typedef hal::cuda::ptr_const_t const_ptr;
 }}
 
 #else
@@ -45,8 +45,8 @@ namespace __impl { namespace hal {
 
     typedef hal::opencl::buffer_t buffer_t;
 
-    typedef hal::opencl::ptr_t ptr_t;
-    typedef hal::opencl::ptr_const_t ptr_const_t;
+    typedef hal::opencl::ptr_t ptr;
+    typedef hal::opencl::ptr_const_t const_ptr;
 }}
 
 #endif

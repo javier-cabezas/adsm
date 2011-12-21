@@ -207,7 +207,7 @@ public:
      * \param addr Host memory address within the object
      * \return Accelerator memory address within the object
      */
-    virtual hal::ptr_t get_device_addr(host_ptr addr) = 0;
+    virtual hal::ptr get_device_addr(host_ptr addr) = 0;
 
     /**
      * Get the accelerator memory address where a host memory address from the object is mapped
@@ -216,7 +216,7 @@ public:
      * \param addr Host memory address within the object
      * \return Accelerator memory address within the object
      */
-    virtual hal::ptr_const_t get_device_const_addr(host_const_ptr addr) const = 0;
+    virtual hal::const_ptr get_device_const_addr(host_const_ptr addr) const = 0;
 
     /**
      * Get the owner of the object

@@ -119,14 +119,14 @@ public:
      * Get memory block address at the accelerator
      * \return Accelerator memory address of the block
      */
-    virtual hal::ptr_t get_device_addr(host_ptr addr) = 0;
+    virtual hal::ptr get_device_addr(host_ptr addr) = 0;
 
     /**
      * Get memory block address at the accelerator
      * \return Accelerator memory address of the block
      */
     inline
-    hal::ptr_t get_device_addr()
+    hal::ptr get_device_addr()
     {
         return get_device_addr(addr_);
     }
@@ -135,14 +135,14 @@ public:
      * Get memory block address at the accelerator
      * \return Accelerator memory address of the block
      */
-    virtual hal::ptr_const_t get_device_const_addr(host_const_ptr addr) const = 0;
+    virtual hal::const_ptr get_device_const_addr(host_const_ptr addr) const = 0;
 
     /**
      * Get memory block address at the accelerator
      * \return Accelerator memory address of the block
      */
     inline
-    hal::ptr_const_t get_device_const_addr() const
+    hal::const_ptr get_device_const_addr() const
     {
         return get_device_const_addr(addr_);
     }

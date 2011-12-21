@@ -57,7 +57,7 @@ protected:
     host_ptr shadow_;
     bool hasUserMemory_;
 
-    hal::ptr_t deviceAddr_;
+    hal::ptr deviceAddr_;
     core::address_space_ptr ownerShortcut_;
 
     gmacError_t repopulate_blocks(core::address_space &aspace);
@@ -67,11 +67,11 @@ public:
     object_state(protocol &protocol, host_ptr cpuAddr, size_t size, typename ProtocolTraits::State init, gmacError_t &err);
     virtual ~object_state();
 
-    hal::ptr_t get_device_addr(host_ptr addr);
-    hal::ptr_t get_device_addr();
+    hal::ptr get_device_addr(host_ptr addr);
+    hal::ptr get_device_addr();
 
-    hal::ptr_const_t get_device_const_addr(host_const_ptr addr) const;
-    hal::ptr_const_t get_device_const_addr() const;
+    hal::const_ptr get_device_const_addr(host_const_ptr addr) const;
+    hal::const_ptr get_device_const_addr() const;
 
     core::address_space_ptr get_owner();
     core::address_space_const_ptr get_owner() const;
