@@ -22,7 +22,7 @@ Test::TestCase::Stats::getNames() const
     ListNames list;
     MapStats::const_iterator it;
 
-    for (it = stats_.begin(); it != stats_.end(); it++) {
+    for (it = stats_.begin(); it != stats_.end(); ++it) {
         list.push_back(it->first);
     }
 
@@ -40,6 +40,7 @@ Test::TestCase::Stats::getValues(std::string name) const
 
 Test::TestCase::TestCase() :
     name_(""),
+    status_(0),
     run_(false),
     time_(0.0)
 {}
@@ -48,7 +49,8 @@ Test::TestCase::TestCase(const TestCase &testCase) :
     keyvals_(testCase.keyvals_),
     name_(testCase.name_),
     status_(testCase.status_),
-    run_(testCase.run_)
+    run_(testCase.run_),
+    time_(0.0)
 {
 }
 
@@ -118,7 +120,7 @@ Test::Stats::Stats()
 Test::Stats::~Stats()
 {
     MapStats::iterator it;
-    for (it = testCaseStats_.begin(); it != testCaseStats_.end(); it++) {
+    for (it = testCaseStats_.begin(); it != testCaseStats_.end(); ++it) {
         delete it->first;
     }
 }
@@ -137,7 +139,7 @@ Test::Stats::filter(Variable &v, std::string value) const
     assert(v.find(value) != v.end());
 
     MapStats::const_iterator it;
-    for (it = testCaseStats_.begin(); it != testCaseStats_.end(); it++) {
+    for (it = testCaseStats_.begin(); it != testCaseStats_.end(); ++it) {
         const TestCase *testCase = it->first;
         assert(testCase->hasVariable(v.getName()));
         if (testCase->hasValue(v.getName(), value)) {
@@ -193,7 +195,7 @@ Test::equals(std::vector<VectorString::iterator> &current,
 void
 Test::generateTestCases()
 {
-    if (vars_.size() > 0) {
+    if (vars_.empty() == false) {
         std::vector<VectorString::iterator> start; 
         std::vector<VectorString::iterator> current; 
         std::vector<VectorString::iterator> end; 

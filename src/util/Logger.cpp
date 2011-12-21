@@ -112,7 +112,7 @@ bool Logger::Check(const char *name)
     if(AtomicTestAndSet(Ready_, 0, 1) == 0) Init();
 	if(name == NULL) return true;
     std::list<std::string>::const_iterator i;
-    for(i = Tags_->begin(); i != Tags_->end(); i++) {
+    for(i = Tags_->begin(); i != Tags_->end(); ++i) {
         if(strstr(name, i->c_str()) != NULL) return true;
     }
     return false;

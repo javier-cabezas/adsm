@@ -44,7 +44,7 @@ TraceWriter::TraceWriter(const char *fileName, uint32_t pid, uint32_t tid) :
 TraceWriter::~TraceWriter()
 {
     std::list<Application *>::iterator i;
-    for(i = apps_.begin(); i != apps_.end(); i++) delete (*i);
+    for(i = apps_.begin(); i != apps_.end(); ++i) delete (*i);
     apps_.clear();
 }
 
@@ -123,14 +123,14 @@ void TraceWriter::write(uint64_t t)
 {
     mutex_.lock();
 	std::list<Application *>::iterator app;
-	for(app = apps_.begin(); app != apps_.end(); app++) {
+	for(app = apps_.begin(); app != apps_.end(); ++app) {
 		(*app)->end(of_, t);
 	}
 
 	Record::end(of_);
 	uint32_t size = uint32_t(apps_.size());
 	of_.write((char *)&size, sizeof(size));
-	for(app = apps_.begin(); app != apps_.end(); app++) {
+	for(app = apps_.begin(); app != apps_.end(); ++app) {
 		(*app)->write(of_);
 	}
 
@@ -205,12 +205,12 @@ StreamOut &operator<<(StreamOut &of, const TraceReader &trace)
 	// Print # of applications and tasks and threads per task
 	of << ":" << trace.apps_.size();
 	std::list<Application *>::const_iterator app;
-	for(app = trace.apps_.begin(); app != trace.apps_.end(); app++)
+	for(app = trace.apps_.begin(); app != trace.apps_.end(); ++app)
 		of << ":" << *(*app);
 	of << std::endl;
 
 	std::list<Record *>::const_iterator i;
-	for(i = trace.records_.begin(); i != trace.records_.end(); i++)
+	for(i = trace.records_.begin(); i != trace.records_.end(); +i)
 		of << *(*i);
     return of;
 }
