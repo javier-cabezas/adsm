@@ -79,7 +79,7 @@ class GMAC_LOCAL address_space :
 
     process &proc_;
 
-    typedef util::stl::locked_map<host_ptr, hal::ptr_t> map_addresses;
+    typedef util::stl::locked_map<host_ptr, hal::ptr> map_addresses;
     typedef util::stl::locked_map<host_ptr, hal::buffer_t *> map_buffers;
 
     map_addresses mapDeviceAddresses_;
@@ -99,26 +99,26 @@ public:
                   process &proc);
     virtual ~address_space();
 
-    gmacError_t map(hal::ptr_t &dst, host_ptr src, size_t count, unsigned align = 1);
+    gmacError_t map(hal::ptr &dst, host_ptr src, size_t count, unsigned align = 1);
     gmacError_t unmap(host_ptr addr, size_t count);
 
-    hal::ptr_t alloc_host_pinned(size_t count, gmacError_t &err);
-    gmacError_t free_host_pinned(hal::ptr_t ptr);
+    hal::ptr alloc_host_pinned(size_t count, gmacError_t &err);
+    gmacError_t free_host_pinned(hal::ptr ptr);
 
-    hal::ptr_t get_host_pinned_mapping(host_ptr ptr, gmacError_t &err);
+    hal::ptr get_host_pinned_mapping(host_ptr ptr, gmacError_t &err);
 
-    gmacError_t copy(hal::ptr_t dst, hal::ptr_const_t src, size_t count);
+    gmacError_t copy(hal::ptr dst, hal::const_ptr src, size_t count);
 
-    gmacError_t copy(hal::ptr_t dst, hal::device_input &input, size_t count);
-    gmacError_t copy(hal::device_output &output, hal::ptr_const_t src, size_t count);
+    gmacError_t copy(hal::ptr dst, hal::device_input &input, size_t count);
+    gmacError_t copy(hal::device_output &output, hal::const_ptr src, size_t count);
 
-    hal::event_ptr copy_async(hal::ptr_t dst, hal::ptr_const_t src, size_t count, gmacError_t &err);
+    hal::event_ptr copy_async(hal::ptr dst, hal::const_ptr src, size_t count, gmacError_t &err);
 
-    hal::event_ptr copy_async(hal::ptr_t dst, hal::device_input &input, size_t count, gmacError_t &err);
-    hal::event_ptr copy_async(hal::device_output &output, hal::ptr_const_t src, size_t count, gmacError_t &err);
+    hal::event_ptr copy_async(hal::ptr dst, hal::device_input &input, size_t count, gmacError_t &err);
+    hal::event_ptr copy_async(hal::device_output &output, hal::const_ptr src, size_t count, gmacError_t &err);
 
-    gmacError_t memset(hal::ptr_t addr, int c, size_t count);
-    hal::event_ptr memset_async(hal::ptr_t addr, int c, size_t count, gmacError_t &err);
+    gmacError_t memset(hal::ptr addr, int c, size_t count);
+    hal::event_ptr memset_async(hal::ptr addr, int c, size_t count, gmacError_t &err);
 
     hal::context_t &get_hal_context();
     const hal::context_t &get_hal_context() const;

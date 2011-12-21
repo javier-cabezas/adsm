@@ -62,10 +62,10 @@ address_space::destroy_io_buffer(core::io_buffer &buffer)
 #endif
 
 gmacError_t
-address_space::map(hal::ptr_t &dst, host_ptr src, size_t count, unsigned align)
+address_space::map(hal::ptr &dst, host_ptr src, size_t count, unsigned align)
 {
     gmacError_t ret;
-    hal::ptr_t acc;
+    hal::ptr acc;
     if (align > 1) {
         count += align;
     }
@@ -100,10 +100,10 @@ address_space::unmap(host_ptr addr, size_t count)
     return ret;
 }
 
-hal::ptr_t
+hal::ptr
 address_space::alloc_host_pinned(size_t count, gmacError_t &err)
 {
-    hal::ptr_t ret;
+    hal::ptr ret;
     ret = ctx_.alloc_host_pinned(count, GMAC_PROT_READWRITE, err);
 
     // TODO: cache pinned allocations
@@ -111,7 +111,7 @@ address_space::alloc_host_pinned(size_t count, gmacError_t &err)
 }
 
 gmacError_t
-address_space::free_host_pinned(hal::ptr_t ptr)
+address_space::free_host_pinned(hal::ptr ptr)
 {
     gmacError_t ret;
 
@@ -120,10 +120,10 @@ address_space::free_host_pinned(hal::ptr_t ptr)
     return ret;
 }
 
-hal::ptr_t
+hal::ptr
 address_space::get_host_pinned_mapping(host_ptr ptr, gmacError_t &err)
 {
-    hal::ptr_t ret;
+    hal::ptr ret;
     map_buffers::iterator it;
     it = mapPinnedBuffers_.find(ptr);
 
@@ -138,7 +138,7 @@ address_space::get_host_pinned_mapping(host_ptr ptr, gmacError_t &err)
 }
 
 gmacError_t
-address_space::copy(hal::ptr_t dst, hal::ptr_const_t src, size_t count)
+address_space::copy(hal::ptr dst, hal::const_ptr src, size_t count)
 {
     gmacError_t ret;
 
@@ -171,7 +171,7 @@ address_space::copy(hal::ptr_t dst, hal::ptr_const_t src, size_t count)
 }
 
 gmacError_t
-address_space::copy(hal::ptr_t dst, hal::device_input &input, size_t count)
+address_space::copy(hal::ptr dst, hal::device_input &input, size_t count)
 {
     gmacError_t ret;
 
@@ -182,7 +182,7 @@ address_space::copy(hal::ptr_t dst, hal::device_input &input, size_t count)
 }
 
 gmacError_t
-address_space::copy(hal::device_output &output, hal::ptr_const_t src, size_t count)
+address_space::copy(hal::device_output &output, hal::const_ptr src, size_t count)
 {
     gmacError_t ret;
 
@@ -193,7 +193,7 @@ address_space::copy(hal::device_output &output, hal::ptr_const_t src, size_t cou
 }
 
 hal::event_ptr
-address_space::copy_async(hal::ptr_t dst, hal::ptr_const_t src, size_t count, gmacError_t &err)
+address_space::copy_async(hal::ptr dst, hal::const_ptr src, size_t count, gmacError_t &err)
 {
     hal::event_ptr ret;
 
@@ -219,21 +219,21 @@ address_space::copy_async(hal::ptr_t dst, hal::ptr_const_t src, size_t count, gm
 }
 
 hal::event_ptr
-address_space::copy_async(hal::ptr_t dst, hal::device_input &input, size_t count, gmacError_t &err)
+address_space::copy_async(hal::ptr dst, hal::device_input &input, size_t count, gmacError_t &err)
 {
     hal::event_ptr ret = ctx_.copy_async(dst, input, count, streamToAccelerator_, err);
     return ret;
 }
 
 hal::event_ptr
-address_space::copy_async(hal::device_output &output, hal::ptr_const_t src, size_t count, gmacError_t &err)
+address_space::copy_async(hal::device_output &output, hal::const_ptr src, size_t count, gmacError_t &err)
 {
     hal::event_ptr ret = ctx_.copy_async(output, src, count, streamToHost_, err);
     return ret;
 }
 
 gmacError_t
-address_space::memset(hal::ptr_t addr, int c, size_t count)
+address_space::memset(hal::ptr addr, int c, size_t count)
 {
     gmacError_t ret;
 
@@ -244,7 +244,7 @@ address_space::memset(hal::ptr_t addr, int c, size_t count)
 }
 
 hal::event_ptr
-address_space::memset_async(hal::ptr_t addr, int c, size_t count, gmacError_t &err)
+address_space::memset_async(hal::ptr addr, int c, size_t count, gmacError_t &err)
 {
     hal::event_ptr ret = ctx_.memset_async(addr, c, count, streamAccelerator_, err);
 

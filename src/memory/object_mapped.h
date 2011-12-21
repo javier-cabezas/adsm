@@ -97,7 +97,7 @@ public:
 class GMAC_LOCAL object_mapped {
 protected:
     //! Starting host memory address of the object
-    hal::ptr_t addr_;
+    hal::ptr addr_;
 
     //! Size (in bytes) of the object
     size_t size_;
@@ -105,10 +105,10 @@ protected:
     //! Set of all host mapped memory objects
     static set_object_mapped set_;
 
-    hal::ptr_t alloc(core::address_space_ptr aspace, gmacError_t &err);
+    hal::ptr alloc(core::address_space_ptr aspace, gmacError_t &err);
     void free(core::address_space_ptr aspace);
 
-    hal::ptr_t getAccPtr(core::address_space_ptr aspace) const;
+    hal::ptr getAccPtr(core::address_space_ptr aspace) const;
 
     core::address_space_ptr owner_;
 public:
@@ -149,7 +149,7 @@ public:
      * \param addr Host memory address within the object
      * \return Accelerator memory address where the requested host memory address is mapped
      */
-    hal::ptr_t get_device_addr(core::address_space_ptr current, host_const_ptr addr) const;
+    hal::ptr get_device_addr(core::address_space_ptr current, host_const_ptr addr) const;
 
     /**
      * Remove a host mapped object from the list of all present host mapped object

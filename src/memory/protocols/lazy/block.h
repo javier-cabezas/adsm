@@ -231,10 +231,10 @@ public:
      * \param addr Address within the block
      * \return Accelerator memory address of the block
      */
-    hal::ptr_t get_device_addr(host_ptr addr);
+    hal::ptr get_device_addr(host_ptr addr);
 
     inline
-    hal::ptr_t get_device_addr()
+    hal::ptr get_device_addr()
     {
         return parent::get_device_addr();
     }
@@ -245,14 +245,14 @@ public:
      * \param addr Address within the block
      * \return Accelerator memory address of the block
      */
-    hal::ptr_const_t get_device_const_addr(host_const_ptr addr) const;
+    hal::const_ptr get_device_const_addr(host_const_ptr addr) const;
 
     /**
       * Get memory block address at the accelerator
       * \return Accelerator memory address of the block
       */
     inline
-    hal::ptr_const_t get_device_const_addr() const
+    hal::const_ptr get_device_const_addr() const
     {
         return parent::get_device_const_addr();
     }

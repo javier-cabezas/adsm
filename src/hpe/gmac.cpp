@@ -354,7 +354,7 @@ extern "C"
 GMAC_API __gmac_accptr_t APICALL
 gmacPtr(const void *ptr)
 {
-    __impl::hal::ptr_t ret;
+    __impl::hal::ptr ret;
     enterGmac();
     ret = get_manager().translate(thread::get_current_thread().get_current_virtual_device().get_address_space(), host_ptr(ptr));
     exitGmac();

@@ -381,7 +381,7 @@ block_state::sync_to_device(gmacError_t &err)
                 size_t sizeTransfer = SubBlockSize_ * (groupEnd - groupStart + 1);
                 if (sizeTransfer > block().size()) sizeTransfer = block().size();
                 ret = block().get_owner()->copy_async(block().get_device_addr()        + groupStart * SubBlockSize_,
-                                                      hal::ptr_t(block().get_shadow()) + groupStart * SubBlockSize_,
+                                                      hal::ptr(block().get_shadow()) + groupStart * SubBlockSize_,
                                                       sizeTransfer, err);
 #ifdef DEBUG
                 for (unsigned j = groupStart; j <= groupEnd; j++) { 
@@ -399,7 +399,7 @@ block_state::sync_to_device(gmacError_t &err)
         size_t sizeTransfer = SubBlockSize_ * (groupEnd - groupStart + 1);
         if (sizeTransfer > block().size()) sizeTransfer = block().size();
         ret = block().get_owner()->copy_async(block().get_device_addr()        + groupStart * SubBlockSize_,
-                                              hal::ptr_t(block().get_shadow()) + groupStart * SubBlockSize_,
+                                              hal::ptr(block().get_shadow()) + groupStart * SubBlockSize_,
                                               sizeTransfer, err);
                                     
 #ifdef DEBUG
@@ -421,7 +421,7 @@ block_state::sync_to_host(gmacError_t &err)
 
 #ifndef USE_VM
     hal::event_ptr ret;
-    ret = block().get_owner()->copy_async(hal::ptr_t(block().get_shadow()),
+    ret = block().get_owner()->copy_async(hal::ptr(block().get_shadow()),
                                           block().get_device_addr(),
                                           block().size(), err);
 #ifdef DEBUG
@@ -454,7 +454,7 @@ block_state::sync_to_host(gmacError_t &err)
                     vm::cost<vm::MODEL_TOHOST>(SubBlockSize_, 1)) {
                 gaps++;
             } else {
-                ret = block().get_owner()->copy_async(hal::ptr_t(block().get_shadow()) + groupStart * SubBlockSize_,
+                ret = block().get_owner()->copy_async(hal::ptr(block().get_shadow()) + groupStart * SubBlockSize_,
                                                       block().get_device_addr()        + groupStart * SubBlockSize_,
                                                       SubBlockSize_ * (groupEnd - groupStart + 1), err);
                 gaps = 0;
@@ -465,7 +465,7 @@ block_state::sync_to_host(gmacError_t &err)
     }
 
     if (err == gmacSuccess && inGroup) {
-        ret = block().get_owner()->copy_async(hal::ptr_t(block().get_shadow()) + groupStart * SubBlockSize_,
+        ret = block().get_owner()->copy_async(hal::ptr(block().get_shadow()) + groupStart * SubBlockSize_,
                                               block().get_device_addr()        + groupStart * SubBlockSize_,
                                               SubBlockSize_ * (groupEnd - groupStart + 1), err);
     }
@@ -740,7 +740,7 @@ block::sync_to_device(gmacError_t &err)
 #endif
     hal::event_ptr ret;
     ret = get_owner()->copy_async(parent::get_device_addr(),
-                                  hal::ptr_const_t(get_shadow()),
+                                  hal::const_ptr(get_shadow()),
                                   size(), err);
     return ret;
 }
@@ -755,7 +755,7 @@ block::sync_to_host(gmacError_t &err)
     transfersToHost_++;
 #endif
     hal::event_ptr ret;
-    err = get_owner()->copy(hal::ptr_t(get_shadow()),
+    err = get_owner()->copy(hal::ptr(get_shadow()),
                             parent::get_device_const_addr(),
                             size());
     return ret;
@@ -832,13 +832,13 @@ block::get_owner() const
     return parent_.get_owner();
 }
 
-inline hal::ptr_t
+inline hal::ptr
 block::get_device_addr(host_ptr addr)
 {
     return parent_.get_device_addr(addr);
 }
 
-inline hal::ptr_const_t
+inline hal::const_ptr
 block::get_device_const_addr(host_const_ptr addr) const
 {
     return parent_.get_device_const_addr(addr);

@@ -571,7 +571,7 @@ context_t::alloc_host_pinned(size_t size, GmacProtection hint, gmacError_t &err)
 
     err = error(res);
 
-    return ptr_t(devPtr, this);
+    return ptr(devPtr, this);
 #endif
 }
 

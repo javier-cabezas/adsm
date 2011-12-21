@@ -57,11 +57,11 @@ public:
     vdevice(process_impl &proc, AddressSpaceImpl &aSpace);
     virtual ~vdevice();
 
-    gmacError_t map(hal::ptr_t &dst, host_ptr src, size_t size, unsigned align = 1);
+    gmacError_t map(hal::ptr &dst, host_ptr src, size_t size, unsigned align = 1);
     gmacError_t unmap(host_ptr addr, size_t size);
-    gmacError_t copyToAccelerator(hal::ptr_t acc, host_const_ptr host, size_t size);
+    gmacError_t copyToAccelerator(hal::ptr acc, host_const_ptr host, size_t size);
     gmacError_t copyToHost(host_ptr host, const accptr_t acc, size_t size);
-    gmacError_t copyAccelerator(hal::ptr_t dst, const accptr_t src, size_t size);
+    gmacError_t copyAccelerator(hal::ptr dst, const accptr_t src, size_t size);
     gmacError_t memset(accptr_t addr, int c, size_t size);
     gmacError_t bufferToAccelerator(accptr_t dst, IOBufferImpl &buffer, size_t size, size_t off = 0);
     gmacError_t acceleratorToBuffer(IOBufferImpl &buffer, const accptr_t dst, size_t size, size_t off = 0);

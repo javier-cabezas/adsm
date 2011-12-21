@@ -164,7 +164,7 @@ public:
      * \param addr Host shared memory address
      * \return Accelerator memory address
      */
-    TESTABLE hal::ptr_t translate(core::address_space_ptr aspace, host_ptr addr);
+    TESTABLE hal::ptr translate(core::address_space_ptr aspace, host_ptr addr);
 
 
     core::address_space_ptr get_owner(host_const_ptr addr, size_t size = 0);

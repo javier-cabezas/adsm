@@ -237,14 +237,14 @@ manager::get_alloc_size(core::address_space_ptr aspace, host_const_ptr addr, gma
     return ret;
 }
 
-hal::ptr_t
+hal::ptr
 manager::translate(core::address_space_ptr aspace, host_ptr addr)
 {
     trace::EnterCurrentFunction();
     memory::map_object &map = aspace->get_object_map();
 
     object_ptr obj = map.get_object(addr);
-    hal::ptr_t ret;
+    hal::ptr ret;
     if(!obj) {
         object_mapped_ptr object = object_mapped::get_object(addr);
         if(object) {
