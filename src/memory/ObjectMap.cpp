@@ -70,7 +70,7 @@ ObjectMap::cleanUp()
 {
     const_iterator i;
     lockRead();
-    for(i = begin(); i != end(); i++) {
+    for(i = begin(); i != end(); ++i) {
         // Decrement reference count of pointed objects to allow later destruction
         i->second->decRef();
     }
@@ -145,7 +145,7 @@ size_t ObjectMap::memorySize() const
     size_t total = 0;
     const_iterator i;
     lockRead();
-    for(i = begin(); i != end(); i++) {
+    for(i = begin(); i != end(); ++i) {
         total += i->second->size();
     }
     unlock();

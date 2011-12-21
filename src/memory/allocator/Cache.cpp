@@ -37,7 +37,7 @@ Arena::~Arena()
 Cache::~Cache()
 {
     ArenaMap::iterator i;
-    for(i = arenas.begin(); i != arenas.end(); i++) {
+    for(i = arenas.begin(); i != arenas.end(); ++i) {
         delete i->second;
     }
 }
@@ -46,7 +46,7 @@ hostptr_t Cache::get()
 {
     ArenaMap::iterator i;
     lock();
-    for(i = arenas.begin(); i != arenas.end(); i++) {
+    for(i = arenas.begin(); i != arenas.end(); ++i) {
         if(i->second->empty()) continue;
         TRACE(LOCAL,"Cache %p gets memory from arena %p", this, i->second);
         unlock();

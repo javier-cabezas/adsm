@@ -45,7 +45,7 @@ void Slab::cleanup(core::Mode &current)
     modes.unlock();
     if(i == modes.end()) return;
     CacheMap::iterator j;
-    for(j = i->second.begin(); j != i->second.end(); j++) {
+    for(j = i->second.begin(); j != i->second.end(); ++j) {
         delete j->second;
     }
     i->second.clear();

@@ -92,10 +92,8 @@ int main(int argc, char *argv[])
     error_code = queues[0].finish();
 	assert(error_code == CL_SUCCESS);
 
-    float error = 0.f;
     float check = 0.f;
     for(unsigned i = 0; i < vecSize; i++) {
-        error += c[i] - (a[i] + b[i]);
         check += c[i];
     }
 
