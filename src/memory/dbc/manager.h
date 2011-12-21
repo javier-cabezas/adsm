@@ -50,11 +50,14 @@ class GMAC_LOCAL manager :
     DBC_TESTED(__impl::memory::manager)
 
 private:
-    typedef __impl::memory::manager parent;
-
-    typedef __impl::util::shared_ptr<__impl::core::address_space> address_space_ptr_impl;
-    typedef __impl::core::io_buffer io_buffer_impl;
+    typedef __impl::core::address_space_ptr address_space_ptr_impl;
     typedef __impl::core::process process_impl;
+
+    typedef __impl::hal::device_input device_input_impl;
+    typedef __impl::hal::device_output device_output_impl;
+
+    typedef __impl::memory::list_addr list_addr_impl;
+    typedef __impl::memory::manager parent;
 
 protected:
 
@@ -68,65 +71,26 @@ public:
      */
     manager(process_impl &proc);
 
-    /**
-     * Allocate private shared memory.
-     * Memory allocated with this call is only accessible by the accelerator
-     * associated to the execution thread requesting the allocation
-     * \param mode Execution mode requesing the allocation
-     * \param addr Memory address of a pointer to store the host address of the
-     * allocated memory
-     * \param size Size (in bytes) of shared memory to be allocated
-     * \return Error code
-     */
-    gmacError_t alloc(address_space_ptr_impl aspace, host_ptr *addr, size_t size);
+    size_t get_alloc_size(address_space_ptr_impl aspace, host_const_ptr addr, gmacError_t &err) const;
 
-    /**
-     * Release shared memory
-     * \param mode Execution mode requesting the memory release
-     * \param addr Memory address of the shared memory chunk to be released
-     * \return Error code
-     */
+    gmacError_t alloc(address_space_ptr_impl aspace, host_ptr *addr, size_t size);
     gmacError_t free(address_space_ptr_impl aspace, host_ptr addr);
 
-    /**
-     * Notify a memory fault caused by a load operation
-     * \param mode Execution mode causing the fault
-     * \param addr Host memory address causing the memory fault
-     * \return True if the Manager was able to fix the fault condition
-     */
-    bool signal_read(address_space_ptr_impl aspace, host_ptr addr);
+    address_space_ptr_impl get_owner(host_const_ptr addr, size_t size = 0);
 
-    /**
-     * Notify a memory fault caused by a store operation
-     * \param mode Execution mode causing the fault
-     * \param addr Host memory address causing the memory fault
-     * \return True if the Manager was able to fix the fault condition
-     */
+    gmacError_t acquire_objects(address_space_ptr_impl aspace, const list_addr_impl &addrs = __impl::memory::AllAddresses);
+    gmacError_t release_objects(address_space_ptr_impl aspace, const list_addr_impl &addrs = __impl::memory::AllAddresses);
+
+    bool signal_read(address_space_ptr_impl aspace, host_ptr addr);
     bool signal_write(address_space_ptr_impl aspace, host_ptr addr);
 
-    /**
-     * Initialize to a given value the contents of a host address of a memory
-     * object
-     * \param mode Execution mode requesting the operation
-     * \param dst Host memory address corresponding to a memory object to set
-     * the memory contents
-     * \param c Value used to initialize memory
-     * \param size Size (in bytes) of the memory to initialize
-     * \return Error code
-     */
+    gmacError_t from_io_device(address_space_ptr_impl aspace, host_ptr addr, device_input_impl &input, size_t count);
+    gmacError_t to_io_device(device_output_impl &output, address_space_ptr_impl aspace, host_const_ptr addr, size_t count);
+
+    gmacError_t memcpy(address_space_ptr_impl aspace, host_ptr dst, host_const_ptr src, size_t size);
     gmacError_t memset(address_space_ptr_impl aspace, host_ptr dst, int c, size_t size);
 
-    /**
-     * Copy data from and/or to host memory addresses of memory objects
-     * \param mode Execution mode requesting the operation
-     * \param dst Destination host memory addrees of a memory objec to copy the
-     * data to
-     * \param src Source host memory address that might or might not correspond
-     * to a memory object
-     * \param size Size (in bytes) of the amoun of data to be copied
-     */
-    gmacError_t memcpy(address_space_ptr_impl aspace, host_ptr dst, host_const_ptr src, size_t size);
-
+    gmacError_t flush_dirty(address_space_ptr_impl aspace);
 };
 
 }}
