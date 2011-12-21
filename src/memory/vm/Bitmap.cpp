@@ -115,7 +115,7 @@ Node::registerRange(long_t startIndex, long_t endIndex)
     do {
         Node *&node = getNodeRef(i);
         if (node == NULL) {
-            node = (Node *) createChild();
+            node = static_cast<Node *>(createChild());
             node->allocAcc(false);
             TRACE(LOCAL, "Allocating accelerator memory: %p", node->entriesAcc_.get());
 
@@ -183,7 +183,7 @@ Node::acquire()
 
     if (nextEntries_.size() > 0) {
         for (long_t i = getFirstUsedEntry(); i <= getLastUsedEntry(); i++) {
-            Node *node = (Node *) getNode(i);
+            Node *node = static_cast<Node *>(getNode(i));
             if (node != NULL) node->acquire();
         }
     } else {
@@ -197,7 +197,7 @@ Node::release()
 {
     if (nextEntries_.size() > 0) {
         for (long_t i = getFirstUsedEntry(); i <= getLastUsedEntry(); i++) {
-            Node *node = (Node *) getNode(i);
+            Node *node = static_cast<Node *>(getNode(i));
             if (node != NULL) node->release();
         }
     }
