@@ -250,7 +250,7 @@ void SetThreadState(const State &state);
     \param delta Time taken to transfer the data
     \param size Size (in bytes) of the data transferred
 */
-void DataCommunication(THREAD_T src, THREAD_T dst, uint64_t delta, size_t size);
+void DataCommunication(THREAD_T src, THREAD_T dst, uint64_t delta, size_t size, uint64_t start = 0);
 
 //! Notify a data communication started by the current thread
 /**
@@ -258,7 +258,7 @@ void DataCommunication(THREAD_T src, THREAD_T dst, uint64_t delta, size_t size);
     \param delta Time taken to transfer the data
     \param size Size (in bytes) of the data transferred
 */
-void DataCommunication(THREAD_T tid, uint64_t delta, size_t size);
+void DataCommunication(THREAD_T tid, uint64_t delta, size_t size, uint64_t start = 0);
 
 //! Get a time mark to be used by the tracer
 /**

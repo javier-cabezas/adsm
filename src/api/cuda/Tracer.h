@@ -39,8 +39,8 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace cuda { 
 
-void DataCommunication(THREAD_T src, THREAD_T dst, CUevent start, CUevent end, size_t size);
-void DataCommunication(THREAD_T tid, CUevent start, CUevent end, size_t size);
+void DataCommunication(THREAD_T src, THREAD_T dst, CUevent start, CUevent end, size_t size, uint64_t t);
+void DataCommunication(THREAD_T tid, CUevent start, CUevent end, size_t size, uint64_t t);
 
 }}
 
