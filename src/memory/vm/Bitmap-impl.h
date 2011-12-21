@@ -264,7 +264,7 @@ inline
 Node *
 Node::getNodeAccAddr(long_t index)
 {
-    return (Node *) (reinterpret_cast<Node **>((void *) this->entriesAcc_) + index);
+    return static_cast<Node *>(reinterpret_cast<Node **>((void *) this->entriesAcc_) + index);
 }
 
 #if 0

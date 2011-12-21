@@ -53,8 +53,6 @@ void Process::makeOrphan(memory::Object &)
 core::Mode *Process::owner(const hostptr_t addr, size_t size)
 {
     return map_.owner(addr, size);
-
-    return NULL;
 }
 
 Mode *Process::createMode(cl_context ctx, cl_uint numDevices, const cl_device_id *devices)

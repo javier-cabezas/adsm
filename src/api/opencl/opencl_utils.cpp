@@ -95,7 +95,7 @@ getOpenCLVersion(cl_platform_id id)
     CFATAL(err == CL_SUCCESS);
     version[len] = '\0';
     unsigned major, minor;
-    sscanf(version, "OpenCL %u.%u", &major, &minor);
+    snscanf(version, len, "OpenCL %u.%u", &major, &minor);
     delete [] version;
 
     return OpenCLVersion(major, minor);
