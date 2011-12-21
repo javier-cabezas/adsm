@@ -37,7 +37,6 @@ void *addVector(void *ptr)
 {
 	thread_info *info = (thread_info*)ptr;
 	gmactime_t s, t;
-	gmacError_t ret = gmacSuccess;
 
     float *local_a = &a[info->idx * (vecSize/nIter)];
     float *local_b = &b[info->idx * (vecSize/nIter)];
@@ -68,6 +67,8 @@ int main(int argc, char *argv[])
 	thread_t *nThread;
 	unsigned n = 0;
 	gmactime_t st, en;
+
+	gmacError_t ret = gmacSuccess;
 
 	setParam<unsigned>(&nIter, nIterStr, nIterDefault);
 	setParam<size_t>(&vecSize, vecSizeStr, vecSizeDefault);
@@ -102,7 +103,7 @@ int main(int argc, char *argv[])
     getTime(&st);
 	float error = 0;
 	for(unsigned i = 0; i < vecSize; i++) {
-		error += (*c)[i] - (a[i] + b[i]);
+		error += c[i] - (a[i] + b[i]);
 	}
 	getTime(&en);
 	printTime(&st, &en, "Check: ", "\n");
