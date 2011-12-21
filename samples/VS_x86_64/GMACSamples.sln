@@ -24,10 +24,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "eclBitonicSort_cplusplus", 
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "eclBlackScholes", "eclBlackScholes.vcxproj", "{EF8C6D72-73C8-424D-9E44-39ADBBBD9CB1}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "eclBlackScholes_cplusplus", "eclBlackScholes_cplusplus.vcxproj", "{A5851663-9468-4593-8F88-B9C67A057584}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "eclMonteCarloAsian_cplusplus", "eclMonteCarloAsian_cplusplus.vcxproj", "{A7ACC37B-3820-4994-923F-0F8F5B5CB981}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -132,22 +128,6 @@ Global
 		{EF8C6D72-73C8-424D-9E44-39ADBBBD9CB1}.Release|x64.Build.0 = Release|x64
 		{EF8C6D72-73C8-424D-9E44-39ADBBBD9CB1}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|x64
 		{EF8C6D72-73C8-424D-9E44-39ADBBBD9CB1}.RelWithDebInfo|x64.Build.0 = RelWithDebInfo|x64
-		{A5851663-9468-4593-8F88-B9C67A057584}.Debug|x64.ActiveCfg = Debug|x64
-		{A5851663-9468-4593-8F88-B9C67A057584}.Debug|x64.Build.0 = Debug|x64
-		{A5851663-9468-4593-8F88-B9C67A057584}.MinSizeRel|x64.ActiveCfg = MinSizeRel|x64
-		{A5851663-9468-4593-8F88-B9C67A057584}.MinSizeRel|x64.Build.0 = MinSizeRel|x64
-		{A5851663-9468-4593-8F88-B9C67A057584}.Release|x64.ActiveCfg = Release|x64
-		{A5851663-9468-4593-8F88-B9C67A057584}.Release|x64.Build.0 = Release|x64
-		{A5851663-9468-4593-8F88-B9C67A057584}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|x64
-		{A5851663-9468-4593-8F88-B9C67A057584}.RelWithDebInfo|x64.Build.0 = RelWithDebInfo|x64
-		{A7ACC37B-3820-4994-923F-0F8F5B5CB981}.Debug|x64.ActiveCfg = Debug|x64
-		{A7ACC37B-3820-4994-923F-0F8F5B5CB981}.Debug|x64.Build.0 = Debug|x64
-		{A7ACC37B-3820-4994-923F-0F8F5B5CB981}.MinSizeRel|x64.ActiveCfg = MinSizeRel|x64
-		{A7ACC37B-3820-4994-923F-0F8F5B5CB981}.MinSizeRel|x64.Build.0 = MinSizeRel|x64
-		{A7ACC37B-3820-4994-923F-0F8F5B5CB981}.Release|x64.ActiveCfg = Release|x64
-		{A7ACC37B-3820-4994-923F-0F8F5B5CB981}.Release|x64.Build.0 = Release|x64
-		{A7ACC37B-3820-4994-923F-0F8F5B5CB981}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|x64
-		{A7ACC37B-3820-4994-923F-0F8F5B5CB981}.RelWithDebInfo|x64.Build.0 = RelWithDebInfo|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

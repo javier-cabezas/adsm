@@ -3,10 +3,7 @@
 #include <assert.h>
 #include <string.h>
 
-#include "gmac/cl.h"
-
-#include "utils.h"
-#include "debug.h"
+#include <gmac/cl.h>
 
 #include "clBitonicSortKernel.cl"
 
@@ -55,8 +52,6 @@ int main(int argc, char *argv[])
     cl_program program;
     cl_kernel kernel;
 
-    gmactime_t s, t;
-
     cl_uint seed = 123;
     cl_uint sortDescending = 0;
     cl_uint *input = NULL;
@@ -78,17 +73,13 @@ int main(int argc, char *argv[])
     kernel = clCreateKernel(program, "bitonicSort", &error_code);
     assert(error_code == CL_SUCCESS);
 
-    getTime(&s);
     // Alloc
     error_code = clMalloc(command_queue, (void **)&input, length * sizeof(cl_uint));
 	assert(error_code == CL_SUCCESS);
     verificationInput = (cl_uint *) malloc(length*sizeof(cl_uint));
     if(verificationInput == NULL)
         return 0;
-    getTime(&t);
-    printTime(&s, &t, "Alloc: ", "\n");
-
-    getTime(&s);
+   
     /* random initialisation of input */
     srand(seed);
     const cl_uint rangeMin = 0;
@@ -98,18 +89,12 @@ int main(int argc, char *argv[])
         input[i] = rangeMin + (cl_uint)(range * rand() / (RAND_MAX + 1.0));
     }
     memcpy(verificationInput, input, length*sizeof(cl_uint));
-    getTime(&t);
-    printTime(&s, &t, "Init: ", "\n");
 
-    getTime(&s);
     // Print the input data
     printf("Unsorted Input: ");
     for(cl_uint i = 0; i < length; i++)
         printf("%d ", input[i]);
-    getTime(&t);
-    printTime(&s, &t, "\nPrint: ", "\n");
 
-    getTime(&s);
     cl_uint numStages = 0;
     size_t globalThreads[1] = {length / 2};
     size_t localThreads[1] = {GROUP_SIZE};
@@ -138,26 +123,19 @@ int main(int argc, char *argv[])
 			assert(error_code == CL_SUCCESS);
         }
     }
-    getTime(&t);
-    printTime(&s, &t, "Run: ", "\n");
 
     printf("Output: ");
     for(cl_uint i = 0; i < length; i++) {
         printf("%d ", input[i]);
     }
 
-    getTime(&s);
     bubbleSortCPUReference(verificationInput, length, sortDescending);
     if(memcmp(input, verificationInput, length*sizeof(cl_uint)) == 0) {
         printf("\nPassed!\n");
     } else {
         printf("\nFailed\n");
     }
-    getTime(&t);
-    printTime(&s, &t, "Check: ", "\n");
 
-    getTime(&s);
-	/* Release memory */
     free(verificationInput);
     verificationInput = NULL;
     error_code = clFree(command_queue, input);
@@ -172,8 +150,6 @@ int main(int argc, char *argv[])
 	assert(error_code == CL_SUCCESS);
 	error_code = clReleaseContext(context);
 	assert(error_code == CL_SUCCESS);
-    getTime(&t);
-    printTime(&s, &t, "Free: ", "\n");
 
     return 0;
 }

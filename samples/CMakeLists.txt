@@ -31,12 +31,10 @@ endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
 include_directories(../include)
 include_directories(common)
 
-
 add_executable(eclVecAdd
 	${CMAKE_SOURCE_DIR}/ecl/eclVecAdd.cpp
 )
 target_link_libraries(eclVecAdd ${GMAC_HPE})
-
 
 add_executable(eclThreadVecAdd
 	${CMAKE_SOURCE_DIR}/ecl/eclThreadVecAdd.cpp
@@ -75,18 +73,6 @@ add_executable(eclBlackScholes
 )
 target_link_libraries(eclBlackScholes ${GMAC_HPE})
 
-add_executable(eclBlackScholes_cplusplus
-    ${CMAKE_SOURCE_DIR}/ecl/eclBlackScholes_cplusplus.cpp 
-    ${CMAKE_SOURCE_DIR}/ecl/eclBlackScholesKernel.cl
-)
-target_link_libraries(eclBlackScholes_cplusplus ${GMAC_HPE})
-
-add_executable(eclMonteCarloAsian_cplusplus
-    ${CMAKE_SOURCE_DIR}/ecl/eclMonteCarloAsian_cplusplus.cpp 
-    ${CMAKE_SOURCE_DIR}/ecl/eclMonteCarloAsianKernel.cl
-)
-target_link_libraries(eclMonteCarloAsian_cplusplus ${GMAC_HPE})
-
 add_executable(clVecAdd
     ${CMAKE_SOURCE_DIR}/cl/clVecAdd.cpp
 )
@@ -114,3 +100,4 @@ add_executable(clBlackScholes
     ${CMAKE_SOURCE_DIR}/cl/clBlackScholesKernel.cl
 )
 target_link_libraries(clBlackScholes ${GMAC_CL} ${OPENCL})
+
