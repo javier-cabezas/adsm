@@ -166,8 +166,10 @@ int main(int argc, char *argv[])
     if(hostCallPrice == NULL)
         return 0;
     hostPutPrice = (cl_float*)malloc(width * height * sizeof(cl_float4));
-    if(hostPutPrice == NULL)
+    if(hostPutPrice == NULL) {
+        free(hostCallPrice);
         return 0;
+    }
 
     // random initialisation of input
     for(cl_uint i = 0; i < width * height * 4; i++)
@@ -186,6 +188,8 @@ int main(int argc, char *argv[])
        (size_t)blockSizeX * blockSizeY > maxWorkGroupSize) {
         printf("Unsupported: Device does not support \n requested number of work items.");
         free(maxWorkItemSizes);
+        free(hostPutPrice);
+        free(hostCallPrice);
         maxWorkItemSizes = NULL;
         return 0;
     }
