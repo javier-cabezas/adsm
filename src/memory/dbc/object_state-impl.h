@@ -21,6 +21,30 @@ object_state<ProtocolTraits>::~object_state()
 {
 }
 
+template <typename ProtocolTraits>
+typename object_state<ProtocolTraits>::ptr_impl
+object_state<ProtocolTraits>::get_device_addr(host_ptr addr)
+{
+    REQUIRES(addr >= this->get_bounds().start);
+    REQUIRES(addr <  this->get_bounds().end);
+
+    ptr_impl ret = parent::get_device_addr(addr);
+
+    return ret;
+}
+
+template <typename ProtocolTraits>
+typename object_state<ProtocolTraits>::const_ptr_impl
+object_state<ProtocolTraits>::get_device_const_addr(host_const_ptr addr) const
+{
+    REQUIRES(addr >= this->get_bounds().start);
+    REQUIRES(addr <  this->get_bounds().end);
+
+    const_ptr_impl ret = parent::get_device_const_addr(addr);
+
+    return ret;
+}
+
 }}
 
 #endif

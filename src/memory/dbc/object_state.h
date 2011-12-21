@@ -47,12 +47,15 @@ protected:
 
     typedef __impl::memory::protocol protocol_impl;
     typedef __impl::hal::event_ptr event_ptr_impl;
-    typedef __impl::hal::device_output device_output_impl;
-    typedef __impl::hal::device_input device_input_impl;
+    typedef __impl::hal::ptr ptr_impl;
+    typedef __impl::hal::const_ptr const_ptr_impl;
 
 public:
 	object_state(protocol_impl &protocol, host_ptr addr, size_t size, typename ProtocolTraits::State init, gmacError_t &err);
     virtual ~object_state();
+
+    ptr_impl get_device_addr(host_ptr addr);
+    const_ptr_impl get_device_const_addr(host_const_ptr addr) const;
 };
 
 }}

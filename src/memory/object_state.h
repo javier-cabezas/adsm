@@ -68,10 +68,10 @@ public:
     object_state(protocol &protocol, host_ptr cpuAddr, size_t size, typename ProtocolTraits::State init, gmacError_t &err);
     virtual ~object_state();
 
-    hal::ptr get_device_addr(host_ptr addr);
+    TESTABLE hal::ptr get_device_addr(host_ptr addr);
     hal::ptr get_device_addr();
 
-    hal::const_ptr get_device_const_addr(host_const_ptr addr) const;
+    TESTABLE hal::const_ptr get_device_const_addr(host_const_ptr addr) const;
     hal::const_ptr get_device_const_addr() const;
 
     core::address_space_ptr get_owner();

@@ -122,7 +122,7 @@ public:
      * \param err A reference to a variable to store the error value
      * \return The size of the allocation
      */
-    size_t get_alloc_size(core::address_space_ptr aspace, host_const_ptr addr, gmacError_t &err) const;
+    TESTABLE size_t get_alloc_size(core::address_space_ptr aspace, host_const_ptr addr, gmacError_t &err) const;
 
     /**
      * Allocate private shared memory.
@@ -167,7 +167,7 @@ public:
     TESTABLE hal::ptr translate(core::address_space_ptr aspace, host_ptr addr);
 
 
-    core::address_space_ptr get_owner(host_const_ptr addr, size_t size = 0);
+    TESTABLE core::address_space_ptr get_owner(host_const_ptr addr, size_t size = 0);
 
     /**
      * Get the CPU ownership of all objects bound to the current execution mode
@@ -176,7 +176,7 @@ public:
      * objects are acquired
      * \return Error code
      */
-    gmacError_t acquire_objects(core::address_space_ptr aspace, const list_addr &addrs = AllAddresses);
+    TESTABLE gmacError_t acquire_objects(core::address_space_ptr aspace, const list_addr &addrs = AllAddresses);
 
     /**
      * Release the CPU ownership of all objects bound to the current execution
@@ -186,7 +186,7 @@ public:
      * objects are released
      * \return Error code
      */
-    gmacError_t release_objects(core::address_space_ptr aspace, const list_addr &addrs = AllAddresses);
+    TESTABLE gmacError_t release_objects(core::address_space_ptr aspace, const list_addr &addrs = AllAddresses);
 
     /**
      * Notify a memory fault caused by a load operation
@@ -204,9 +204,19 @@ public:
      */
     TESTABLE bool signal_write(core::address_space_ptr aspace, host_ptr addr);
 
-    gmacError_t from_io_device(core::address_space_ptr aspace, host_ptr addr, hal::device_input &input, size_t count);
+    TESTABLE gmacError_t from_io_device(core::address_space_ptr aspace, host_ptr addr, hal::device_input &input, size_t count);
+    TESTABLE gmacError_t to_io_device(hal::device_output &output, core::address_space_ptr aspace, host_const_ptr addr, size_t count);
 
-    gmacError_t to_io_device(hal::device_output &output, core::address_space_ptr aspace, host_const_ptr addr, size_t count);
+    /**
+     * Copy data from and/or to host memory addresses of memory objects
+     * \param mode Execution mode requesting the operation
+     * \param dst Destination host memory addrees of a memory objec to copy the
+     * data to
+     * \param src Source host memory address that might or might not correspond
+     * to a memory object
+     * \param size Size (in bytes) of the amoun of data to be copied
+     */
+    TESTABLE gmacError_t memcpy(core::address_space_ptr aspace, host_ptr dst, host_const_ptr src, size_t size);
 
     /**
      * Initialize to a given value the contents of a host address of a memory
@@ -220,18 +230,7 @@ public:
      */
     TESTABLE gmacError_t memset(core::address_space_ptr aspace, host_ptr dst, int c, size_t size);
 
-    /**
-     * Copy data from and/or to host memory addresses of memory objects
-     * \param mode Execution mode requesting the operation
-     * \param dst Destination host memory addrees of a memory objec to copy the
-     * data to
-     * \param src Source host memory address that might or might not correspond
-     * to a memory object
-     * \param size Size (in bytes) of the amoun of data to be copied
-     */
-    TESTABLE gmacError_t memcpy(core::address_space_ptr aspace, host_ptr dst, host_const_ptr src, size_t size);
-
-    gmacError_t flush_dirty(core::address_space_ptr aspace);
+    TESTABLE gmacError_t flush_dirty(core::address_space_ptr aspace);
 };
 
 }}
