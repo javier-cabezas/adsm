@@ -62,7 +62,7 @@ object_state<ProtocolTraits>::object_state(protocol &protocol,
                                            size_t size,
                                            typename ProtocolTraits::State init,
                                            gmacError_t &err) :
-    object(protocol, hostAddr, size),
+    gmac::memory::object(protocol, hostAddr, size),
     shadow_(NULL),
     hasUserMemory_(hostAddr != NULL),
     deviceAddr_()

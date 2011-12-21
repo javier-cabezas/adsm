@@ -16,7 +16,7 @@ namespace __impl { namespace hal { namespace opencl {
 class GMAC_LOCAL kernel_t :
     public hal::detail::kernel_t<backend_traits, implementation_traits> {
 
-    typedef hal::detail::kernel_t<backend_traits, implementation_traits> Parent;
+    typedef hal::detail::kernel_t<backend_traits, implementation_traits> parent;
     
 public:
     class launch;
@@ -50,8 +50,8 @@ public:
             protected std::map<cl_context, map_subbuffer>,
             protected gmac::util::spinlock<map_global_subbuffer> {
         public:
-            typedef std::map<cl_context, map_subbuffer> Parent;
-            typedef Parent::iterator iterator;
+            typedef std::map<cl_context, map_subbuffer> parent_arg_list;
+            typedef parent_arg_list::iterator iterator;
             map_global_subbuffer() :
                 gmac::util::spinlock<map_global_subbuffer>("map_global_subbuffer")
             {
@@ -61,9 +61,9 @@ public:
             find_context(cl_context context)
             {  
                 lock();
-                Parent::iterator itGlobalMap = this->find(context);
+                parent_arg_list::iterator itGlobalMap = this->find(context);
                 if (itGlobalMap == this->end()) {
-                    this->insert(Parent::value_type(context, map_subbuffer()));
+                    this->insert(parent_arg_list::value_type(context, map_subbuffer()));
                     itGlobalMap = this->find(context);
                 }
                 unlock();
@@ -113,7 +113,7 @@ public:
 
     kernel_t(cl_kernel func, const std::string &name);
 
-    launch_ptr launch_config(Parent::config &config, Parent::arg_list &args, stream_t &stream);
+    launch_ptr launch_config(parent::config &config, parent::arg_list &args, stream_t &stream);
 };
 
 }}}

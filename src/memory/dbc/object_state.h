@@ -1,5 +1,5 @@
 /* Copyright (c) 2009-2011 University of Illinois
-                   Universitat Politecnica de Catalunya
+                           Universitat Politecnica de Catalunya
                    All rights reserved.
 
 Developed by: IMPACT Research Group / Grup de Sistemes Operatius
@@ -31,67 +31,34 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_BLOCKGROUP_H_
-#define GMAC_MEMORY_BLOCKGROUP_H_
+#ifndef GMAC_MEMORY_DBC_OBJECT_STATE_H_
+#define GMAC_MEMORY_DBC_OBJECT_STATE_H_
 
-#include "memory/object.h"
-
-#include "util/gmac_base.h"
-
-namespace __impl { 
-
-namespace core {
-	class address_space;
-
-	typedef util::shared_ptr<core::address_space> address_space_ptr;
-	typedef util::shared_ptr<const core::address_space> address_space_const_ptr;
-}
-
-namespace memory {
+namespace __dbc { namespace memory {
 
 template <typename ProtocolTraits>
 class GMAC_LOCAL object_state :
-    util::gmac_base<object_state<ProtocolTraits> >,
-    public gmac::memory::object {
-    DBC_FORCE_TEST(object_state)
+    public __impl::memory::object_state<ProtocolTraits>,
+    public virtual Contract {
+    DBC_TESTED(__impl::memory::object_state<ProtocolTraits>)
+
 protected:
-    host_ptr shadow_;
-    bool hasUserMemory_;
+    typedef __impl::memory::object_state<ProtocolTraits> parent;
 
-    hal::ptr deviceAddr_;
-    core::address_space_ptr ownerShortcut_;
+    typedef __impl::memory::protocol protocol_impl;
+    typedef __impl::hal::event_ptr event_ptr_impl;
+    typedef __impl::hal::device_output device_output_impl;
+    typedef __impl::hal::device_input device_input_impl;
 
-    gmacError_t repopulate_blocks(core::address_space &aspace);
-
-    void modified_object();
 public:
-    object_state(protocol &protocol, host_ptr cpuAddr, size_t size, typename ProtocolTraits::State init, gmacError_t &err);
+	object_state(protocol_impl &protocol, host_ptr addr, size_t size, typename ProtocolTraits::State init, gmacError_t &err);
     virtual ~object_state();
-
-    hal::ptr get_device_addr(host_ptr addr);
-    hal::ptr get_device_addr();
-
-    hal::const_ptr get_device_const_addr(host_const_ptr addr) const;
-    hal::const_ptr get_device_const_addr() const;
-
-    core::address_space_ptr get_owner();
-    core::address_space_const_ptr get_owner() const;
-
-    gmacError_t add_owner(core::address_space_ptr owner);
-    gmacError_t remove_owner(core::address_space_const_ptr owner);
-
-    gmacError_t map_to_device();
-    gmacError_t unmap_from_device();
-
-    static gmacError_t split(object_state &group, size_t offset, size_t size);
 };
 
 }}
 
 #include "object_state-impl.h"
 
-#ifdef USE_DBC
-#include "memory/dbc/object_state.h"
-#endif
+#endif /* OBJECT_H */
 
-#endif
+/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

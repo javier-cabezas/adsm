@@ -1,5 +1,5 @@
-/* Copyright (c) 2009, 2010 University of Illinois
-                   Universitat Politecnica de Catalunya
+/* Copyright (c) 2009-2011 University of Illinois
+                           Universitat Politecnica de Catalunya
                    All rights reserved.
 
 Developed by: IMPACT Research Group / Grup de Sistemes Operatius
@@ -42,25 +42,37 @@ class GMAC_LOCAL object :
     DBC_TESTED(__impl::memory::object)
 
 protected:
-	object(host_ptr addr, size_t size);
+    typedef __impl::memory::object parent;
+
+    typedef __impl::memory::protocol protocol_impl;
+    typedef __impl::hal::event_ptr event_ptr_impl;
+    typedef __impl::hal::device_output device_output_impl;
+    typedef __impl::hal::device_input device_input_impl;
+
+	object(protocol_impl &protocol, host_ptr addr, size_t size);
     virtual ~object();
 
-    gmacError_t memoryOp(__impl::memory::protocol::MemoryOp op, __impl::core::io_buffer &buffer, size_t size, size_t bufferOffset, size_t objectOffset);
 public:
     ssize_t get_block_base(size_t offset) const;
     size_t get_block_end(size_t offset) const;
 
-	gmacError_t signal_read(host_ptr addr);
-    gmacError_t signal_write(host_ptr addr);
+    event_ptr_impl signal_read(host_ptr addr, gmacError_t &err);
+    event_ptr_impl signal_write(host_ptr addr, gmacError_t &err);
 
-#if 0
-    gmacError_t copyToBuffer(__impl::core::io_buffer &buffer, size_t size, 
-            size_t bufferOffset = 0, size_t objectOffset = 0);
-    gmacError_t copyFromBuffer(__impl::core::io_buffer &buffer, size_t size, 
-            size_t bufferOffset = 0, size_t objectOffset = 0);
-#endif
+    gmacError_t to_io_device(device_output_impl &output, size_t offset, size_t count);
+    gmacError_t from_io_device(size_t offset, device_input_impl &input, size_t count);
 
     gmacError_t memset(size_t offset, int v, size_t size);
+
+    gmacError_t memcpy_to_object(size_t objOffset,
+                                 host_const_ptr src, size_t count);
+
+    gmacError_t memcpy_object_to_object(object &dstObj, size_t dstOffset,
+                                        size_t srcOffset,
+                                        size_t count);
+
+    gmacError_t memcpy_from_object(host_ptr dst,
+                                   size_t objOffset, size_t count);
 };
 
 }}

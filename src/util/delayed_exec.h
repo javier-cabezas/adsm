@@ -88,6 +88,7 @@ protected:
         triggers_.clear();
     }
 
+    inline
     virtual ~delayed_exec()
     {
         remove_triggers();

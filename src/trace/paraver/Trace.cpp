@@ -44,7 +44,7 @@ TraceWriter::TraceWriter(const char *fileName, uint32_t pid, uint32_t tid) :
 TraceWriter::~TraceWriter()
 {
     std::list<Application *>::iterator i;
-    for(i = apps_.begin(); i != apps_.end(); i++) delete (*i);
+    for(i = apps_.begin(); i != apps_.end(); ++i) delete (*i);
     apps_.clear();
 }
 
@@ -123,14 +123,14 @@ void TraceWriter::write(uint64_t t)
 {
     mutex_.lock();
 	std::list<Application *>::iterator app;
-	for(app = apps_.begin(); app != apps_.end(); app++) {
+	for(app = apps_.begin(); app != apps_.end(); ++app) {
 		(*app)->end(of_, t);
 	}
 
 	Record::end(of_);
 	uint32_t size = uint32_t(apps_.size());
 	of_.write((char *)&size, sizeof(size));
-	for(app = apps_.begin(); app != apps_.end(); app++) {
+	for(app = apps_.begin(); app != apps_.end(); ++app) {
 		(*app)->write(of_);
 	}
 
@@ -149,12 +149,12 @@ void TraceReader::buildApp(std::ifstream &in)
 	name << "App" << id;
 	apps_.push_back(new Application(id, name.str()));
 
-	for(uint32_t i = 0; i < nTasks; i++) {
+	for(uint32_t i = 0; i < nTasks; ++i) {
 		uint32_t nThreads;
 		in.read((char *)&id, sizeof(id));
 		in.read((char *)&nThreads, sizeof(nThreads));
 		Task *task = apps_.back()->addTask(id);
-		for(uint32_t j = 0; j < nThreads; j++) {
+		for(uint32_t j = 0; j < nThreads; ++j) {
 			uint32_t dummy;
 			in.read((char *)&id, sizeof(id));
 			in.read((char *)&dummy, sizeof(dummy));
@@ -182,7 +182,7 @@ TraceReader::TraceReader(const char *fileName) :
 	// Read header
 	uint32_t nApps;
 	in.read((char *)&nApps, sizeof(nApps));
-	for(uint32_t i = 0; i < nApps; i++) buildApp(in);
+	for(uint32_t i = 0; i < nApps; ++i) buildApp(in);
 }
 
 StreamOut &operator<<(StreamOut &of, const TraceReader &trace)
@@ -205,12 +205,12 @@ StreamOut &operator<<(StreamOut &of, const TraceReader &trace)
 	// Print # of applications and tasks and threads per task
 	of << ":" << trace.apps_.size();
 	std::list<Application *>::const_iterator app;
-	for(app = trace.apps_.begin(); app != trace.apps_.end(); app++)
+	for(app = trace.apps_.begin(); app != trace.apps_.end(); ++app)
 		of << ":" << *(*app);
 	of << std::endl;
 
 	std::list<Record *>::const_iterator i;
-	for(i = trace.records_.begin(); i != trace.records_.end(); i++)
+	for(i = trace.records_.begin(); i != trace.records_.end(); ++i)
 		of << *(*i);
     return of;
 }

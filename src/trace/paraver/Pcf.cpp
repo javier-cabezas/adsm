@@ -15,7 +15,7 @@ std::ostream &pcf(std::ostream &os)
 {
 	Factory<StateName>::List::const_iterator s;
 	int long long max = MININT, min = MAXINT;
-	for(s = Factory<StateName>::get().begin(); s != Factory<StateName>::get().end(); s++) {
+	for(s = Factory<StateName>::get().begin(); s != Factory<StateName>::get().end(); ++s) {
 		max = (max > (*s)->getValue()) ? max : (*s)->getValue();
 		min = (min < (*s)->getValue()) ? min : (*s)->getValue();
 	}
@@ -33,7 +33,7 @@ std::ostream &pcf(std::ostream &os)
 
 	if(Factory<StateName>::valid() && Factory<StateName>::get().empty() == false) {
 		os << "STATES" << std::endl;
-		for(s = Factory<StateName>::get().begin(); s != Factory<StateName>::get().end(); s++)
+		for(s = Factory<StateName>::get().begin(); s != Factory<StateName>::get().end(); ++s)
 			os << (*s)->getValue() << " " << (*s)->getName() << std::endl;
 		os << std::endl;
 	}
@@ -41,7 +41,7 @@ std::ostream &pcf(std::ostream &os)
 	os << std::endl;
 	os << "GRADIENT_COLOR" << std::endl;
 	os << "0 {0, 0, 0}" << std:: endl;
-	for(int i = 1; i < 20; i++) {
+	for(int i = 1; i < 20; ++i) {
 		int r = 54 - (3 * i);
 		int g = 40 * i - (2 * i * i) - 38;
 		int b = 255 * i / 19;
@@ -53,14 +53,14 @@ std::ostream &pcf(std::ostream &os)
 		os << std::endl;
 		Factory<EventName>::List::const_iterator e;
 		int i = 0;
-		for(e = Factory<EventName>::get().begin(); e != Factory<EventName>::get().end(); e++) {
+		for(e = Factory<EventName>::get().begin(); e != Factory<EventName>::get().end(); ++e) {
 			os << "EVENT_TYPE" << std::endl;
 			os << ++i << " " << (*e)->getValue() << " " << (*e)->getName() << std::endl;
 			const EventName::TypeTable &types = (*e)->getTypes();
 			if(types.empty()) continue;
 			EventName::TypeTable::const_iterator t;
 			os << std::endl << "VALUES" << std::endl;
-			for(t = types.begin(); t != types.end(); t++) {
+			for(t = types.begin(); t != types.end(); ++t) {
 				os << t->first << " " << t->second << std::endl;
 			}
 			os << std::endl;

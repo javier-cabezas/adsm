@@ -22,7 +22,7 @@ Test::TestCase::Stats::getNames() const
     ListNames list;
     MapStats::const_iterator it;
 
-    for (it = stats_.begin(); it != stats_.end(); it++) {
+    for (it = stats_.begin(); it != stats_.end(); ++it) {
         list.push_back(it->first);
     }
 
@@ -118,7 +118,7 @@ Test::Stats::Stats()
 Test::Stats::~Stats()
 {
     MapStats::iterator it;
-    for (it = testCaseStats_.begin(); it != testCaseStats_.end(); it++) {
+    for (it = testCaseStats_.begin(); it != testCaseStats_.end(); ++it) {
         delete it->first;
     }
 }
@@ -137,7 +137,7 @@ Test::Stats::filter(Variable &v, std::string value) const
     assert(v.find(value) != v.end());
 
     MapStats::const_iterator it;
-    for (it = testCaseStats_.begin(); it != testCaseStats_.end(); it++) {
+    for (it = testCaseStats_.begin(); it != testCaseStats_.end(); ++it) {
         const TestCase *testCase = it->first;
         assert(testCase->hasVariable(v.getName()));
         if (testCase->hasValue(v.getName(), value)) {
@@ -153,7 +153,7 @@ Test::addTestCase(std::vector<VectorString::iterator> &current)
 {
     TestCase conf;
 
-    for (size_t i = 0; i < current.size(); i++) {
+    for (size_t i = 0; i < current.size(); ++i) {
         conf.addVariableInstance(vars_[i].getName(), *(current[i]));
     }
     testCases_.push_back(conf);
@@ -166,9 +166,9 @@ Test::advance(std::vector<VectorString::iterator> &current,
 {
     if (equals(current, end)) return false;
 
-    for (size_t i = 0; i < current.size(); i++) {
+    for (size_t i = 0; i < current.size(); ++i) {
         if ((current[i] + 1) != end[i]) {
-            current[i]++;
+            ++current[i];
             break;
         } else {
             if (i != current.size() - 1) {
@@ -184,7 +184,7 @@ bool
 Test::equals(std::vector<VectorString::iterator> &current,
              std::vector<VectorString::iterator> &end)
 {
-    for (size_t i = 0; i < current.size(); i++) {
+    for (size_t i = 0; i < current.size(); ++i) {
         if ((current[i] + 1) != end[i]) return false;
     }
     return true;
@@ -198,7 +198,7 @@ Test::generateTestCases()
         std::vector<VectorString::iterator> current; 
         std::vector<VectorString::iterator> end; 
 
-        for (size_t i = 0; i < vars_.size(); i++) {
+        for (size_t i = 0; i < vars_.size(); ++i) {
             start.push_back(vars_[i].begin());
             current.push_back(vars_[i].begin());
             end.push_back(vars_[i].end());
@@ -240,7 +240,7 @@ Test::launch()
 {
     generateTestCases();
 
-    for (size_t i = 0; i < testCases_.size(); i++) {
+    for (size_t i = 0; i < testCases_.size(); ++i) {
         TestCase::Stats stats = testCases_[i].run(name_);
         stats_.addTestCaseStats(testCases_[i], stats);
     }
@@ -256,8 +256,8 @@ unsigned
 Test::getNumberOfFailures() const
 {
     unsigned failures = 0;
-    for (size_t i = 0; i < testCases_.size(); i++) {
-        if (testCases_[i].isFailure()) failures++; 
+    for (size_t i = 0; i < testCases_.size(); ++i) {
+        if (testCases_[i].isFailure()) ++failures; 
     }
     return failures;
 }
@@ -266,7 +266,7 @@ double
 Test::getElapsedTime() const
 {
     double elapsedTime = 0;
-    for (size_t i = 0; i < testCases_.size(); i++) {
+    for (size_t i = 0; i < testCases_.size(); ++i) {
         elapsedTime += testCases_[i].getElapsedTime();
     }
     return elapsedTime;
@@ -283,7 +283,7 @@ Test::report(std::ofstream &outfile) const
     outfile << "errors=\"0\" ";
     outfile << ">" << std::endl;
 
-    for (size_t i = 0; i < testCases_.size(); i++) {
+    for (size_t i = 0; i < testCases_.size(); ++i) {
         testCases_[i].report(outfile);
     }
 
@@ -311,16 +311,16 @@ TestSuite::operator+=(Test test)
 void
 TestSuite::launch()
 {
-    for (size_t i = 0; i < tests_.size(); i++) {
-        tests_[i].launch();
-    }
-}
-
-unsigned
-TestSuite::getNumberOfTestCases() const
-{
-    unsigned testCases = 0;
-    for (size_t i = 0; i < tests_.size(); i++) {
+    for (size_t i = 0; i < tests_.size(); ++i) {
+        tests_[i].launch();                 
+    }                                       
+}                                           
+                                            
+unsigned                                    
+TestSuite::getNumberOfTestCases() const     
+{                                           
+    unsigned testCases = 0;                 
+    for (size_t i = 0; i < tests_.size(); ++i) {
         testCases += tests_[i].getNumberOfTestCases();
     }
     return testCases;
@@ -330,7 +330,7 @@ unsigned
 TestSuite::getNumberOfFailures() const
 {
     unsigned failures = 0;
-    for (size_t i = 0; i < tests_.size(); i++) {
+    for (size_t i = 0; i < tests_.size(); ++i) {
         failures += tests_[i].getNumberOfFailures();
     }
     return failures;
@@ -340,7 +340,7 @@ double
 TestSuite::getElapsedTime() const
 {
     double elapsedTime = 0;
-    for (size_t i = 0; i < tests_.size(); i++) {
+    for (size_t i = 0; i < tests_.size(); ++i) {
         elapsedTime += tests_[i].getElapsedTime();
     }
     return elapsedTime;
@@ -360,7 +360,7 @@ TestSuite::report()
     outfile_ << "errors=\"0\"";
     outfile_ << ">" << std::endl;
 
-    for (size_t i = 0; i < tests_.size(); i++) {
+    for (size_t i = 0; i < tests_.size(); ++i) {
         tests_[i].report(outfile_);
     }
 

@@ -14,7 +14,7 @@ using __impl::core::hpe::kernel;
 using __impl::core::hpe::thread;
 using __impl::core::hpe::vdevice;
 
-using __impl::hal::ptr_t;
+using __impl::hal::ptr;
 using __impl::hal::kernel_t;
 
 using __impl::util::get_file_contents;
@@ -88,16 +88,16 @@ gmacError_t APICALL
 }
 
 gmacError_t APICALL
-@OPENCL_API_PREFIX@SetKernelArgPtrComplex(@OPENCL_API_PREFIX@_kernel k, unsigned index, const void *_ptr, GmacProtection prot)
+@OPENCL_API_PREFIX@SetKernelArgPtrComplex(@OPENCL_API_PREFIX@_kernel k, unsigned index, const void *_p, GmacProtection prot)
 {
-    host_ptr ptr = host_ptr(_ptr);
+    host_ptr p = host_ptr(_p);
 
     enterGmac();
     gmacError_t ret = gmacSuccess;
 
     address_space_ptr aspace = get_current_vdevice().get_address_space();
 
-    ptr_t tmp = __impl::memory::get_manager().translate(aspace, ptr);
+    ptr tmp = __impl::memory::get_manager().translate(aspace, p);
     if (!tmp) {
         ret = gmacErrorInvalidValue;
         thread::set_last_error(ret);
@@ -110,9 +110,9 @@ gmacError_t APICALL
     cl_mem tmpMem;
     if (tmp.get_offset() > 0) {
         size_t size;
-        size = __impl::memory::get_manager().get_alloc_size(aspace, ptr, ret);
+        size = __impl::memory::get_manager().get_alloc_size(aspace, p, ret);
         ASSERTION(ret == gmacSuccess);
-        tmpMem = args->get_subbuffer(aspace->get_hal_context()(), ptr, tmp, size);
+        tmpMem = args->get_subbuffer(aspace->get_hal_context()(), p, tmp, size);
     } else {
         tmpMem = tmp.get_device_addr();
     }
@@ -123,7 +123,7 @@ gmacError_t APICALL
     if (ker != NULL) {
         ret = args->set_arg(*ker, &tmpMem, sizeof(cl_mem), index);
         if (ret == gmacSuccess) {
-            args->add_object(ptr, prot);
+            args->add_object(p, prot);
         }
     } else {
         ret = gmacErrorInvalidValue;
