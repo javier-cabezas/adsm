@@ -138,17 +138,19 @@ inline void SetThreadState(const State &state)
 #endif
 }
 
-inline void DataCommunication(THREAD_T src, THREAD_T dst, uint64_t delta, size_t size)
+inline void DataCommunication(THREAD_T src, THREAD_T dst, uint64_t delta, size_t size, uint64_t start)
 {
 #if defined(USE_TRACE)
-    if(tracer != NULL) tracer->dataCommunication(tracer->timeMark(), src, dst, delta, size);
+    uint64_t t = start;
+    if(t == 0) t = tracer->timeMark();
+    if(tracer != NULL) tracer->dataCommunication(t, src, dst, delta, size);
 #endif
 }
 
-inline void DataCommunication(THREAD_T tid, uint64_t delta, size_t size)
+inline void DataCommunication(THREAD_T tid, uint64_t delta, size_t size, uint64_t start)
 {
 #if defined(USE_TRACE)
-    return DataCommunication(GetThreadId(), tid, delta, size);
+    return DataCommunication(GetThreadId(), tid, delta, size, start);
 #endif
 }
 

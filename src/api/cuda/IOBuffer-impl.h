@@ -20,12 +20,18 @@ IOBuffer::toHost(Mode &mode, CUstream s)
         ret = cuEventCreate(&end, CU_EVENT_DEFAULT);
         ASSERTION(ret == CUDA_SUCCESS);
 
+        stamp_t stamp;
+        stamp.start = start;
+        stamp.end = end;
+        stamp.time = 0;
+
         std::pair<EventMap::iterator, bool> par =
-            map_.insert(EventMap::value_type(&mode, std::pair<CUevent, CUevent>(start, end)));
+            map_.insert(EventMap::value_type(&mode, stamp));
         it = par.first;
     }
 
-    ret = cuEventRecord(it->second.first, s);
+    trace::TimeMark(it->second.time);
+    ret = cuEventRecord(it->second.start, s);
     ASSERTION(ret == CUDA_SUCCESS);
     state_  = ToHost;
     TRACE(LOCAL,"Buffer %p goes toHost", this); 
@@ -48,12 +54,18 @@ IOBuffer::toAccelerator(Mode &mode, CUstream s)
         ret = cuEventCreate(&end, CU_EVENT_DEFAULT);
         ASSERTION(ret == CUDA_SUCCESS);
 
+        stamp_t stamp;
+        stamp.start = start;
+        stamp.end = end;
+        stamp.time = 0;
+
         std::pair<EventMap::iterator, bool> ret =
-            map_.insert(EventMap::value_type(&mode, std::pair<CUevent, CUevent>(start, end)));
+            map_.insert(EventMap::value_type(&mode, stamp));
         it = ret.first;
     }
 
-    ret = cuEventRecord(it->second.first, s);
+    trace::TimeMark(it->second.time);
+    ret = cuEventRecord(it->second.start, s);
     ASSERTION(ret == CUDA_SUCCESS);
     state_  = ToAccelerator;
     TRACE(LOCAL,"Buffer %p goes toAccelerator", this);
@@ -68,7 +80,7 @@ IOBuffer::started(size_t size)
     it = map_.find(mode_);
     ASSERTION(started_ == false);
     ASSERTION(state_ != Idle && it != map_.end());
-    CUresult ret = cuEventRecord(it->second.second, stream_);
+    CUresult ret = cuEventRecord(it->second.end, stream_);
     ASSERTION(ret == CUDA_SUCCESS);
     started_ = true;
     xfer_ = size;

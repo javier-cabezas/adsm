@@ -17,13 +17,13 @@ IOBuffer::wait(bool internal)
     if (state_ != Idle) {
         ASSERTION(mode_ != NULL);
         ASSERTION(started_ == true);
-        CUevent start = it->second.first;
-        CUevent end   = it->second.second;
+        CUevent start = it->second.start;
+        CUevent end   = it->second.end;
         trace::SetThreadState(trace::Wait);
         ret = mode_->waitForEvent(end, internal);
         trace::SetThreadState(trace::Running);
-        if(state_ == ToHost) DataCommToHost(*mode_, start, end, xfer_);
-        else if(state_ == ToAccelerator) DataCommToAccelerator(*mode_, start, end, xfer_);
+        if(state_ == ToHost) DataCommToHost(*mode_, start, end, xfer_, it->second.time);
+        else if(state_ == ToAccelerator) DataCommToAccelerator(*mode_, start, end, xfer_, it->second.time);
         TRACE(LOCAL,"Buffer %p goes Idle", this);
         state_ = Idle;
         mode_  = NULL;

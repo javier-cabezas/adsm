@@ -443,6 +443,8 @@ gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, s
     pushContext();
     CUresult ret = CUDA_SUCCESS;
 #if USE_TRACE
+    uint64_t t;
+    trace::TimeMark(t);
     ret = cuEventRecord(start_, 0);
     ASSERTION(ret == CUDA_SUCCESS);
     trace::SetThreadState(trace::Wait);
@@ -456,7 +458,7 @@ gmacError_t Accelerator::copyToAccelerator(accptr_t acc, const hostptr_t host, s
     ret = cuEventRecord(end_, 0);
     ret = cuEventSynchronize(end_);
     trace::SetThreadState(trace::Running);
-    DataCommToAccelerator(dynamic_cast<Mode &>(mode), start_, end_, size);
+    DataCommToAccelerator(dynamic_cast<Mode &>(mode), start_, end_, size, t);
 #endif
     popContext();
     trace::SetThreadState(trace::Running);
@@ -492,6 +494,8 @@ gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t s
     pushContext();
     CUresult ret;
 #if USE_TRACE
+    uint64_t t;
+    trace::TimeMark(t);
     ret = cuEventRecord(start_, 0);
     ASSERTION(ret == CUDA_SUCCESS);
     trace::SetThreadState(trace::Wait);
@@ -506,7 +510,7 @@ gmacError_t Accelerator::copyToHost(hostptr_t host, const accptr_t acc, size_t s
     ret = cuEventRecord(end_, 0);
     ret = cuEventSynchronize(end_);
     trace::SetThreadState(trace::Running);
-    DataCommToHost(dynamic_cast<Mode &>(mode), start_, end_, size);
+    DataCommToHost(dynamic_cast<Mode &>(mode), start_, end_, size, t);
 #endif
 
     popContext();

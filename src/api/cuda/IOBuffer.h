@@ -55,7 +55,12 @@ protected:
     CUstream stream_;
     Mode *mode_;
 
-    typedef std::map<Mode *, std::pair<CUevent, CUevent> > EventMap;
+    struct stamp_t {
+        CUevent start, end;
+        uint64_t time;
+    };
+
+    typedef std::map<Mode *, stamp_t> EventMap;
     EventMap map_;
 
     size_t xfer_;
@@ -72,8 +77,8 @@ public:
     {
         EventMap::iterator it;
         for (it = map_.begin(); it != map_.end(); ++it) {
-            cuEventDestroy(it->second.first);
-            cuEventDestroy(it->second.second);
+            cuEventDestroy(it->second.start);
+            cuEventDestroy(it->second.end);
         }
     }
 
