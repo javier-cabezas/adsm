@@ -21,7 +21,7 @@ inline CommandList::~CommandList()
 #ifndef _MSC_VER
     lockWrite();
     Parent::iterator i;
-    for(i = Parent::begin(); i != Parent::end(); i++)
+    for(i = Parent::begin(); i != Parent::end(); ++i)
         clReleaseCommandQueue(*i);
     Parent::clear();
     unlock();
@@ -56,7 +56,7 @@ inline cl_int CommandList::sync() const
     cl_int ret = CL_SUCCESS;
     lockRead();
     Parent::const_iterator i;
-    for(i = Parent::begin(); i != Parent::end(); i++) {
+    for(i = Parent::begin(); i != Parent::end(); ++i) {
         if((ret = clFinish(*i)) != CL_SUCCESS) break;
     }
     unlock();

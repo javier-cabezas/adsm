@@ -89,7 +89,7 @@ KernelLaunch::~KernelLaunch()
     clReleaseKernel(f_);
 
     CacheSubBuffer::iterator itCacheMap;
-    for (itCacheMap = cacheSubBuffer_.begin(); itCacheMap != cacheSubBuffer_.end(); itCacheMap++) {
+    for (itCacheMap = cacheSubBuffer_.begin(); itCacheMap != cacheSubBuffer_.end(); ++itCacheMap) {
         __impl::core::hpe::Mode *mode = itCacheMap->second.first;
         MapSubBuffer::iterator sb = itCacheMap->second.second;
         if (--sb->second.second == 0) {

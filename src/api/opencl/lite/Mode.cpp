@@ -29,7 +29,7 @@ Mode::~Mode()
 	// If process is not valid, OpenCL might have been unloaded
     StreamMap::const_iterator i;
     cl_int ret = CL_SUCCESS;
-    for(i = streams_.begin(); i != streams_.end(); i++) {
+    for(i = streams_.begin(); i != streams_.end(); ++i) {
         ret = clReleaseCommandQueue(i->first);
         ASSERTION(ret == CL_SUCCESS);
     }
@@ -108,7 +108,7 @@ gmacError_t Mode::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t s
     StreamMap::const_iterator i;
     cl_event event;
     cl_int ret = CL_SUCCESS;
-    for(i = streams_.begin(); i != streams_.end(); i++) {
+    for(i = streams_.begin(); i != streams_.end(); ++i) {
         trace_.init(trace_.getThreadId(), trace_.getModeId(*this));
         ret = clEnqueueWriteBuffer(i->first, acc.get(),
             CL_TRUE, acc.offset(), size, host, 0, NULL, &event);
@@ -118,7 +118,7 @@ gmacError_t Mode::copyToAccelerator(accptr_t acc, const hostptr_t host, size_t s
         ret = clReleaseEvent(event);
         if(ret != CL_SUCCESS) goto do_exit;
     }
-    for(i = streams_.begin(); i != streams_.end(); i++) {
+    for(i = streams_.begin(); i != streams_.end(); ++i) {
         ret = clFinish(i->first);
         if(ret != CL_SUCCESS) goto do_exit;
     }
@@ -159,7 +159,7 @@ gmacError_t Mode::copyAccelerator(accptr_t dst, const accptr_t src, size_t size)
 
     StreamMap::const_iterator i;
     cl_int ret = CL_SUCCESS;
-    for(i = streams_.begin(); i != streams_.end(); i++) {
+    for(i = streams_.begin(); i != streams_.end(); ++i) {
         ret = clEnqueueReadBuffer(i->first, src.get(), CL_TRUE,
             src.offset(), size, tmp, 0, NULL, NULL);
         CFATAL(ret == CL_SUCCESS, "Error copying to host: %d", ret);
@@ -184,7 +184,7 @@ gmacError_t Mode::memset(accptr_t addr, int c, size_t size)
     ::memset(tmp, c, size);
     StreamMap::const_iterator i;
     cl_int ret = CL_SUCCESS;
-    for(i = streams_.begin(); i != streams_.end(); i++) {
+    for(i = streams_.begin(); i != streams_.end(); ++i) {
         ret = clEnqueueWriteBuffer(i->first, addr.get(),
             CL_TRUE, addr.offset(), size, tmp, 0, NULL, NULL);
     }
@@ -199,7 +199,7 @@ void Mode::getMemInfo(size_t &free, size_t &total)
     cl_ulong value = 0;
     StreamMap::const_iterator i;
     free = total = size_t(-1);
-    for(i = streams_.begin(); i != streams_.end(); i++) {
+    for(i = streams_.begin(); i != streams_.end(); ++i) {
         ret = clGetDeviceInfo(i->second, CL_DEVICE_GLOBAL_MEM_SIZE,
             sizeof(value), &value, NULL);
         CFATAL(ret == CL_SUCCESS , "Unable to get attribute %d", ret);
