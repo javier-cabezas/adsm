@@ -28,7 +28,7 @@ source_group(${current_GROUP} FILES
     gmacMemcpy.cu
     gmacMemset.cu
     gmacFile.cu
-    gmacMigration.cu
+#    gmacMigration.cu
     gmacMeminfo.cu
     gmacRandomAccess.cu
     gmacStencil.cu
@@ -40,7 +40,7 @@ source_group(${current_GROUP} FILES
     gmacTexture.cu
     gmacCompressCommon.cu
     gmacCompress.cu
-    gmacPingPong.cu
+#    gmacPingPong.cu
     NBody_GMAC/NBody.h
     NBody_GMAC/NBody.cu
 )
@@ -53,7 +53,9 @@ else()
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCC)
-    set(CUDA_NVCC_FLAGS "--ptxas-options=-v" "--compiler-options;-fno-strict-aliasing" "--keep")
+    set(CUDA_NVCC_FLAGS "--ptxas-options=-v" "--compiler-options;-fno-strict-aliasing" "--keep" "-g" "-G")
+else (CMAKE_COMPILER_IS_GNUCC)
+    set(CUDA_NVCC_FLAGS "-g" "-G")
 endif(CMAKE_COMPILER_IS_GNUCC)
 
 # gmacAlloc
@@ -235,6 +237,42 @@ endif(USE_OPENGL)
 #install(TARGETS gmacCompress DESTINATION ${CMAKE_INSTALL_PREFIX}/share/test-common gmac)
 #install(TARGETS gmacCompressSend DESTINATION ${CMAKE_INSTALL_PREFIX}/share/test-common gmac)
 #endif(NOT CMAKE_SYSTEM_NAME MATCHES "Windows")
+
+
+################################################################################################
+##### Install simple examples in the same source directory rather than the build directory #####
+################################################################################################
+install(TARGETS gmacAlloc           DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS gmacColumnMajor     DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS gmacVecAdd          DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS cudaVecAdd          DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS gmacThreadVecAdd    DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS cudaThreadVecAdd    DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS gmacThreading       DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+#install(TARGETS gmacSharedVecAdd    DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS gmacFileVecAdd      DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS cudaFileVecAdd      DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS gmacMatrixMul       DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+#install(TARGETS gmacSharedMatrixMul DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS gmacRandomAccess    DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS gmacStencil         DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS gmacThreadStencil   DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS cudaThreadStencil   DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS gmacMemcpy          DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS gmacMemset          DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS gmacFile            DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+#install(TARGETS gmacMigration       DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS gmacMeminfo         DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS gmacTexture         DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS gmacConstant        DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+
+if(NOT CMAKE_SYSTEM_NAME MATCHES "Windows")
+#install(TARGETS gmacPingPong     DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS gmacCompress     DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+#install(TARGETS gmacCompressSend DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+endif(NOT CMAKE_SYSTEM_NAME MATCHES "Windows")
+################################################################################################
+
 
 file(COPY vars.spec tests.spec DESTINATION ${PROJECT_BINARY_DIR})
 
