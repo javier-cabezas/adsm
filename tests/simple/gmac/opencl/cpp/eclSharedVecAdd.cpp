@@ -2,7 +2,7 @@
 #include <cstdlib>
 #include <ctime>
 
-#include <gmac/opencl.h>
+#include <gmac/opencl>
 
 #include "utils.h"
 #include "debug.h"
@@ -44,27 +44,30 @@ void *addVector(void *ptr)
 	char *prefix = p->prefix;
 	ecl_error ret = eclSuccess;
 
-	ret = eclMalloc((void **)&p->ptr, vecSize * sizeof(float));
+	ret = ecl::malloc((void **)&p->ptr, vecSize * sizeof(float));
 	assert(ret == eclSuccess);
 
 	// Call the kernel
-	size_t localSize = blockSize;
-	size_t globalSize = vecSize / blockSize;
-	if(vecSize % blockSize) globalSize++;
-	globalSize *= localSize;
+	ecl::config localSize (blockSize);
+	ecl::config globalSize (vecSize / blockSize);
+	if(vecSize % blockSize) globalSize.x++;
+	globalSize.x *= localSize.x;
 
 	getTime(&s);
-	ecl_kernel kernel;
-
-	assert(eclGetKernel("vecAdd", &kernel) == eclSuccess);
-	assert(eclSetKernelArgPtr(kernel, 0, p->ptr) == eclSuccess);
-	assert(eclSetKernelArgPtr(kernel, 1, a) == eclSuccess);
-	assert(eclSetKernelArgPtr(kernel, 2, b) == eclSuccess);
-	assert(eclSetKernelArg(kernel, 3, sizeof(vecSize), &vecSize) == eclSuccess);
+	ecl::kernel kernel("vecAdd", ret);
+	assert(ret == eclSuccess);
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
+	assert(kernel.setArg(0, p->ptr) == eclSuccess);
+	assert(kernel.setArg(1, a) == eclSuccess);
+	assert(kernel.setArg(2, b) == eclSuccess);
+	assert(kernel.setArg(3, vecSize) == eclSuccess);
 	unsigned offset = p->i * long(vecSize);
-	assert(eclSetKernelArg(kernel, 4, sizeof(offset), &offset) == eclSuccess);
-	assert(eclCallNDRange(kernel, 1, NULL, &globalSize, &localSize) == eclSuccess);
-
+	assert(kernel.setArg(4, offset) == eclSuccess);
+	assert(kernel.callNDRange(globalSize, localSize) == eclSuccess);
+#else
+	unsigned offset = p->i * long(vecSize);
+	assert(kernel(p->ptr, a, b, vecSize, offset)(globalSize, localSize) == eclSuccess);
+#endif
 	getTime(&t);
 	snprintf(buffer, 1024, "%s-Run: ", prefix);
 	printTime(&s, &t, buffer, "\n");
@@ -75,8 +78,6 @@ void *addVector(void *ptr)
 		error += p->ptr[i] - (a[i + p->i * vecSize] + b[i + p->i * vecSize]);
 		//error += p->ptr[i] - 1.0f;
 	}
-
-	eclReleaseKernel(kernel);
 
 	getTime(&t);
 	snprintf(buffer, 1024, "%s-CheckFull: ", prefix);
@@ -100,9 +101,9 @@ float do_test(GmacGlobalMallocType allocType, const char *prefix)
 
 	getTime(&s);
 	// Alloc & init input data
-	ret = eclGlobalMalloc((void **)&a, nIter * vecSize * sizeof(float), allocType);
+	ret = ecl::globalMalloc((void **)&a, nIter * vecSize * sizeof(float), allocType);
 	assert(ret == eclSuccess);
-	ret = eclGlobalMalloc((void **)&b, nIter * vecSize * sizeof(float), allocType);
+	ret = ecl::globalMalloc((void **)&b, nIter * vecSize * sizeof(float), allocType);
 	assert(ret == eclSuccess);
 
 	// Alloc output data
@@ -145,8 +146,8 @@ float do_test(GmacGlobalMallocType allocType, const char *prefix)
 		eclFree(param[n].ptr);
 	}
 
-	eclFree(a);
-	eclFree(b);
+	ecl::free(a);
+	ecl::free(b);
 
 	free(param);
 	free(nThread);
@@ -162,7 +163,7 @@ float do_test(GmacGlobalMallocType allocType, const char *prefix)
 
 int main(int argc, char *argv[])
 {
-	assert(eclCompileSource(kernel) == eclSuccess);
+	assert(ecl::compileSource(kernel) == eclSuccess);
 
 	setParam<unsigned>(&nIter, nIterStr, nIterDefault);
 	setParam<unsigned>(&vecSize, vecSizeStr, vecSizeDefault);

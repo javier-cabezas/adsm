@@ -4,7 +4,7 @@
 #include <cstring>
 #include <ctime>
 
-#include <gmac/opencl.h>
+#include <gmac/opencl>
 
 #include "utils.h"
 #include "barrier.h"
@@ -75,57 +75,64 @@ double timeRead   = 0.0;
 
 void *doTest(void *)
 {
-	size_t localSize = blockSize;
-	size_t globalSize = vecSize / blockSize;
+	ecl::config localSize(blockSize);
+	ecl::config globalSize(vecSize/blockSize);
 	gmactime_t s, t;
-	if(vecSize % blockSize) globalSize++;
-	globalSize *= localSize;
+	if(vecSize % blockSize) globalSize.x++;
+	globalSize.x *= localSize.x;
 
 	// Alloc & init input data
 	getTime(&s);
-	if(eclMalloc((void **)&a, vecSize * sizeof(float)) != eclSuccess)
+	if(ecl::malloc((void **)&a, vecSize * sizeof(float)) != eclSuccess)
 		CUFATAL();
-	if(eclMalloc((void **)&b, vecSize * sizeof(float)) != eclSuccess)
+	if(ecl::malloc((void **)&b, vecSize * sizeof(float)) != eclSuccess)
 		CUFATAL();
-	if(eclMalloc((void **)&c, vecSize * sizeof(float)) != eclSuccess)
+	if(ecl::malloc((void **)&c, vecSize * sizeof(float)) != eclSuccess)
 		CUFATAL();
 	getTime(&t);
 	timeAlloc += getTimeStamp(t) - getTimeStamp(s);
 
 	getTime(&s);
-	eclMemset(a, 0, vecSize * sizeof(float));
-	eclMemset(b, 0, vecSize * sizeof(float));
+	ecl::memset(a, 0, vecSize * sizeof(float));
+	ecl::memset(b, 0, vecSize * sizeof(float));
 	getTime(&t);
 	timeMemset += getTimeStamp(t) - getTimeStamp(s);
 
 	barrier_wait(&ioBefore);
 
-	ecl_kernel kernelSet;
+	ecl::error err;
+	ecl::kernel kernelSet("vecSet", err);
+	assert(err == eclSuccess);
 
-	assert(eclGetKernel("vecSet", &kernelSet) == eclSuccess);
+	err = kernelSet.setArg(0, a);
+	assert(err == eclSuccess);
+	err = kernelSet.setArg(1, vecSize);
+	assert(err == eclSuccess);
 
-	assert(eclSetKernelArgPtr(kernelSet, 0, a) == eclSuccess);
-	assert(eclSetKernelArg(kernelSet, 1, sizeof(vecSize), &vecSize) == eclSuccess);
+	ecl::kernel kernelMove("vecMove", err);
+	assert(err == eclSuccess);
 
-	ecl_kernel kernelMove;
-
-	assert(eclGetKernel("vecMove", &kernelMove) == eclSuccess);
-
-	assert(eclSetKernelArgPtr(kernelMove, 0, c) == eclSuccess);
-	assert(eclSetKernelArgPtr(kernelMove, 1, a) == eclSuccess);
-	assert(eclSetKernelArg(kernelMove, 2, sizeof(vecSize), &vecSize) == eclSuccess);
+	err = kernelMove.setArg(0, c);
+	assert(err == eclSuccess);
+	err = kernelMove.setArg(1, a);
+	assert(err == eclSuccess);
+	err = kernelMove.setArg(2, vecSize);
+	assert(err == eclSuccess);
 
 	for (int i = 0; i < ITERATIONS; i++) {
 		getTime(&s);
 		float val = float(i);
-		assert(eclSetKernelArg(kernelSet, 2, sizeof(val), &val) == eclSuccess);
-		assert(eclCallNDRange(kernelSet, 1, NULL, &globalSize, &localSize) == eclSuccess);
+		err = kernelSet.setArg(2, val);
+		assert(err == eclSuccess);
+		err = kernelSet.callNDRange(globalSize, localSize);
+		assert(err == eclSuccess);
 
 		getTime(&t);
 		timeRun += getTimeStamp(t) - getTimeStamp(s);
 		barrier_wait(&ioAfter);
 		getTime(&s);
-		assert(eclCallNDRange(kernelMove, 1, NULL, &globalSize, &localSize) == eclSuccess);
+		err = kernelMove.callNDRange(globalSize, localSize);
+		assert(err == eclSuccess);
 		getTime(&t);
 		timeRun += getTimeStamp(t) - getTimeStamp(s);
 		barrier_wait(&ioBefore);
@@ -133,18 +140,22 @@ void *doTest(void *)
 
 	barrier_wait(&ioBefore);
 
-	ecl_kernel kernelAccum;
-	assert(eclGetKernel("vecAccum", &kernelAccum) == eclSuccess);
+	ecl::kernel kernelAccum("vecAccum", err);
+	assert(err == eclSuccess);
 
-	assert(eclSetKernelArgPtr(kernelAccum, 0, c) == eclSuccess);
-	assert(eclSetKernelArgPtr(kernelAccum, 1, a) == eclSuccess);
-	assert(eclSetKernelArg(kernelAccum, 2, sizeof(vecSize), &vecSize) == eclSuccess);
+	err = kernelAccum.setArg(0, c);
+	assert(err == eclSuccess);
+	err = kernelAccum.setArg(1, a);
+	assert(err == eclSuccess);
+	err = kernelAccum.setArg(2, vecSize);
+	assert(err == eclSuccess);
 
 	for (int i = ITERATIONS - 1; i >= 0; i--) {
 		barrier_wait(&ioBefore);
 		barrier_wait(&ioAfter);
 		getTime(&s);
-		assert(eclCallNDRange(kernelAccum, 1, NULL, &globalSize, &localSize) == eclSuccess);
+		err = kernelAccum.callNDRange(globalSize, localSize);
+		assert(err == eclSuccess);
 		getTime(&t);
 		timeRun += getTimeStamp(t) - getTimeStamp(s);
 	}
@@ -158,12 +169,9 @@ void *doTest(void *)
 	getTime(&t);
 	timeCheck += getTimeStamp(t) - getTimeStamp(s);
 	getTime(&s);
-	eclReleaseKernel(kernelSet);
-	eclReleaseKernel(kernelMove);
-	eclReleaseKernel(kernelAccum);
 
-	eclFree(a);
-	eclFree(b);
+	ecl::free(a);
+	ecl::free(b);
 	getTime(&t);
 	timeFree += getTimeStamp(t) - getTimeStamp(s);
 
@@ -236,7 +244,7 @@ int main(int argc, char *argv[])
 {
 	thread_t tid, tidIO;
 
-	assert(eclCompileSource(kernel) == eclSuccess);
+	assert(ecl::compileSource(kernel) == eclSuccess);
 
 	barrier_init(&ioAfter,2);
 	barrier_init(&ioBefore, 2);

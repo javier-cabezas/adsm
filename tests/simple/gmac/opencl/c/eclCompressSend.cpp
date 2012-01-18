@@ -4,7 +4,7 @@
 
 #include <semaphore.h>
 
-#include <gmac/opencl>
+#include <gmac/opencl.h>
 
 #include "utils.h"
 #include "debug.h"
@@ -50,7 +50,7 @@ void nextStage(stage_t *current, stage_t *next)
 		gmac_sem_wait(&next->free, 1);
 		next->next_in = current->out;
 		next->next_out = current->in;
-		ecl::deviceSendReceive(next->id);
+		eclDeviceSendReceive(next->id);
 	}
 	if(current != NULL) {
 		current->in = current->next_in;
@@ -66,25 +66,22 @@ void *dct_thread(void *args)
 	gmactime_t s, t;
 
 	barrier_wait(&barrierInit);
-
-	ecl::config localSize(blockSize, blockSize);
-	ecl::config globalSize(width, height);
-	if(width  % blockSize) globalSize.x += blockSize;
-	if(height % blockSize) globalSize.y += blockSize;
-	ecl::error err;
-	ecl::kernel k("dct", err);
-	assert(err == eclSuccess);
-
-	assert(k.setArg(2, width)  == eclSuccess);
-	assert(k.setArg(3, height) == eclSuccess);
-
+	size_t localSize[2] = { blockSize, blockSize };
+	size_t globalSize[2] = { width, height };
+	if(width  % blockSize) width += blockSize;
+	if(height % blockSize) height += blockSize;
+	ecl_error err;
+	ecl_kernel kernel;
+	assert(eclGetKernel("dct", &kernel) == eclSuccess);
+	assert(eclSetKernelArg(kernel, 2, sizeof (unsigned), &width)  == eclSuccess);
+	assert(eclSetKernelArg(kernel, 3, sizeof (unsigned), &height)  == eclSuccess);
 
 	for(unsigned i = 0; i < frames; i++) {
 		getTime(&s);
-		s_dct.in = new (ecl::allocator) float[width * height];
-		assert(s_dct.in != NULL);
-		s_dct.out = new (ecl::allocator) float[width * height];
-		assert(s_dct.out != NULL);
+		err = eclMalloc((void **)&s_dct.in, width * height);
+		assert(err == eclSuccess);
+		err = eclMalloc((void **)&s_dct.out, width * height);
+		assert(err == eclSuccess);
 		getTime(&t);
 		printTime(&s, &t, "DCT:Malloc: ", "\n");
 
@@ -94,9 +91,10 @@ void *dct_thread(void *args)
 		printTime(&s, &t, "DCT:Init: ", "\n");
 
 		getTime(&s);
-		assert(k.setArg(0, s_dct.out)    == eclSuccess);
-		assert(k.setArg(1, s_dct.in)     == eclSuccess);
-		assert(k.callNDRange(globalSize, localSize) == eclSuccess);
+		assert(eclSetKernelArgPtr(kernel, 0, &s_dct.out) == eclSuccess);
+		assert(eclSetKernelArgPtr(kernel, 1, &s_dct.in) == eclSuccess);
+		assert(eclCallNDRange(kernel, 2, NULL, globalSize, localSize) == eclSuccess);
+
 		getTime(&t);
 		printTime(&s, &t, "DCT:Run: ", "\n");
 
@@ -104,16 +102,17 @@ void *dct_thread(void *args)
 		gmac_sem_wait(&s_quant.free, 1);
 		s_quant.next_in = s_dct.out;
 		s_quant.next_out = s_dct.in;
-		ecl::deviceSendReceive(s_quant.id);
+		eclDeviceSendReceive(s_quant.id);
 		getTime(&t);
 		printTime(&s, &t, "DCT:SendRecv: ", "\n");
 	}
 
 	getTime(&s);
-	s_dct.in = new (ecl::allocator) float[width * height];
-	assert(s_dct.in != NULL);
-	s_dct.out = new (ecl::allocator) float[width * height];
-	assert(s_dct.out != NULL);
+	err = eclMalloc((void **)&s_dct.in, width * height);
+	assert(err == eclSuccess);
+	err = eclMalloc((void **)&s_dct.out, width * height);
+	assert(err == eclSuccess);
+
 	getTime(&t);
 	printTime(&s, &t, "DCT:Malloc: ", "\n");
 
@@ -121,15 +120,15 @@ void *dct_thread(void *args)
 	gmac_sem_wait(&s_quant.free, 1);
 	s_quant.next_in = s_dct.out;
 	s_quant.next_out = s_dct.in;
-	ecl::deviceSendReceive(s_quant.id);
+	eclDeviceSendReceive(s_quant.id);
 	getTime(&t);
 	printTime(&s, &t, "DCT:SendRecv: ", "\n");
 
 	getTime(&s);
-	s_dct.in = new (ecl::allocator) float[width * height];
-	assert(s_dct.in != NULL);
-	s_dct.out = new (ecl::allocator) float[width * height];
-	assert(s_dct.out != NULL);
+	err = eclMalloc((void  **)&s_dct.in, width * height);
+	assert(err == eclSuccess);
+	err = eclMalloc((void **)&s_dct.out, width *height);
+	assert(err = eclSuccess);
 	getTime(&t);
 	printTime(&s, &t, "DCT:Malloc: ", "\n");
 
@@ -137,7 +136,7 @@ void *dct_thread(void *args)
 	gmac_sem_wait(&s_quant.free, 1);
 	s_quant.next_in = s_dct.out;
 	s_quant.next_out = s_dct.in;
-	ecl::deviceSendReceive(s_quant.id);
+	eclDeviceSendReceive(s_quant.id);
 	getTime(&t);
 	printTime(&s, &t, "DCT:SendRecv: ", "\n");
 
@@ -156,23 +155,22 @@ void *quant_thread(void *args)
 	getTime(&t);
 	printTime(&s, &t, "Quant:SendRecv: ", "\n");
 
-	ecl::config localSize(blockSize, blockSize);
-	ecl::config globalSize(width, height);
-	if(width  % blockSize) globalSize.x += blockSize;
-	if(height % blockSize) globalSize.y += blockSize;
-	ecl::error err;
-	ecl::kernel k("quant", err);
-	assert(err == eclSuccess);
-
-	assert(k.setArg(2, width)       == eclSuccess);
-	assert(k.setArg(3, height)      == eclSuccess);
-	assert(k.setArg(4, float(1e-6)) == eclSuccess);
+	size_t localSize[2] = { blockSize, blockSize };
+	size_t globalSize[2] = { width, height };
+	if(width  % blockSize) width += blockSize;
+	if(height % blockSize) height += blockSize;
+	ecl_kernel kernel;
+	float flo = float(1e-6);
+	assert(eclGetKernel("quant", &kernel) == eclSuccess);
+	assert(eclSetKernelArg(kernel, 2, sizeof(unsigned), &width) == eclSuccess);
+	assert(eclSetKernelArg(kernel, 3, sizeof(unsigned), &height) == eclSuccess);
+	assert(eclSetKernelArg(kernel, 4, sizeof(float), &flo) == eclSuccess);
 
 	for(unsigned i = 0; i < frames; i++) {
 		getTime(&s);
-		assert(k.setArg(0, s_quant.in)  == eclSuccess);
-		assert(k.setArg(1, s_quant.out) == eclSuccess);
-		assert(k.callNDRange(globalSize, localSize) == eclSuccess);
+		assert(eclSetKernelArgPtr(kernel, 0,  &s_quant.in) == eclSuccess);
+		assert(eclSetKernelArgPtr(kernel, 1,  &s_quant.out) == eclSuccess);
+		assert(eclCallNDRange(kernel, 2, NULL, globalSize, localSize) == eclSuccess);
 		getTime(&t);
 		printTime(&s, &t, "Quant:Run: ", "\n");
 
@@ -199,54 +197,55 @@ void *idct_thread(void *args)
 
 	getTime(&s);
 	gmac_sem_post(&s_idct.free, 1);
-	ecl::deviceSendReceive(s_dct.id);
+	eclDeviceSendReceive(s_dct.id);
 	nextStage(&s_idct, NULL);
 	getTime(&t);
 	printTime(&s, &t, "IDCT:SendRecv: ", "\n");
 
 	getTime(&s);
 	gmac_sem_post(&s_idct.free, 1);
-	ecl::deviceSendReceive(s_dct.id);
+	eclDeviceSendReceive(s_dct.id);
 	getTime(&t);
 	nextStage(&s_idct, NULL);
 	getTime(&t);
 	printTime(&s, &t, "IDCT:SendRecv: ", "\n");
 
-	ecl::config localSize(blockSize, blockSize);
-	ecl::config globalSize(width, height);
-	if(width  % blockSize) globalSize.x += blockSize;
-	if(height % blockSize) globalSize.y += blockSize;
-	ecl::error err;
-	ecl::kernel k("idct", err);
-	assert(err == eclSuccess);
+	size_t localSize[2] = { blockSize, blockSize };
+	size_t globalSize[2] = { width, height };
+	if(width  % blockSize) width += blockSize;
+	if(height % blockSize) height += blockSize;
 
-	assert(k.setArg(2, width)   == eclSuccess);
-	assert(k.setArg(3, height)  == eclSuccess);
+	ecl_kernel kernel;
+	assert(eclGetKernel("idct", &kernel) == eclSuccess);
+	assert(eclSetKernelArg(kernel, 2, sizeof(unsigned), &width) == eclSuccess);
+	assert(eclSetKernelArg(kernel, 2, sizeof(unsigned), &height) == eclSuccess);
+
 
 	for(unsigned i = 0; i < frames; i++) {
 		getTime(&s);
-		assert(k.setArg(0, s_idct.in)  == eclSuccess);
-		assert(k.setArg(1, s_idct.out) == eclSuccess);
-		assert(k.callNDRange(globalSize, localSize) == eclSuccess);
+		assert(eclSetKernelArgPtr(kernel, 0, &s_idct.in) == eclSuccess);
+		assert(eclSetKernelArgPtr(kernel, 0, &s_idct.out) == eclSuccess);
+		assert(eclCallNDRange(kernel, 2, NULL, globalSize, localSize) == eclSuccess);
+
 		getTime(&t);
 		printTime(&s, &t, "IDCT:Run: ", "\n");
 
 		getTime(&s);
-		assert(ecl::free(s_idct.in) == eclSuccess);
-		assert(ecl::free(s_idct.out) == eclSuccess);
+		assert(eclFree(s_idct.in) == eclSuccess);
+		assert(eclFree(s_idct.out) == eclSuccess);
 		getTime(&t);
 		printTime(&s, &t, "IDCT:Free: ", "\n");
 
 		getTime(&s);
-		ecl::deviceSendReceive(s_dct.id);
+		eclDeviceSendReceive(s_dct.id);
 		nextStage(&s_idct, NULL);
 		getTime(&t);
 		printTime(&s, &t, "IDCT:SendRecv: ", "\n");
 	}
 
 	getTime(&s);
-	ecl::free(s_idct.in);
-	ecl::free(s_idct.out);
+	eclFree(s_idct.in);
+	eclFree(s_idct.out);
 	getTime(&t);
 	printTime(&s, &t, "IDCT:Free: ", "\n");
 
