@@ -17,7 +17,7 @@ static unsigned nIter = 0;
 
 int main(int argc, char *argv[])
 {
-	assert(eclCompileSource(stencilCode) == eclSuccess);
+	assert(ecl::compileSource(stencilCode) == eclSuccess);
 
 	setParam<unsigned>(&dimRealElems, dimRealElemsStr, dimRealElemsDefault);
 	setParam<unsigned>(&nIter, nIterStr, nIterDefault);

@@ -1,7 +1,7 @@
 #ifndef GMAC_STENCIL_COMMON_H_
 #define GMAC_STENCIL_COMMON_H_
 
-#include "gmac/opencl.h"
+#include "gmac/opencl"
 
 #define STENCIL 4
 
@@ -193,14 +193,14 @@ do_stencil(void * ptr)
 	getTime(&s);
 
 	// Alloc 3 volumes for 2-degree time integration
-	if(eclMalloc((void **)&descr->u2, descr->size()) != eclSuccess)
+	if(ecl::malloc((void **)&descr->u2, descr->size()) != eclSuccess)
 		abort();
-	eclMemset(descr->u2, 0, descr->size());
-	if(eclMalloc((void **)&descr->u3, descr->size()) != eclSuccess)
+	ecl::memset(descr->u2, 0, descr->size());
+	if(ecl::malloc((void **)&descr->u3, descr->size()) != eclSuccess)
 		abort();
-	eclMemset(descr->u3, 0, descr->size());
+	ecl::memset(descr->u3, 0, descr->size());
 
-	if(eclMalloc((void **) &v, descr->realSize()) != eclSuccess)
+	if(ecl::malloc((void **) &v, descr->realSize()) != eclSuccess)
 		abort();
 
 	for (size_t k = 0; k < descr->slices; k++) {        
@@ -219,37 +219,34 @@ do_stencil(void * ptr)
 	getTime(&t);
 	printTime(&s, &t, "Alloc: ", "\n");
 
-	size_t localSize[2] = {32, 4};
-	size_t globalSize[2];
-	globalSize[0] = descr->dimElems - 2 * STENCIL;
-	globalSize[1] = descr->dimElems - 2 * STENCIL;
+	ecl::config localSize(32, 4);
+	ecl::config globalSize(descr->dimElems - 2 * STENCIL, descr->dimElems - 2 * STENCIL);
 
 	getTime(&s);
-
-	ecl_kernel kernel;
-
-	assert(eclGetKernel("kernelStencil", &kernel) == eclSuccess);
-	assert(eclSetKernelArgPtr(kernel, 2, v) == eclSuccess);
+	ecl::error err;
+	ecl::kernel kernel("kernelStencil", err);
+	assert(err == eclSuccess);
+	assert(kernel.setArg(2, v) == eclSuccess);
 	float dt2 = 0.08f;
-	assert(eclSetKernelArg(kernel, 3, sizeof(dt2), &dt2) == eclSuccess);
-	assert(eclSetKernelArg(kernel, 4, sizeof(descr->dimElems), &descr->dimElems) == eclSuccess);
-	assert(eclSetKernelArg(kernel, 5, sizeof(descr->dimRealElems), &descr->dimRealElems) == eclSuccess);
+	assert(kernel.setArg(3, dt2) == eclSuccess);
+	assert(kernel.setArg(4, descr->dimElems) == eclSuccess);
+	assert(kernel.setArg(5, descr->dimRealElems) == eclSuccess);
 	unsigned intTmp = descr->sliceElems();
-	assert(eclSetKernelArg(kernel, 6, sizeof(intTmp), &intTmp) == eclSuccess);
+	assert(kernel.setArg(6, intTmp) == eclSuccess);
 	intTmp = descr->sliceRealElems();
-	assert(eclSetKernelArg(kernel, 7, sizeof(intTmp), &intTmp) == eclSuccess);
-	assert(eclSetKernelArg(kernel, 8, sizeof(descr->slices), &descr->slices) == eclSuccess);
+	assert(kernel.setArg(7, intTmp) == eclSuccess);
+	assert(kernel.setArg(8, descr->slices) == eclSuccess);
 
 
 	for (uint32_t i = 1; i <= ITERATIONS; i++) {
 		float * tmp;
 
 		// Call the kernel
-		assert(eclSetKernelArgPtr(kernel, 0, descr->u2) == eclSuccess);
-		assert(eclSetKernelArgPtr(kernel, 1, descr->u3) == eclSuccess);
+		assert(kernel.setArg(0, descr->u2) == eclSuccess);
+		assert(kernel.setArg(1, descr->u3) == eclSuccess);
 
-		ecl_error ret;
-		ret = eclCallNDRange(kernel, 2, NULL, globalSize, localSize);
+		ecl::error ret;
+		ret = kernel.callNDRange(globalSize, localSize);
 		assert(ret == eclSuccess);
 
 		if(descr->gpus > 1) {
@@ -257,12 +254,12 @@ do_stencil(void * ptr)
 
 			// Send data
 			if (descr->prev != NULL) {
-				eclMemcpy(descr->prev->u3 + descr->elems() - STENCIL * descr->sliceElems(),
+				ecl::memcpy(descr->prev->u3 + descr->elems() - STENCIL * descr->sliceElems(),
 					descr->u3 + STENCIL * descr->sliceElems(),
 					descr->sliceElems() * STENCIL * sizeof(float));
 			}
 			if (descr->next != NULL) {
-				eclMemcpy(descr->next->u3,
+				ecl::memcpy(descr->next->u3,
 					descr->u3 + descr->elems() - 2 * STENCIL * descr->sliceElems(),
 					descr->sliceElems() * STENCIL * sizeof(float));                
 			}
@@ -282,12 +279,10 @@ do_stencil(void * ptr)
 	getTime(&t);
 	printTime(&s, &t, "Run: ", "\n");
 
-	eclReleaseKernel(kernel);
-
 	getTime(&s);
-	eclFree(descr->u2);
-	eclFree(descr->u3);
-	eclFree(v);
+	ecl::free(descr->u2);
+	ecl::free(descr->u3);
+	ecl::free(v);
 	getTime(&t);
 	printTime(&s, &t, "Free: ", "\n");
 

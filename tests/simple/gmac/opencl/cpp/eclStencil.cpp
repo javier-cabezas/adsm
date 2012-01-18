@@ -1,5 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <time.h>
 
 #include "utils.h"
@@ -11,7 +11,7 @@
 
 int main(int argc, char *argv[])
 {
-	assert(eclCompileSource(stencilCode) == eclSuccess);
+	assert(ecl::compileSource(stencilCode) == eclSuccess);
 
 	setParam<unsigned>(&dimRealElems, dimRealElemsStr, dimRealElemsDefault);
 

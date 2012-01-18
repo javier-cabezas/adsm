@@ -45,98 +45,98 @@ unsigned sizeC;
 void
 computeGold(float* C, const float* A, const float* B, unsigned int hA, unsigned int wA, unsigned int wB)
 {
-    for (unsigned int i = 0; i < hA; ++i)
-        for (unsigned int j = 0; j < wB; ++j) {
-            double sum = 0;
-            for (unsigned int k = 0; k < wA; ++k) {
-                double a = A[i * wA + k];
-                double b = B[k * wB + j];
-                sum += a * b;
-            }
-            C[i * wB + j] = (float)sum;
-        }
+	for (unsigned int i = 0; i < hA; ++i)
+		for (unsigned int j = 0; j < wB; ++j) {
+			double sum = 0;
+			for (unsigned int k = 0; k < wA; ++k) {
+				double a = A[i * wA + k];
+				double b = B[k * wB + j];
+				sum += a * b;
+			}
+			C[i * wB + j] = (float)sum;
+		}
 }
 
 int
 main(int argc, char** argv)
 {
-    assert(eclCompileSource(code) == eclSuccess);
+	assert(eclCompileSource(code) == eclSuccess);
 	setParam<unsigned>(&WA, WAStr, WADefault);
 	setParam<unsigned>(&HA, HAStr, HADefault);
 	setParam<unsigned>(&WB, WBStr, WBDefault);
 	setParam<unsigned>(&HB, HBStr, HBDefault);
 	setParam<bool>(&check, checkStr, checkDefault);
 
-    assert(HB == WA);
+	assert(HB == WA);
 
-    gmactime_t s, t;
-    unsigned elemsA = WA * HA;
-    unsigned elemsB = WB * HB;
-             elemsC = WC * HC;
-    unsigned sizeA = sizeof(float) * elemsA;
-    unsigned sizeB = sizeof(float) * elemsB;
-             sizeC = sizeof(float) * elemsC;
+	gmactime_t s, t;
+	unsigned elemsA = WA * HA;
+	unsigned elemsB = WB * HB;
+	elemsC = WC * HC;
+	unsigned sizeA = sizeof(float) * elemsA;
+	unsigned sizeB = sizeof(float) * elemsB;
+	sizeC = sizeof(float) * elemsC;
 
-    // allocate memory for matrices A and B
+	// allocate memory for matrices A and B
 	getTime(&s);
-    assert(eclMalloc((void**) &A, sizeA) == eclSuccess);
-    assert(eclMalloc((void**) &B, sizeB) == eclSuccess);
-    assert(eclMalloc((void**) &C, sizeC) == eclSuccess);
+	assert(eclMalloc((void**) &A, sizeA) == eclSuccess);
+	assert(eclMalloc((void**) &B, sizeB) == eclSuccess);
+	assert(eclMalloc((void**) &C, sizeC) == eclSuccess);
 	getTime(&t);
 	printTime(&s, &t, "Alloc: ", "\n");
 
 
 	getTime(&s);
-    valueInit(A, 100.f, elemsA);
-    valueInit(B, 100.f, elemsB);
+	valueInit(A, 100.f, elemsA);
+	valueInit(B, 100.f, elemsB);
 	getTime(&t);
 	printTime(&s, &t, "Init: ", "\n");
 
 	getTime(&s);
-    size_t localSize[2] = { BLOCK_SIZE, BLOCK_SIZE };
-    size_t globalSize[2];
-    globalSize[0] = WC;
-    globalSize[1] = HC;
+	size_t localSize[2] = { BLOCK_SIZE, BLOCK_SIZE };
+	size_t globalSize[2];
+	globalSize[0] = WC;
+	globalSize[1] = HC;
 
-    ecl_kernel kernel;
+	ecl_kernel kernel;
 
-    assert(eclGetKernel("matrixMulSimple", &kernel) == eclSuccess);
-    assert(eclSetKernelArgPtr(kernel, 0, C) == eclSuccess);
-    assert(eclSetKernelArgPtr(kernel, 1, A) == eclSuccess);
-    assert(eclSetKernelArgPtr(kernel, 2, B) == eclSuccess);
-    int param = int(WA);
-    assert(eclSetKernelArg(kernel, 3, sizeof(int), &param) == eclSuccess);
-    param     = int(WB);                                 
-    assert(eclSetKernelArg(kernel, 4, sizeof(int), &param) == eclSuccess);
+	assert(eclGetKernel("matrixMulSimple", &kernel) == eclSuccess);
+	assert(eclSetKernelArgPtr(kernel, 0, C) == eclSuccess);
+	assert(eclSetKernelArgPtr(kernel, 1, A) == eclSuccess);
+	assert(eclSetKernelArgPtr(kernel, 2, B) == eclSuccess);
+	int param = int(WA);
+	assert(eclSetKernelArg(kernel, 3, sizeof(int), &param) == eclSuccess);
+	param     = int(WB);                                 
+	assert(eclSetKernelArg(kernel, 4, sizeof(int), &param) == eclSuccess);
 
-    assert(eclCallNDRange(kernel, 2, NULL, globalSize, localSize) == eclSuccess);
+	assert(eclCallNDRange(kernel, 2, NULL, globalSize, localSize) == eclSuccess);
 
-    getTime(&t);
-    printTime(&s, &t, "Run: ", "\n");
+	getTime(&t);
+	printTime(&s, &t, "Run: ", "\n");
 
-    // compute reference solution
-    getTime(&s);
-    float err = 0.0;
-    float* reference = (float *) malloc(sizeC);
-    computeGold(reference, A, B, HA, WA, WB);
-    for (unsigned i = 0; i < elemsC; i++) {
-        err += fabsf(reference[i] - C[i]);
-    }
-    getTime(&t);
-    printTime(&s, &t, "Check: ", "\n");
+	// compute reference solution
+	getTime(&s);
+	float err = 0.0;
+	float* reference = (float *) malloc(sizeC);
+	computeGold(reference, A, B, HA, WA, WB);
+	for (unsigned i = 0; i < elemsC; i++) {
+		err += fabsf(reference[i] - C[i]);
+	}
+	getTime(&t);
+	printTime(&s, &t, "Check: ", "\n");
 
-    free(reference);
+	free(reference);
 
-    eclReleaseKernel(kernel);
+	eclReleaseKernel(kernel);
 
-    getTime(&s);
+	getTime(&s);
 	eclFree(A);
 	eclFree(B);
 	eclFree(C);
-    getTime(&t);
-    printTime(&s, &t, "Free: ", "\n");
+	getTime(&t);
+	printTime(&s, &t, "Free: ", "\n");
 
-    fprintf(stderr, "Error: %f\n", err);
+	fprintf(stderr, "Error: %f\n", err);
 
-    return fabsf(err) != 0.0f;
+	return fabsf(err) != 0.0f;
 }

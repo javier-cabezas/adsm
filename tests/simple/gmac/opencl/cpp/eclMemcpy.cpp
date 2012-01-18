@@ -2,9 +2,11 @@
 #include <cstdlib>
 #include <cstring>
 
-#include <gmac/opencl.h>
+#include <gmac/opencl>
 
 #include "utils.h"
+
+typedef cl_uchar uint8_t;
 
 enum MemcpyType {
 	GMAC_TO_GMAC = 1,
@@ -41,11 +43,12 @@ int memcpyTest(MemcpyType type, bool callKernel, void *(*memcpy_fn)(void *, cons
 {
 	int error = 0;
 
-	ecl_kernel kernel;
-	size_t globalSize = 1;
-	size_t localSize = 1;
+	ecl::config globalSize (1);
+	ecl::config localSize (1);
 
-	assert(eclGetKernel("null", &kernel) == eclSuccess);
+	ecl::error ret;
+	ecl::kernel kernel("null", ret);
+	assert(ret == eclSuccess);
 
 	uint8_t *baseSrc = NULL;
 	uint8_t *eclSrc = NULL;
@@ -57,13 +60,13 @@ int memcpyTest(MemcpyType type, bool callKernel, void *(*memcpy_fn)(void *, cons
 		fprintf(stderr, "ALLOC: "FMT_SIZE"\n", count);
 
 		if (type == GMAC_TO_GMAC) {
-			assert(eclMalloc((void **)&eclSrc, count) == eclSuccess);
-			assert(eclMalloc((void **)&eclDst, count) == eclSuccess);
+			assert(ecl::malloc((void **)&eclSrc, count) == eclSuccess);
+			assert(ecl::malloc((void **)&eclDst, count) == eclSuccess);
 		} else if (type == HOST_TO_GMAC) {
 			eclSrc = (uint8_t *)malloc(count);
-			assert(eclMalloc((void **)&eclDst, count) == eclSuccess);
+			assert(ecl::malloc((void **)&eclDst, count) == eclSuccess);
 		} else if (type == GMAC_TO_HOST) {
-			assert(eclMalloc((void **)&eclSrc, count) == eclSuccess);
+			assert(ecl::malloc((void **)&eclSrc, count) == eclSuccess);
 			eclDst = (uint8_t *)malloc(count);
 		}
 
@@ -78,7 +81,8 @@ int memcpyTest(MemcpyType type, bool callKernel, void *(*memcpy_fn)(void *, cons
 				assert(stride + copyCount <= count);
 
 				if (callKernel) {
-					assert(eclCallNDRange(kernel, 1, NULL, &globalSize, &localSize) == eclSuccess);
+					ret = kernel.callNDRange(globalSize, localSize);
+					assert(ret == eclSuccess);
 				}
 				memcpy_fn(eclDst + stride, eclSrc + stride, copyCount);
 
@@ -115,31 +119,29 @@ int memcpyTest(MemcpyType type, bool callKernel, void *(*memcpy_fn)(void *, cons
 		}
 
 		if (type == GMAC_TO_GMAC) {
-			assert(eclFree(eclSrc) == eclSuccess);
-			assert(eclFree(eclDst) == eclSuccess);
+			assert(ecl::free(eclSrc) == eclSuccess);
+			assert(ecl::free(eclDst) == eclSuccess);
 		} else if (type == HOST_TO_GMAC) {
 			free(eclSrc);
-			assert(eclFree(eclDst) == eclSuccess);
+			assert(ecl::free(eclDst) == eclSuccess);
 		} else if (type == GMAC_TO_HOST) {
-			assert(eclFree(eclSrc) == eclSuccess);
+			assert(ecl::free(eclSrc) == eclSuccess);
 			free(eclDst);
 		}
 	}
 	free(baseSrc);
 
-	eclReleaseKernel(kernel);
-
 	return error;
 
 exit_test:
 	if (type == GMAC_TO_GMAC) {
-		assert(eclFree(eclSrc) == eclSuccess);
-		assert(eclFree(eclDst) == eclSuccess);
+		assert(ecl::free(eclSrc) == eclSuccess);
+		assert(ecl::free(eclDst) == eclSuccess);
 	} else if (type == HOST_TO_GMAC) {
 		free(eclSrc);
-		assert(eclFree(eclDst) == eclSuccess);
+		assert(ecl::free(eclDst) == eclSuccess);
 	} else if (type == GMAC_TO_HOST) {
-		assert(eclFree(eclSrc) == eclSuccess);
+		assert(ecl::free(eclSrc) == eclSuccess);
 		free(eclDst);
 	}
 
@@ -149,8 +151,8 @@ exit_test:
 }
 
 static void *eclMemcpyWrapper(void *dst, const void *src, size_t size)
-{
-	return eclMemcpy(dst, src, size);
+{ 
+	return ecl::memcpy(dst, src, size);
 }
 
 int main(int argc, char *argv[])
@@ -158,7 +160,7 @@ int main(int argc, char *argv[])
 	setParam<int>(&type, typeStr, typeDefault);
 	setParam<bool>(&memcpyFn, memcpyFnStr, memcpyFnDefault);
 
-	assert(eclCompileSource(kernel) == eclSuccess);
+	assert(ecl::compileSource(kernel) == eclSuccess);
 
 	int ret;
 

@@ -41,7 +41,7 @@ void
 lshift128(unsigned int* input, unsigned int shift, unsigned int* output)
 {
 	unsigned int invshift = 32u - shift;
-	
+
 	output[0] = input[0] << shift;
 	output[1] = (input[1] << shift) | (input[0] >> invshift);
 	output[2] = (input[2] << shift) | (input[1] >> invshift);
@@ -64,13 +64,13 @@ generateRand(unsigned int* seed, float* gaussianRand1, float* gaussianRand2, uns
 {
 	unsigned int mulFactor = 4;
 	unsigned int temp[8][4];
-	
+
 	unsigned int state1[4] = {seed[0], seed[1], seed[2], seed[3]};
 	unsigned int state2[4] = {0u, 0u, 0u, 0u}; 
 	unsigned int state3[4] = {0u, 0u, 0u, 0u}; 
 	unsigned int state4[4] = {0u, 0u, 0u, 0u}; 
 	unsigned int state5[4] = {0u, 0u, 0u, 0u}; 
-	
+
 	unsigned int stateMask = 1812433253u;
 	unsigned int thirty = 30u;
 	unsigned int mask4[4] = {stateMask, stateMask, stateMask, stateMask};
@@ -79,36 +79,36 @@ generateRand(unsigned int* seed, float* gaussianRand1, float* gaussianRand2, uns
 	unsigned int two4[4] = {2u, 2u, 2u, 2u};
 	unsigned int three4[4] = {3u, 3u, 3u, 3u};
 	unsigned int four4[4] = {4u, 4u, 4u, 4u};
-	
+
 	unsigned int r1[4] = {0u, 0u, 0u, 0u}; 
 	unsigned int r2[4] = {0u, 0u, 0u, 0u}; 
-	
+
 	unsigned int a[4] = {0u, 0u, 0u, 0u};
 	unsigned int b[4] = {0u, 0u, 0u, 0u};
-	
+
 	unsigned int e[4] = {0u, 0u, 0u, 0u}; 
 	unsigned int f[4] = {0u, 0u, 0u, 0u};
-	
+
 	unsigned int thirteen  = 13u;
 	unsigned int fifteen = 15u;
 	unsigned int shift = 8u * 3u;
-	
+
 	unsigned int mask11 = 0xfdff37ffu;
 	unsigned int mask12 = 0xef7f3f7du;
 	unsigned int mask13 = 0xff777b7du;
 	unsigned int mask14 = 0x7ff7fb2fu;
-	
+
 	const float one = 1.0f;
 	const float intMax = 4294967296.0f;
 	const float PI = 3.14159265358979f;
 	const float two = 2.0f;
-	
+
 	float r[4] = {0.0f, 0.0f, 0.0f, 0.0f}; 
 	float phi[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-	
+
 	float temp1[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 	float temp2[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-	
+
 	//Initializing states.
 	for(int c = 0; c < 4; ++c)	{
 		state2[c] = mask4[c] * (state1[c] ^ (state1[c] >> thirty4[c])) + one4[c];
@@ -116,7 +116,7 @@ generateRand(unsigned int* seed, float* gaussianRand1, float* gaussianRand2, uns
 		state4[c] = mask4[c] * (state3[c] ^ (state3[c] >> thirty4[c])) + three4[c];
 		state5[c] = mask4[c] * (state4[c] ^ (state4[c] >> thirty4[c])) + four4[c];
 	}
-	
+
 	unsigned int i = 0;
 	for(i = 0; i < mulFactor; ++i) {
 		switch(i)
@@ -156,21 +156,21 @@ generateRand(unsigned int* seed, float* gaussianRand1, float* gaussianRand2, uns
 		default:
 			break;
 		}
-		
+
 		lshift128(a, shift, e);
 		rshift128(r1, shift, f);
-		
+
 		temp[i][0] = a[0] ^ e[0] ^ ((b[0] >> thirteen) & mask11) ^ f[0] ^ (r2[0] << fifteen);
 		temp[i][1] = a[1] ^ e[1] ^ ((b[1] >> thirteen) & mask12) ^ f[1] ^ (r2[1] << fifteen);
 		temp[i][2] = a[2] ^ e[2] ^ ((b[2] >> thirteen) & mask13) ^ f[2] ^ (r2[2] << fifteen);
 		temp[i][3] = a[3] ^ e[3] ^ ((b[3] >> thirteen) & mask14) ^ f[3] ^ (r2[3] << fifteen);
 	}
-	
+
 	for(int c = 0; c < 4; ++c)	{
 		temp1[c] = temp[0][c] * one / intMax;
 		temp2[c] = temp[1][c] * one / intMax;
 	}
-	
+
 	for(int c = 0; c < 4; ++c)	{ 
 		// Applying Box Mullar Transformations.
 		r[c] = sqrt((-two) * log(temp1[c]));
@@ -189,7 +189,7 @@ calOutputs(float strikePrice, float* meanDeriv1, float*  meanDeriv2, float* mean
 	float temp2[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 	float temp3[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 	float temp4[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-	
+
 	float tempDiff1[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 	float tempDiff2[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 
@@ -217,7 +217,7 @@ calOutputs(float strikePrice, float* meanDeriv1, float*  meanDeriv2, float* mean
 		temp1[3] = 1.0f;
 		temp3[3] = tempDiff1[3];
 	}
-	
+
 	if(tempDiff2[0] > 0.0f)
 	{
 		temp2[0] = 1.0f;
@@ -253,17 +253,17 @@ void cpuReferenceImpl(cl_float* sigma, cl_float* refPrice, cl_float* refVega, cl
 
 	// Initialize random number generator
 	srand(1);
-	
+
 	for(int k = 0; k < steps; k++) {
 		float c1 = (interest - 0.5f * sigma[k] * sigma[k]) * timeStep;
 		float c2 = sigma[k] * sqrt(timeStep);
 		float c3 = (interest + 0.5f * sigma[k] * sigma[k]); 
-		
+
 		for(int j = 0; j < (width * height); j++) {
 			unsigned int nextRand[4] = {0u, 0u, 0u, 0u};
 			for(int c = 0; c < 4; ++c)
 				nextRand[c] = (cl_uint)rand();
-			
+
 			float trajPrice1[4] = {initPrice, initPrice, initPrice, initPrice};
 			float sumPrice1[4] = {initPrice, initPrice, initPrice, initPrice};
 			float sumDeriv1[4] = {0.0f, 0.0f, 0.0f, 0.0f};
@@ -271,7 +271,7 @@ void cpuReferenceImpl(cl_float* sigma, cl_float* refPrice, cl_float* refVega, cl
 			float meanDeriv1[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 			float price1[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 			float pathDeriv1[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-			
+
 			float trajPrice2[4] = {initPrice, initPrice, initPrice, initPrice};
 			float sumPrice2[4] = {initPrice, initPrice, initPrice, initPrice};
 			float sumDeriv2[4] = {0.0f, 0.0f, 0.0f, 0.0f};
@@ -279,27 +279,27 @@ void cpuReferenceImpl(cl_float* sigma, cl_float* refPrice, cl_float* refVega, cl
 			float meanDeriv2[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 			float price2[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 			float pathDeriv2[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-			
+
 			//Run the Monte Carlo simulation a total of Num_Sum - 1 times
 			for(int i = 1; i < noOfSum; i++) {
 				unsigned int tempRand[4] =  {0u, 0u, 0u, 0u};
 				for(int c = 0; c < 4; ++c)
 					tempRand[c] = nextRand[c];
-				
+
 				float gaussian1[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 				float gaussian2[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 				generateRand(tempRand, gaussian1, gaussian2, nextRand);
-				
+
 				//Calculate the trajectory price and sum price for all trajectories
 				for(int c = 0; c < 4; ++c) {
 					trajPrice1[c] = trajPrice1[c] * exp(c1 + c2 * gaussian1[c]);
 					trajPrice2[c] = trajPrice2[c] * exp(c1 + c2 * gaussian2[c]);
-					
+
 					sumPrice1[c] = sumPrice1[c] + trajPrice1[c];
 					sumPrice2[c] = sumPrice2[c] + trajPrice2[c];
-					
+
 					float temp = c3 * timeStep * i;
-					
+
 					// Calculate the derivative price for all trajectories
 					sumDeriv1[c] = sumDeriv1[c] + trajPrice1[c] 
 					* ((log(trajPrice1[c] / initPrice) - temp) / sigma[k]);
@@ -308,7 +308,7 @@ void cpuReferenceImpl(cl_float* sigma, cl_float* refPrice, cl_float* refVega, cl
 					* ((log(trajPrice2[c] / initPrice) - temp) / sigma[k]);						
 				}
 			}
-			
+
 			//Calculate the average price and average derivative?of each simulated path
 			for(int c = 0; c < 4; ++c) {
 				meanPrice1[c] = sumPrice1[c] / noOfSum;
@@ -316,10 +316,10 @@ void cpuReferenceImpl(cl_float* sigma, cl_float* refPrice, cl_float* refVega, cl
 				meanDeriv1[c] = sumDeriv1[c] / noOfSum;
 				meanDeriv2[c] = sumDeriv2[c] / noOfSum;
 			}
-			
+
 			calOutputs(strikePrice, meanDeriv1, meanDeriv2, meanPrice1, meanPrice2, 
 				pathDeriv1, pathDeriv2, price1, price2);
-			
+
 			for(int c = 0; c < 4; ++c)	{
 				priceVals[j * 8 + c] = price1[c];
 				priceVals[j * 8 + 1 * 4 + c] = price2[c];
@@ -327,16 +327,16 @@ void cpuReferenceImpl(cl_float* sigma, cl_float* refPrice, cl_float* refVega, cl
 				priceDeriv[j * 8 + 1 * 4 + c] = pathDeriv2[c];
 			}
 		}
-		
+
 		/* Replace Following "for" loop with reduction kernel */
 		for(int i = 0; i < noOfTraj * noOfTraj; i++)	{
 			refPrice[k] += priceVals[i];
 			refVega[k] += priceDeriv[i];
 		}
-		
+
 		refPrice[k] /= (noOfTraj * noOfTraj);
 		refVega[k] /= (noOfTraj * noOfTraj);
-		
+
 		refPrice[k] = exp(-interest * maturity) * refPrice[k];
 		refVega[k] = exp(-interest * maturity) * refVega[k];
 	}
@@ -345,10 +345,10 @@ void cpuReferenceImpl(cl_float* sigma, cl_float* refPrice, cl_float* refVega, cl
 int main(int argc, char *argv[])
 {
 	gmactime_t s, t, S , T;
-	
+
 	size_t blockSizeX = GROUP_SIZE;                  /**< Group-size in x-direction */ 
 	size_t blockSizeY = 1;                                      /**< Group-size in y-direction */
-	
+
 	cl_float *sigma = NULL;                    /**< Array of sigma values */
 	cl_float *price = NULL;                    /**< Array of price values */
 	cl_float *vega = NULL;                     /**< Array of vega values */
@@ -357,14 +357,14 @@ int main(int argc, char *argv[])
 	cl_uint *randNum = NULL;                   /**< Array of random numbers */
 	cl_float *priceVals = NULL;                /**< Array of price values for given samples */
 	cl_float *priceDeriv = NULL;               /**< Array of price derivative values for given samples */
-	
+
 	steps = (steps < 4) ? 4 : steps;
 	steps = (steps / 2) * 2;
-	
+
 	int i = 0;
 	const cl_float finalValue = 0.8f;
 	const cl_float stepValue = finalValue / (cl_float)steps;
-	
+
 	assert(ecl::compileSource(code) == eclSuccess);
 	setParam<cl_int>(&width, widthStr, widthDefault);
 	setParam<cl_int>(&noOfSum, noOfSumStr, noOfSumDefault);
@@ -372,7 +372,7 @@ int main(int argc, char *argv[])
 	/* Set samples and exercize points */
 	width = noOfTraj / 4;
 	height = noOfTraj / 2;
-	
+
 	getTime(&s);
 	// Alloc
 	sigma = new (ecl::allocator) cl_float[steps * sizeof(cl_float)];
@@ -391,23 +391,23 @@ int main(int argc, char *argv[])
 	assert(priceVals != NULL);
 	priceDeriv = new (ecl::allocator) cl_float[width * height * 2 * sizeof(cl_float4)];
 	assert(priceDeriv != NULL);
-	
+
 	getTime(&t);
 	printTime(&s, &t, "Alloc: ", "\n");
-	
+
 	getTime(&S);
 	getTime(&s);
 	/* random initialisation of input */
 	sigma[0] = 0.01f;
 	for(i = 1; i < steps; i++)
 		sigma[i] = sigma[i - 1] + stepValue;
-	memset((void*)price, 0, steps * sizeof(cl_float));
-	memset((void*)vega, 0, steps * sizeof(cl_float));
+	ecl::memset((void*)price, 0, steps * sizeof(cl_float));
+	ecl::memset((void*)vega, 0, steps * sizeof(cl_float));
 	memset((void*)refPrice, 0, steps * sizeof(cl_float));
 	memset((void*)refVega, 0, steps * sizeof(cl_float));
-	memset((void*)priceVals, 0, width * height * 2 * sizeof(cl_float4));
-	memset((void*)priceDeriv, 0, width * height * 2 * sizeof(cl_float4));
-	
+	ecl::memset((void*)priceVals, 0, width * height * 2 * sizeof(cl_float4));
+	ecl::memset((void*)priceDeriv, 0, width * height * 2 * sizeof(cl_float4));
+
 	getTime(&t);
 	printTime(&s, &t, "Init: ", "\n");
 
@@ -418,12 +418,12 @@ int main(int argc, char *argv[])
 		printf("%f ", sigma[i]);
 	getTime(&t);
 	printTime(&s, &t, "\nPrint: ", "\n");
-	
+
 	getTime(&s);
 	ecl::config globalSize(width, height);
 	ecl::config localSize(blockSizeX, blockSizeY);
 	ecl::error err;
-	
+
 	ecl::kernel kernel("calPriceVega", err);
 	assert(err == eclSuccess);
 #ifndef __GXX_EXPERIMENTAL_CXX0X__
@@ -470,7 +470,7 @@ int main(int argc, char *argv[])
 		attributes.timeStep[1] = timeStep;
 		attributes.timeStep[2] = timeStep;
 		attributes.timeStep[3] = timeStep;
-		
+
 		// Set appropriate arguments to the kernel 
 		assert(kernel.setArg(0, attributes) == eclSuccess);
 		assert(kernel.callNDRange(globalSize, localSize) == eclSuccess);
@@ -484,7 +484,7 @@ int main(int argc, char *argv[])
 	}
 	price[k] /= (noOfTraj * noOfTraj);
 	vega[k] /= (noOfTraj * noOfTraj);
-	
+
 	price[k] = exp(-interest * maturity) * price[k];
 	vega[k] = exp(-interest * maturity) * vega[k];
 }
@@ -524,12 +524,12 @@ free(refPrice);
 refPrice = NULL;
 free(refVega);
 refVega = NULL;
-ecl::free(sigma);
-ecl::free(price);
-ecl::free(vega);
-ecl::free(randNum);
-ecl::free(priceVals);
-ecl::free(priceDeriv);
+operator delete(sigma, ecl::allocator);
+operator delete(price, ecl::allocator);
+operator delete(vega, ecl::allocator);
+operator delete(randNum, ecl::allocator);
+operator delete(priceVals, ecl::allocator);
+operator delete(priceDeriv, ecl::allocator);
 getTime(&t);
 printTime(&s, &t, "Free: ", "\n");
 return 0;

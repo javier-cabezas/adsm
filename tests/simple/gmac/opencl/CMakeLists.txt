@@ -65,12 +65,17 @@ source_group(${current_GROUP} FILES
     c/eclThreadBinomialOption.cpp
     c/eclMonteCarloAsian.cpp
     c/eclThreadMonteCarloAsian.cpp
+    c/eclColumnMajor.cpp
+    c/eclCompress.cpp
+    c/eclCompressSend.cpp
+    c/eclPartialVecAdd.cpp
+    c/eclRandomAccess.cpp
     cpp/eclColumnMajor.cpp
     cpp/eclCompress.cpp
     cpp/eclCompressSend.cpp
     cpp/eclPartialVecAdd_cplusplus.cpp
     cpp/eclStaticVecAdd_cplusplus.cpp
-    cpp/eclSharedPtrVecAdd_cplusplus.cpp
+    cpp/eclSharedPtrVecAdd.cpp
     cpp/eclMultiArrayMatrixMul_cplusplus.cpp
     cpp/eclRandomAccess.cpp
     cpp/eclVecAdd_cplusplus.cpp
@@ -81,6 +86,22 @@ source_group(${current_GROUP} FILES
     cpp/eclBlackScholes.cpp
     cpp/eclMonteCarloAsian.cpp
     cpp/eclThreadMonteCarloAsian.cpp
+    cpp/eclGetAccInfo.cpp
+    cpp/eclInit.cpp
+    cpp/eclMatrixMul.cpp
+    cpp/eclMemcpy.cpp
+    cpp/eclMemset.cpp
+    cpp/eclPingPong.cpp
+    cpp/eclStencil.cpp
+    cpp/eclStencilCommon.h
+    cpp/eclThreadVecAdd.cpp
+    cpp/eclThreadVecAdd_eclMemcpy.cpp
+    cpp/eclBarr.cpp
+    cpp/eclFile.cpp
+    cpp/eclSharedVecAdd.cpp
+    cpp/eclThreadBinomialOption.cpp
+    cpp/eclThreading.cpp
+    cpp/eclThreadStencil.cpp
 )
 
 # Plain OpenCL tests
@@ -159,6 +180,21 @@ target_link_libraries(eclThreadBinomialOption gmac-hpe)
 add_executable(eclThreadMonteCarloAsian ${common_SRC} c/eclThreadMonteCarloAsian.cpp eclThreadMonteCarloAsianKernel.cl)
 target_link_libraries(eclThreadMonteCarloAsian gmac-hpe)
 
+add_executable(eclColumnMajor ${common_SRC} c/eclColumnMajor.cpp)
+target_link_libraries(eclColumnMajor gmac-hpe)
+
+add_executable(eclCompress ${common_SRC} c/eclCompress.cpp eclCompressCommon.cl)
+target_link_libraries(eclCompress gmac-hpe)
+
+add_executable(eclCompressSend ${common_SRC} c/eclCompressSend.cpp eclCompressCommon.cl)
+target_link_libraries(eclCompressSend gmac-hpe)
+
+add_executable(eclPartialVecAdd ${common_SRC} c/eclPartialVecAdd.cpp)
+target_link_libraries(eclPartialVecAdd gmac-hpe)
+
+add_executable(eclRandomAccess ${common_SRC} c/eclRandomAccess.cpp)
+target_link_libraries(eclRandomAccess gmac-hpe)
+
 # C++ API
 
 add_executable(eclColumnMajor_cpp ${common_SRC} cpp/eclColumnMajor.cpp)
@@ -200,6 +236,48 @@ target_link_libraries(eclStaticVecAdd_cpp gmac-hpe)
 add_executable(eclFileVecAdd_cpp ${common_SRC} cpp/eclFileVecAdd_cplusplus.cpp)
 target_link_libraries(eclFileVecAdd_cpp gmac-hpe)
 
+add_executable(eclBarr_cpp ${common_SRC} cpp/eclBarr.cpp)
+target_link_libraries(eclBarr_cpp gmac-hpe)
+
+add_executable(eclFile_cpp ${common_SRC} cpp/eclFile.cpp)
+target_link_libraries(eclFile_cpp gmac-hpe)
+
+add_executable(eclGetAccInfo_cpp ${common_SRC} cpp/eclGetAccInfo.cpp)
+target_link_libraries(eclGetAccInfo_cpp gmac-hpe)
+
+add_executable(eclInit_cpp ${common_SRC} cpp/eclInit.cpp)
+target_link_libraries(eclInit_cpp gmac-hpe)
+
+add_executable(eclMemcpy_cpp ${common_SRC} cpp/eclMemcpy.cpp)
+target_link_libraries(eclMemcpy_cpp gmac-hpe)
+
+add_executable(eclMemset_cpp ${common_SRC} cpp/eclMemset.cpp)
+target_link_libraries(eclMemset_cpp gmac-hpe)
+
+add_executable(eclPingPong_cpp ${common_SRC} cpp/eclPingPong.cpp)
+target_link_libraries(eclPingPong_cpp gmac-hpe)
+
+add_executable(eclSharedVecAdd_cpp ${common_SRC} cpp/eclSharedVecAdd.cpp)
+target_link_libraries(eclSharedVecAdd_cpp gmac-hpe)
+
+add_executable(eclStencil_cpp ${common_SRC} cpp/eclStencil.cpp cpp/eclStencilCommon.h)
+target_link_libraries(eclStencil_cpp gmac-hpe)
+
+#add_executable(eclThreadBinomialOption_cpp ${common_SRC} cpp/eclThreadBinomialOption.cpp eclThreadBinomialOptionKernel.cl)
+#target_link_libraries(eclThreadBinomialOption_cpp gmac-hpe)
+
+add_executable(eclThreading_cpp ${common_SRC} cpp/eclThreading.cpp)
+target_link_libraries(eclThreading_cpp gmac-hpe)
+
+add_executable(eclThreadStencil_cpp ${common_SRC} cpp/eclThreadStencil.cpp cpp/eclStencilCommon.h)
+target_link_libraries(eclThreadStencil_cpp gmac-hpe)
+
+add_executable(eclThreadVecAdd_cpp ${common_SRC} cpp/eclThreadVecAdd.cpp)
+target_link_libraries(eclThreadVecAdd_cpp gmac-hpe)
+
+add_executable(eclThreadVecAdd_eclMemcpy_cpp ${common_SRC} cpp/eclThreadVecAdd_eclMemcpy.cpp)
+target_link_libraries(eclThreadVecAdd_eclMemcpy_cpp gmac-hpe)
+
 if(USE_TR1)
 add_executable(eclSharedPtrVecAdd_cpp ${common_SRC} cpp/eclSharedPtrVecAdd.cpp)
 target_link_libraries(eclSharedPtrVecAdd_cpp gmac-hpe)
@@ -207,6 +285,9 @@ endif(USE_TR1)
 
 add_executable(eclRandomAccess_cpp ${common_SRC} cpp/eclRandomAccess.cpp)
 target_link_libraries(eclRandomAccess_cpp gmac-hpe)
+
+add_executable(eclMatrixMul_cpp ${common_SRC} cpp/eclMatrixMul.cpp eclMatrixMulKernel.cl)
+target_link_libraries(eclMatrixMul_cpp gmac-hpe)
 
 if(USE_BOOST)
 add_executable(eclMultiArrayMatrixMul_cpp ${common_SRC} cpp/eclMultiArrayMatrixMul.cpp eclMatrixMulKernel.cl)

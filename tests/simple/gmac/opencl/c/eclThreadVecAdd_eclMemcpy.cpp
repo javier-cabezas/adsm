@@ -44,11 +44,7 @@ static THREAD_T threadIdE;
 
 static void *ThreadBody_First(void *)
 {
-	//assert(eclCompileSource(kernel) == eclSuccess);
-//#if 0
 	float *a, *b;
-
-	//assert(eclCompileSource(kernel) == eclSuccess);
 
 	fprintf(stdout, "Thread A: Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
 
@@ -85,7 +81,6 @@ static void *ThreadBody_First(void *)
 
  	eclFree(a);
 	eclFree(b);
-//#endif
 	return NULL;
 }
 
@@ -119,7 +114,7 @@ static void *ThreadBody_Second(void *input)
 		SNPRINTF(buffer, 256, "%s %f ", buffer, input_E[i]);
 	}
 	fprintf(stdout, "%s\n", buffer);
-	//  
+
  	assert(eclCompileSource(kernel_A) == eclSuccess);
  
  	fprintf(stdout, "Thread E: Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
@@ -142,8 +137,8 @@ static void *ThreadBody_Second(void *input)
 	//assert(eclSetKernelArgPtr(kernel, 2, resultA) == eclSuccess);
 	assert(eclSetKernelArgPtr(kernel, 2, temp_2) == eclSuccess);
 	assert(eclCallNDRange(kernel, 1, NULL, &globalSize, NULL) == eclSuccess);
-	// 
-// 	// Check the result in the CPU
+
+ 	// Check the result in the CPU
 	float error = 0.f;
 	for(unsigned i = 0; i < vecSize; i++) {
 		error += resultB[i] - (temp[i] + temp_2[i]);	

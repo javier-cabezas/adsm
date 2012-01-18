@@ -1,8 +1,8 @@
-#include <cstdio>
-#include <cstdlib>
+#include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 
-#include <gmac/opencl>
+#include <gmac/opencl.h>
 
 #include "utils.h"
 #include "debug.h"
@@ -23,29 +23,28 @@ const char *kernel = "\
 					 }\
 					 ";
 
-
 int main(int argc, char *argv[])
 {
 	float *a;
 	gmactime_t s, t;
+	ecl_error ret;
 
-	assert(ecl::compileSource(kernel) == eclSuccess);
+	assert(eclCompileSource(kernel) == eclSuccess);
 
 	setParam<unsigned>(&vecSize, vecSizeStr, vecSizeDefault);
 	fprintf(stdout, "Vector: %f\n", 1.0 * vecSize / 1024 / 1024);
 
 	getTime(&s);
 	// Alloc data
-	a = new (ecl::allocator) float[vecSize];
-
-	assert(a != NULL);
+	ret = eclMalloc((void **)&a, vecSize * sizeof(float));
+	assert(ret == eclSuccess);
 
 	getTime(&t);
 	printTime(&s, &t, "Alloc: ", "\n");
 
 	// Init input data
 	getTime(&s);
-	ecl::memset(a, 0, vecSize * sizeof(float));
+	eclMemset(a, 0, vecSize * sizeof(float));
 
 	for(unsigned i = 0; i < operations; i++) {
 		double rnd = (double(rand()) / RAND_MAX);
@@ -58,14 +57,15 @@ int main(int argc, char *argv[])
 
 	// Call the kernel
 	getTime(&s);
-	ecl::config globalSize(vecSize);
-
-	ecl::error err;
-	ecl::kernel kernel("null", err);
-	assert(err == eclSuccess);
+	size_t globalSize = vecSize;
+	ecl_kernel kernel;
+	ret = eclGetKernel("null", &kernel);
+	assert(ret == eclSuccess);
 #ifndef __GXX_EXPERIMENTAL_CXX0X__
-	assert(kernel.setArg(0, a) == eclSuccess);
-	assert(kernel.callNDRange(globalSize) == eclSuccess);
+	ret = eclSetKernelArgPtr(kernel, 0, a);
+	assert(ret == eclSuccess);
+	ret = eclCallNDRange(kernel, 1, NULL, &globalSize, NULL);
+	assert(ret == eclSuccess);
 #else
 	assert(kernel(globalSize)(a) == eclSuccess);
 #endif
@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 	printTime(&s, &t, "Check: ", "\n");
 	fprintf(stderr, "Error: %f\n", sum - float(operations));
 
-	operator delete(a, ecl::allocator);
+	eclFree(a);
 
 	return sum != float(operations);
 }
