@@ -58,10 +58,10 @@ protected:
     ObjectList objects_;
 
     manager &manager_;
-    util::shared_ptr<core::address_space> aspace_;
+    util::shared_ptr<address_space> aspace_;
 
 public:
-    arena(manager &manager, util::shared_ptr<core::address_space> aspace, size_t objSize);
+    arena(manager &manager, util::shared_ptr<address_space> aspace, size_t objSize);
     ~arena();
 
     inline host_ptr address() const { return ptr_; }
@@ -92,9 +92,9 @@ protected:
     map_arena arenas;
 
     manager &manager_;
-    util::shared_ptr<core::address_space> aspace_;
+    util::shared_ptr<address_space> aspace_;
 public:
-    cache(manager &manager, util::shared_ptr<core::address_space> aspace, size_t size);
+    cache(manager &manager, util::shared_ptr<address_space> aspace, size_t size);
     virtual ~cache();
 
     static cache &get(long key, size_t size);

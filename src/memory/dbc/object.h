@@ -49,7 +49,8 @@ protected:
     typedef __impl::hal::device_output device_output_impl;
     typedef __impl::hal::device_input device_input_impl;
 
-	object(protocol_impl &protocol, host_ptr addr, size_t size);
+	object(protocol_impl &protocol, host_ptr addr, size_t size,
+           int flagsHost, int flagsDevice);
     virtual ~object();
 
 public:

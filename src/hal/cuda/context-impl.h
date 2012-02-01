@@ -38,13 +38,13 @@ inline
 ptr_t
 context_t::get_device_addr_from_pinned(host_ptr addr)
 {
-    ptr_t ret(0, NULL);
+    ptr_t ret;
     set();
 
     CUdeviceptr ptr;
     CUresult res = cuMemHostGetDevicePointer(&ptr, addr, 0);
     if (res == CUDA_SUCCESS) {
-        ret = ptr_t(ptr, this);
+        ret = ptr_t(ptr_t::backend_ptr(ptr), this);
     }
 
     return ret;

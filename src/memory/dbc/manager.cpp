@@ -4,8 +4,7 @@
 
 namespace __dbc { namespace memory {
 
-manager::manager(process_impl &proc) :
-    parent(proc)
+manager::manager()
 {
 }
 

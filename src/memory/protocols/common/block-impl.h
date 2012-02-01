@@ -37,64 +37,7 @@ WITH THE SOFTWARE.  */
 namespace __impl {
 namespace memory { namespace protocols { namespace common {
 
-inline
-block::block(object &parent, host_ptr addr, host_ptr shadow, size_t size) :
-    Lock("block"),
-    parent_(parent),
-    size_(size),
-    addr_(addr),
-    shadow_(shadow),
-    faultsCacheWrite_(0),
-    faultsCacheRead_(0)
-{
-}
 
-inline const block::bounds
-block::get_bounds() const
-{
-    // No need for lock -- addr_ is never modified
-    return bounds(addr_, addr_ + size_);
-}
-
-inline size_t
-block::size() const
-{
-    return size_;
-}
-
-inline host_ptr
-block::get_shadow() const
-{
-    return shadow_;
-}
-
-inline
-unsigned
-block::get_faults_cache_write() const
-{
-    return faultsCacheWrite_;
-}
-
-inline
-unsigned
-block::get_faults_cache_read() const
-{
-    return faultsCacheRead_;
-}
-
-inline
-void
-block::reset_faults_cache_write()
-{
-    faultsCacheWrite_ = 0;
-}
-
-inline
-void
-block::reset_faults_cache_read()
-{
-    faultsCacheRead_ = 0;
-}
 
 }}}}
 

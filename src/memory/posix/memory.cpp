@@ -1,12 +1,11 @@
-#include "memory/memory.h"
-#include "memory/posix/map_file.h"
-#include "core/address_space.h"
-
-#include <stdio.h>
+#include <cstdio>
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <errno.h>
+
+#include "memory/memory.h"
+#include "memory/posix/map_file.h"
 
 namespace __impl { namespace memory {
 

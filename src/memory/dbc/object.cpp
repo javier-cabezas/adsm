@@ -4,8 +4,9 @@
 
 namespace __dbc { namespace memory {
 
-object::object(protocol_impl &protocol, host_ptr addr, size_t size) :
-    parent(protocol, addr, size)
+object::object(protocol_impl &protocol, host_ptr addr, size_t size,
+               int flagsHost, int flagsDevice) :
+    parent(protocol, addr, size, flagsHost, flagsDevice)
 {
     REQUIRES(size > 0);
 }

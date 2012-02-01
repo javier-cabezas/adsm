@@ -12,7 +12,7 @@ inline set_object_mapped::~set_object_mapped()
 
 #ifdef USE_OPENCL
 inline gmacError_t
-object_mapped::acquire(core::address_space_ptr current)
+object_mapped::acquire(address_space_ptr current)
 {
     gmacError_t ret = gmacSuccess;
 #if 0
@@ -22,7 +22,7 @@ object_mapped::acquire(core::address_space_ptr current)
 }
 
 inline gmacError_t
-object_mapped::release(core::address_space_ptr current)
+object_mapped::release(address_space_ptr current)
 {
     gmacError_t ret = gmacSuccess;
 #if 0

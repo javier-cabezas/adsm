@@ -108,6 +108,14 @@ public:
         return *this;
     }
 
+    template <typename T>
+    inline _opencl_ptr_t &operator-=(const T &off)
+    {
+        ASSERTION(off_ >= off, "Generating a pointer before the base allocation");
+        off_ -= off;
+        return *this;
+    }
+
     inline cl_mem get() const
     {
         return ptr_;

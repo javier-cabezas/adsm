@@ -9,8 +9,8 @@
 #include "config/common.h"
 #include "config/order.h"
 
-#include "core/hpe/process.h"
-#include "core/hpe/thread.h"
+#include "hpe/core/process.h"
+#include "hpe/core/thread.h"
 
 #include "hpe/init.h"
 
@@ -56,15 +56,15 @@ static void *gmac_pthread(void *arg)
 
     enterGmac();
 
-    process &proc = getProcess();
-    proc.initThread(externCall == true, gthread->tid);
+    process &proc = get_process();
+    proc.init_thread(externCall == true, gthread->tid);
     gmac::trace::SetThreadState(gmac::trace::Running);
     if(externCall) exitGmac();
     void *ret = gthread->start_routine(gthread->arg);
     if(externCall) enterGmac();
 
     // Modes and Contexts already destroyed in Process destructor
-    proc.finiThread(externCall == true);
+    proc.fini_thread(externCall == true);
     TRACE(GLOBAL, "Destroying POSIX thread");
     free(gthread);
     gmac::trace::SetThreadState(gmac::trace::Idle);

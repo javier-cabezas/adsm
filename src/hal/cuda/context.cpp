@@ -409,7 +409,7 @@ context_t::alloc(size_t count, gmacError_t &err)
 
     err = cuda::error(res);
 
-    return ptr_t(devPtr, this);
+    return ptr_t(ptr_t::backend_ptr(devPtr), this);
 }
 
 ptr_t

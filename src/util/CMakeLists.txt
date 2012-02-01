@@ -5,7 +5,6 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Parameter-def.h.in ${CMAKE_CURRENT_BI
 set(util_SRC
     atomics.h
     FileLock.h
-    delayed_exec.h
     descriptor.h
     descriptor-impl.h
     file.h
@@ -34,6 +33,7 @@ set(util_SRC
     singleton.h
     singleton-impl.h
     thread.h
+    trigger.h
     unique.h
     unique-impl.h
     smart_ptr.h

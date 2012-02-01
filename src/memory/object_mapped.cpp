@@ -1,9 +1,9 @@
-#include "core/address_space.h"
-
 #include "memory/memory.h"
 #include "memory/object_mapped.h"
 
 #include "trace/logger.h"
+
+#include "address_space.h"
 
 namespace __impl { namespace memory {
 
@@ -43,7 +43,7 @@ bool set_object_mapped::remove(host_const_ptr addr)
 
 set_object_mapped object_mapped::set_;
 
-object_mapped::object_mapped(core::address_space_ptr aspace, size_t size) :
+object_mapped::object_mapped(address_space_ptr aspace, size_t size) :
     size_(size),
     owner_(aspace)
 {
@@ -63,7 +63,7 @@ object_mapped::~object_mapped()
 }
 
 hal::ptr
-object_mapped::get_device_addr(core::address_space_ptr current, host_const_ptr addr) const
+object_mapped::get_device_addr(address_space_ptr current, host_const_ptr addr) const
 {
     //ASSERTION(current == owner_);
     hal::ptr ret;
@@ -76,7 +76,7 @@ object_mapped::get_device_addr(core::address_space_ptr current, host_const_ptr a
 }
 
 hal::ptr
-object_mapped::alloc(core::address_space_ptr aspace, gmacError_t &err)
+object_mapped::alloc(address_space_ptr aspace, gmacError_t &err)
 {
     hal::ptr ret;
     //ret = Memory::map(NULL, size_, GMAC_PROT_READWRITE);
@@ -85,14 +85,14 @@ object_mapped::alloc(core::address_space_ptr aspace, gmacError_t &err)
 }
 
 void
-object_mapped::free(core::address_space_ptr aspace)
+object_mapped::free(address_space_ptr aspace)
 {
     //Memory::unmap(addr_, size_);
     aspace->free_host_pinned(addr_);
 }
 
 hal::ptr
-object_mapped::getAccPtr(core::address_space_ptr aspace) const
+object_mapped::getAccPtr(address_space_ptr aspace) const
 {
 #if 0
     gmacError_t err;

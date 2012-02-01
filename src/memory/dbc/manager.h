@@ -50,12 +50,10 @@ class GMAC_LOCAL manager :
     DBC_TESTED(__impl::memory::manager)
 
 private:
-    typedef __impl::core::address_space_ptr address_space_ptr_impl;
-    typedef __impl::core::process process_impl;
-
     typedef __impl::hal::device_input device_input_impl;
     typedef __impl::hal::device_output device_output_impl;
 
+    typedef __impl::memory::address_space_ptr address_space_ptr_impl;
     typedef __impl::memory::list_addr list_addr_impl;
     typedef __impl::memory::manager parent;
 
@@ -69,7 +67,7 @@ public:
     /**
      * Default constructor
      */
-    manager(process_impl &proc);
+    manager();
 
     size_t get_alloc_size(address_space_ptr_impl aspace, host_const_ptr addr, gmacError_t &err) const;
 

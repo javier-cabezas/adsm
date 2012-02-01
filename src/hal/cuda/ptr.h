@@ -43,71 +43,107 @@ namespace __impl { namespace hal {
 
 class _cuda_ptr_t {
 private:
-    CUdeviceptr ptr_;
+    CUdeviceptr base_;
+    size_t off_;
 
 public:
     typedef CUdeviceptr backend_type;
 
-    inline explicit _cuda_ptr_t(CUdeviceptr ptr) :
-        ptr_(ptr)
+    inline explicit
+    _cuda_ptr_t(CUdeviceptr ptr) :
+        base_(ptr),
+        off_(0)
     {
     }
 
 #if 0
     inline operator CUdeviceptr() const
     {
-        return ptr_;
+        return base_;
     }
 #endif
 
-    inline _cuda_ptr_t &operator=(const _cuda_ptr_t &ptr)
+    inline _cuda_ptr_t &
+    operator=(const _cuda_ptr_t &ptr)
     {
         if (this != &ptr) {
-            ptr_ = ptr.ptr_;
+            base_ = ptr.base_;
+            off_  = ptr.off_;
         }
         return *this;
     }
 
-    inline bool operator==(const _cuda_ptr_t &ptr) const
+    inline bool
+    operator==(const _cuda_ptr_t &ptr) const
     {
-        return this->ptr_ == ptr.ptr_;
+        return this->base_ == ptr.base_ &&
+               this->off_  == ptr.off_;
     }
 
-    inline bool operator==(long i) const
+    inline bool
+    operator!=(const _cuda_ptr_t &ptr) const
     {
-        return this->ptr_ == CUdeviceptr(i);
+        return this->base_ != ptr.base_ ||
+               this->off_  != ptr.off_;
     }
 
-    inline bool operator!=(const _cuda_ptr_t &ptr) const
+    inline bool
+    operator<(const _cuda_ptr_t &ptr) const
     {
-        return this->ptr_ != ptr.ptr_;
+        return base_ < ptr.base_ || (base_ == ptr.base_ && off_ < ptr.off_);
     }
 
-    inline bool operator!=(long i) const
+    inline bool
+    operator<=(const _cuda_ptr_t &ptr) const
     {
-        return this->ptr_ != CUdeviceptr(i);
+        return base_ < ptr.base_ || (base_ == ptr.base_ && off_ <= ptr.off_);
     }
 
-    inline bool operator<(const _cuda_ptr_t &ptr) const
+    inline bool
+    operator>(const _cuda_ptr_t &ptr) const
     {
-        return ptr_ < ptr.ptr_;
+        return base_ > ptr.base_ || (base_ == ptr.base_ && off_ > ptr.off_);
+    }
+
+    inline bool
+    operator>=(const _cuda_ptr_t &ptr) const
+    {
+        return base_ > ptr.base_ || (base_ == ptr.base_ && off_ >= ptr.off_);
     }
 
     template <typename T>
-    inline _cuda_ptr_t &operator+=(const T &off)
+    inline _cuda_ptr_t &
+    operator+=(const T &off)
     {
-        ptr_ = CUdeviceptr(((char *) ptr_) + off);
+        off_ += off;
         return *this;
     }
 
-    inline CUdeviceptr get() const
+    template <typename T>
+    inline _cuda_ptr_t &
+    operator-=(const T &off)
     {
-        return ptr_;
+        ASSERTION(off_ >= off);
+        off_ -= off;
+        return *this;
     }
 
-    inline size_t offset() const
+    inline CUdeviceptr
+    get_backend() const
     {
-        return 0;
+        return base_;
+    }
+
+    inline void *
+    get() const
+    {
+        return (void *)(base_ + off_);
+    }
+
+    inline size_t
+    offset() const
+    {
+        return off_;
     }
 };
 

@@ -1,5 +1,5 @@
 /* Copyright (c) 2009-2011 University of Illinois
-                   Universitat Politecnica de Catalunya
+                           Universitat Politecnica de Catalunya
                    All rights reserved.
 
 Developed by: IMPACT Research Group / Grup de Sistemes Operatius
@@ -46,27 +46,26 @@ WITH THE SOFTWARE.  */
 #include "util/Reference.h"
 #include "memory/protocol.h"
 
+#include "protocols/common/block.h"
+
 namespace __impl {
 
-namespace core {
-	class address_space;
-
-	typedef util::shared_ptr<address_space> address_space_ptr;
-	typedef util::shared_ptr<const address_space> address_space_const_ptr;
-}
-
 namespace memory {
+
+class address_space;
+typedef util::shared_ptr<address_space> address_space_ptr;
+typedef util::shared_ptr<const address_space> address_space_const_ptr;
 
 /**
  * Base abstraction of the memory allocations managed by GMAC. Objects are
  * divided into blocks, which are the unit of coherence
  */
 class GMAC_LOCAL object :
-    protected gmac::util::lock_rw<object>,
+    protected gmac::util::spinlock<object>,
     public util::unique<object> {
     DBC_FORCE_TEST(object)
 
-    typedef gmac::util::lock_rw<object> Lock;
+    typedef gmac::util::spinlock<object> lock;
 
 public:
     typedef util::bounds<host_ptr> bounds;
@@ -82,15 +81,19 @@ protected:
     /// Object host memory address
     host_ptr addr_;
 
+    /// Object host shadow memory address
+    host_ptr shadow_;
+
     /// Object size in bytes
     size_t size_;
+
+    /// Object flags
+    int flagsHost_;
+    int flagsDevice_;
 
     typedef std::vector<protocols::common::block_ptr> vector_block;
     /// Collection of blocks forming the object
     vector_block blocks_;
-
-    /// Tells whether the object has been released or not
-    bool released_;
 
     /// Last to_host event
     hal::event_ptr lastToHost_;
@@ -145,8 +148,8 @@ protected:
      * \param addr Host memory address where the object begins
      * \param size Size (in bytes) of the memory object
      */
-    object(protocol &protocol, host_ptr addr, size_t size);
-
+    object(protocol &protocol, host_ptr addr, size_t size,
+           int flagsHost, int flagsDevice);
 public:
     //! Default destructor
     virtual ~object();
@@ -170,6 +173,13 @@ public:
     const bounds get_bounds() const;
 
     /**
+     * Get the bounds of the shadow copy of the object
+     *
+     * \return Object memory bounds
+     */
+    const bounds get_bounds_shadow() const;
+
+    /**
      * Get the offset to the beginning of the block that contains the address
      *
      * \return Offset to the beginning of the block that contains the address
@@ -188,7 +198,7 @@ public:
      *
      * \return Block size used by the object
      */
-    size_t get_block_size() const;
+    int get_flags_host() const;
 
     /**
      * Get the size (in bytes) of the object
@@ -196,6 +206,20 @@ public:
      * \return Size (in bytes) of the object
      */
     size_t size() const;
+
+    /**
+     * Get the block size used by the object
+     *
+     * \return Block size used by the object
+     */
+    int get_flags_device() const;
+
+    /**
+     * Get the block size used by the object
+     *
+     * \return Block size used by the object
+     */
+    size_t get_block_size() const;
 
     /// Ensure the owner(s) invalidate memory when acquiring objects
     virtual void modified_object() = 0;
@@ -223,8 +247,8 @@ public:
      *
      * \return The owner of the object
      */
-    virtual core::address_space_ptr get_owner() = 0;
-    virtual core::address_space_const_ptr get_owner() const = 0;
+    virtual address_space_ptr get_owner() = 0;
+    virtual address_space_const_ptr get_owner() const = 0;
 
     /**
      * Add a new owner to the object
@@ -232,14 +256,14 @@ public:
      * \param owner The new owner of the mode
      * \return Wether it was possible to add the owner or not
      */
-    virtual gmacError_t add_owner(core::address_space_ptr owner) = 0;
+    virtual gmacError_t add_owner(address_space_ptr owner) = 0;
 
     /**
      * Remove an owner from the object
      *
      * \param owner The owner to be removed
      */
-    virtual gmacError_t remove_owner(core::address_space_const_ptr owner) = 0;
+    virtual gmacError_t remove_owner(address_space_const_ptr owner) = 0;
 
     /**
      * Acquire the ownership of the object for the CPU
@@ -264,11 +288,13 @@ public:
      */
     hal::event_ptr release(bool flushDirty, gmacError_t &err);
 
+#if 0
     /** Tells if the object has been released
      *
      * \return A boolean that tells if the object has been released
      */
     bool is_released() const;
+#endif
 
     /**
      * Ensures that the object host memory contains an updated copy of the data
@@ -377,6 +403,21 @@ public:
                                             size_t objOffset, size_t count);
     
     hal::event_ptr get_last_event(hal::event_ptr::type type) const;
+
+#if 0
+    void lock() const
+    {
+        printf("["FMT_TID"] lock<"FMT_ID">\n", __impl::core::thread::get_debug_tid(), get_print_id());
+        lock::lock();
+        printf("["FMT_TID"] locked<"FMT_ID">\n", __impl::core::thread::get_debug_tid(), get_print_id());
+    }
+
+    void unlock() const
+    {
+        printf("["FMT_TID"] unlock<"FMT_ID">\n", __impl::core::thread::get_debug_tid(), get_print_id());
+        lock::unlock();
+    }
+#endif
 };
 
 }}

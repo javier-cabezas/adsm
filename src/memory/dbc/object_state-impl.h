@@ -8,8 +8,10 @@
 namespace __dbc { namespace memory {
 
 template <typename ProtocolTraits>
-object_state<ProtocolTraits>::object_state(protocol_impl &protocol, host_ptr addr, size_t size, typename ProtocolTraits::State init, gmacError_t &err) :
-    parent(protocol, addr, size, init, err)
+object_state<ProtocolTraits>::object_state(protocol_impl &protocol, host_ptr addr, size_t size,
+                                           int flagsHost, int flagsDevice,
+                                           typename ProtocolTraits::State init, gmacError_t &err) :
+    parent(protocol, addr, size, flagsHost, flagsDevice, init, err)
 {
     REQUIRES(size > 0);
 

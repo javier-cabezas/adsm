@@ -5,8 +5,11 @@
 #include <queue>
 
 #include "trace/logger.h"
+
+#include "util/attribute.h"
 #include "util/lock.h"
 #include "util/locked_counter.h"
+#include "util/trigger.h"
 
 namespace __impl { namespace hal {
 
@@ -80,7 +83,11 @@ public:
 };
 
 template <typename D, typename B, typename I>
-class GMAC_LOCAL context_t {
+class GMAC_LOCAL context_t :
+    public util::attributes<context_t<D, B, I> >,
+    public util::on_construction<typename I::context>,
+    public util::on_destruction<typename I::context> {
+
 private:
     typedef map_pool<void> map_memory;
     typedef map_pool<typename I::buffer> map_buffer;

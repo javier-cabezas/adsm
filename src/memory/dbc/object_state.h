@@ -51,7 +51,10 @@ protected:
     typedef __impl::hal::const_ptr const_ptr_impl;
 
 public:
-	object_state(protocol_impl &protocol, host_ptr addr, size_t size, typename ProtocolTraits::State init, gmacError_t &err);
+	object_state(protocol_impl &protocol, host_ptr addr, size_t size,
+                 int flagsHost, int flagsDevice,
+                 typename ProtocolTraits::State init, gmacError_t &err);
+
     virtual ~object_state();
 
     ptr_impl get_device_addr(host_ptr addr);

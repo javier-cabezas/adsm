@@ -103,10 +103,12 @@ class locked_object_ptr :
     typedef typename T::element_type::locker_type parent;
 
     T obj_;
+    bool unlockOnDestruction_;
 
 public:
     locked_object_ptr(T obj) :
-        obj_(obj)
+        obj_(obj),
+        unlockOnDestruction_(true)
     {
         parent::lock(*obj_);
     }
@@ -114,10 +116,12 @@ public:
     locked_object_ptr(locked_object_ptr &&l) :
         obj_(std::move(l.obj_))
     {
+        l.unlockOnDestruction_ = false;
     }
 
     ~locked_object_ptr()
     {
+        ASSERTION(!unlockOnDestruction_ || obj_);
         if (obj_) {
             parent::unlock(*obj_);
         }

@@ -15,16 +15,16 @@
 #include "config/config.h"
 #include "config/order.h"
 
-#include "core/hpe/address_space.h"
-#include "core/hpe/kernel.h"
-#include "core/hpe/process.h"
-#include "core/hpe/thread.h"
-#include "core/hpe/vdevice.h"
-
 #include "hal/types.h"
 
-#include "memory/manager.h"
+#include "hpe/core/address_space.h"
+#include "hpe/core/kernel.h"
+#include "hpe/core/process.h"
+#include "hpe/core/thread.h"
+#include "hpe/core/vdevice.h"
+
 #include "memory/allocator.h"
+#include "memory/manager.h"
 #ifdef DEBUG
 #include "memory/protocols/common/block.h"
 #endif
@@ -66,7 +66,7 @@ static inline
 __impl::core::hpe::resource_manager &
 get_resource_manager()
 {
-    return dynamic_cast<__impl::core::hpe::resource_manager &>(getProcess().get_resource_manager());
+    return get_process().get_resource_manager();
 }
 
 GMAC_API unsigned APICALL
@@ -147,7 +147,7 @@ gmacCreateAddressSpace(GmacAddressSpaceId *aspaceId, int accId)
     gmac::trace::EnterCurrentFunction();
     if ((accId == ADDRESS_SPACE_ACCELERATOR_ANY) ||
         (accId >= 0 && accId < int(get_resource_manager().get_number_of_devices()))) {
-        address_space_ptr aspace = get_resource_manager().create_address_space(accId, ret);
+        __impl::core::hpe::address_space_ptr aspace = get_resource_manager().create_address_space(accId, ret);
         if (ret == gmacSuccess) {
             ASSERTION(bool(aspace));
             *aspaceId = aspace->get_id();
@@ -169,7 +169,7 @@ gmacDeleteAddressSpace(GmacAddressSpaceId aspaceId)
     enterGmac();
     gmac::trace::EnterCurrentFunction();
 
-    address_space_ptr aspace = get_resource_manager().get_address_space(aspaceId);
+    __impl::core::hpe::address_space_ptr aspace = get_resource_manager().get_address_space(aspaceId);
     if (aspace) {
         ret = get_resource_manager().destroy_address_space(*aspace);
     } else {
@@ -340,7 +340,7 @@ gmacFree(void *cpuPtr)
         return ret;
     }
     gmac::trace::EnterCurrentFunction();
-    address_space_ptr aspace = thread::get_current_thread().get_current_virtual_device().get_address_space();
+    __impl::core::hpe::address_space_ptr aspace = thread::get_current_thread().get_current_virtual_device().get_address_space();
     if(has_allocator() == false || get_allocator().free(aspace, host_ptr(cpuPtr)) == false) {
         ret = get_manager().free(aspace, host_ptr(cpuPtr));
     }
@@ -367,7 +367,7 @@ gmacLaunch(__impl::core::hpe::kernel::launch_ptr launch)
 {
     gmacError_t ret = gmacSuccess;
     vdevice &dev = launch->get_virtual_device();
-    address_space_ptr aspace = dev.get_address_space();
+    __impl::core::hpe::address_space_ptr aspace = dev.get_address_space();
     manager &manager = get_manager();
     TRACE(GLOBAL, "Flush the memory used in the kernel");
     const std::list<__impl::memory::object_access_info> &objects = launch->get_arg_list().get_objects();
@@ -440,7 +440,7 @@ gmacThreadSynchronize()
     gmacError_t ret = gmacSuccess;
     if (AutoSync == false) {
         vdevice &dev = thread::get_current_thread().get_current_virtual_device();
-        address_space_ptr aspace = dev.get_address_space();
+        __impl::core::hpe::address_space_ptr aspace = dev.get_address_space();
         dev.wait();
         TRACE(GLOBAL, "Memory Sync");
         ret = get_manager().acquire_objects(aspace);
@@ -483,8 +483,8 @@ gmacMemcpy(void *dst, const void *src, size_t size)
     void *ret = dst;
 
     // Locate memory regions (if any)
-    __impl::core::address_space_ptr aspaceDst = get_manager().get_owner(host_ptr(dst), size);
-    __impl::core::address_space_ptr aspaceSrc = get_manager().get_owner(host_ptr(src), size);
+    __impl::memory::address_space_ptr aspaceDst = get_manager().get_owner(host_ptr(dst), size);
+    __impl::memory::address_space_ptr aspaceSrc = get_manager().get_owner(host_ptr(src), size);
     if (!aspaceDst && !aspaceSrc) {
         exitGmac();
         return ::memcpy(dst, src, size);

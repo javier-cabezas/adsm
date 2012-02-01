@@ -31,8 +31,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_MEMORY_PROTOCOL_LAZY_BLOCKSTATE_H_
-#define GMAC_MEMORY_PROTOCOL_LAZY_BLOCKSTATE_H_
+#ifndef GMAC_MEMORY_PROTOCOL_LAZY_BLOCK_H_
+#define GMAC_MEMORY_PROTOCOL_LAZY_BLOCK_H_
 
 #include "util/ReusableObject.h"
 
@@ -45,10 +45,11 @@ namespace lazy_types {
 
 //! Protocol states
 enum State {
-    ReadOnly = 0, /*!< Valid copy of the data in both host and accelerator memory */
-    Invalid  = 1, /*!< Valid copy of the data in accelerator memory */
-    Dirty    = 2, /*!< Valid copy of the data in host memory */
-    HostOnly = 3  /*!< Data only allowed in host memory */
+    Incoherent = 0, /*!< Incoherent */
+    ReadOnly   = 1, /*!< Valid copy of the data in both host and accelerator memory */
+    Invalid    = 2, /*!< Valid copy of the data in accelerator memory */
+    Dirty      = 3, /*!< Valid copy of the data in host memory */
+    HostOnly   = 4  /*!< Data only allowed in host memory */
 };
 
 #if defined(USE_SUBBLOCK_TRACKING) || defined(USE_VM)
@@ -116,7 +117,6 @@ public:
 
     void reset();
 };
-
 
 class GMAC_LOCAL BlockTreeInfo {
 public:
@@ -195,7 +195,7 @@ protected:
 #endif
 
 public:
-    block(object &parent, host_ptr addr, host_ptr shadow, size_t size, State init);
+    block(object &parent, size_t offset, size_t size, State init);
 
     State get_state() const;
     void set_state(State state, host_ptr addr = NULL);
@@ -223,7 +223,7 @@ public:
      *
      * \return A reference to the owner mode of the memory block
      */
-    core::address_space_ptr get_owner() const;
+    address_space_ptr get_owner() const;
 
     /**
      * Get memory block address at the accelerator
@@ -261,8 +261,6 @@ public:
 };
 
 }}}}
-
-#include "block-impl.h"
 
 #endif // GMAC_MEMORY_PROTOCOL_LAZY_BLOCKSTATE_H_
 

@@ -5,8 +5,6 @@
 #include "memory/manager.h"
 #include "trace/Tracer.h"
 
-#include "core/process.h"
-
 namespace __impl { namespace memory {
 
 struct sigaction defaultAction;
@@ -18,12 +16,11 @@ int handler::Signum_ = SIGSEGV;
 int handler::Signum_ = SIGBUS;
 #endif
 
-static core::process *Process_ = NULL;
 static manager *Manager_ = NULL;
 
 static void segvHandler(int s, siginfo_t *info, void *ctx)
 {
-    if(Process_ == NULL || Manager_ == NULL) return defaultAction.sa_sigaction(s, info, ctx);
+    if (Manager_ == NULL) return defaultAction.sa_sigaction(s, info, ctx);
        
     handler::Entry();
     trace::EnterCurrentFunction();
@@ -40,7 +37,7 @@ static void segvHandler(int s, siginfo_t *info, void *ctx)
 	else TRACE(GLOBAL, "Write SIGSEGV for %p", addr);
 
 	bool resolved = false;
-    util::shared_ptr<core::address_space> aspace = Manager_->get_owner(addr);
+    address_space_ptr aspace = Manager_->get_owner(addr);
     if (aspace) {
 	    if(!writeAccess) resolved = Manager_->signal_read(aspace, addr);
     	else             resolved = Manager_->signal_write(aspace, addr);
@@ -82,11 +79,6 @@ void handler::restoreHandler()
 
 	Handler_ = NULL;
 	TRACE(GLOBAL, "Old signal handler restored");
-}
-
-void handler::setProcess(core::process &proc)
-{
-    Process_ = &proc;
 }
 
 void handler::setManager(manager &manager)

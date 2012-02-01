@@ -16,16 +16,17 @@ inline lazy<T>::~lazy()
 
 template<typename T>
 memory::object *
-lazy<T>::create_object(size_t size, host_ptr cpuPtr,
-                       GmacProtection prot, unsigned flags)
+lazy<T>::create_object(host_ptr cpuPtr, size_t size,
+                       int flagsHost, int flagsDevice, gmacError_t &err)
 {
-    gmacError_t err;
-    object *ret = new T(*this, cpuPtr, size, lazy_base::state(prot), err);
+    object *ret = new T(*this, cpuPtr, size,
+                        flagsHost, flagsDevice,
+                        lazy_base::state(flagsHost, flagsDevice), err);
     if (ret == NULL) return ret;
     if (err != gmacSuccess) {
         return NULL;
     }
-    memory_ops::protect(ret->get_bounds().start, ret->size(), prot);
+    //memory_ops::protect(ret->get_bounds().start, ret->size(), prot);
 
     return ret;
 }

@@ -47,9 +47,13 @@ protected:
     C *ctx_;
 
 public:
+    typedef HPtr address;
+    typedef Ptr backend_ptr;
+    typedef typename Ptr::backend_type backend_type;
+
     _ptr_t();
     _ptr_t(Ptr ptr, C *ctx);
-    _ptr_t(typename Ptr::backend_type value, C *ctx);
+
     explicit _ptr_t(host_ptr ptr);
     explicit _ptr_t(host_const_ptr ptr);
 
@@ -60,27 +64,48 @@ public:
 
     _ptr_t &
     operator=(const _ptr_t &ptr);
+
     bool
     operator==(const _ptr_t &ptr) const;
-    bool
-    operator==(long i) const;
+
     bool
     operator!=(const _ptr_t &ptr) const;
-    bool
-    operator!=(long i) const;
+
     bool
     operator<(const _ptr_t &ptr) const;
+
+    bool
+    operator<=(const _ptr_t &ptr) const;
+
+    bool
+    operator>(const _ptr_t &ptr) const;
+
+    bool
+    operator>=(const _ptr_t &ptr) const;
+
     template <typename T>
     _ptr_t &
     operator+=(const T &off);
+
     template <typename T>
     const _ptr_t
     operator+(const T &off) const;
+
+    template <typename T>
+    _ptr_t &
+    operator-=(const T &off);
+
+    template <typename T>
+    const _ptr_t
+    operator-(const T &off) const;
 
     typename Ptr::backend_type
     get_device_addr() const;
     HPtr
     get_host_addr() const;
+
+    HPtr
+    get_addr() const;
 
     size_t
     get_offset() const;

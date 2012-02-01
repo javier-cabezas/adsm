@@ -95,8 +95,10 @@ typedef enum {
 } GmacProtection;
 
 typedef enum {
-    GMAC_MAP_READ  = 0x1,
-    GMAC_MAP_WRITE = 0x2
+    GMAC_MAP_NONE      = 0x0,
+    GMAC_MAP_READ      = 0x1,
+    GMAC_MAP_WRITE     = 0x2,
+    GMAC_MAP_READWRITE = GMAC_MAP_READ | GMAC_MAP_WRITE
 } GmacMapFlags;
 
 typedef enum {

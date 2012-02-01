@@ -1,0 +1,104 @@
+#ifndef GMAC_DSM_MAPPING_IMPL_H_
+#define GMAC_DSM_MAPPING_IMPL_H_
+
+namespace __impl { namespace dsm {
+
+inline
+mapping::bounds
+mapping::get_bounds() const
+{
+    bounds ret(addr_.get_addr(), addr_.get_addr() + size_);
+
+    return ret;
+}
+
+template <typename I>
+mapping_ptr
+mapping::merge_mappings(util::range<I> range, hal::ptr::address addr, size_t count)
+{
+    ASSERTION(range.is_empty() == false, "Merging an empty range");
+
+    I it = range.begin;
+
+    if (range.begin->second->get_bounds().start > addr) {
+        // Grow first mapping upwards 
+        // Create block for the memory preceeding any existing mapping
+        size_t prefix = range.begin->second->get_bounds().start - addr;
+        ASSERTION(count > prefix);
+
+        coherence::block_ptr b = new coherence::block(prefix);
+        range.begin->second->prepend(b);
+    } else if (range.begin->second->get_bounds().start < addr) {
+        // Split the blocks within the first mapping if needed
+        range.begin->second->split(addr, count);
+    }
+
+    // Merge the mappings into the first one
+    ++it;
+
+    for (; it != range.end; ++it) {
+        range.begin->second->append(it->second);
+    }
+
+    return range.begin->second;
+}
+
+template <typename I>
+gmacError_t
+mapping::link(hal::ptr ptr1, util::range<I> range1, submappings &sub1,
+              hal::ptr ptr2, util::range<I> range2, submappings &sub2, size_t count, int flags)
+{
+    ASSERTION(long_t(ptr1.get_addr()) % MinAlignment == 0);
+    ASSERTION(long_t(ptr2.get_addr()) % MinAlignment == 0);
+
+    gmacError_t ret;
+
+    I begin1 = range1.begin;
+    I end1   = range1.end;
+    I begin2 = range2.begin;
+    I end2   = range2.end;
+
+    // Case1
+    // No previous links in both ranges: link new mappings
+    if (begin1 == end1 && begin2 == end2) {
+        mapping_ptr map1, map2;
+
+        map1 = new mapping(ptr1);
+        map2 = new mapping(ptr2);
+
+        /// TODO: 
+        coherence::block_ptr b = new coherence::block(count);
+
+        ret = map1->prepend(b);
+        ASSERTION(ret == gmacSuccess);
+        ret = map2->prepend(b);
+        ASSERTION(ret == gmacSuccess);
+
+        sub1.push_back(map1);
+        sub2.push_back(map2);
+    } else if (begin1 == end1) {
+        mapping_ptr map1, map2;
+        map1 = new mapping(ptr1);
+        map2 = merge_mappings(range2, ptr2.get_addr(), count);
+        ret = map1->dup(ptr1.get_addr(), map2, ptr2.get_addr(), count);
+    } else if (begin2 == end2) {
+        mapping_ptr map1, map2;
+        map2 = new mapping(ptr2);
+        map1 = merge_mappings(range1, ptr1.get_addr(), count);
+        ret = map2->dup(ptr2.get_addr(), map1, ptr1.get_addr(), count);
+    } else {
+        mapping_ptr map1, map2;
+        map1 = merge_mappings(range1, ptr1.get_addr(), count);
+        map2 = merge_mappings(range2, ptr2.get_addr(), count);
+        ret = mapping::dup2(map1, ptr1.get_addr(),
+                            map2, ptr2.get_addr(), count);
+    }
+
+    return ret;
+}
+
+}}
+
+#endif /* GMAC_DSM_MAPPING_IMPL_H */
+
+/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

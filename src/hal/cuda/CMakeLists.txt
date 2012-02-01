@@ -1,5 +1,3 @@
-add_subdirectory(hpe)
-
 set(hal_cuda_SRC
     coherence_domain.h
     coherence_domain.cpp

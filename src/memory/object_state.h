@@ -38,14 +38,9 @@ WITH THE SOFTWARE.  */
 
 #include "util/gmac_base.h"
 
+#include "address_space.h"
+
 namespace __impl { 
-
-namespace core {
-	class address_space;
-
-	typedef util::shared_ptr<core::address_space> address_space_ptr;
-	typedef util::shared_ptr<const core::address_space> address_space_const_ptr;
-}
 
 namespace memory {
 
@@ -59,13 +54,16 @@ protected:
     bool hasUserMemory_;
 
     hal::ptr deviceAddr_;
-    core::address_space_ptr ownerShortcut_;
+    address_space_ptr ownerShortcut_;
 
-    gmacError_t repopulate_blocks(core::address_space &aspace);
+    gmacError_t repopulate_blocks(address_space &aspace);
 
     void modified_object();
 public:
-    object_state(protocol &protocol, host_ptr cpuAddr, size_t size, typename ProtocolTraits::State init, gmacError_t &err);
+    object_state(protocol &protocol, host_ptr cpuAddr, size_t size,
+                 int flagsHost, int flagsDevice,
+                 typename ProtocolTraits::State init, gmacError_t &err);
+
     virtual ~object_state();
 
     TESTABLE hal::ptr get_device_addr(host_ptr addr);
@@ -74,11 +72,11 @@ public:
     TESTABLE hal::const_ptr get_device_const_addr(host_const_ptr addr) const;
     hal::const_ptr get_device_const_addr() const;
 
-    core::address_space_ptr get_owner();
-    core::address_space_const_ptr get_owner() const;
+    address_space_ptr get_owner();
+    address_space_const_ptr get_owner() const;
 
-    gmacError_t add_owner(core::address_space_ptr owner);
-    gmacError_t remove_owner(core::address_space_const_ptr owner);
+    gmacError_t add_owner(address_space_ptr owner);
+    gmacError_t remove_owner(address_space_const_ptr owner);
 
     gmacError_t map_to_device();
     gmacError_t unmap_from_device();

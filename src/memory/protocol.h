@@ -41,14 +41,15 @@ WITH THE SOFTWARE.  */
 #include "hal/types.h"
 #include "include/gmac/types.h"
 
-#include "memory/protocols/common/block.h"
+#include "protocols/common/types.h"
 
 namespace __impl {
 
 namespace memory {
 namespace protocols { namespace common {
-class block_state;
+class block;
 typedef util::shared_ptr<block> block_ptr;
+typedef util::shared_ptr<const block> block_const_ptr;
 }}
 class object;
 
@@ -70,8 +71,8 @@ public:
      * \param flags Protocool specific flags
      * \return Pointer to the created object
      */
-    virtual object *create_object(size_t size, host_ptr cpuPtr,
-                                  GmacProtection prot, unsigned flags) = 0;
+    virtual object *create_object(host_ptr cpuPtr, size_t size,
+                                  int flagsHost, int flagsDevice, gmacError_t &err) = 0;
 
     /**
      * Deletes an object created by this protocol

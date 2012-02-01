@@ -38,14 +38,14 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 
+#include "hal/types.h"
+
 #include "util/lock.h"
 #include "util/Reference.h"
 
-namespace __impl { 
+#include "address_space.h"
 
-namespace core {
-	class address_space;
-}
+namespace __impl { 
 
 namespace memory {
 
@@ -105,12 +105,12 @@ protected:
     //! Set of all host mapped memory objects
     static set_object_mapped set_;
 
-    hal::ptr alloc(core::address_space_ptr aspace, gmacError_t &err);
-    void free(core::address_space_ptr aspace);
+    hal::ptr alloc(address_space_ptr aspace, gmacError_t &err);
+    void free(address_space_ptr aspace);
 
-    hal::ptr getAccPtr(core::address_space_ptr aspace) const;
+    hal::ptr getAccPtr(address_space_ptr aspace) const;
 
-    core::address_space_ptr owner_;
+    address_space_ptr owner_;
 public:
     /**
      * Default constructor
@@ -118,14 +118,14 @@ public:
      * \param aspace Execution aspace creating the object
      * \param size Size (in bytes) of the object being created
      */
-    object_mapped(core::address_space_ptr aspace, size_t size);
+    object_mapped(address_space_ptr aspace, size_t size);
 
     /// Default destructor
     virtual ~object_mapped();
 
 #ifdef USE_OPENCL
-    gmacError_t acquire(core::address_space_ptr current);
-    gmacError_t release(core::address_space_ptr current);
+    gmacError_t acquire(address_space_ptr current);
+    gmacError_t release(address_space_ptr current);
 #endif
     
     /**
@@ -149,7 +149,7 @@ public:
      * \param addr Host memory address within the object
      * \return Accelerator memory address where the requested host memory address is mapped
      */
-    hal::ptr get_device_addr(core::address_space_ptr current, host_const_ptr addr) const;
+    hal::ptr get_device_addr(address_space_ptr current, host_const_ptr addr) const;
 
     /**
      * Remove a host mapped object from the list of all present host mapped object

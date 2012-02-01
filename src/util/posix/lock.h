@@ -42,8 +42,11 @@ WITH THE SOFTWARE.  */
 
 #include "config/config.h"
 #include "config/dbc/types.h"
-#include "util/lock.h"
 
+#include "core/thread.h"
+
+#include "util/lock.h"
+#include "util/unique.h"
 
 namespace __impl { namespace util {
 
@@ -121,13 +124,16 @@ protected:
 template <typename T>
 class spinlocker {
 protected:
-	void lock(spinlock<T> &l) const
+	void lock(const spinlock<T> &l) const
 	{
+        printf("["FMT_TID"] spinlocker<"FMT_ID">\n", __impl::core::thread::get_debug_tid(), ((T &) l).get_print_id());
 		l.lock();
+        printf("["FMT_TID"] spinlockered<"FMT_ID">\n", __impl::core::thread::get_debug_tid(), ((T &) l).get_print_id());
 	}
 
-	void unlock(spinlock<T> &l) const
+	void unlock(const spinlock<T> &l) const
 	{
+        printf("["FMT_TID"] unspinlocker<"FMT_ID">\n", __impl::core::thread::get_debug_tid(), ((T &) l).get_print_id());
 		l.unlock();
 	}
 };
@@ -135,12 +141,12 @@ protected:
 template <typename T>
 class locker {
 protected:
-	void lock(mutex<T> &l) const
+	void lock(const mutex<T> &l) const
 	{
 		l.lock();
 	}
 
-	void unlock(mutex<T> &l) const
+	void unlock(const mutex<T> &l) const
 	{
 		l.unlock();
 	}
@@ -149,17 +155,17 @@ protected:
 template <typename T>
 class locker_rw {
 protected:
-	void lock_read(lock_rw<T> &l) const
+	void lock_read(const lock_rw<T> &l) const
 	{
 		l.lock_read();
 	}
 
-	void lock_write(lock_rw<T> &l) const
+	void lock_write(const lock_rw<T> &l) const
 	{
 		l.lock_write();
 	}
 
-	void unlock(lock_rw<T> &l) const
+	void unlock(const lock_rw<T> &l) const
 	{
 		l.unlock();
 	}
