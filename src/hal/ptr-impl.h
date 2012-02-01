@@ -5,16 +5,18 @@ namespace __impl { namespace hal {
 
 template <typename HPtr, typename Ptr, typename C>
 inline
-_ptr_t<HPtr, Ptr, C>::_ptr_t(Ptr ptr, C *ctx) :
-    ptrDev_(ptr),
-    ctx_(ctx)
+_ptr_t<HPtr, Ptr, C>::_ptr_t() :
+    ptrDev_(0),
+    ptrHost_(0),
+    ctx_(NULL)
 {
 }
 
 template <typename HPtr, typename Ptr, typename C>
 inline
-_ptr_t<HPtr, Ptr, C>::_ptr_t(typename Ptr::backend_type value, C *ctx) :
-    ptrDev_(value),
+_ptr_t<HPtr, Ptr, C>::_ptr_t(Ptr ptr, C *ctx) :
+    ptrDev_(ptr),
+    ptrHost_(0),
     ctx_(ctx)
 {
 }
@@ -33,15 +35,6 @@ inline
 _ptr_t<HPtr, Ptr, C>::_ptr_t(host_const_ptr ptr) :
     ptrDev_(0),
     ptrHost_(ptr),
-    ctx_(NULL)
-{
-}
-
-template <typename HPtr, typename Ptr, typename C>
-inline
-_ptr_t<HPtr, Ptr, C>::_ptr_t() :
-    ptrDev_(0),
-    ptrHost_(0),
     ctx_(NULL)
 {
 }
@@ -98,19 +91,6 @@ _ptr_t<HPtr, Ptr, C>::operator==(const _ptr_t &ptr) const
 
 template <typename HPtr, typename Ptr, typename C>
 inline bool
-_ptr_t<HPtr, Ptr, C>::operator==(long i) const
-{
-    bool ret;
-    if (ctx_ == NULL) {
-        ret = (ptrHost_ == HPtr(i));
-    } else {
-        ret = (ptrDev_ == i);
-    }
-    return ret;
-}
-
-template <typename HPtr, typename Ptr, typename C>
-inline bool
 _ptr_t<HPtr, Ptr, C>::operator!=(const _ptr_t &ptr) const
 {
     bool ret;
@@ -124,27 +104,60 @@ _ptr_t<HPtr, Ptr, C>::operator!=(const _ptr_t &ptr) const
 
 template <typename HPtr, typename Ptr, typename C>
 inline bool
-_ptr_t<HPtr, Ptr, C>::operator!=(long i) const
-{
-    bool ret;
-    if (ctx_ == NULL) {
-        ret = (ptrHost_ != HPtr(i));
-    } else {
-        ret = (ptrDev_ != i);
-    }
-    return ret;
-
-}
-
-template <typename HPtr, typename Ptr, typename C>
-inline bool
 _ptr_t<HPtr, Ptr, C>::operator<(const _ptr_t &ptr) const
 {
+    ASSERTION(ptr.ctx_ == ctx_, "Comparing pointers from different address spaces");
+
     bool ret;
     if (ctx_ == NULL) {
         return ptrHost_ < ptr.ptrHost_;
     } else {
-        return ctx_ < ptr.ctx_ || (ctx_ == ptr.ctx_ && ptrDev_ < ptr.ptrDev_);
+        return ptrDev_  < ptr.ptrDev_;
+    }
+    return ret;
+}
+
+template <typename HPtr, typename Ptr, typename C>
+inline bool
+_ptr_t<HPtr, Ptr, C>::operator<=(const _ptr_t &ptr) const
+{
+    ASSERTION(ptr.ctx_ == ctx_, "Comparing pointers from different address spaces");
+
+    bool ret;
+    if (ctx_ == NULL) {
+        return ptrHost_ <= ptr.ptrHost_;
+    } else {
+        return ptrDev_  <= ptr.ptrDev_;
+    }
+    return ret;
+}
+
+template <typename HPtr, typename Ptr, typename C>
+inline bool
+_ptr_t<HPtr, Ptr, C>::operator>(const _ptr_t &ptr) const
+{
+    ASSERTION(ptr.ctx_ == ctx_, "Comparing pointers from different address spaces");
+
+    bool ret;
+    if (ctx_ == NULL) {
+        return ptrHost_ > ptr.ptrHost_;
+    } else {
+        return ptrDev_  > ptr.ptrDev_;
+    }
+    return ret;
+}
+
+template <typename HPtr, typename Ptr, typename C>
+inline bool
+_ptr_t<HPtr, Ptr, C>::operator>=(const _ptr_t &ptr) const
+{
+    ASSERTION(ptr.ctx_ == ctx_, "Comparing pointers from different address spaces");
+
+    bool ret;
+    if (ctx_ == NULL) {
+        return ptrHost_ >= ptr.ptrHost_;
+    } else {
+        return ptrDev_  >= ptr.ptrDev_;
     }
     return ret;
 }
@@ -173,11 +186,35 @@ _ptr_t<HPtr, Ptr, C>::operator+(const T &off) const
 }
 
 template <typename HPtr, typename Ptr, typename C>
+template <typename T>
+inline _ptr_t<HPtr, Ptr, C> &
+_ptr_t<HPtr, Ptr, C>::operator-=(const T &off)
+{
+    if (ctx_ == NULL) {
+        ASSERTION(ptrHost_ >= HPtr(off));
+        ptrHost_ -= off;
+    } else {
+        ptrDev_ -= off;
+    }
+    return *this;
+}
+
+template <typename HPtr, typename Ptr, typename C>
+template <typename T>
+inline const _ptr_t<HPtr, Ptr, C>
+_ptr_t<HPtr, Ptr, C>::operator-(const T &off) const
+{
+    _ptr_t ret(*this);
+    ret -= off;
+    return ret;
+}
+
+template <typename HPtr, typename Ptr, typename C>
 inline typename Ptr::backend_type
 _ptr_t<HPtr, Ptr, C>::get_device_addr() const
 {
     ASSERTION(is_device_ptr());
-    return ptrDev_.get();
+    return ptrDev_.get_backend();
 }
 
 template <typename HPtr, typename Ptr, typename C>
@@ -186,6 +223,17 @@ _ptr_t<HPtr, Ptr, C>::get_host_addr() const
 {
     ASSERTION(is_host_ptr());
     return ptrHost_;
+}
+
+template <typename HPtr, typename Ptr, typename C>
+inline HPtr
+_ptr_t<HPtr, Ptr, C>::get_addr() const
+{
+    if (is_host_ptr()) {
+        return ptrHost_;
+    } else {
+        return HPtr(ptrDev_.get()) + ptrDev_.offset();
+    }
 }
 
 template <typename HPtr, typename Ptr, typename C>

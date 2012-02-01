@@ -1,0 +1,4 @@
+#ifndef GMAC_DSM_MANAGER_IMPL_H_
+#define GMAC_DSM_MANAGER_IMPL_H_
+
+#endif

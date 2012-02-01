@@ -36,16 +36,50 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace util {
 
-template <typename S, typename E = S>
+template <typename S>
 struct bounds {
     S start;
-    E end;
+    S end;
 
     inline
-    bounds(S _start, E _end) :
+    bounds(S _start, S _end) :
         start(_start),
         end(_end)
     {
+        ASSERTION(_end >= _start);
+    }
+
+    inline size_t
+    get_size() const
+    {
+        return end - start;
+    }
+
+    inline bool
+    is_empty() const
+    {
+        return start == end;
+    }
+};
+
+template <typename I>
+struct range {
+    typedef I iterator;
+
+    const I begin;
+    const I end;
+
+    inline
+    range(I _begin, I _end) :
+        begin(_begin),
+        end(_end)
+    {
+    }
+
+    inline bool
+    is_empty() const
+    {
+        return begin == end;
     }
 };
 

@@ -81,7 +81,7 @@ _event_t::sync()
 
 #endif
             // Execute pending operations associated to the event
-            exec_triggers();
+            exec_triggers(true);
             synced_ = true;
         }
         err_ = error(res);
@@ -140,7 +140,7 @@ _event_t::set_synced()
         err_ = error(res);
 #endif
         // Execute pending operations associated to the event
-        exec_triggers();
+        exec_triggers(true);
         synced_ = true;
     }
 

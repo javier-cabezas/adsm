@@ -1,7 +1,6 @@
 #include "config/config.h"
 
-#include "core/address_space.h"
-
+#include "address_space.h"
 #include "memory.h"
 #include "object.h"
 
@@ -10,13 +9,11 @@ namespace __impl { namespace memory {
 object::~object()
 {
     vector_block::iterator i;
-    lock_write();
     gmacError_t err;
     hal::event_ptr evt;
     evt = coherence_op(&protocol::remove_block, err);
     ASSERTION(err == gmacSuccess);
     blocks_.clear();
-    unlock();
 }
 
 object::const_locking_iterator
@@ -92,7 +89,8 @@ object::from_io_device(size_t objOff, hal::device_input &input, size_t count)
 
 }
 
-gmacError_t object::memset(size_t offset, int v, size_t size)
+gmacError_t
+object::memset(size_t offset, int v, size_t size)
 {
 	hal::event_ptr event;
     gmacError_t ret = gmacSuccess;
@@ -212,14 +210,12 @@ hal::event_ptr
 object::signal_read(host_ptr addr, gmacError_t &err)
 {
     hal::event_ptr ret;
-    lock_read();
     /// \todo is this validate necessary?
     //validate();
     const_locking_iterator i = get_block(addr - addr_);
     if (i == end()) err = gmacErrorInvalidValue;
     else if ((*i)->get_bounds().start > addr) err = gmacErrorInvalidValue;
     else ret = protocol_.signal_read(*i, addr, err);
-    unlock();
     return ret;
 }
 
@@ -227,13 +223,11 @@ hal::event_ptr
 object::signal_write(host_ptr addr, gmacError_t &err)
 {
     hal::event_ptr ret;
-    lock_read();
     modified_object();
     const_locking_iterator i = get_block(addr - addr_);
     if(i == end()) err = gmacErrorInvalidValue;
     else if((*i)->get_bounds().start > addr) err = gmacErrorInvalidValue;
     else ret = protocol_.signal_write(*i, addr, err);
-    unlock();
     return ret;
 }
 
@@ -241,7 +235,7 @@ gmacError_t
 object::dump(std::ostream &out, protocols::common::Statistic stat)
 {
 #ifdef DEBUG
-    lock_write();
+    lock::lock();
     std::ostringstream oss;
     oss << (void *) get_bounds().start;
     out << oss.str() << " ";
@@ -253,9 +247,9 @@ object::dump(std::ostream &out, protocols::common::Statistic stat)
     ASSERTION(ret == gmacSuccess);
 
     out << std::endl;
-    unlock();
     if (dumps_.find(stat) == dumps_.end()) dumps_[stat] = 0;
     dumps_[stat]++;
+    lock::unlock();
 #else
     gmacError_t ret = gmacSuccess;
 #endif

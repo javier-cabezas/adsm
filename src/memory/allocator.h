@@ -54,14 +54,14 @@ public:
      * NULL to let the allocator choose the host memory address.
      * \return Host memory address where the data was allocated
      */
-    virtual host_ptr alloc(core::address_space_ptr current, const size_t size, host_const_ptr addr = NULL) = 0;
+    virtual host_ptr alloc(address_space_ptr current, const size_t size, host_const_ptr addr = NULL) = 0;
 
     /**
      * Release shared memory
      * \param current Execution mode where the data is released
      * \param addr Host memory address of the chunk of data to be release
      */
-    virtual bool free(core::address_space_ptr current, host_ptr addr) = 0;
+    virtual bool free(address_space_ptr current, host_ptr addr) = 0;
 };
 
 }}

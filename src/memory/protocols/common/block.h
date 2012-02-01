@@ -42,31 +42,22 @@ WITH THE SOFTWARE.  */
 
 #include "util/misc.h"
 
-namespace __impl {
+#include "memory/protocols/common/types.h"
 
-namespace core {
-    class address_space;
 
-    typedef util::shared_ptr<address_space> address_space_ptr;
-    typedef util::shared_ptr<const address_space> address_space_const_ptr;
-}
+namespace __impl { namespace memory {
 
-namespace memory {
-
+class address_space;
 class object;
+
+typedef util::shared_ptr<address_space> address_space_ptr;
+typedef util::shared_ptr<const address_space> address_space_const_ptr;
 
 namespace protocols { namespace common {
 
-enum Statistic {
-    PAGE_FAULTS_READ              = 0,
-    PAGE_FAULTS_WRITE             = 1,
-    PAGE_TRANSFERS_TO_ACCELERATOR = 2,
-    PAGE_TRANSFERS_TO_HOST        = 3
-};
-extern const char *StatisticName[];
-
 class GMAC_LOCAL block :
-    public gmac::util::mutex<block> {
+    public gmac::util::mutex<block>,
+    public util::unique<block> {
     typedef gmac::util::mutex<block> Lock;
 protected:
     /** Object that contains the block */
@@ -76,10 +67,7 @@ protected:
     size_t size_;
 
     /** Host address where for applications to access the block. */
-    host_ptr addr_;
-
-    /** Shadow host memory mapping that is always read/write. */
-    host_ptr shadow_;
+    size_t offset_;
 
     unsigned faultsCacheWrite_;
     unsigned faultsCacheRead_;
@@ -92,7 +80,7 @@ protected:
      * \param shadow Shadow host memory mapping that is always read/write
      * \param size Size (in bytes) of the memory block
      */
-    block(object &parent, host_ptr addr, host_ptr shadow, size_t size);
+    block(object &parent, size_t offset, size_t size);
 
 public:
     typedef util::bounds<host_ptr> bounds;
@@ -113,7 +101,7 @@ public:
      * Get memory block owner
      * \return Owner of the memory block
      */
-    virtual core::address_space_ptr get_owner() const = 0;
+    virtual address_space_ptr get_owner() const = 0;
 
     /**
      * Get memory block address at the accelerator
@@ -128,7 +116,7 @@ public:
     inline
     hal::ptr get_device_addr()
     {
-        return get_device_addr(addr_);
+        return get_device_addr(get_bounds().start);
     }
 
     /**
@@ -144,7 +132,7 @@ public:
     inline
     hal::const_ptr get_device_const_addr() const
     {
-        return get_device_const_addr(addr_);
+        return get_device_const_addr(get_bounds().start);
     }
 
     host_ptr get_shadow() const;

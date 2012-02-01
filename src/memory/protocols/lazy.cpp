@@ -19,7 +19,6 @@
 
 namespace __impl { namespace memory { namespace protocols {
 
-
 lazy_base::lazy_base(bool eager) :
     Lock("lazy_base"),
     eager_(eager),
@@ -31,31 +30,55 @@ lazy_base::~lazy_base()
 {
 }
 
-lazy_types::State lazy_base::state(GmacProtection prot) const
+lazy_types::State
+lazy_base::state(int flagsHost, int flagsDevice) const
 {
-    switch(prot) {
-    case GMAC_PROT_NONE:
-        return lazy_types::Invalid;
-    case GMAC_PROT_READ:
-        return lazy_types::ReadOnly;
-    case GMAC_PROT_WRITE:
-    case GMAC_PROT_READWRITE:
-            return lazy_types::Dirty;
+    if (flagsHost == GMAC_MAP_NONE || flagsDevice == GMAC_MAP_NONE) {
+        return lazy_types::Incoherent;
     }
-    return lazy_types::Dirty;
+
+    if ((flagsHost == GMAC_MAP_READ  && flagsDevice == GMAC_MAP_READ) ||
+        (flagsHost == GMAC_MAP_WRITE && flagsDevice == GMAC_MAP_WRITE)) {
+        FATAL("Not valid flag convination");
+    }
+
+    if (flagsHost == GMAC_MAP_READ  && flagsDevice == GMAC_MAP_WRITE) {
+        // Return invalid to read from device
+        return lazy_types::Invalid;
+    }
+    if (flagsHost == GMAC_MAP_WRITE && flagsDevice == GMAC_MAP_READ) {
+        // Return invalid to directly write to device
+        return lazy_types::Invalid;
+    }
+    if (flagsHost == GMAC_MAP_READWRITE && flagsDevice == GMAC_MAP_WRITE) {
+        // Return invalid to read from device
+        return lazy_types::Invalid;
+    }
+    if (flagsHost == GMAC_MAP_READWRITE && flagsDevice == GMAC_MAP_READ) {
+        // Return invalid to write both to host and device
+        return lazy_types::ReadOnly;
+    }
+    if (flagsHost == GMAC_MAP_READWRITE && flagsDevice == GMAC_MAP_READWRITE) {
+        // Return invalid to write both to host and device
+        return lazy_types::ReadOnly;
+    }
+    return lazy_types::ReadOnly;
 }
 
 
-void lazy_base::delete_object(object &obj)
+void
+lazy_base::delete_object(object &obj)
 {
 }
 
-bool lazy_base::needs_update(common::block_const_ptr b) const
+bool
+lazy_base::needs_update(common::block_const_ptr b) const
 {
     lazy_types::block_const_ptr block = util::static_pointer_cast<const lazy_types::block>(b);
     switch (block->get_state()) {
     case lazy_types::Dirty:
     case lazy_types::HostOnly:
+    case lazy_types::Incoherent:
         return false;
     case lazy_types::ReadOnly:
     case lazy_types::Invalid:
@@ -116,6 +139,8 @@ lazy_base::signal_write(common::block_ptr b, host_ptr addr, gmacError_t &err)
         WARNING("Signal on HostOnly block - Changing protection and continuing");
     case lazy_types::ReadOnly:
         break;
+    case lazy_types::Incoherent:
+        FATAL("Signal on incoherent block");
     }
     block->set_state(lazy_types::Dirty, addr);
     block->unprotect();
@@ -148,16 +173,19 @@ lazy_base::acquire(common::block_ptr b, GmacProtection prot, gmacError_t &err)
 
         break;
     case lazy_types::Dirty:
-        WARNING("Block modified before gmacSynchronize: %p", block->get_bounds().start);
+        //WARNING("Block modified before gmacSynchronize: %p", block->get_bounds().start);
         break;
     case lazy_types::HostOnly:
         break;
+    case lazy_types::Incoherent:
+        FATAL("Acquire on incoherent block");
     }
     return ret;
 }
 
 #ifdef USE_VM
-gmacError_t lazy_base::acquireWithBitmap(block_ptr b)
+gmacError_t
+lazy_base::acquireWithBitmap(block_ptr b)
 {
     /// \todo Change this to the new BlockState
     gmacError_t ret = gmacSuccess;
@@ -213,6 +241,8 @@ lazy_base::unmap_from_device(common::block_ptr b, gmacError_t &err)
     case lazy_types::Invalid:
         ret = block->sync_to_host(err);
         break;
+    case lazy_types::Incoherent:
+        FATAL("Unmap on incoherent block");
     }
     if(block->unprotect() < 0)
         FATAL("Unable to set memory permissions");
@@ -272,7 +302,8 @@ lazy_base::release_all(gmacError_t &err)
     return ret;
 }
 
-hal::event_ptr lazy_base::flush_dirty(gmacError_t &err)
+hal::event_ptr
+lazy_base::flush_dirty(gmacError_t &err)
 {
     return release_all(err);
 }
@@ -315,11 +346,14 @@ lazy_base::release(common::block_ptr b, gmacError_t &err)
     case lazy_types::ReadOnly:
     case lazy_types::HostOnly:
         break;
+    case lazy_types::Incoherent:
+        FATAL("Release on incoherent block");
     }
     return ret;
 }
 
-hal::event_ptr lazy_base::remove_block(common::block_ptr block, gmacError_t &err)
+hal::event_ptr
+lazy_base::remove_block(common::block_ptr block, gmacError_t &err)
 {
     hal::event_ptr ret;
     dbl_.remove(block);
@@ -352,6 +386,8 @@ lazy_base::to_host(common::block_ptr b, gmacError_t &err)
     case lazy_types::HostOnly:
         TRACE(LOCAL,"HostOnly block");
         break;
+    case lazy_types::Incoherent:
+        FATAL("to_host on incoherent block");
     }
     return ret;
 }
@@ -376,6 +412,8 @@ lazy_base::memset(const common::block_ptr b, size_t blockOffset, int v, size_t c
     case lazy_types::HostOnly:
         ::memset(block->get_shadow() + blockOffset, v, count);
         break;
+    case lazy_types::Incoherent:
+        FATAL("memset incoherent block");
     }
     return ret;
 }

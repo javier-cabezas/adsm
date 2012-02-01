@@ -58,7 +58,7 @@ void arena::put(host_ptr obj)
 }
 
 inline
-cache::cache(manager &manager, util::shared_ptr<core::address_space> aspace, size_t size) :
+cache::cache(manager &manager, util::shared_ptr<address_space> aspace, size_t size) :
     Lock("cache"),
     objectSize(size),
     arenaSize(memory::BlockSize_),

@@ -1,5 +1,4 @@
 #include "config/order.h"
-#include "core/address_space.h"
 #include "util/FileSystem.h"
 
 #include "map_object.h"

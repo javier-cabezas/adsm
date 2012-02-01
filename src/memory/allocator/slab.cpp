@@ -1,7 +1,7 @@
-#include "slab.h"
-
 #include "config/common.h"
-#include "core/address_space.h"
+#include "memory/address_space.h"
+
+#include "slab.h"
 
 namespace __impl { namespace memory { namespace allocator {
 
@@ -22,7 +22,7 @@ slab::~slab()
 }
 
 cache &
-slab::create_cache(core::address_space_ptr aspace, map_cache &map, long_t key, size_t size)
+slab::create_cache(address_space_ptr aspace, map_cache &map, long_t key, size_t size)
 {
     cache *cache = new __impl::memory::allocator::cache(manager_, aspace, size);
     std::pair<map_cache::iterator, bool> ret = map.insert(map_cache::value_type(key, cache));
@@ -31,7 +31,7 @@ slab::create_cache(core::address_space_ptr aspace, map_cache &map, long_t key, s
 }
 
 cache &
-slab::get(core::address_space_ptr current, long_t key, size_t size)
+slab::get(address_space_ptr current, long_t key, size_t size)
 {
     map_cache *map = NULL;
     map_aspace::iterator i;
@@ -56,7 +56,7 @@ slab::get(core::address_space_ptr current, long_t key, size_t size)
 }
 
 void
-slab::cleanup(core::address_space_ptr current)
+slab::cleanup(address_space_ptr current)
 {
     map_aspace::iterator i;
     aspaces_.lock_read();
@@ -74,7 +74,7 @@ slab::cleanup(core::address_space_ptr current)
 }
 
 host_ptr
-slab::alloc(core::address_space_ptr current, size_t size, host_const_ptr addr)
+slab::alloc(address_space_ptr current, size_t size, host_const_ptr addr)
 {
     cache &cache = get(current, long_t(addr), size);
     TRACE(LOCAL,"Using cache %p", &cache);
@@ -88,7 +88,7 @@ slab::alloc(core::address_space_ptr current, size_t size, host_const_ptr addr)
 }
 
 bool
-slab::free(core::address_space_ptr current, host_ptr addr)
+slab::free(address_space_ptr current, host_ptr addr)
 {
     addresses_.lock_write();
     map_address::iterator i = addresses_.find(addr);

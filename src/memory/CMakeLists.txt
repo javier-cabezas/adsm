@@ -2,6 +2,8 @@ add_subdirectory(vm)
 add_subdirectory(${OS_DIR})
 
 set(memory_SRC
+    address_space.h
+    address_space-impl.h
     allocator.h
     handler.h
     handler.cpp
@@ -36,13 +38,14 @@ set(memory_SRC
     protocols/lazy.h
     protocols/lazy-impl.h
     protocols/lazy.cpp
-    protocols/common/list_block.h
-    protocols/common/list_block-impl.h
     protocols/common/block.h
     protocols/common/block-impl.h
     protocols/common/block.cpp
+    protocols/common/list_block.h
+    protocols/common/list_block-impl.h
+    protocols/common/types.h
     protocols/lazy/block.h
-    protocols/lazy/block-impl.h
+    protocols/lazy/block.cpp
     protocols/lazy/lazy_types.h
 )
 

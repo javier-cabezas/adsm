@@ -7,10 +7,8 @@
 #include <cstdio>
 #include <errno.h>
 
-#include "core/address_space.h"
-#include "core/vdevice.h"
-
 #include "libs/common.h"
+#include "memory/address_space.h"
 #include "memory/manager.h"
 #include "util/loader.h"
 

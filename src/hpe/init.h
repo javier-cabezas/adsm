@@ -46,7 +46,7 @@ namespace __impl {
     namespace core {
         namespace hpe {
             class process;
-            process &getProcess() GMAC_LOCAL;
+            process &get_process() GMAC_LOCAL;
         }
     }
 

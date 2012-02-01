@@ -1,7 +1,7 @@
 #ifndef GMAC_HAL_TYPES_EVENT_H_
 #define GMAC_HAL_TYPES_EVENT_H_
 
-#include "util/delayed_exec.h"
+#include "util/trigger.h"
 #include "util/smart_ptr.h"
 
 namespace __impl { namespace hal {
@@ -10,7 +10,7 @@ namespace detail {
 
 template <typename I>
 class GMAC_LOCAL _event_t :
-    public util::delayed_exec,
+    public util::list_trigger<>,
     public gmac::util::lock_rw<_event_t<I> > {
     friend class I::context;
     friend class I::kernel;

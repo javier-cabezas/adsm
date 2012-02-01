@@ -33,8 +33,9 @@ void Logger::__Trace(const char *name, const char *funcName, const char *fileNam
 #endif
 {
     std::stringstream newFmt;
+    newFmt << std::string("(") << tid << std::string(") ");
     if (::config::params::DebugPrintLocation) {
-        newFmt << std::string("(") << tid << std::string(") ") << "[" << funcName << "] ";
+        newFmt << "[" << funcName << "] ";
 
         if (::config::params::DebugPrintFile) {
             newFmt << "{" << fileName << ":" << lineNumber << "} ";
@@ -74,8 +75,9 @@ inline
 void Logger::__Trace(const char *name, const char *funcName, const char *fileName, unsigned lineNumber, THREAD_T tid, const char *fmt)
 {
     std::stringstream newFmt;
+    newFmt << std::string("(") << tid << std::string(") ");
     if (::config::params::DebugPrintLocation) {
-        newFmt << std::string("(") << tid << std::string(") ") << "[" << funcName << "] ";
+        newFmt << "[" << funcName << "] ";
 
         if (::config::params::DebugPrintFile) {
             newFmt << "{" << fileName << ":" << lineNumber << "} ";

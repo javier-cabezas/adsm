@@ -4,10 +4,10 @@
  * Initialization routines
  */
 
-#include "core/hpe/address_space.h"
-#include "core/hpe/vdevice.h"
-#include "core/hpe/process.h"
-#include "core/hpe/thread.h"
+#include "hpe/core/address_space.h"
+#include "hpe/core/vdevice.h"
+#include "hpe/core/process.h"
+#include "hpe/core/thread.h"
 
 #include "hal/types.h"
 
@@ -59,7 +59,7 @@ void initGmac(void)
     Process_ = new gmac::core::hpe::process();
 
     TRACE(GLOBAL, "Initializing memory");
-    Manager_ = new gmac::memory::manager(*Process_);
+    Manager_ = new gmac::memory::manager();
 #if !defined(USE_OPENCL)
     Allocator_ = new __impl::memory::allocator::slab(*Manager_);
 #endif
@@ -90,12 +90,12 @@ void initGmac(void)
 
 namespace __impl {
     namespace core {
-        core::process &get_process() { return *Process_; }
+        //core::process &get_process() { return *Process_; }
         namespace hpe {
             //Mode &getCurrentVirtualDevice() { return __impl::core::hpe::thread::get_current_thread().getCurrentVirtualDevice(); }
-            process &getProcess() { return *Process_; }
+            process &get_process() { return *Process_; }
+            vdevice &get_virtual_device() { return __impl::core::hpe::thread::get_current_thread().get_current_virtual_device(); }
         }
-        vdevice &get_virtual_device() { return __impl::core::hpe::thread::get_current_thread().get_current_virtual_device(); }
     }
 
     namespace memory {

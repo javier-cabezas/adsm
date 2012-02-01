@@ -36,6 +36,8 @@ WITH THE SOFTWARE.  */
 
 #include <sys/stat.h>
 
+#include <string>
+
 namespace __impl { namespace util {
 
 bool MakeDir(std::string path);

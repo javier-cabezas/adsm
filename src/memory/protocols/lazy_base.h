@@ -74,7 +74,7 @@ protected:
      * \param prot Memory protection
      * \return Protocol state
      */
-    lazy_types::State state(GmacProtection prot) const;
+    lazy_types::State state(int flagsHost, int flagsDevice) const;
 
     /// Uses eager update
     bool eager_;

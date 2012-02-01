@@ -9,7 +9,7 @@ std::string get_file_contents(const std::string &path, gmacError_t &err)
     std::string ret;
     err = gmacSuccess;
 
-    std::ifstream in(path, std::ios_base::in);
+    std::ifstream in(path.c_str(), std::ios_base::in);
     if (!in.good()) {
         err = gmacErrorInvalidValue;
         return ret;

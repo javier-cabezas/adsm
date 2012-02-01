@@ -21,4 +21,3 @@ set(hal_SRC
 
 add_gmac_sources(gmac-hal ${hal_SRC})
 add_gmac_sources(gmac-hal-api)
-add_gmac_sources(gmac-hal-api-hpe)

@@ -39,10 +39,7 @@ WITH THE SOFTWARE.  */
 
 #include "cache.h"
 
-namespace __impl {
-namespace core { class address_space; }
-
-namespace memory { namespace allocator {
+namespace __impl { namespace memory { namespace allocator {
 
 /**
  * Simple slab allocator
@@ -62,7 +59,7 @@ protected:
     typedef std::map<long_t, cache *> map_cache;
 
     class GMAC_LOCAL map_aspace :
-    	public std::map<core::address_space_ptr, map_cache>,
+    	public std::map<address_space_ptr, map_cache>,
     	gmac::util::lock_rw<map_aspace> {
         friend class slab;
 
@@ -74,9 +71,9 @@ protected:
     map_address addresses_;
     map_aspace aspaces_; // Per-context cache map
 
-    cache &create_cache(core::address_space_ptr aspace, map_cache &map, long_t key, size_t size);
-    cache &get(core::address_space_ptr current, long_t key, size_t size);
-    void cleanup(core::address_space_ptr current);
+    cache &create_cache(address_space_ptr aspace, map_cache &map, long_t key, size_t size);
+    cache &get(address_space_ptr current, long_t key, size_t size);
+    void cleanup(address_space_ptr current);
 
     manager &manager_;
 
@@ -84,8 +81,8 @@ protected:
 public:
     slab(manager &manager);
 
-    host_ptr alloc(core::address_space_ptr current, const size_t size, host_const_ptr addr);
-    bool free(core::address_space_ptr current, host_ptr addr);
+    host_ptr alloc(address_space_ptr current, const size_t size, host_const_ptr addr);
+    bool free(address_space_ptr current, host_ptr addr);
 };
 
 }}}

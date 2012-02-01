@@ -40,8 +40,6 @@ WITH THE SOFTWARE.  */
 
 namespace __impl {
 
-namespace core { class process; }
-
 namespace memory {
 
 class manager;
@@ -98,8 +96,6 @@ public:
     static inline void Exit() {
         if(Exit_ != NULL) Exit_();
     }
-
-    static void setProcess(core::process &proc);
 
     static void setManager(manager &manager);
 };

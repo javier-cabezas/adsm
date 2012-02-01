@@ -53,30 +53,31 @@ protected:
     typedef __impl::memory::protocols::lazy_types::State state_impl;
     typedef __impl::memory::protocols::lazy_types::block lazy_block_impl;
     typedef __impl::util::shared_ptr<lazy_block_impl> lazy_block_ptr_impl;
+    typedef __impl::hal::event_ptr event_ptr_impl;
 
 public:
-    __impl::hal::event_ptr signal_read(block_ptr_impl block, host_ptr addr, gmacError_t &err);
-    __impl::hal::event_ptr signal_write(block_ptr_impl block, host_ptr addr, gmacError_t &err);
+    event_ptr_impl signal_read(block_ptr_impl block, host_ptr addr, gmacError_t &err);
+    event_ptr_impl signal_write(block_ptr_impl block, host_ptr addr, gmacError_t &err);
 
-    __impl::hal::event_ptr acquire(block_ptr_impl obj, GmacProtection prot, gmacError_t &err);
-    __impl::hal::event_ptr release(block_ptr_impl block, gmacError_t &err);
+    event_ptr_impl acquire(block_ptr_impl obj, GmacProtection prot, gmacError_t &err);
+    event_ptr_impl release(block_ptr_impl block, gmacError_t &err);
 
-    __impl::hal::event_ptr release_all(gmacError_t &err);
+    event_ptr_impl release_all(gmacError_t &err);
 
-    __impl::hal::event_ptr map_to_device(block_ptr_impl block, gmacError_t &err);
+    event_ptr_impl map_to_device(block_ptr_impl block, gmacError_t &err);
 
-    __impl::hal::event_ptr unmap_from_device(block_ptr_impl block, gmacError_t &err);
+    event_ptr_impl unmap_from_device(block_ptr_impl block, gmacError_t &err);
 
-    __impl::hal::event_ptr remove_block(block_ptr_impl block, gmacError_t &err);
+    event_ptr_impl remove_block(block_ptr_impl block, gmacError_t &err);
 
-    __impl::hal::event_ptr to_host(block_ptr_impl block, gmacError_t &err);
+    event_ptr_impl to_host(block_ptr_impl block, gmacError_t &err);
 
-    __impl::hal::event_ptr memset(block_ptr_impl block, size_t blockOffset, int v, size_t size,
-                                gmacError_t &err);
+    event_ptr_impl memset(block_ptr_impl block, size_t blockOffset, int v, size_t size,
+                          gmacError_t &err);
 
-    __impl::hal::event_ptr flush_dirty(gmacError_t &err);
+    event_ptr_impl flush_dirty(gmacError_t &err);
 
-    __impl::hal::event_ptr copy_block_to_block(block_ptr_impl d, size_t dstOffset, block_ptr_impl s, size_t srcOffset, size_t count, gmacError_t &err);
+    event_ptr_impl copy_block_to_block(block_ptr_impl d, size_t dstOffset, block_ptr_impl s, size_t srcOffset, size_t count, gmacError_t &err);
 };
 
 }}}
