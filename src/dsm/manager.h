@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2011 University of Illinois
+/* Copyright (c) 2009-2012 University of Illinois
                            Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -39,8 +39,6 @@ WITH THE SOFTWARE.  */
 #include "util/singleton.h"
 #include "util/stl/locked_map.h"
 
-#include "memory/address_space.h"
-
 #include "mapping.h"
 
 namespace __impl {
@@ -54,17 +52,20 @@ class GMAC_LOCAL manager :
     public __impl::util::singleton<dsm::manager> {
 protected:
 
-    typedef std::map<hal::ptr::address, mapping_ptr> map_mappings;
+    typedef std::map<size_t, mapping_ptr> map_mapping;
+    typedef map_mapping *map_mapping_ptr;
+
+    typedef std::map<hal::ptr::backend_type, map_mapping_ptr> map_mapping_group;
 
     const hal::context_t::attribute_id AttributeMappings_;
 
     static void aspace_created(manager *m, hal::context_t &aspace);
     static void aspace_destroyed(manager *m, hal::context_t &aspace);
 
-    map_mappings &get_aspace_mappings(hal::context_t &ctx);
+    map_mapping_group &get_aspace_mappings(hal::context_t &ctx);
 
-    typedef util::range<map_mappings::iterator> range_mapping;
-    range_mapping get_mappings_in_range(map_mappings &mappings, hal::ptr::address begin, size_t count);
+    typedef util::range<map_mapping::iterator> range_mapping;
+    range_mapping get_mappings_in_range(map_mapping_group &mappings, hal::ptr begin, size_t count);
 
     /**
      * Default destructor
@@ -107,9 +108,5 @@ public:
 }}
 
 #include "manager-impl.h"
-
-#ifdef USE_DBC
-#include "memory/dbc/manager.h"
-#endif
 
 #endif

@@ -26,17 +26,18 @@ class mapping :
     typedef __impl::dsm::mapping parent;
 public:
     parent::range_block
-    get_blocks_in_range(size_t offset, size_t count);
+    get_blocks_in_range(ptr::offset_type offset, size_t count);
 
     template <typename I>
-    static mapping_ptr merge_mappings(range<I> range, ptr::address addr, size_t count);
+    static mapping_ptr merge_mappings(range<I> range, ptr::offset_type off, size_t count);
 
-    static gmacError_t dup2(mapping_ptr map1, ptr::address addr1,
-                            mapping_ptr map2, ptr::address addr2, size_t count);
+    static gmacError_t dup2(mapping_ptr map1, ptr::offset_type off1,
+                            mapping_ptr map2, ptr::offset_type off2, size_t count);
 
-    gmacError_t dup(ptr::address addr1, mapping_ptr map2, ptr::address addr2, size_t count);
+    gmacError_t dup(ptr::offset_type off1, mapping_ptr map2,
+                    ptr::offset_type off2, size_t count);
 
-    gmacError_t split(ptr::address addr, size_t count);
+    gmacError_t split(ptr::offset_type off, size_t count);
 
     gmacError_t prepend(block_ptr b)
     {
@@ -48,15 +49,18 @@ public:
         return parent::append(b);
     }
 
-    gmacError_t append(mapping_ptr map);
+    gmacError_t append(mapping_ptr map)
+    {
+        return parent::append(map);
+    }
 
     mapping(ptr addr) :
         parent(addr)
     {
     }
 
-    gmacError_t acquire(size_t offset, size_t count, int flags);
-    gmacError_t release(size_t offset, size_t count);
+    gmacError_t acquire(ptr::offset_type offset, size_t count, int flags);
+    gmacError_t release(ptr::offset_type offset, size_t count);
 
     template <typename I>
     static gmacError_t link(ptr ptr1, range<I> range1, submappings &sub1,

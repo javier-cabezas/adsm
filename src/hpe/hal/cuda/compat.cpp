@@ -501,7 +501,8 @@ GMAC_API cudaError_t APICALL cudaMemcpy2DToArray(struct cudaArray *dst, size_t w
 #endif
     }
     else {
-        long_t dummy = manager.translate(aspace, host_ptr(src)).get_device_addr();
+        __impl::hal::ptr ptr = manager.translate(aspace, host_ptr(src));
+        long_t dummy = ptr.get_base() + ptr.get_offset();
 #if CUDA_VERSION >= 3020
         __cudaInternalMemcpy2D((CUarray)dst, wOffset, hOffset, (CUdeviceptr)(dummy), spitch, width, height);
 #else

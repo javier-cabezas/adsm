@@ -25,13 +25,11 @@ class event_ptr;
 class event_list;
 class buffer_t;
 
-typedef __impl::hal::_ptr_t<host_ptr,
-                            _cuda_ptr_t,
+typedef __impl::hal::_ptr_t<_cuda_ptr_t,
                             context_t> ptr_t;
 
-typedef __impl::hal::_ptr_t<host_const_ptr,
-                            _cuda_ptr_t,
-                            context_t> ptr_const_t;
+typedef __impl::hal::_const_ptr_t<_cuda_ptr_t,
+                                   context_t> ptr_const_t;
 
 typedef hal::detail::backend_traits<CUcontext,
                                     CUstream,

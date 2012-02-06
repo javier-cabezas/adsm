@@ -3,7 +3,7 @@
 namespace __impl { namespace dsm {
 
 mapping::range_block
-mapping::get_blocks_in_range(size_t offset, size_t count)
+mapping::get_blocks_in_range(hal::ptr::offset_type offset, size_t count)
 {
     ASSERTION(offset < size_);
     ASSERTION(offset + count <= size_);
@@ -29,8 +29,8 @@ mapping::get_blocks_in_range(size_t offset, size_t count)
 }
 
 gmacError_t
-mapping::dup2(mapping_ptr map1, hal::ptr::address addr1,
-              mapping_ptr map2, hal::ptr::address addr2, size_t count)
+mapping::dup2(mapping_ptr map1, hal::ptr::offset_type off1,
+              mapping_ptr map2, hal::ptr::offset_type off2, size_t count)
 {
     gmacError_t ret = gmacSuccess;
 
@@ -38,25 +38,32 @@ mapping::dup2(mapping_ptr map1, hal::ptr::address addr1,
 }
 
 gmacError_t
-mapping::dup(hal::ptr::address addr1, mapping_ptr map2, hal::ptr::address addr2, size_t count)
+mapping::dup(hal::ptr::offset_type off1, mapping_ptr map2,
+             hal::ptr::offset_type off2, size_t count)
 {
     gmacError_t ret = gmacSuccess;
 
     list_block::iterator it;
-    hal::ptr::address ptr2 = addr2;
+    hal::ptr::offset_type off = off2;
 
     // Move to the first block involved
-    for (it = map2->blocks_.begin(); ptr2 < addr2; ptr2 += (*it)->get_size());
-    ASSERTION(ptr2 == addr2, "map2 should contain a block starting @ address: %p", addr2);
+    for (it = map2->blocks_.begin(); off < off2; off += (*it)->get_size());
+    ASSERTION(off == off2, "map2 should contain a block starting @ address: %p", off2);
 
     // Duplicate all the blocks
-    for (it = map2->blocks_.begin(); ptr2 < addr2 + count; ptr2 += (*it)->get_size()) {
+    for (it = map2->blocks_.begin(); off < off2 + count; off += (*it)->get_size()) {
         ASSERTION(it != map2->blocks_.end(), "unexpected end of container");
         append(*it);
     }
-    ASSERTION(ptr2 == addr2 + count, "loop should end after a block boundary");
+    ASSERTION(off == off2 + count, "loop should end after a block boundary");
 
     return ret;
+}
+
+gmacError_t
+mapping::split(hal::ptr::offset_type off, size_t count)
+{
+    return gmacSuccess;
 }
 
 gmacError_t
@@ -93,6 +100,11 @@ mapping::append(coherence::block_ptr b)
 gmacError_t
 mapping::append(mapping_ptr map)
 {
+    if ((map->addr_.get_offset()  <  (addr_.get_offset() + size_)) ||
+        (map->addr_.get_context() != (addr_.get_context()))) {
+        return gmacErrorInvalidValue;
+    }
+
     gmacError_t ret = gmacSuccess;
 
     // Add a new block between the mappings if needed

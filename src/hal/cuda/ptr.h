@@ -56,12 +56,11 @@ public:
     {
     }
 
-#if 0
-    inline operator CUdeviceptr() const
+    inline
+    operator CUdeviceptr() const
     {
-        return base_;
+        return base_ + off_;
     }
-#endif
 
     inline _cuda_ptr_t &
     operator=(const _cuda_ptr_t &ptr)
@@ -129,7 +128,7 @@ public:
     }
 
     inline CUdeviceptr
-    get_backend() const
+    get_base() const
     {
         return base_;
     }

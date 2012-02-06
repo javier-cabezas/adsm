@@ -190,7 +190,7 @@ object_state<ProtocolTraits>::add_owner(address_space_ptr owner)
     ownerShortcut_ = owner;
 
     gmacError_t ret = malloc_accelerator(*owner, addr_, size_, deviceAddr_);
-    TRACE(LOCAL, "Add owner %p Object @ %p with device addr: %p", owner.get(), addr_, deviceAddr_.get_device_addr());
+    TRACE(LOCAL, "Add owner %p Object @ %p with device addr: %p", owner.get(), addr_, deviceAddr_.get_base());
 
     return ret;
 }

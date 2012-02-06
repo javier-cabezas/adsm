@@ -7,36 +7,45 @@ inline
 mapping::bounds
 mapping::get_bounds() const
 {
-    bounds ret(addr_.get_addr(), addr_.get_addr() + size_);
+    bounds ret(addr_.get_offset(), addr_.get_offset() + size_);
 
     return ret;
 }
 
+inline
+hal::ptr
+mapping::get_ptr() const
+{
+    return addr_;
+}
+
 template <typename I>
 mapping_ptr
-mapping::merge_mappings(util::range<I> range, hal::ptr::address addr, size_t count)
+mapping::merge_mappings(util::range<I> range, hal::ptr::offset_type off, size_t count)
 {
     ASSERTION(range.is_empty() == false, "Merging an empty range");
 
     I it = range.begin;
 
-    if (range.begin->second->get_bounds().start > addr) {
+    if (range.begin->second->get_bounds().start > off) {
         // Grow first mapping upwards 
         // Create block for the memory preceeding any existing mapping
-        size_t prefix = range.begin->second->get_bounds().start - addr;
+        size_t prefix = range.begin->second->get_bounds().start - off;
         ASSERTION(count > prefix);
 
         coherence::block_ptr b = new coherence::block(prefix);
         range.begin->second->prepend(b);
-    } else if (range.begin->second->get_bounds().start < addr) {
+    } else if (range.begin->second->get_bounds().start < off) {
         // Split the blocks within the first mapping if needed
-        range.begin->second->split(addr, count);
+        range.begin->second->split(off, count);
     }
 
     // Merge the mappings into the first one
     ++it;
 
     for (; it != range.end; ++it) {
+        ASSERTION(range.begin->second->addr_.get_base() ==
+                           it->second->addr_.get_base());
         range.begin->second->append(it->second);
     }
 
@@ -48,8 +57,8 @@ gmacError_t
 mapping::link(hal::ptr ptr1, util::range<I> range1, submappings &sub1,
               hal::ptr ptr2, util::range<I> range2, submappings &sub2, size_t count, int flags)
 {
-    ASSERTION(long_t(ptr1.get_addr()) % MinAlignment == 0);
-    ASSERTION(long_t(ptr2.get_addr()) % MinAlignment == 0);
+    ASSERTION(long_t(ptr1.get_offset()) % MinAlignment == 0);
+    ASSERTION(long_t(ptr2.get_offset()) % MinAlignment == 0);
 
     gmacError_t ret;
 
@@ -79,19 +88,19 @@ mapping::link(hal::ptr ptr1, util::range<I> range1, submappings &sub1,
     } else if (begin1 == end1) {
         mapping_ptr map1, map2;
         map1 = new mapping(ptr1);
-        map2 = merge_mappings(range2, ptr2.get_addr(), count);
-        ret = map1->dup(ptr1.get_addr(), map2, ptr2.get_addr(), count);
+        map2 = merge_mappings(range2, ptr2.get_offset(), count);
+        ret = map1->dup(ptr1.get_offset(), map2, ptr2.get_offset(), count);
     } else if (begin2 == end2) {
         mapping_ptr map1, map2;
         map2 = new mapping(ptr2);
-        map1 = merge_mappings(range1, ptr1.get_addr(), count);
-        ret = map2->dup(ptr2.get_addr(), map1, ptr1.get_addr(), count);
+        map1 = merge_mappings(range1, ptr1.get_offset(), count);
+        ret = map2->dup(ptr2.get_offset(), map1, ptr1.get_offset(), count);
     } else {
         mapping_ptr map1, map2;
-        map1 = merge_mappings(range1, ptr1.get_addr(), count);
-        map2 = merge_mappings(range2, ptr2.get_addr(), count);
-        ret = mapping::dup2(map1, ptr1.get_addr(),
-                            map2, ptr2.get_addr(), count);
+        map1 = merge_mappings(range1, ptr1.get_offset(), count);
+        map2 = merge_mappings(range2, ptr2.get_offset(), count);
+        ret = mapping::dup2(map1, ptr1.get_offset(),
+                            map2, ptr2.get_offset(), count);
     }
 
     return ret;
