@@ -5,23 +5,26 @@ namespace __impl { namespace dsm {
 void
 manager::aspace_created(manager *m, hal::context_t &aspace)
 {
-    map_mappings *ret = new map_mappings;
-    aspace.set_attribute<map_mappings>(m->AttributeMappings_, ret);
+    map_mapping_group *ret = new map_mapping_group();
+    aspace.set_attribute<map_mapping_group>(m->AttributeMappings_, ret);
 }
 
 void
 manager::aspace_destroyed(manager *m, hal::context_t &aspace)
 {
-    map_mappings *ret = aspace.get_attribute<map_mappings>(m->AttributeMappings_);
+    // Get the mappings from the address space, to avoid an extra map
+    map_mapping_group *ret = aspace.get_attribute<map_mapping_group>(m->AttributeMappings_);
     ASSERTION(ret != NULL);
+    delete ret;
 }
 
-manager::map_mappings &
+manager::map_mapping_group &
 manager::get_aspace_mappings(hal::context_t &ctx)
 {
-    map_mappings *ret;
+    map_mapping_group *ret;
 
-    ret = ctx.get_attribute<map_mappings>(AttributeMappings_);
+    // Get the mappings from the address space, to avoid an extra map
+    ret = ctx.get_attribute<map_mapping_group>(AttributeMappings_);
     ASSERTION(ret != NULL);
 
     return *ret;
@@ -29,20 +32,32 @@ manager::get_aspace_mappings(hal::context_t &ctx)
 
 
 manager::range_mapping
-manager::get_mappings_in_range(map_mappings &mappings, hal::ptr::address addr, size_t count)
+manager::get_mappings_in_range(map_mapping_group &mappings, hal::ptr addr, size_t count)
 {
-    map_mappings::iterator begin, end;
-    map_mappings::iterator it = mappings.upper_bound(addr);
+    map_mapping_group::iterator itGroup = mappings.find(addr.get_base());
 
-    if (it == mappings.end() || it->second->get_bounds().start >= addr + count) {
-        return range_mapping(mappings.end(), mappings.end());
+    // If we don't find the base allocation for the address, return empty range
+    if (itGroup == mappings.end()) {
+        map_mapping::iterator it;
+        return range_mapping(it, it);
+    }
+
+    map_mapping &group = *itGroup->second;
+    map_mapping::iterator begin, end;
+    map_mapping::iterator it = group.upper_bound(addr.get_offset());
+
+    // If no mapping is affected, return empty range
+    if (it == group.end() || it->second->get_ptr().get_offset() >= addr.get_offset() + count) {
+        map_mapping::iterator it;
+        return range_mapping(it, it);
     } else {
         begin = it;
     }
 
+    // Add all the mappings in the range
     do {
         ++it;
-    } while (it != mappings.end() && it->second->get_bounds().start < addr + count);
+    } while (it != group.end() && it->second->get_ptr().get_offset() < addr.get_offset() + count);
 
     end = it;
 
@@ -56,20 +71,24 @@ manager::manager() :
     hal::context_t::add_destructor(do_func(manager::aspace_destroyed, this, std::placeholders::_1));
 }
 
+manager::~manager()
+{
+}
+
 gmacError_t
 manager::link(hal::ptr dst, hal::ptr src, size_t count, int flags)
 {
-    ASSERTION(long_t(dst.get_addr()) % mapping::MinAlignment == 0);
-    ASSERTION(long_t(src.get_addr()) % mapping::MinAlignment == 0);
+    ASSERTION(long_t(dst.get_offset()) % mapping::MinAlignment == 0);
+    ASSERTION(long_t(src.get_offset()) % mapping::MinAlignment == 0);
 
     hal::context_t *ctxDst = dst.get_context();
     hal::context_t *ctxSrc = src.get_context();
 
-    map_mappings &mappingsDst = get_aspace_mappings(*ctxDst);
-    map_mappings &mappingsSrc = get_aspace_mappings(*ctxSrc);
+    map_mapping_group &mappingsDst = get_aspace_mappings(*ctxDst);
+    map_mapping_group &mappingsSrc = get_aspace_mappings(*ctxSrc);
 
-    range_mapping rangeDst = get_mappings_in_range(mappingsDst, dst.get_addr(), count);
-    range_mapping rangeSrc = get_mappings_in_range(mappingsSrc, src.get_addr(), count);
+    range_mapping rangeDst = get_mappings_in_range(mappingsDst, dst, count);
+    range_mapping rangeSrc = get_mappings_in_range(mappingsSrc, src, count);
 
     mapping::submappings subDst, subSrc;
 

@@ -131,6 +131,18 @@ template <class Cond, class T = void>
 struct enable_if : public enable_if_c<Cond::value, T> {};
 
 namespace __impl { namespace util {
+    template <typename T>
+    struct is_const_ptr :
+        std::false_type
+    {
+    };
+
+    template <typename T>
+    struct is_const_ptr<const T *> :
+    std::true_type
+    {
+    };
+
 #ifdef USE_CXX0X
     using std::shared_ptr;
 

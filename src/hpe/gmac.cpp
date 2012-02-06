@@ -350,6 +350,7 @@ gmacFree(void *cpuPtr)
     return ret;
 }
 
+#ifdef USE_CUDA
 extern "C"
 GMAC_API __gmac_accptr_t APICALL
 gmacPtr(const void *ptr)
@@ -358,9 +359,10 @@ gmacPtr(const void *ptr)
     enterGmac();
     ret = get_manager().translate(thread::get_current_thread().get_current_virtual_device().get_address_space(), host_ptr(ptr));
     exitGmac();
-    TRACE(GLOBAL, "Translate %p to %p", ptr, ret.get_device_addr());
-    return __gmac_accptr_t(ret.get_device_addr());
+    TRACE(GLOBAL, "Translate %p to %p", ptr, ret.get_base() + ret.get_offset());
+    return __gmac_accptr_t(ret.get_base() + ret.get_offset());
 }
+#endif
 
 gmacError_t GMAC_LOCAL
 gmacLaunch(__impl::core::hpe::kernel::launch_ptr launch)

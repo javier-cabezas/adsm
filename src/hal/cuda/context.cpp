@@ -58,13 +58,14 @@ context_t::copy_backend(ptr_t dst, ptr_const_t src, size_t count, stream_t &stre
         TRACE(LOCAL, "D -> D copy ("FMT_SIZE" bytes) on stream: %p", count, stream());
 
         if (dst.get_context()->get_device().has_direct_copy(src.get_context()->get_device())) {
-            res = cuMemcpyDtoD(dst.get_device_addr(), src.get_device_addr(), count);
+            res = cuMemcpyDtoD(dst.get_base() + dst.get_offset(),
+                               src.get_base() + src.get_offset(), count);
         } else {
             host_ptr host = get_memory(count);
 
-            res = cuMemcpyDtoH(host, src.get_device_addr(), count);
+            res = cuMemcpyDtoH(host, src.get_base() + src.get_offset(), count);
             if (res == CUDA_SUCCESS) {
-                res = cuMemcpyHtoD(src.get_device_addr(), host, count);
+                res = cuMemcpyHtoD(dst.get_base() + dst.get_offset(), host, count);
             }
 
             put_memory(host, count);
@@ -73,12 +74,12 @@ context_t::copy_backend(ptr_t dst, ptr_const_t src, size_t count, stream_t &stre
                src.is_host_ptr()) {
         TRACE(LOCAL, "H (%p) -> D copy ("FMT_SIZE" bytes) on stream: %p", src.get_host_addr(), count, stream());
 
-        res = cuMemcpyHtoD(dst.get_device_addr(), src.get_host_addr(), count);
+        res = cuMemcpyHtoD(dst.get_base() + dst.get_offset(), src.get_host_addr(), count);
     } else if (dst.is_host_ptr() &&
                src.is_device_ptr()) {
         TRACE(LOCAL, "D -> H (%p) copy ("FMT_SIZE" bytes) on stream: %p", dst.get_host_addr(), count, stream());
 
-        res = cuMemcpyDtoH(dst.get_host_addr(), src.get_device_addr(), count);
+        res = cuMemcpyDtoH(dst.get_host_addr(), src.get_base() + src.get_offset(), count);
     } else if (dst.is_host_ptr() &&
                src.is_host_ptr()) {
         TRACE(LOCAL, "H (%p) -> H (%p) copy ("FMT_SIZE" bytes) on stream: %p", src.get_host_addr(), dst.get_host_addr(), count, stream());
@@ -122,7 +123,7 @@ context_t::copy_backend(ptr_t dst, device_input &input, size_t count, stream_t &
         set();
 
         ret->begin(stream);
-        res = cuMemcpyHtoD(dst.get_device_addr(), host, count);
+        res = cuMemcpyHtoD(dst.get_base() + dst.get_offset(), host, count);
         ret->end();
 
         err = error(res);
@@ -157,7 +158,7 @@ context_t::copy_backend(device_output &output, ptr_const_t src, size_t count, st
     set();
 
     ret->begin(stream);
-    res = cuMemcpyDtoH(host, src.get_device_addr(), count);
+    res = cuMemcpyDtoH(host, src.get_base() + src.get_offset(), count);
     ret->end();
 
     bool ok = output.write(host, count);
@@ -198,36 +199,37 @@ context_t::copy_async_backend(ptr_t dst, ptr_const_t src, size_t count, stream_t
     if (dst.is_device_ptr() &&
         src.is_device_ptr()) {
         TRACE(LOCAL, "D (%p) -> D (%p) async copy ("FMT_SIZE" bytes) on stream: "FMT_ID,
-                     src.get_device_addr(),
-                     dst.get_device_addr(),
+                     src.get_base() + src.get_offset(),
+                     dst.get_base() + dst.get_offset(),
                      count, stream.get_print_id());
 
         if (dst.get_context()->get_device().has_direct_copy(src.get_context()->get_device())) {
-            res = cuMemcpyDtoDAsync(dst.get_device_addr(), src.get_device_addr(), count, stream());
+            res = cuMemcpyDtoDAsync(dst.get_base() + dst.get_offset(),
+                                    src.get_base() + src.get_offset(), count, stream());
         } else {
             buffer_t *buffer = get_input_buffer(count, stream, ret);
 
-            res = cuMemcpyDtoHAsync(buffer->get_addr(), src.get_device_addr(), count, stream());
+            res = cuMemcpyDtoHAsync(buffer->get_addr(), src.get_base() + src.get_offset(), count, stream());
             if (res == CUDA_SUCCESS) {
                 // TODO, check if an explicit synchronization is required
-                res = cuMemcpyHtoDAsync(src.get_device_addr(), buffer->get_addr(), count, stream());
+                res = cuMemcpyHtoDAsync(dst.get_base() + dst.get_offset(), buffer->get_addr(), count, stream());
             }
         }
     } else if (dst.is_device_ptr() &&
                src.is_host_ptr()) {
         TRACE(LOCAL, "H (%p) -> D (%p) async copy ("FMT_SIZE" bytes) on stream: "FMT_ID,
                      src.get_host_addr(),
-                     dst.get_device_addr(),
+                     dst.get_base() + dst.get_offset(),
                      count, stream.get_print_id());
         buffer_t *buffer = get_output_buffer(count, stream, ret);
 
         memcpy(buffer->get_addr(), src.get_host_addr(), count);
 
-        res = cuMemcpyHtoDAsync(dst.get_device_addr(), src.get_host_addr(), count, stream());
+        res = cuMemcpyHtoDAsync(dst.get_base() + dst.get_offset(), src.get_host_addr(), count, stream());
     } else if (dst.is_host_ptr() &&
                src.is_device_ptr()) {
         TRACE(LOCAL, "D (%p) -> H (%p) async copy ("FMT_SIZE" bytes) on stream: "FMT_ID,
-                     src.get_device_addr(),
+                     src.get_base() + src.get_offset(),
                      dst.get_host_addr(),
                      count, stream.get_print_id());
         event_ptr last = stream.get_last_event();
@@ -235,7 +237,7 @@ context_t::copy_async_backend(ptr_t dst, ptr_const_t src, size_t count, stream_t
 
         buffer_t *buffer = get_input_buffer(count, stream, ret);
 
-        res = cuMemcpyDtoHAsync(dst.get_host_addr(), src.get_device_addr(), count, stream());
+        res = cuMemcpyDtoHAsync(dst.get_host_addr(), src.get_base() + src.get_offset(), count, stream());
 
         // Perform memcpy after asynchronous copy
         ret.add_trigger(do_func(memcpy, buffer->get_addr(), src.get_host_addr(), count));
@@ -285,7 +287,7 @@ context_t::copy_async_backend(ptr_t dst, device_input &input, size_t count, stre
         set();
 
         ret->begin(stream);
-        res = cuMemcpyHtoDAsync(dst.get_device_addr(), mem, count, stream());
+        res = cuMemcpyHtoDAsync(dst.get_base() + dst.get_offset(), mem, count, stream());
         ret->end();
 
         err = error(res);
@@ -319,7 +321,7 @@ context_t::copy_async_backend(device_output &output, ptr_const_t src, size_t cou
     set();
 
     ret->begin(stream);
-    res = cuMemcpyDtoHAsync(host, src.get_device_addr(), count, stream());
+    res = cuMemcpyDtoHAsync(host, src.get_base() + src.get_offset(), count, stream());
     ret->end();
 
     bool ok = output.write(host, count);
@@ -356,7 +358,7 @@ context_t::memset_backend(ptr_t dst, int c, size_t count, stream_t &stream, list
     event_ptr ret(false, event_ptr::type::TransferToDevice, *this);
 
     ret->begin(stream);
-    CUresult res = cuMemsetD8(dst.get_device_addr(), (unsigned char)c, count);
+    CUresult res = cuMemsetD8(dst.get_base() + dst.get_offset(), (unsigned char)c, count);
     ret->end();
 
     err = error(res);
@@ -385,7 +387,7 @@ context_t::memset_async_backend(ptr_t dst, int c, size_t count, stream_t &stream
     event_ptr ret(true, _event_t::type::TransferToDevice, *this);
 
     ret->begin(stream);
-    CUresult res = cuMemsetD8Async(dst.get_device_addr(), (unsigned char)c, count, stream());
+    CUresult res = cuMemsetD8Async(dst.get_base() + dst.get_offset(), (unsigned char)c, count, stream());
     ret->end();
 
     err = error(res);
@@ -457,7 +459,7 @@ context_t::free(ptr_t acc)
 {
     set();
 
-    CUresult ret = cuMemFree(acc.get_device_addr());
+    CUresult ret = cuMemFree(acc.get_base());
 
     return cuda::error(ret);
 }

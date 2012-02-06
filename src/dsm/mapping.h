@@ -54,14 +54,15 @@ protected:
     range_block get_blocks_in_range(size_t offset, size_t count);
 
     template <typename I>
-    static mapping_ptr merge_mappings(util::range<I> range, hal::ptr::address addr, size_t count);
+    static mapping_ptr merge_mappings(util::range<I> range, size_t off, size_t count);
 
-    static gmacError_t dup2(mapping_ptr map1, hal::ptr::address addr1,
-                            mapping_ptr map2, hal::ptr::address addr2, size_t count);
+    static gmacError_t dup2(mapping_ptr map1, hal::ptr::offset_type off1,
+                            mapping_ptr map2, hal::ptr::offset_type off2, size_t count);
 
-    gmacError_t dup(hal::ptr::address addr1, mapping_ptr map2, hal::ptr::address addr2, size_t count);
+    gmacError_t dup(hal::ptr::offset_type off1, mapping_ptr map2,
+                    hal::ptr::offset_type off2, size_t count);
 
-    gmacError_t split(hal::ptr::address addr, size_t count);
+    gmacError_t split(hal::ptr::offset_type off, size_t count);
 
     gmacError_t prepend(coherence::block_ptr b);
     gmacError_t append(coherence::block_ptr b);
@@ -83,10 +84,10 @@ public:
 
     //static submappings split(hal::ptr addr, size_t count);
 
-    typedef util::bounds<hal::ptr::address> bounds;
+    typedef util::bounds<size_t> bounds;
     bounds get_bounds() const;
 
-    hal::ptr get_ptr();
+    hal::ptr get_ptr() const;
 };
 
 }}
