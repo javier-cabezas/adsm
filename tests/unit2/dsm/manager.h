@@ -12,14 +12,29 @@ using __impl::hal::ptr;
 using __impl::dsm::coherence::block;
 using __impl::dsm::coherence::block_ptr;
 
-class manager_test : public testing::Test {
+class manager_mapping_test : public testing::Test {
 protected:
+    static __impl::hal::ptr::backend_type BASE_ADDR;
+
+    static const int MAP0_OFF;
+    static const int MAP1_OFF;
+    static const int MAP2_OFF;
+    static const int MAP3_OFF;
+    static const int MAP4_OFF;
+    static const int MAP5_OFF;
+
+    static const size_t MAP0_SIZE;
+    static const size_t MAP1_SIZE;
+    static const size_t MAP2_SIZE;
+    static const size_t MAP3_SIZE;
+    static const size_t MAP4_SIZE;
+    static const size_t MAP5_SIZE;
+
 	static void SetUpTestCase();
 	static void TearDownTestCase();
 };
 
 class manager;
-
 typedef manager *manager_ptr;
 
 class GMAC_LOCAL manager :
@@ -50,7 +65,6 @@ public:
         parent()
     {
     }
-        
 
     /**
      * Map the given host memory pointer to the accelerator memory. If the given
@@ -86,6 +100,11 @@ public:
     //////////////////////
     gmacError_t helper_insert(__impl::hal::context_t &ctx, mapping_ptr m)
     {
-        return gmacSuccess;
+        gmacError_t ret;
+
+        parent::map_mapping_group &group = parent::get_aspace_mappings(ctx);
+        ret = parent::insert_mapping(group, m);
+
+        return ret;
     }
 };

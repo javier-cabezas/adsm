@@ -27,29 +27,29 @@ mapping::merge_mappings(util::range<I> range, hal::ptr::offset_type off, size_t 
 
     I it = range.begin;
 
-    if (range.begin->second->get_bounds().start > off) {
+    if ((*range.begin)->get_bounds().start > off) {
         // Grow first mapping upwards 
         // Create block for the memory preceeding any existing mapping
-        size_t prefix = range.begin->second->get_bounds().start - off;
+        size_t prefix = (*range.begin)->get_bounds().start - off;
         ASSERTION(count > prefix);
 
         coherence::block_ptr b = new coherence::block(prefix);
-        range.begin->second->prepend(b);
-    } else if (range.begin->second->get_bounds().start < off) {
+        (*range.begin)->prepend(b);
+    } else if ((*range.begin)->get_bounds().start < off) {
         // Split the blocks within the first mapping if needed
-        range.begin->second->split(off, count);
+        (*range.begin)->split(off, count);
     }
 
     // Merge the mappings into the first one
     ++it;
 
     for (; it != range.end; ++it) {
-        ASSERTION(range.begin->second->addr_.get_base() ==
-                           it->second->addr_.get_base());
-        range.begin->second->append(it->second);
+        ASSERTION((*range.begin)->addr_.get_base() ==
+                           (*it)->addr_.get_base());
+        (*range.begin)->append(*it);
     }
 
-    return range.begin->second;
+    return *range.begin;
 }
 
 template <typename I>

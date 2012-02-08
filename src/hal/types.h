@@ -11,6 +11,7 @@
 #include "cuda/coherence_domain.h"
 
 namespace __impl { namespace hal {
+    typedef hal::cuda::platform platform;
     typedef hal::cuda::device device;
 
     typedef hal::cuda::coherence_domain coherence_domain;
@@ -34,6 +35,7 @@ namespace __impl { namespace hal {
 #include "opencl/coherence_domain.h"
 
 namespace __impl { namespace hal {
+    typedef hal::cuda::platform platform;
     typedef hal::opencl::device device;
 
     typedef hal::opencl::coherence_domain coherence_domain;
@@ -56,10 +58,11 @@ namespace __impl { namespace hal {
 namespace __impl { namespace hal {
 
 gmacError_t
-init_platform();
+init();
 
-std::list<device *>
-init_devices();
+typedef std::list<platform *> list_platform;
+list_platform
+get_platforms();
 
 }}
 

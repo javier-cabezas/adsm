@@ -9,7 +9,7 @@
 namespace __impl { namespace hal {
 
 gmacError_t
-init_platform()
+init()
 {
     static bool initialized = false;
 
@@ -30,8 +30,8 @@ init_platform()
 
 cuda::map_context_repository Modules_("map_context_repository");
 
-std::list<cuda::device *>
-init_devices()
+std::list<cuda::platform *>
+get_platforms()
 {
     static bool initialized = false;
 
@@ -41,7 +41,7 @@ init_devices()
         FATAL("Double HAL device initialization");
     }
 
-    std::list<cuda::device *> devices;
+    cuda::platform *p = new cuda::platform();
 
     int devCount = 0;
     int devRealCount = 0;
@@ -65,12 +65,12 @@ init_devices()
             cuda::coherence_domain *coherenceDomain = new cuda::coherence_domain();
             // TODO: detect coherence domain correctly. Now using one per device.
             cuda::device *dev = new cuda::device(cuDev, *coherenceDomain);
-            devices.push_back(dev);
+            p->add_device(*dev);
             devRealCount++;
         }
 #else
         cuda::device *dev = new cuda::device(cuDev, *coherenceDomain);
-        devices.push_back(dev);
+        p->add_device(*dev);
         devRealCount++;
 #endif
     }
@@ -78,7 +78,9 @@ init_devices()
     if(devRealCount == 0)
         MESSAGE("No CUDA-enabled devices found");
 
-    return devices;
+    std::list<cuda::platform *> ret;
+    ret.push_back(p);
+    return ret;
 }
 
 }}

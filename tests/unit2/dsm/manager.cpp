@@ -6,40 +6,63 @@
 
 #include "gtest/gtest.h"
 
+static __impl::hal::device *device = NULL;
+static __impl::hal::context_t *ctx1 = NULL;
+static manager *mgr = NULL;
+
+__impl::hal::ptr::backend_type
+manager_mapping_test::BASE_ADDR = 0x0000;
+
+const int manager_mapping_test::MAP0_OFF = 0x0100;
+const int manager_mapping_test::MAP1_OFF = 0x1000;
+const int manager_mapping_test::MAP2_OFF = 0x2000;
+const int manager_mapping_test::MAP3_OFF = 0x3000;
+const int manager_mapping_test::MAP4_OFF = 0x4000;
+const int manager_mapping_test::MAP5_OFF = 0x5000;
+
+const size_t manager_mapping_test::MAP0_SIZE = 0x0100;
+const size_t manager_mapping_test::MAP1_SIZE = 0x0200;
+const size_t manager_mapping_test::MAP2_SIZE = 0x1000;
+const size_t manager_mapping_test::MAP3_SIZE = 0x0900;
+const size_t manager_mapping_test::MAP4_SIZE = 0x0700;
+const size_t manager_mapping_test::MAP5_SIZE = 0x0800;
+
 void
-manager_test::SetUpTestCase()
+manager_mapping_test::SetUpTestCase()
+{
+    if (device == NULL) {
+        // Inititalize platform
+        gmacError_t err = __impl::hal::init();
+        ASSERT_TRUE(err == gmacSuccess);
+        // Get platforms
+        __impl::hal::list_platform platforms = __impl::hal::get_platforms();
+        ASSERT_TRUE(platforms.size() > 0);
+        // Get devices
+        __impl::hal::platform::list_device devices = platforms.front()->get_devices();
+        ASSERT_TRUE(devices.size() > 0);
+        device = devices.front();
+        mgr = new manager();
+        // Create address space
+        ctx1 = device->create_context(__impl::hal::device::None, err);
+        ASSERT_TRUE(err == gmacSuccess);
+    }
+}
+
+void manager_mapping_test::TearDownTestCase()
 {
 }
 
-void manager_test::TearDownTestCase()
+TEST_F(manager_mapping_test, mappings_in_range)
 {
-}
+    gmacError_t err;
 
-TEST_F(manager_test, mappings_in_range)
-{
-    static const unsigned MAP0_ADDR  = 0x0100;
-    static const unsigned MAP0_SIZE  = 0x0100;
-    static const unsigned MAP1_ADDR  = 0x1000;
-    static const unsigned MAP1_SIZE  = 0x0200;
-    static const unsigned MAP2_ADDR  = 0x2000;
-    static const unsigned MAP2_SIZE  = 0x1000;
-    static const unsigned MAP3_ADDR  = 0x3000;
-    static const unsigned MAP3_SIZE  = 0x0900;
-    static const unsigned MAP4_ADDR  = 0x4000;
-    static const unsigned MAP4_SIZE  = 0x0700;
-    static const unsigned MAP5_ADDR  = 0x5000;
-    static const unsigned MAP5_SIZE  = 0x0800;
-
-    manager_ptr mgr = new manager();
-
-    __impl::hal::context_t *ctx1 = 0;// create_context();
-
-    ptr p0 = ptr(ptr::backend_ptr(MAP0_ADDR), ctx1);
-    ptr p1 = p0 + (MAP1_ADDR - MAP0_ADDR);
-    ptr p2 = p0 + (MAP2_ADDR - MAP0_ADDR);
-    ptr p3 = p0 + (MAP3_ADDR - MAP0_ADDR);
-    ptr p4 = p0 + (MAP4_ADDR - MAP0_ADDR);
-    ptr p5 = p0 + (MAP5_ADDR - MAP0_ADDR);
+    // We will use the same base allocation
+    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), ctx1) + MAP0_OFF;
+    ptr p1 = p0 + (MAP1_OFF - MAP0_OFF);
+    ptr p2 = p0 + (MAP2_OFF - MAP0_OFF);
+    ptr p3 = p0 + (MAP3_OFF - MAP0_OFF);
+    ptr p4 = p0 + (MAP4_OFF - MAP0_OFF);
+    ptr p5 = p0 + (MAP5_OFF - MAP0_OFF);
 
     mapping_ptr m0 = new mapping(p0);
     mapping_ptr m1 = new mapping(p1);
@@ -55,8 +78,6 @@ TEST_F(manager_test, mappings_in_range)
     block_ptr b4 = new block(MAP4_SIZE);
     block_ptr b5 = new block(MAP5_SIZE);
 
-    gmacError_t err;
-
     err = m0->append(b0);
     ASSERT_TRUE(err == gmacSuccess);
     err = m1->append(b1);
@@ -70,12 +91,32 @@ TEST_F(manager_test, mappings_in_range)
     err = m5->append(b5);
     ASSERT_TRUE(err == gmacSuccess);
 
-    mgr->helper_insert(*ctx1, m0);
-    mgr->helper_insert(*ctx1, m1);
-    mgr->helper_insert(*ctx1, m2);
-    mgr->helper_insert(*ctx1, m3);
-    mgr->helper_insert(*ctx1, m4);
-    mgr->helper_insert(*ctx1, m5);
+    err = mgr->helper_insert(*ctx1, m0);
+    ASSERT_TRUE(err == gmacSuccess);
+    err = mgr->helper_insert(*ctx1, m1);
+    ASSERT_TRUE(err == gmacSuccess);
+    err = mgr->helper_insert(*ctx1, m2);
+    ASSERT_TRUE(err == gmacSuccess);
+    err = mgr->helper_insert(*ctx1, m3);
+    ASSERT_TRUE(err == gmacSuccess);
+    err = mgr->helper_insert(*ctx1, m4);
+    ASSERT_TRUE(err == gmacSuccess);
+    err = mgr->helper_insert(*ctx1, m5);
+    ASSERT_TRUE(err == gmacSuccess);
+
+    delete b0;
+    delete b1;
+    delete b2;
+    delete b3;
+    delete b4;
+    delete b5;
+
+    delete m0;
+    delete m1;
+    delete m2;
+    delete m3;
+    delete m4;
+    delete m5;
 
     delete mgr;
 }
