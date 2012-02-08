@@ -67,10 +67,11 @@ struct GMAC_LOCAL backend_traits
     typedef KC kernel_config;
 };
 
-template <typename CD, typename C, typename S, typename K, typename T, typename V, typename R, typename E, typename EP, typename EL, typename B, typename P, typename PC>
+template <typename CD, typename D, typename C, typename S, typename K, typename T, typename V, typename R, typename E, typename EP, typename EL, typename B, typename P, typename PC>
 struct GMAC_LOCAL implementation_traits
 {
     typedef CD coherence_domain;
+    typedef D device;
     typedef C context;
     typedef S stream;
     typedef K kernel;

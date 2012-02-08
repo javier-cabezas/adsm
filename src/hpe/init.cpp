@@ -74,15 +74,21 @@ void initGmac(void)
     OpenCL(*Process_);
 #endif
 #endif
-    gmacError_t err = __impl::hal::init_platform();
-    CFATAL(err == gmacSuccess, "Error initializing the platform");
+    gmacError_t err = __impl::hal::init();
+    CFATAL(err == gmacSuccess, "Error initializing HAL");
 
-    std::list<__impl::hal::device *> devices = __impl::hal::init_devices();
+    std::list<__impl::hal::platform *> platforms = __impl::hal::get_platforms();
+    CFATAL(platforms.size() > 0, "HAL found no platforms");
 
-    std::list<__impl::hal::device *>::iterator it;
+    std::list<__impl::hal::platform *>::iterator itPlat;
+    for (itPlat = platforms.begin(); itPlat != platforms.end(); ++itPlat) {
+        std::list<__impl::hal::device *> devices = (*itPlat)->get_devices();
 
-    for (it = devices.begin(); it != devices.end(); ++it) {
-        Process_->get_resource_manager().register_device(**it);
+        std::list<__impl::hal::device *>::iterator itDev;
+
+        for (itDev = devices.begin(); itDev != devices.end(); ++itDev) {
+            Process_->get_resource_manager().register_device(**itDev);
+        }
     }
 
     Process_->init();

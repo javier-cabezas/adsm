@@ -11,6 +11,7 @@ set(util_SRC
     file.cpp
     gmac_base.h
     gmac_base.cpp
+    iterator.h
     lock.h
     lock-impl.h
     lock.cpp

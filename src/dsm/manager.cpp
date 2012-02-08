@@ -47,7 +47,8 @@ manager::get_mappings_in_range(map_mapping_group &mappings, hal::ptr addr, size_
     map_mapping::iterator it = group.upper_bound(addr.get_offset());
 
     // If no mapping is affected, return empty range
-    if (it == group.end() || it->second->get_ptr().get_offset() >= addr.get_offset() + count) {
+    if (it == group.end() ||
+        (it->second->get_ptr().get_offset() >= addr.get_offset() + count)) {
         map_mapping::iterator it;
         return range_mapping(it, it);
     } else {
@@ -57,11 +58,36 @@ manager::get_mappings_in_range(map_mapping_group &mappings, hal::ptr addr, size_
     // Add all the mappings in the range
     do {
         ++it;
-    } while (it != group.end() && it->second->get_ptr().get_offset() < addr.get_offset() + count);
+    } while (it != group.end() && (it->second->get_ptr().get_offset() < addr.get_offset() + count));
 
     end = it;
 
     return range_mapping(begin, end);
+}
+
+bool
+mapping_fits(manager::map_mapping &map, mapping_ptr m)
+{
+    manager::map_mapping::iterator it = map.upper_bound(m->get_ptr().get_offset());
+
+    return it == map.end() || it->second->get_ptr().get_offset() >= (m->get_ptr().get_offset() + m->get_bounds().get_size());
+}
+
+gmacError_t
+manager::insert_mapping(map_mapping_group &mappings, mapping_ptr m)
+{
+    map_mapping_group::iterator it = mappings.find(m->get_ptr().get_base());
+
+    if (it == mappings.end()) {
+        map_mapping *map = new map_mapping();
+        map->insert(map_mapping::value_type(m->get_ptr().get_offset() + m->get_bounds().get_size(), m));
+        mappings.insert(map_mapping_group::value_type(m->get_ptr().get_base(), map));
+    } else {
+        ASSERTION(mapping_fits(*it->second, m) == true);
+        it->second->insert(map_mapping::value_type(m->get_ptr().get_offset() + m->get_bounds().get_size(), m));
+    }
+
+    return gmacSuccess;
 }
 
 manager::manager() :

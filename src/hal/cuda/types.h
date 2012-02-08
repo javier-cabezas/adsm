@@ -14,6 +14,7 @@ namespace __impl { namespace hal { namespace cuda {
 class device;
 
 class coherence_domain;
+class device;
 class context_t;
 class stream_t;
 class kernel_t;
@@ -38,6 +39,7 @@ typedef hal::detail::backend_traits<CUcontext,
                                     dim3> backend_traits;
 
 typedef hal::detail::implementation_traits<coherence_domain,
+                                           device,
                                            context_t,
                                            stream_t,
                                            kernel_t,

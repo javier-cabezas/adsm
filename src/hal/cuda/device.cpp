@@ -6,7 +6,7 @@
 namespace __impl { namespace hal { namespace cuda {
 
 device::device(CUdevice cudaDevice, coherence_domain &coherenceDomain) :
-    Parent(coherenceDomain),
+    parent(parent::DEVICE_TYPE_GPU, coherenceDomain),
     gmac::util::mutex<device>("device"),
     cudaDevice_(cudaDevice),
     isInfoInitialized_(false)
@@ -108,7 +108,7 @@ device::get_free_memory() const
 }
 
 bool
-device::has_direct_copy(const Parent &_dev) const
+device::has_direct_copy(const parent &_dev) const
 {
     const device &dev = reinterpret_cast<const device &>(_dev);
     int canAccess;

@@ -6,7 +6,7 @@ namespace __impl { namespace util {
 template <typename P, typename I, typename C>
 inline
 bool
-locking_input_iterator<P, I, C>::operator==(const typename C::iterator &it) const
+my_iterator<P, I, C, std::input_iterator_tag>::operator==(const typename C::iterator &it) const
 {
 	return parent::get_stl_iterator() == it;
 }
@@ -14,7 +14,7 @@ locking_input_iterator<P, I, C>::operator==(const typename C::iterator &it) cons
 template <typename P, typename I, typename C>
 inline
 bool
-locking_input_iterator<P, I, C>::operator==(const typename C::const_iterator &it) const
+my_iterator<P, I, C, std::input_iterator_tag>::operator==(const typename C::const_iterator &it) const
 {
 	return parent::get_stl_iterator() == it;
 }
@@ -22,7 +22,7 @@ locking_input_iterator<P, I, C>::operator==(const typename C::const_iterator &it
 template <typename P, typename I, typename C>
 inline
 bool
-locking_input_iterator<P, I, C>::operator!=(const typename C::iterator &it) const
+my_iterator<P, I, C, std::input_iterator_tag>::operator!=(const typename C::iterator &it) const
 {
 	return parent::get_stl_iterator() != it;
 }
@@ -30,7 +30,7 @@ locking_input_iterator<P, I, C>::operator!=(const typename C::iterator &it) cons
 template <typename P, typename I, typename C>
 inline
 bool
-locking_input_iterator<P, I, C>::operator!=(const typename C::const_iterator &it) const
+my_iterator<P, I, C, std::input_iterator_tag>::operator!=(const typename C::const_iterator &it) const
 {
 	return parent::get_stl_iterator() != it;
 }
@@ -38,7 +38,7 @@ locking_input_iterator<P, I, C>::operator!=(const typename C::const_iterator &it
 template <typename P, typename I, typename C>
 inline
 bool
-locking_input_iterator<P, I, C>::operator==(const P &it) const
+my_iterator<P, I, C, std::input_iterator_tag>::operator==(const P &it) const
 {
 	return parent::get_stl_iterator() == it.get_stl_iterator();
 }
@@ -46,14 +46,14 @@ locking_input_iterator<P, I, C>::operator==(const P &it) const
 template <typename P, typename I, typename C>
 inline
 bool
-locking_input_iterator<P, I, C>::operator!=(const P &it) const
+my_iterator<P, I, C, std::input_iterator_tag>::operator!=(const P &it) const
 {
 	return parent::get_stl_iterator() != it.get_stl_iterator();
 }
 
 template <typename P, typename I, typename C>
 P
-locked_random_access_iterator<P, I, C>::operator+(int off)
+my_iterator<P, I, C, std::random_access_iterator_tag>::operator+(int off)
 {
 	I &it = parent::get_stl_iterator();
 	const C &c = parent::get_stl_container();
@@ -65,7 +65,7 @@ locked_random_access_iterator<P, I, C>::operator+(int off)
 
 template <typename P, typename I, typename C>
 P
-locked_random_access_iterator<P, I, C>::operator-(int off)
+my_iterator<P, I, C, std::random_access_iterator_tag>::operator-(int off)
 {
 	I &it = parent::get_stl_iterator();
 	const C &c = parent::get_stl_container();
@@ -77,7 +77,7 @@ locked_random_access_iterator<P, I, C>::operator-(int off)
 
 template <typename P, typename I, typename C>
 P &
-locked_random_access_iterator<P, I, C>::operator+=(int off)
+my_iterator<P, I, C, std::random_access_iterator_tag>::operator+=(int off)
 {
 	I &it = parent::get_stl_iterator();
 	const C &c = parent::get_stl_container();
@@ -98,7 +98,7 @@ locked_random_access_iterator<P, I, C>::operator+=(int off)
 
 template <typename P, typename I, typename C>
 P &
-locked_random_access_iterator<P, I, C>::operator-=(int off)
+my_iterator<P, I, C, std::random_access_iterator_tag>::operator-=(int off)
 {
 	I &it = parent::get_stl_iterator();
 	const C &c = parent::get_stl_container();
@@ -119,7 +119,7 @@ locked_random_access_iterator<P, I, C>::operator-=(int off)
 
 template <typename P, typename I, typename C>
 typename C::value_type &
-locked_random_access_iterator<P, I, C>::operator[](int index)
+my_iterator<P, I, C, std::random_access_iterator_tag>::operator[](int index)
 {
 	I &it = parent::get_stl_iterator();
 	const C &c = parent::get_stl_container();
@@ -159,19 +159,8 @@ template <typename I, typename C, typename E>
 locking_iterator_base<I, C, E>
 locking_iterator_base<I, C, E>::operator++(int dummy)
 {
-	locking_iterator_base ret(it_, c_);
-
-	if (it_ != c_.end()) {
-		unlock(getter::get_element(it_));
-	}
-
-	it_++;
-
-	if (it_ != c_.end()) {
-		lock(getter::get_element(it_));
-	}
-
-	return ret;
+    FATAL("Operation not available");
+	return *this;
 }
 
 template <typename I, typename C, typename E>
@@ -195,19 +184,8 @@ template <typename I, typename C, typename E>
 locking_iterator_base<I, C, E>
 locking_iterator_base<I, C, E>::operator--(int dummy)
 {
-	locking_iterator_base ret(it_, c_);
-
-	if (it_ != c_.end()) {
-		getter::locker_type::unlock(getter::get_element(it_));
-	}
-
-	it_--;
-
-	if (it_ != getter::c_.end()) {
-		getter::locker_type::lock(getter::get_element(it_));
-	}
-
-	return ret;
+    FATAL("Operation not available");
+	return *this;
 }
 
 }}

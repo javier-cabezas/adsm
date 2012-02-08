@@ -36,6 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include "config/common.h"
 #include "include/gmac/types.h"
+#include "util/iterator.h"
 #include "util/singleton.h"
 #include "util/stl/locked_map.h"
 
@@ -51,11 +52,12 @@ namespace dsm {
 class GMAC_LOCAL manager :
     public __impl::util::singleton<dsm::manager> {
 protected:
-
     typedef std::map<size_t, mapping_ptr> map_mapping;
     typedef map_mapping *map_mapping_ptr;
 
     typedef std::map<hal::ptr::backend_type, map_mapping_ptr> map_mapping_group;
+
+    friend bool mapping_fits(map_mapping &, mapping_ptr);
 
     const hal::context_t::attribute_id AttributeMappings_;
 
@@ -64,8 +66,10 @@ protected:
 
     map_mapping_group &get_aspace_mappings(hal::context_t &ctx);
 
-    typedef util::range<map_mapping::iterator> range_mapping;
+    typedef util::range<util::iterator_wrap_associative_second<map_mapping::iterator> > range_mapping;
     range_mapping get_mappings_in_range(map_mapping_group &mappings, hal::ptr begin, size_t count);
+
+    gmacError_t insert_mapping(map_mapping_group &mappings, mapping_ptr m);
 
     /**
      * Default destructor
