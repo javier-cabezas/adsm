@@ -6,7 +6,7 @@
 namespace __impl { namespace hal { namespace cuda {
 
 inline
-buffer_t::buffer_t(host_ptr addr, size_t size, context_t &context) :
+buffer_t::buffer_t(host_ptr addr, size_t size, aspace &context) :
     Parent(size, context),
     addr_(addr)
 {
@@ -28,7 +28,7 @@ buffer_t::get_device_addr()
 
 inline
 void
-context_t::set()
+aspace::set()
 {
     CUresult ret = cuCtxSetCurrent(this->context_);
     ASSERTION(ret == CUDA_SUCCESS);
@@ -36,7 +36,7 @@ context_t::set()
 
 inline
 ptr_t
-context_t::get_device_addr_from_pinned(host_ptr addr)
+aspace::get_device_addr_from_pinned(host_ptr addr)
 {
     ptr_t ret;
     set();

@@ -4,7 +4,7 @@
 namespace __impl { namespace hal { namespace opencl {
 
 inline
-stream_t::stream_t(cl_command_queue stream, context_t &context) :
+stream_t::stream_t(cl_command_queue stream, aspace &context) :
     Parent(stream, context)
 {
     TRACE(LOCAL, "Creating stream: "FMT_ID, get_print_id());
@@ -40,10 +40,10 @@ stream_t::query()
 }
 
 inline
-context_t &
+aspace &
 stream_t::get_context()
 {
-    return reinterpret_cast<context_t &>(Parent::get_context());
+    return reinterpret_cast<aspace &>(Parent::get_context());
 }
 
 }}}

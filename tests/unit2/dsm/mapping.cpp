@@ -22,7 +22,7 @@ TEST_F(mapping_test, prepend_block)
     static const unsigned BASE_ADDR = 0x100;
     static const unsigned OFFSET    = 0x400;
 
-    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), (__impl::hal::context_t *)(0x1));
+    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), (__impl::hal::aspace *)(0x1));
 
     mapping_ptr m0 = new mapping(p0 + OFFSET);
 
@@ -50,7 +50,7 @@ TEST_F(mapping_test, prepend_block2)
     static const unsigned BASE_ADDR = 0x100;
     static const unsigned OFFSET    = 0x400;
 
-    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), (__impl::hal::context_t *)(0x1));
+    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), (__impl::hal::aspace *)(0x1));
 
     mapping_ptr m0 = new mapping(p0 + OFFSET);
 
@@ -78,7 +78,7 @@ TEST_F(mapping_test, append_block)
 {
     static const unsigned BASE_ADDR = 0x100;
 
-    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), (__impl::hal::context_t *)(0x1));
+    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), (__impl::hal::aspace *)(0x1));
 
     mapping_ptr m0 = new mapping(p0);
 
@@ -123,7 +123,7 @@ TEST_F(mapping_test, append_mapping)
     static const unsigned BLOCK_SIZE = 0x300;
     static const unsigned OFFSET     = BLOCK_SIZE + 0x100;
 
-    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), (__impl::hal::context_t *)(0x1));
+    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), (__impl::hal::aspace *)(0x1));
     ptr p1 = p0 + OFFSET;
 
     mapping_ptr m0 = new mapping(p0);
@@ -157,7 +157,7 @@ TEST_F(mapping_test, append_mapping2)
     static const unsigned BLOCK_SIZE = 0x300;
     static const unsigned OFFSET     = BLOCK_SIZE - 0x100;
 
-    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), (__impl::hal::context_t *)(0x1));
+    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), (__impl::hal::aspace *)(0x1));
     ptr p1 = p0 + OFFSET;
 
     mapping_ptr m0 = new mapping(p0);
@@ -188,7 +188,7 @@ TEST_F(mapping_test, append_mapping3)
     static const unsigned BLOCK_SIZE = 0x300;
     static const unsigned OFFSET     = BLOCK_SIZE;
 
-    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), (__impl::hal::context_t *)(0x1));
+    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), (__impl::hal::aspace *)(0x1));
     ptr p1 = p0 + OFFSET;
 
     mapping_ptr m0 = new mapping(p0);
@@ -221,8 +221,8 @@ TEST_F(mapping_test, append_mapping4)
     static const unsigned BLOCK_SIZE = 0x300;
     static const unsigned OFFSET     = BLOCK_SIZE;
 
-    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), (__impl::hal::context_t *)(0x1));
-    ptr p1 = ptr(ptr::backend_ptr(BASE_ADDR), (__impl::hal::context_t *)(0x2));
+    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), (__impl::hal::aspace *)(0x1));
+    ptr p1 = ptr(ptr::backend_ptr(BASE_ADDR), (__impl::hal::aspace *)(0x2));
 
     mapping_ptr m0 = new mapping(p0);
     mapping_ptr m1 = new mapping(p1 + OFFSET);

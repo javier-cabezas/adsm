@@ -3,8 +3,8 @@ add_subdirectory(${API_DIR})
 set(hal_SRC
     coherence_domain.h
     coherence_domain-impl.h
-    context.h
-    context-impl.h
+    aspace.h
+    aspace-impl.h
     device.h
     device-impl.h
     event.h

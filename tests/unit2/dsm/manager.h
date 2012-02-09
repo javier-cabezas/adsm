@@ -43,10 +43,10 @@ class GMAC_LOCAL manager :
     typedef __impl::dsm::manager parent;
 
 public:
-    static void aspace_created(manager *m, __impl::hal::context_t &aspace);
-    static void aspace_destroyed(manager *m, __impl::hal::context_t &aspace);
+    static void aspace_created(manager *m, __impl::hal::aspace &aspace);
+    static void aspace_destroyed(manager *m, __impl::hal::aspace &aspace);
 
-    map_mapping_group &get_aspace_mappings(__impl::hal::context_t &ctx);
+    map_mapping_group &get_aspace_mappings(__impl::hal::aspace &ctx);
 
     range_mapping
     get_mappings_in_range(map_mapping_group &mappings, __impl::hal::ptr begin, size_t count)
@@ -98,7 +98,7 @@ public:
     //////////////////////
     // Helper functions //
     //////////////////////
-    gmacError_t helper_insert(__impl::hal::context_t &ctx, mapping_ptr m)
+    gmacError_t helper_insert(__impl::hal::aspace &ctx, mapping_ptr m)
     {
         gmacError_t ret;
 

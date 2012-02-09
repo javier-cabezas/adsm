@@ -58,10 +58,10 @@ public:
            cl_device_id openclDeviceId,
            coherence_domain &coherenceDomain);
 
-    context_t *create_context(const SetSiblings &siblings, gmacError_t &err);
-    gmacError_t destroy_context(context_t &context);
+    aspace *create_context(const SetSiblings &siblings, gmacError_t &err);
+    gmacError_t destroy_context(aspace &context);
 
-    stream_t *create_stream(context_t &context);
+    stream_t *create_stream(aspace &context);
     gmacError_t destroy_stream(stream_t &stream);
 
     size_t get_total_memory() const;

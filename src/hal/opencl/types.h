@@ -19,7 +19,7 @@ class device;
 class platform;
 
 class coherence_domain;
-class context_t;
+class aspace;
 class stream_t;
 class kernel_t;
 class texture_t;
@@ -32,11 +32,11 @@ class buffer_t;
 
 typedef __impl::hal::_ptr_t<host_ptr,
                             _opencl_ptr_t,
-                            context_t> ptr_t;
+                            aspace> ptr_t;
 
 typedef __impl::hal::_ptr_t<host_const_ptr,
                             _opencl_ptr_t,
-                            context_t> ptr_const_t;
+                            aspace> ptr_const_t;
 
 typedef hal::detail::backend_traits<cl_context,
                                     cl_command_queue,
@@ -45,7 +45,7 @@ typedef hal::detail::backend_traits<cl_context,
                                     size_t *> backend_traits;
 
 typedef hal::detail::implementation_traits<coherence_domain,
-                                           context_t,
+                                           aspace,
                                            stream_t,
                                            kernel_t,
                                            texture_t,
@@ -70,11 +70,11 @@ gmacError_t compile_binary(platform &plat, const std::string &code, const std::s
 }}}
 
 #include "event.h"
-#include "context.h"
+#include "aspace.h"
 #include "kernel.h"
 #include "stream.h"
 
-#include "context-impl.h"
+#include "aspace-impl.h"
 #include "stream-impl.h"
 #include "kernel-impl.h"
 #include "event-impl.h"

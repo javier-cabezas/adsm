@@ -10,22 +10,18 @@ namespace __impl { namespace hal { namespace cuda {
 
 class coherence_domain;
 
-typedef hal::detail::platform<implementation_traits> hal_platform;
 typedef hal::detail::device<implementation_traits> hal_device;
 
 class device;
 
-class GMAC_LOCAL platform :
-    public hal_platform
-{
-};
+class platform;
 
 
 class GMAC_LOCAL device :
     public hal_device,
     public util::unique<device>,
     public gmac::util::mutex<device> {
-    friend class context_t;
+    friend class aspace;
 
     friend list_platform hal::get_platforms();
 
@@ -35,10 +31,10 @@ protected:
     device(parent::type t, platform &plat, coherence_domain &coherenceDomain);
 
 #if 0
-    context_t *create_context(const set_siblings &siblings, gmacError_t &err);
-    gmacError_t destroy_context(context_t &context);
+    aspace *create_context(const set_siblings &siblings, gmacError_t &err);
+    gmacError_t destroy_context(aspace &context);
 
-    stream_t *create_stream(context_t &context);
+    stream_t *create_stream(aspace &context);
     gmacError_t destroy_stream(stream_t &stream);
 
     bool has_direct_copy(const device &dev) const;
@@ -50,7 +46,7 @@ protected:
 
 class GMAC_LOCAL gpu :
     public device {
-    friend class context_t;
+    friend class aspace;
 
     typedef device parent;
 protected:
@@ -65,10 +61,10 @@ protected:
 public:
     gpu(CUdevice cudaDevice, platform &plat, coherence_domain &coherenceDomain);
 
-    context_t *create_context(const set_siblings &siblings, gmacError_t &err);
-    gmacError_t destroy_context(context_t &context);
+    aspace *create_context(const set_siblings &siblings, gmacError_t &err);
+    gmacError_t destroy_context(aspace &context);
 
-    stream_t *create_stream(context_t &context);
+    stream_t *create_stream(aspace &context);
     gmacError_t destroy_stream(stream_t &stream);
 
     int get_major() const;
@@ -88,11 +84,11 @@ class GMAC_LOCAL cpu :
 public:
     cpu(platform &plat, coherence_domain &coherenceDomain);
 
-    context_t *create_context(const set_siblings &siblings, gmacError_t &err);
+    aspace *create_context(const set_siblings &siblings, gmacError_t &err);
 
-    gmacError_t destroy_context(context_t &context);
+    gmacError_t destroy_context(aspace &context);
 
-    stream_t *create_stream(context_t &context);
+    stream_t *create_stream(aspace &context);
 
     gmacError_t destroy_stream(stream_t &stream);
 

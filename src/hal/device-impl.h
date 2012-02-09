@@ -6,27 +6,6 @@ namespace __impl { namespace hal {
 namespace detail {
 
 template <typename I> 
-void
-platform<I>::add_device(typename I::device &d)
-{
-    devices_.push_back(&d);
-}
-
-template <typename I> 
-unsigned
-platform<I>::get_ndevices()
-{
-    return unsigned(devices_.size());
-}
-
-template <typename I> 
-typename platform<I>::list_device
-platform<I>::get_devices()
-{
-    return devices_;
-}
-
-template <typename I> 
 inline
 device<I>::device(type t, typename I::platform &platform,
                           typename I::coherence_domain &coherenceDomain) :

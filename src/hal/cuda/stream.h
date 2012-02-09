@@ -20,9 +20,9 @@ class GMAC_LOCAL stream_t :
     CUstream stream_;
 
 public:
-    stream_t(CUstream stream, context_t &context);
+    stream_t(CUstream stream, aspace &context);
 
-    context_t &get_context();
+    aspace &get_context();
 
     Parent::state query();
     gmacError_t sync();

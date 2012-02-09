@@ -16,7 +16,7 @@ namespace __impl { namespace hal {
     
 namespace cuda {
 
-class context_t;
+class aspace;
 
 class GMAC_LOCAL buffer_t :
     public hal::detail::buffer_t<implementation_traits> {
@@ -25,7 +25,7 @@ class GMAC_LOCAL buffer_t :
     host_ptr addr_;
 
 public:
-    buffer_t(host_ptr addr, size_t size, context_t &context);
+    buffer_t(host_ptr addr, size_t size, aspace &context);
 
     host_ptr get_addr();
     ptr_t get_device_addr();
@@ -33,10 +33,10 @@ public:
 
 class code_repository;
 
-class GMAC_LOCAL context_t :
-    public hal::detail::context_t<implementation_traits>,
-    util::unique<context_t, GmacAddressSpaceId> {
-    typedef hal::detail::context_t<implementation_traits> Parent;
+class GMAC_LOCAL aspace :
+    public hal::detail::aspace<implementation_traits>,
+    util::unique<aspace, GmacAddressSpaceId> {
+    typedef hal::detail::aspace<implementation_traits> Parent;
 
     friend class buffer_t;
     friend class _event_common_t;
@@ -63,7 +63,7 @@ class GMAC_LOCAL context_t :
     event_ptr copy_async_backend(device_output &output, ptr_const_t src, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
     event_ptr memset_async_backend(ptr_t dst, int c, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
 public:
-    context_t(CUcontext ctx, device &device);
+    aspace(CUcontext ctx, device &device);
 
     ptr_t alloc(size_t size, gmacError_t &err);
     ptr_t alloc_host_pinned(size_t size, GmacProtection hint, gmacError_t &err);

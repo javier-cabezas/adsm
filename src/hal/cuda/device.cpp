@@ -27,7 +27,7 @@ gpu::gpu(CUdevice cudaDevice, platform &plat, coherence_domain &coherenceDomain)
     integrated_ = (val != 0);
 }
 
-context_t *
+aspace *
 gpu::create_context(const set_siblings &siblings, gmacError_t &err)
 {
     CUcontext ctx, tmp;
@@ -51,11 +51,11 @@ gpu::create_context(const set_siblings &siblings, gmacError_t &err)
 
     err = error(res);
 
-    return new context_t(ctx, *this);
+    return new aspace(ctx, *this);
 }
 
 gmacError_t
-gpu::destroy_context(context_t &context)
+gpu::destroy_context(aspace &context)
 {
     CUresult ret = cuCtxDestroy(context());
     delete &context;
@@ -64,7 +64,7 @@ gpu::destroy_context(context_t &context)
 }
 
 stream_t *
-gpu::create_stream(context_t &context)
+gpu::create_stream(aspace &context)
 {
     context.set(); 
 
@@ -190,7 +190,7 @@ cpu::cpu(platform &plat, coherence_domain &coherenceDomain) :
 {
 }
 
-context_t *
+aspace *
 cpu::create_context(const set_siblings &siblings, gmacError_t &err)
 {
     //return new context_cpu(siblings);
@@ -198,7 +198,7 @@ cpu::create_context(const set_siblings &siblings, gmacError_t &err)
 }
 
 gmacError_t
-cpu::destroy_context(context_t &context)
+cpu::destroy_context(aspace &context)
 {
     delete &context;
 
@@ -206,7 +206,7 @@ cpu::destroy_context(context_t &context)
 }
 
 stream_t *
-cpu::create_stream(context_t &context)
+cpu::create_stream(aspace &context)
 {
     return NULL;
 }

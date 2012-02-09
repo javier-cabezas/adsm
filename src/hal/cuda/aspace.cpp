@@ -38,7 +38,7 @@ get_event_type(device_output &/* output */, ptr_const_t src)
 }
 
 _event_t *
-context_t::get_new_event(bool async,_event_t::type t)
+aspace::get_new_event(bool async,_event_t::type t)
 {
     _event_t *ret = queueEvents_.pop();
     if (ret == NULL) {
@@ -51,12 +51,12 @@ context_t::get_new_event(bool async,_event_t::type t)
 }
 
 void
-context_t::dispose_event(_event_t &event)
+aspace::dispose_event(_event_t &event)
 {
     queueEvents_.push(event);
 }
 
-context_t::context_t(CUcontext ctx, device &dev) :
+aspace::aspace(CUcontext ctx, device &dev) :
     Parent(dev),
     context_(ctx)
 {
@@ -67,7 +67,7 @@ static
 cuda::map_context_repository Modules_("map_context_repository");
 
 code_repository &
-context_t::get_code_repository()
+aspace::get_code_repository()
 {
     code_repository *repository;
     map_context_repository::iterator it = Modules_.find(this);
@@ -86,7 +86,7 @@ context_t::get_code_repository()
 
 
 event_ptr 
-context_t::copy_backend(ptr_t dst, ptr_const_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
+aspace::copy_backend(ptr_t dst, ptr_const_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
 
@@ -150,7 +150,7 @@ context_t::copy_backend(ptr_t dst, ptr_const_t src, size_t count, stream_t &stre
 }
 
 event_ptr
-context_t::copy_backend(ptr_t dst, device_input &input, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
+aspace::copy_backend(ptr_t dst, device_input &input, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
 
@@ -188,7 +188,7 @@ context_t::copy_backend(ptr_t dst, device_input &input, size_t count, stream_t &
 }
 
 event_ptr
-context_t::copy_backend(device_output &output, ptr_const_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
+aspace::copy_backend(device_output &output, ptr_const_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
 
@@ -229,7 +229,7 @@ context_t::copy_backend(device_output &output, ptr_const_t src, size_t count, st
 }
 
 event_ptr 
-context_t::copy_async_backend(ptr_t dst, ptr_const_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
+aspace::copy_async_backend(ptr_t dst, ptr_const_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
 
@@ -313,7 +313,7 @@ context_t::copy_async_backend(ptr_t dst, ptr_const_t src, size_t count, stream_t
 }
 
 event_ptr
-context_t::copy_async_backend(ptr_t dst, device_input &input, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
+aspace::copy_async_backend(ptr_t dst, device_input &input, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
 
@@ -351,7 +351,7 @@ context_t::copy_async_backend(ptr_t dst, device_input &input, size_t count, stre
 }
 
 event_ptr
-context_t::copy_async_backend(device_output &output, ptr_const_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
+aspace::copy_async_backend(device_output &output, ptr_const_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
 
@@ -392,7 +392,7 @@ context_t::copy_async_backend(device_output &output, ptr_const_t src, size_t cou
 }
 
 event_ptr 
-context_t::memset_backend(ptr_t dst, int c, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
+aspace::memset_backend(ptr_t dst, int c, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
 
@@ -421,7 +421,7 @@ context_t::memset_backend(ptr_t dst, int c, size_t count, stream_t &stream, list
 }
 
 event_ptr 
-context_t::memset_async_backend(ptr_t dst, int c, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
+aspace::memset_async_backend(ptr_t dst, int c, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
 
@@ -450,7 +450,7 @@ context_t::memset_async_backend(ptr_t dst, int c, size_t count, stream_t &stream
 }
 
 ptr_t
-context_t::alloc(size_t count, gmacError_t &err)
+aspace::alloc(size_t count, gmacError_t &err)
 {
     set();
 
@@ -463,7 +463,7 @@ context_t::alloc(size_t count, gmacError_t &err)
 }
 
 ptr_t
-context_t::alloc_host_pinned(size_t size, GmacProtection hint, gmacError_t &err)
+aspace::alloc_host_pinned(size_t size, GmacProtection hint, gmacError_t &err)
 {
     set();
 
@@ -480,7 +480,7 @@ context_t::alloc_host_pinned(size_t size, GmacProtection hint, gmacError_t &err)
 }
 
 buffer_t *
-context_t::alloc_buffer(size_t size, GmacProtection hint, stream_t &/*stream*/, gmacError_t &err)
+aspace::alloc_buffer(size_t size, GmacProtection hint, stream_t &/*stream*/, gmacError_t &err)
 {
     set();
 
@@ -503,7 +503,7 @@ context_t::alloc_buffer(size_t size, GmacProtection hint, stream_t &/*stream*/, 
 }
 
 gmacError_t
-context_t::free(ptr_t acc)
+aspace::free(ptr_t acc)
 {
     set();
 
@@ -513,7 +513,7 @@ context_t::free(ptr_t acc)
 }
 
 gmacError_t
-context_t::free_buffer(buffer_t &buffer)
+aspace::free_buffer(buffer_t &buffer)
 {
     set();
 
@@ -523,7 +523,7 @@ context_t::free_buffer(buffer_t &buffer)
 }
 
 gmacError_t
-context_t::free_host_pinned(ptr_t ptr)
+aspace::free_host_pinned(ptr_t ptr)
 {
     set();
 
@@ -533,13 +533,13 @@ context_t::free_host_pinned(ptr_t ptr)
 }
 
 CUcontext &
-context_t::operator()()
+aspace::operator()()
 {
     return context_;
 }
 
 const CUcontext &
-context_t::operator()() const
+aspace::operator()() const
 {
     return context_;
 }

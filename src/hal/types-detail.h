@@ -82,11 +82,11 @@ struct GMAC_LOCAL implementation_traits
 }}
 
 #include "stream.h"
-#include "context.h"
+#include "aspace.h"
 #include "kernel.h"
 #include "event.h"
 
-#include "context-impl.h"
+#include "aspace-impl.h"
 #include "stream-impl.h"
 #include "kernel-impl.h"
 #include "event-impl.h"

@@ -55,7 +55,7 @@ class thread;
 class vdevice;
 
 struct GMAC_LOCAL address_space_resources {
-    hal::context_t *context_;
+    hal::aspace *context_;
 
     hal::stream_t *streamLaunch_;
     hal::stream_t *streamToAccelerator_;

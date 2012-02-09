@@ -15,7 +15,7 @@
 
 #include "memory/manager.h"
 
-using __impl::hal::cuda::context_t;
+using __impl::hal::cuda::aspace;
 using __impl::hal::cuda::texture_t;
 using __impl::hal::cuda::variable_t;
 
@@ -31,7 +31,7 @@ vdevice &get_current_virtual_device()
 }
 
 static inline
-context_t &get_current_hal_context()
+aspace &get_current_hal_context()
 {
     return get_current_virtual_device().get_address_space()->get_hal_context();
 }
@@ -530,7 +530,7 @@ GMAC_API cudaError_t APICALL cudaMemcpyToSymbol(const char *symbol, const void *
 {
 	enterGmac();
 	cudaError_t ret = cudaSuccess;
-    context_t &context = get_current_hal_context();
+    aspace &context = get_current_hal_context();
 	const variable_t *variable = context.get_code_repository().constant(symbol);
 	ASSERTION(variable != NULL);
 	CUresult r = CUDA_SUCCESS;
@@ -594,7 +594,7 @@ GMAC_API cudaError_t APICALL cudaBindTexture(size_t *offset, const struct textur
      const void *devPtr, const struct cudaChannelFormatDesc *desc, size_t size = UINT_MAX)
 {
     enterGmac();
-    context_t &context = get_current_hal_context();
+    aspace &context = get_current_hal_context();
 	CUresult r;
     const texture_t *texture = context.get_code_repository().texture(texref);
     get_current_hal_context().set();
@@ -633,7 +633,7 @@ GMAC_API cudaError_t APICALL cudaBindTextureToArray(const struct textureReferenc
 		const struct cudaArray *array, const struct cudaChannelFormatDesc * /*desc*/)
 {
 	enterGmac();
-    context_t &context = get_current_hal_context();
+    aspace &context = get_current_hal_context();
 	CUresult r;
     const texture_t *texture = context.get_code_repository().texture(texref);
     get_current_hal_context().set();
@@ -670,7 +670,7 @@ GMAC_API cudaError_t APICALL cudaBindTextureToArray(const struct textureReferenc
 GMAC_API cudaError_t APICALL cudaUnbindTexture(const struct textureReference *texref)
 {
 	enterGmac();
-    context_t &context = get_current_hal_context();
+    aspace &context = get_current_hal_context();
     const texture_t *texture = context.get_code_repository().texture(texref);
     get_current_hal_context().set();
 	CUresult r = cuTexRefDestroy(texture->texRef());

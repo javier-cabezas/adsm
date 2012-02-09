@@ -93,10 +93,10 @@ device::device(platform &p,
     p.add_device(*this);
 }
 
-context_t *
+aspace *
 device::create_context(const SetSiblings &siblings, gmacError_t &err)
 {
-    context_t *ret = NULL;
+    aspace *ret = NULL;
 
 #if 0
     cl_device_id *devices = platform_.get_cl_device_array();
@@ -111,7 +111,7 @@ device::create_context(const SetSiblings &siblings, gmacError_t &err)
     //ctx = clCreateContext(prop, ndevices, devices, NULL, NULL, &res);
 #endif
 
-    ret = new context_t(platform_.get_context(), *this);
+    ret = new aspace(platform_.get_context(), *this);
 
 #if 0
     // Checks
@@ -132,7 +132,7 @@ device::create_context(const SetSiblings &siblings, gmacError_t &err)
         ctx = clCreateContext(prop, siblings.size(), clDevices, NULL, NULL, &ret);
         ASSERTION(ret == CL_SUCCESS);
 
-        return new context_t(ctx, *this);
+        return new aspace(ctx, *this);
     }
 
     if (devices != NULL) {
@@ -144,7 +144,7 @@ device::create_context(const SetSiblings &siblings, gmacError_t &err)
 }
 
 gmacError_t
-device::destroy_context(context_t &context)
+device::destroy_context(aspace &context)
 {
     cl_int ret = clReleaseContext(context());
 
@@ -152,7 +152,7 @@ device::destroy_context(context_t &context)
 }
 
 stream_t *
-device::create_stream(context_t &context)
+device::create_stream(aspace &context)
 {
     cl_command_queue stream;
     cl_int error;
