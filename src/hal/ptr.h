@@ -55,7 +55,7 @@ protected:
 template <>
 class GMAC_LOCAL _common_ptr_t<true> {
 protected:
-    typedef host_ptr address_type;
+    typedef host_const_ptr address_type;
 
     host_const_ptr ptrHost_;
 
@@ -112,7 +112,7 @@ public:
     inline
     _base_ptr_t(Ptr ptr, Ctx *ctx) :
         parent(0),
-        ptrDev_(0),
+        ptrDev_(ptr),
         ctx_(ctx)
     {
     }
