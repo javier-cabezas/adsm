@@ -3,56 +3,39 @@
 
 namespace __impl { namespace hal { namespace detail {
 
-template <typename B, typename I>
+template <typename I>
 inline
-kernel_t<B, I>::kernel_t(typename B::kernel kernel, const std::string &name) :
-    kernel_(kernel),
+kernel_t<I>::kernel_t(const std::string &name) :
     name_(name)
 {
 }
 
-template <typename B, typename I>
-inline
-typename B::kernel &
-kernel_t<B, I>::operator()()
-{
-    return kernel_;
-}
-
-template <typename B, typename I>
-inline
-const typename B::kernel &
-kernel_t<B, I>::operator()() const
-{
-    return kernel_;
-}
-
-template <typename B, typename I>
+template <typename I>
 inline
 const std::string &
-kernel_t<B, I>::get_name() const
+kernel_t<I>::get_name() const
 {
     return name_;
 }
 
-template <typename B, typename I>
+template <typename I>
 inline
-kernel_t<B, I>::config::config(unsigned ndims) :
+kernel_t<I>::config::config(unsigned ndims) :
     ndims_(ndims)
 {
 }
 
-template <typename B, typename I>
+template <typename I>
 inline
 unsigned
-kernel_t<B, I>::config::get_ndims() const
+kernel_t<I>::config::get_ndims() const
 {
     return ndims_;
 }
 
-template <typename B, typename I>
+template <typename I>
 inline
-kernel_t<B, I>::launch::launch(typename I::kernel &kernel,
+kernel_t<I>::launch::launch(typename I::kernel &kernel,
                                typename I::kernel::config &config,
                                typename I::kernel::arg_list &args, 
                                typename I::stream &stream) :
@@ -64,50 +47,50 @@ kernel_t<B, I>::launch::launch(typename I::kernel &kernel,
 {
 }
 
-template <typename B, typename I>
+template <typename I>
 inline
 typename I::stream &
-kernel_t<B, I>::launch::get_stream()
+kernel_t<I>::launch::get_stream()
 {
     return stream_;
 }
 
-template <typename B, typename I>
+template <typename I>
 inline
 const typename I::stream &
-kernel_t<B, I>::launch::get_stream() const
+kernel_t<I>::launch::get_stream() const
 {
     return stream_;
 }
 
-template <typename B, typename I>
+template <typename I>
 inline
 const typename I::kernel &
-kernel_t<B, I>::launch::get_kernel() const
+kernel_t<I>::launch::get_kernel() const
 {
     return reinterpret_cast<typename I::kernel &>(kernel_);
 }
 
-template <typename B, typename I>
+template <typename I>
 inline
 const typename I::kernel::config &
-kernel_t<B, I>::launch::get_config() const
+kernel_t<I>::launch::get_config() const
 {
     return config_;
 }
 
-template <typename B, typename I>
+template <typename I>
 inline
 const typename I::kernel::arg_list &
-kernel_t<B, I>::launch::get_arg_list() const
+kernel_t<I>::launch::get_arg_list() const
 {
     return args_;
 }
 
-template <typename B, typename I>
+template <typename I>
 inline
 typename I::event_ptr
-kernel_t<B, I>::launch::get_event()
+kernel_t<I>::launch::get_event()
 {
     return event_;
 }

@@ -27,6 +27,8 @@ namespace __impl { namespace hal {
 
     typedef hal::cuda::ptr_t ptr;
     typedef hal::cuda::ptr_const_t const_ptr;
+
+    typedef hal::cuda::list_platform list_platform;
 }}
 
 #else
@@ -35,7 +37,7 @@ namespace __impl { namespace hal {
 #include "opencl/coherence_domain.h"
 
 namespace __impl { namespace hal {
-    typedef hal::cuda::platform platform;
+    typedef hal::opencl::platform platform;
     typedef hal::opencl::device device;
 
     typedef hal::opencl::coherence_domain coherence_domain;
@@ -60,7 +62,6 @@ namespace __impl { namespace hal {
 gmacError_t
 init();
 
-typedef std::list<platform *> list_platform;
 list_platform
 get_platforms();
 

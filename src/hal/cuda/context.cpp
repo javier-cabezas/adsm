@@ -37,6 +37,54 @@ get_event_type(device_output &/* output */, ptr_const_t src)
     return event_ptr::type::TransferToHost;
 }
 
+_event_t *
+context_t::get_new_event(bool async,_event_t::type t)
+{
+    _event_t *ret = queueEvents_.pop();
+    if (ret == NULL) {
+        ret = new _event_t(async, t, *this);
+    } else {
+        ret->reset(async, t);
+    }
+
+    return ret;
+}
+
+void
+context_t::dispose_event(_event_t &event)
+{
+    queueEvents_.push(event);
+}
+
+context_t::context_t(CUcontext ctx, device &dev) :
+    Parent(dev),
+    context_(ctx)
+{
+    TRACE(LOCAL, "Creating context: %p", (*this)());
+}
+
+static
+cuda::map_context_repository Modules_("map_context_repository");
+
+code_repository &
+context_t::get_code_repository()
+{
+    code_repository *repository;
+    map_context_repository::iterator it = Modules_.find(this);
+    if (it == Modules_.end()) {
+        set();
+
+        repository = module_descriptor::create_modules();
+        Modules_.insert(map_context_repository::value_type(this, repository));
+    } else {
+        repository = it->second;
+    }
+
+    return *repository;
+}
+
+
+
 event_ptr 
 context_t::copy_backend(ptr_t dst, ptr_const_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
@@ -482,6 +530,18 @@ context_t::free_host_pinned(ptr_t ptr)
     CUresult ret = cuMemFreeHost(ptr.get_host_addr());
 
     return cuda::error(ret);
+}
+
+CUcontext &
+context_t::operator()()
+{
+    return context_;
+}
+
+const CUcontext &
+context_t::operator()() const
+{
+    return context_;
 }
 
 }}}

@@ -5,9 +5,14 @@
 
 namespace __impl { namespace hal { namespace cuda {
 
-device::device(CUdevice cudaDevice, coherence_domain &coherenceDomain) :
-    parent(parent::DEVICE_TYPE_GPU, coherenceDomain),
-    gmac::util::mutex<device>("device"),
+device::device(parent::type type, platform &plat, coherence_domain &coherenceDomain) :
+    parent(type, plat, coherenceDomain),
+    gmac::util::mutex<device>("device")
+{
+}
+
+gpu::gpu(CUdevice cudaDevice, platform &plat, coherence_domain &coherenceDomain) :
+    parent(parent::DEVICE_TYPE_GPU, plat, coherenceDomain),
     cudaDevice_(cudaDevice),
     isInfoInitialized_(false)
 {
@@ -23,7 +28,7 @@ device::device(CUdevice cudaDevice, coherence_domain &coherenceDomain) :
 }
 
 context_t *
-device::create_context(const SetSiblings &siblings, gmacError_t &err)
+gpu::create_context(const set_siblings &siblings, gmacError_t &err)
 {
     CUcontext ctx, tmp;
     unsigned int flags = 0;
@@ -39,7 +44,7 @@ device::create_context(const SetSiblings &siblings, gmacError_t &err)
     ASSERTION(res == CUDA_SUCCESS);
 
 #ifdef USE_PEER_ACCESS
-    for (SetSiblings::iterator it = siblings.begin(); it != siblings.end(); ++it) {
+    for (set_siblings::iterator it = siblings.begin(); it != siblings.end(); ++it) {
         
     }
 #endif
@@ -50,15 +55,16 @@ device::create_context(const SetSiblings &siblings, gmacError_t &err)
 }
 
 gmacError_t
-device::destroy_context(context_t &context)
+gpu::destroy_context(context_t &context)
 {
     CUresult ret = cuCtxDestroy(context());
+    delete &context;
 
     return error(ret);
 }
 
 stream_t *
-device::create_stream(context_t &context)
+gpu::create_stream(context_t &context)
 {
     context.set(); 
 
@@ -70,27 +76,28 @@ device::create_stream(context_t &context)
 }
 
 gmacError_t
-device::destroy_stream(stream_t &stream)
+gpu::destroy_stream(stream_t &stream)
 {
     CUresult ret = cuStreamDestroy(stream());
+    delete &stream;
 
     return error(ret);
 }
 
 int
-device::get_major() const
+gpu::get_major() const
 {
     return major_;
 }
 
 int
-device::get_minor() const
+gpu::get_minor() const
 {
     return minor_;
 }
 
 size_t
-device::get_total_memory() const
+gpu::get_total_memory() const
 {
     size_t total, dummy;
     CUresult ret = cuMemGetInfo(&dummy, &total);
@@ -99,7 +106,7 @@ device::get_total_memory() const
 }
 
 size_t
-device::get_free_memory() const
+gpu::get_free_memory() const
 {
     size_t free, dummy;
     CUresult ret = cuMemGetInfo(&free, &dummy);
@@ -108,18 +115,25 @@ device::get_free_memory() const
 }
 
 bool
-device::has_direct_copy(const parent &_dev) const
+gpu::has_direct_copy(const device&_dev) const
 {
+#if 0
     const device &dev = reinterpret_cast<const device &>(_dev);
     int canAccess;
-    CUresult ret = cuDeviceCanAccessPeer(&canAccess, cudaDevice_, dev.cudaDevice_);
-    ASSERTION(ret == CUDA_SUCCESS, "Error querying devices");
+    if (this->get_platform().get_id() == dev.get_platform().get_id()) {
+        CUresult ret = cuDeviceCanAccessPeer(&canAccess, cudaDevice_, dev.cudaDevice_);
+        ASSERTION(ret == CUDA_SUCCESS, "Error querying devices");
+    } else {
+        canAccess = 0;
+    }
 
     return canAccess == 1;
+#endif
+    return true;
 }
 
 gmacError_t
-device::get_info(GmacDeviceInfo &info)
+gpu::get_info(GmacDeviceInfo &info)
 {
     lock();
     if (!isInfoInitialized_) {
@@ -168,6 +182,64 @@ device::get_info(GmacDeviceInfo &info)
     unlock();
 
     info = info_;
+    return gmacSuccess;
+}
+
+cpu::cpu(platform &plat, coherence_domain &coherenceDomain) :
+    parent(parent::DEVICE_TYPE_CPU, plat, coherenceDomain)
+{
+}
+
+context_t *
+cpu::create_context(const set_siblings &siblings, gmacError_t &err)
+{
+    //return new context_cpu(siblings);
+    return NULL;
+}
+
+gmacError_t
+cpu::destroy_context(context_t &context)
+{
+    delete &context;
+
+    return gmacSuccess;
+}
+
+stream_t *
+cpu::create_stream(context_t &context)
+{
+    return NULL;
+}
+
+gmacError_t
+cpu::destroy_stream(stream_t &stream)
+{
+    return gmacSuccess;
+}
+
+size_t
+cpu::get_total_memory() const
+{
+    FATAL("Not implemented");
+    return 0;
+}
+
+size_t
+cpu::get_free_memory() const
+{
+    FATAL("Not implemented");
+    return 0;
+}
+
+bool
+cpu::has_direct_copy(const device &dev) const
+{
+    return true;
+}
+
+gmacError_t
+cpu::get_info(GmacDeviceInfo &info)
+{
     return gmacSuccess;
 }
 

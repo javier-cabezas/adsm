@@ -11,9 +11,8 @@
 
 namespace __impl { namespace hal { namespace cuda {
 
-class device;
-
 class coherence_domain;
+class platform;
 class device;
 class context_t;
 class stream_t;
@@ -32,13 +31,8 @@ typedef __impl::hal::_ptr_t<_cuda_ptr_t,
 typedef __impl::hal::_const_ptr_t<_cuda_ptr_t,
                                    context_t> ptr_const_t;
 
-typedef hal::detail::backend_traits<CUcontext,
-                                    CUstream,
-                                    CUevent,
-                                    CUfunction,
-                                    dim3> backend_traits;
-
 typedef hal::detail::implementation_traits<coherence_domain,
+                                           platform,
                                            device,
                                            context_t,
                                            stream_t,
@@ -55,7 +49,14 @@ typedef hal::detail::implementation_traits<coherence_domain,
 
 gmacError_t error(CUresult err);
 
-}}}
+
+typedef std::list<platform *> list_platform;
+
+}
+
+cuda::list_platform get_platforms();
+
+}}
 
 #include "event.h"
 #include "context.h"

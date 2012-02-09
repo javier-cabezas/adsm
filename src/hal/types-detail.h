@@ -56,21 +56,12 @@ public:
 };
 
 namespace detail {
-
-template <typename C, typename S, typename E, typename K, typename KC>
-struct GMAC_LOCAL backend_traits
-{
-    typedef C context;
-    typedef S stream;
-    typedef E event;
-    typedef K kernel;
-    typedef KC kernel_config;
-};
-
-template <typename CD, typename D, typename C, typename S, typename K, typename T, typename V, typename R, typename E, typename EP, typename EL, typename B, typename P, typename PC>
+ 
+template <typename CD, typename PL, typename D, typename C, typename S, typename K, typename T, typename V, typename R, typename E, typename EP, typename EL, typename B, typename P, typename PC>
 struct GMAC_LOCAL implementation_traits
 {
     typedef CD coherence_domain;
+    typedef PL platform;
     typedef D device;
     typedef C context;
     typedef S stream;

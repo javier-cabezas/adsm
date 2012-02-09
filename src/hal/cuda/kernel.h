@@ -15,15 +15,15 @@ namespace __impl { namespace hal {
 namespace cuda {
 
 class GMAC_LOCAL kernel_t :
-    public hal::detail::kernel_t<backend_traits, implementation_traits> {
+    public hal::detail::kernel_t<implementation_traits> {
 
-    typedef hal::detail::kernel_t<backend_traits, implementation_traits> Parent;
+    typedef hal::detail::kernel_t<implementation_traits> Parent;
     
 public:
     class launch;
 
     class GMAC_LOCAL config :
-        public hal::detail::kernel_t<backend_traits, implementation_traits>::config {
+        public hal::detail::kernel_t<implementation_traits>::config {
         friend class launch;
 
         dim3 dimsGlobal_;
@@ -38,7 +38,7 @@ public:
     };
 
     class GMAC_LOCAL arg_list :
-        public hal::detail::kernel_t<backend_traits, implementation_traits>::arg_list {
+        public hal::detail::kernel_t<implementation_traits>::arg_list {
         friend class launch;
 
         unsigned nArgs_;
@@ -56,7 +56,7 @@ public:
     };
 
     class GMAC_LOCAL launch :
-        public hal::detail::kernel_t<backend_traits, implementation_traits>::launch {
+        public hal::detail::kernel_t<implementation_traits>::launch {
 
     public:
         launch(kernel_t &parent, config &conf, arg_list &args, stream_t &stream);
@@ -66,8 +66,12 @@ public:
         event_ptr execute(gmacError_t &err);
     };
 
+    CUfunction kernel_;
+
     kernel_t(CUfunction func, const std::string &name);
 
+    CUfunction &operator()();
+    const CUfunction &operator()() const;
     //launch &launch_config(Parent::config &config, Parent::arg_list &args, stream_t &stream);
 };
 

@@ -53,6 +53,16 @@ public:
     default_id(unsigned long val);
 
     unsigned long print() const;
+
+    bool operator==(const default_id &id2)
+    {
+        return val_ == id2.val_;
+    }
+
+    bool operator!=(const default_id &id2)
+    {
+        return val_ != id2.val_;
+    }
 };
 
 template <typename T, typename R = default_id>
