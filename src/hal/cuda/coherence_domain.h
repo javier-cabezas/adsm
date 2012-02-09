@@ -7,6 +7,7 @@
 #include "types.h"
 
 #include "device.h"
+#include "platform.h"
 
 namespace __impl { namespace hal { namespace cuda {
 

@@ -157,8 +157,8 @@ public:
 };
 
 template <typename I>
-class GMAC_LOCAL context_t :
-    public util::attributes<context_t<I> >,
+class GMAC_LOCAL aspace :
+    public util::attributes<aspace<I> >,
     public util::on_construction<typename I::context>,
     public util::on_destruction<typename I::context> {
 
@@ -167,7 +167,7 @@ private:
     typedef map_pool<typename I::buffer> map_buffer;
 
 protected:
-    typedef util::locked_counter<unsigned, gmac::util::spinlock<context_t> > buffer_counter;
+    typedef util::locked_counter<unsigned, gmac::util::spinlock<aspace> > buffer_counter;
 
     typedef typename I::ptr I_ptr;
     typedef typename I::ptr_const I_ptr_const;
@@ -205,7 +205,7 @@ protected:
     virtual typename I::buffer *alloc_buffer(size_t size, GmacProtection hint, I_stream &stream, gmacError_t &err) = 0;
     virtual gmacError_t free_buffer(typename I::buffer &buffer) = 0;
 
-    context_t(I_device &device);
+    aspace(I_device &device);
 
     virtual I_event_ptr copy_backend(I_ptr dst, I_ptr_const src, size_t count, I_stream &stream, list_event<I> *dependencies, gmacError_t &err) = 0;
     virtual I_event_ptr copy_backend(I_ptr dst, device_input &input, size_t count, I_stream &stream, list_event<I> *dependencies, gmacError_t &err) = 0;
@@ -263,10 +263,10 @@ public:
 };
 
 template <typename I>
-const unsigned &context_t<I>::MaxBuffersIn_  = config::params::HALInputBuffersPerContext;
+const unsigned &aspace<I>::MaxBuffersIn_  = config::params::HALInputBuffersPerContext;
 
 template <typename I>
-const unsigned &context_t<I>::MaxBuffersOut_ = config::params::HALOutputBuffersPerContext;
+const unsigned &aspace<I>::MaxBuffersOut_ = config::params::HALOutputBuffersPerContext;
 
 }
 

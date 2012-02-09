@@ -1,9 +1,9 @@
 set(hal_opencl_SRC
     coherence_domain.h
     coherence_domain.cpp
-    context.h
-    context-impl.h
-    context.cpp
+    aspace.h
+    aspace-impl.h
+    aspace.cpp
     device.h
     device.cpp
     event.h

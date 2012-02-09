@@ -65,7 +65,7 @@ class GMAC_LOCAL address_space :
     typedef memory::address_space parent;
     typedef gmac::util::mutex<address_space> lock;
 
-    hal::context_t &ctx_;
+    hal::aspace &ctx_;
 
     hal::stream_t &streamLaunch_;
     hal::stream_t &streamToAccelerator_;
@@ -86,7 +86,7 @@ class GMAC_LOCAL address_space :
     bool changes_;
 
 public:
-    address_space(hal::context_t &context,
+    address_space(hal::aspace &context,
                   hal::stream_t &streamLaunch,
                   hal::stream_t &streamToAccelerator,
                   hal::stream_t &streamToHost,
@@ -116,8 +116,8 @@ public:
     gmacError_t memset(hal::ptr addr, int c, size_t count);
     hal::event_ptr memset_async(hal::ptr addr, int c, size_t count, gmacError_t &err);
 
-    hal::context_t &get_hal_context();
-    const hal::context_t &get_hal_context() const;
+    hal::aspace &get_hal_context();
+    const hal::aspace &get_hal_context() const;
 
     bool is_integrated() const;
 

@@ -23,9 +23,9 @@ class GMAC_LOCAL stream_t :
 
     stream_t &operator=(const stream_t &stream) = delete;
 public:
-    stream_t(cl_command_queue stream, context_t &context);
+    stream_t(cl_command_queue stream, aspace &context);
 
-    context_t &get_context();
+    aspace &get_context();
 
     Parent::state query();
     gmacError_t sync();

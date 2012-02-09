@@ -17,7 +17,7 @@
 namespace __impl { namespace hal { namespace opencl {
 
 class GMAC_LOCAL _event_common_t {
-    friend class context_t;
+    friend class aspace;
     friend class device;
     friend class event_ptr;
     friend class kernel_t;
@@ -47,7 +47,7 @@ class GMAC_LOCAL _event_t :
     public _event_common_t,
     public util::unique<_event_t> {
 
-    friend class context_t;
+    friend class aspace;
     friend class list_event;
 
     typedef hal::detail::_event_t<implementation_traits> Parent;
@@ -55,7 +55,7 @@ class GMAC_LOCAL _event_t :
 protected:
     virtual void reset(bool async, type t);
 
-    _event_t(bool async, Parent::type t, context_t &context);
+    _event_t(bool async, Parent::type t, aspace &context);
 public:
     gmacError_t sync();
 
@@ -70,14 +70,14 @@ public:
 };
 
 class GMAC_LOCAL event_ptr {
-    friend class context_t;
+    friend class aspace;
     friend class kernel_t;
     friend class list_event;
 
 private:
     util::shared_ptr<_event_t> ptrEvent_;
 
-    event_ptr(bool async, _event_t::type t, context_t &context);
+    event_ptr(bool async, _event_t::type t, aspace &context);
 
     inline
     void reset()
@@ -162,7 +162,7 @@ class GMAC_LOCAL list_event :
     public util::locker_rw<hal::detail::_event_t<implementation_traits> > {
     typedef std::list<util::shared_ptr<_event_t> > Parent;
 
-    friend class context_t;
+    friend class aspace;
     friend class kernel_t;
 
 protected:

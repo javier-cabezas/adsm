@@ -48,7 +48,7 @@ _event_common_t::get_stream()
 }
 
 inline
-_event_t::_event_t(bool async, type t, context_t &context) :
+_event_t::_event_t(bool async, type t, aspace &context) :
     Parent(async, t, context)
 {
 }
@@ -124,7 +124,7 @@ event_deleter::operator()(_event_t *ev)
 }
 
 inline
-event_ptr::event_ptr(bool async, _event_t::type t, context_t &context) :
+event_ptr::event_ptr(bool async, _event_t::type t, aspace &context) :
     ptrEvent_(context.get_new_event(async, t), event_deleter())
 {
 }

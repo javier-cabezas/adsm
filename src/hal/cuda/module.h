@@ -89,7 +89,7 @@ public:
 };
 
 class code_repository;
-typedef util::stl::locked_map<context_t *, code_repository *> map_context_repository;
+typedef util::stl::locked_map<aspace *, code_repository *> map_context_repository;
 
 class GMAC_LOCAL module_descriptor {
 	friend class code_repository;

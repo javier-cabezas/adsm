@@ -13,24 +13,6 @@ template <typename D>
 class coherence_domain;
 
 template <typename I> 
-class device;
-
-template <typename I> 
-class GMAC_LOCAL platform :
-    public util::unique<platform<I> >
-{
-public:
-    typedef std::list<typename I::device *> list_device;
-private:
-    list_device devices_;
-public:
-    void add_device(typename I::device &d);
-    unsigned get_ndevices();
-
-    list_device get_devices();
-};
-
-template <typename I> 
 class GMAC_LOCAL device {
 public:
     typedef device<I> Current;

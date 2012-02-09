@@ -39,14 +39,14 @@ get_event_type(device_output &/* output */, ptr_const_t src)
     return event_ptr::type::TransferToHost;
 }
 
-context_t::context_t(cl_context ctx, device &dev) :
+aspace::aspace(cl_context ctx, device &dev) :
     Parent(ctx, dev)
 {
     TRACE(LOCAL, "context<"FMT_ID">: creating context: ", get_print_id());
 }
 
 _event_t *
-context_t::get_new_event(bool async,_event_t::type t)
+aspace::get_new_event(bool async,_event_t::type t)
 {
     _event_t *ret = queueEvents_.pop();
     if (ret == NULL) {
@@ -63,7 +63,7 @@ context_t::get_new_event(bool async,_event_t::type t)
 }
 
 void
-context_t::dispose_event(_event_t &event)
+aspace::dispose_event(_event_t &event)
 {
     TRACE(LOCAL, "context<"FMT_ID">: disposing event "FMT_ID,
                  get_print_id(), event.get_print_id());
@@ -73,7 +73,7 @@ context_t::dispose_event(_event_t &event)
 
 
 event_ptr 
-context_t::copy_backend(ptr_t dst, ptr_const_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
+aspace::copy_backend(ptr_t dst, ptr_const_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     cl_event *events = NULL;
     unsigned nevents = 0;
@@ -153,7 +153,7 @@ context_t::copy_backend(ptr_t dst, ptr_const_t src, size_t count, stream_t &stre
 }
 
 event_ptr
-context_t::copy_backend(ptr_t dst, device_input &input, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
+aspace::copy_backend(ptr_t dst, device_input &input, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     cl_event *events = NULL;
     unsigned nevents = 0;
@@ -197,7 +197,7 @@ context_t::copy_backend(ptr_t dst, device_input &input, size_t count, stream_t &
 }
 
 event_ptr
-context_t::copy_backend(device_output &output, ptr_const_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
+aspace::copy_backend(device_output &output, ptr_const_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     cl_event *events = NULL;
     unsigned nevents = 0;
@@ -248,7 +248,7 @@ context_t::copy_backend(device_output &output, ptr_const_t src, size_t count, st
 }
 
 event_ptr 
-context_t::copy_async_backend(ptr_t dst, ptr_const_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
+aspace::copy_async_backend(ptr_t dst, ptr_const_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     cl_event *events = NULL;
     unsigned nevents = 0;
@@ -350,7 +350,7 @@ context_t::copy_async_backend(ptr_t dst, ptr_const_t src, size_t count, stream_t
 }
 
 event_ptr
-context_t::copy_async_backend(ptr_t dst, device_input &input, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
+aspace::copy_async_backend(ptr_t dst, device_input &input, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     cl_event *events = NULL;
     unsigned nevents = 0;
@@ -382,7 +382,7 @@ context_t::copy_async_backend(ptr_t dst, device_input &input, size_t count, stre
             ret.reset();
         } else {
             stream.set_last_event(ret);
-            ret.add_trigger(do_member(context_t::put_memory, this, mem, count));
+            ret.add_trigger(do_member(aspace::put_memory, this, mem, count));
             //ret.add_trigger(do_member(stream_t::put_buffer, &stream, buffer));
         }
 
@@ -395,7 +395,7 @@ context_t::copy_async_backend(ptr_t dst, device_input &input, size_t count, stre
 }
 
 event_ptr
-context_t::copy_async_backend(device_output &output, ptr_const_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
+aspace::copy_async_backend(device_output &output, ptr_const_t src, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     cl_event *events = NULL;
     unsigned nevents = 0;
@@ -444,7 +444,7 @@ context_t::copy_async_backend(device_output &output, ptr_const_t src, size_t cou
 }
 
 event_ptr 
-context_t::memset_backend(ptr_t dst, int c, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
+aspace::memset_backend(ptr_t dst, int c, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     FATAL("Not implemented");
 #if 0
@@ -491,7 +491,7 @@ context_t::memset_backend(ptr_t dst, int c, size_t count, stream_t &stream, list
 }
 
 event_ptr 
-context_t::memset_async_backend(ptr_t dst, int c, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
+aspace::memset_async_backend(ptr_t dst, int c, size_t count, stream_t &stream, list_event_detail *_dependencies, gmacError_t &err)
 {
     kernel_t *kernel = get_code_repository().get_kernel(gmac_memset);
     ASSERTION(kernel, "memset kernel not found");
@@ -531,7 +531,7 @@ context_t::memset_async_backend(ptr_t dst, int c, size_t count, stream_t &stream
 }
 
 ptr_t
-context_t::alloc(size_t size, gmacError_t &err)
+aspace::alloc(size_t size, gmacError_t &err)
 {
     cl_mem devPtr;
     cl_int res;
@@ -545,7 +545,7 @@ context_t::alloc(size_t size, gmacError_t &err)
 
 
 ptr_t
-context_t::alloc_host_pinned(size_t size, GmacProtection hint, gmacError_t &err)
+aspace::alloc_host_pinned(size_t size, GmacProtection hint, gmacError_t &err)
 {
     FATAL("Not supported");
 
@@ -576,7 +576,7 @@ context_t::alloc_host_pinned(size_t size, GmacProtection hint, gmacError_t &err)
 }
 
 buffer_t *
-context_t::alloc_buffer(size_t size, GmacProtection hint, stream_t &stream, gmacError_t &err)
+aspace::alloc_buffer(size_t size, GmacProtection hint, stream_t &stream, gmacError_t &err)
 {
     cl_int res;
     host_ptr hostPtr = 0;
@@ -625,7 +625,7 @@ context_t::alloc_buffer(size_t size, GmacProtection hint, stream_t &stream, gmac
 }
 
 gmacError_t
-context_t::free(ptr_t ptr)
+aspace::free(ptr_t ptr)
 {
     cl_int res = clReleaseMemObject(ptr.get_device_addr());
 
@@ -633,7 +633,7 @@ context_t::free(ptr_t ptr)
 }
 
 gmacError_t
-context_t::free_buffer(buffer_t &buffer)
+aspace::free_buffer(buffer_t &buffer)
 {
     FATAL("Not supported yet");
 
@@ -641,7 +641,7 @@ context_t::free_buffer(buffer_t &buffer)
 }
 
 gmacError_t
-context_t::free_host_pinned(ptr_t ptr)
+aspace::free_host_pinned(ptr_t ptr)
 {
     FATAL("Not supported yet");
 
@@ -649,7 +649,7 @@ context_t::free_host_pinned(ptr_t ptr)
 }
 
 code_repository &
-context_t::get_code_repository()
+aspace::get_code_repository()
 {
     code_repository *repository;
     platform &plat = get_device().get_platform();

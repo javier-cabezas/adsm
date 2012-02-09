@@ -7,7 +7,7 @@
 #include "gtest/gtest.h"
 
 static __impl::hal::device *device = NULL;
-static __impl::hal::context_t *ctx1 = NULL;
+static __impl::hal::aspace *ctx1 = NULL;
 static manager *mgr = NULL;
 
 __impl::hal::ptr::backend_type
@@ -38,7 +38,7 @@ manager_mapping_test::SetUpTestCase()
         __impl::hal::list_platform platforms = __impl::hal::get_platforms();
         ASSERT_TRUE(platforms.size() > 0);
         // Get devices
-        __impl::hal::platform::list_device devices = platforms.front()->get_devices();
+        __impl::hal::platform::list_device devices = platforms.front()->get_devices(__impl::hal::device::DEVICE_TYPE_GPU);
         ASSERT_TRUE(devices.size() > 0);
         device = devices.front();
         mgr = new manager();

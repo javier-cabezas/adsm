@@ -59,12 +59,12 @@ protected:
 
     friend bool mapping_fits(map_mapping &, mapping_ptr);
 
-    const hal::context_t::attribute_id AttributeMappings_;
+    const hal::aspace::attribute_id AttributeMappings_;
 
-    static void aspace_created(manager *m, hal::context_t &aspace);
-    static void aspace_destroyed(manager *m, hal::context_t &aspace);
+    static void aspace_created(manager *m, hal::aspace &aspace);
+    static void aspace_destroyed(manager *m, hal::aspace &aspace);
 
-    map_mapping_group &get_aspace_mappings(hal::context_t &ctx);
+    map_mapping_group &get_aspace_mappings(hal::aspace &ctx);
 
     typedef util::range<util::iterator_wrap_associative_second<map_mapping::iterator> > range_mapping;
     range_mapping get_mappings_in_range(map_mapping_group &mappings, hal::ptr begin, size_t count);

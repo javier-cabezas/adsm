@@ -4,14 +4,14 @@
 namespace __impl { namespace core { namespace hpe {
 
 inline
-hal::context_t &
+hal::aspace &
 address_space::get_hal_context()
 {
     return ctx_;
 }
 
 inline
-const hal::context_t &
+const hal::aspace &
 address_space::get_hal_context() const
 {
     return ctx_;

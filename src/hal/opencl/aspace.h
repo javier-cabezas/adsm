@@ -17,7 +17,7 @@ namespace __impl { namespace hal {
     
 namespace opencl {
 
-class context_t;
+class aspace;
 
 class list_event;
 
@@ -29,7 +29,7 @@ class GMAC_LOCAL buffer_t :
     cl_mem devPtr_;
 
 public:
-    buffer_t(host_ptr addr, cl_mem devPtr, size_t size, context_t &context);
+    buffer_t(host_ptr addr, cl_mem devPtr, size_t size, aspace &context);
 
     host_ptr get_addr();
     ptr_t get_device_addr();
@@ -37,10 +37,10 @@ public:
 
 class code_repository;
 
-class GMAC_LOCAL context_t :
-    public hal::detail::context_t<device, backend_traits, implementation_traits>,
-    util::gmac_base<context_t, GmacAddressSpaceId> {
-    typedef hal::detail::context_t<device, backend_traits, implementation_traits> Parent;
+class GMAC_LOCAL aspace :
+    public hal::detail::aspace<device, backend_traits, implementation_traits>,
+    util::gmac_base<aspace, GmacAddressSpaceId> {
+    typedef hal::detail::aspace<device, backend_traits, implementation_traits> Parent;
 
     friend class buffer_t;
     friend class stream_t;
@@ -66,7 +66,7 @@ class GMAC_LOCAL context_t :
     event_ptr memset_async_backend(ptr_t dst, int c, size_t count, stream_t &stream, list_event_detail *dependencies, gmacError_t &err);
 
 public:
-    context_t(cl_context ctx, device &device);
+    aspace(cl_context ctx, device &device);
 
     ptr_t alloc(size_t size, gmacError_t &err);
     ptr_t alloc_host_pinned(size_t size, GmacProtection hint, gmacError_t &err);

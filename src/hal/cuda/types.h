@@ -14,7 +14,7 @@ namespace __impl { namespace hal { namespace cuda {
 class coherence_domain;
 class platform;
 class device;
-class context_t;
+class aspace;
 class stream_t;
 class kernel_t;
 class texture_t;
@@ -26,15 +26,15 @@ class event_list;
 class buffer_t;
 
 typedef __impl::hal::_ptr_t<_cuda_ptr_t,
-                            context_t> ptr_t;
+                            aspace> ptr_t;
 
 typedef __impl::hal::_const_ptr_t<_cuda_ptr_t,
-                                   context_t> ptr_const_t;
+                                   aspace> ptr_const_t;
 
 typedef hal::detail::implementation_traits<coherence_domain,
                                            platform,
                                            device,
-                                           context_t,
+                                           aspace,
                                            stream_t,
                                            kernel_t,
                                            texture_t,
@@ -59,11 +59,11 @@ cuda::list_platform get_platforms();
 }}
 
 #include "event.h"
-#include "context.h"
+#include "aspace.h"
 #include "kernel.h"
 #include "stream.h"
 
-#include "context-impl.h"
+#include "aspace-impl.h"
 #include "stream-impl.h"
 #include "kernel-impl.h"
 #include "event-impl.h"

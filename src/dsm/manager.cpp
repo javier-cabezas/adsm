@@ -3,14 +3,14 @@
 namespace __impl { namespace dsm {
 
 void
-manager::aspace_created(manager *m, hal::context_t &aspace)
+manager::aspace_created(manager *m, hal::aspace &aspace)
 {
     map_mapping_group *ret = new map_mapping_group();
     aspace.set_attribute<map_mapping_group>(m->AttributeMappings_, ret);
 }
 
 void
-manager::aspace_destroyed(manager *m, hal::context_t &aspace)
+manager::aspace_destroyed(manager *m, hal::aspace &aspace)
 {
     // Get the mappings from the address space, to avoid an extra map
     map_mapping_group *ret = aspace.get_attribute<map_mapping_group>(m->AttributeMappings_);
@@ -19,7 +19,7 @@ manager::aspace_destroyed(manager *m, hal::context_t &aspace)
 }
 
 manager::map_mapping_group &
-manager::get_aspace_mappings(hal::context_t &ctx)
+manager::get_aspace_mappings(hal::aspace &ctx)
 {
     map_mapping_group *ret;
 
@@ -91,10 +91,10 @@ manager::insert_mapping(map_mapping_group &mappings, mapping_ptr m)
 }
 
 manager::manager() :
-    AttributeMappings_(hal::context_t::register_attribute())
+    AttributeMappings_(hal::aspace::register_attribute())
 {
-    hal::context_t::add_constructor(do_func(manager::aspace_created, this, std::placeholders::_1));
-    hal::context_t::add_destructor(do_func(manager::aspace_destroyed, this, std::placeholders::_1));
+    hal::aspace::add_constructor(do_func(manager::aspace_created, this, std::placeholders::_1));
+    hal::aspace::add_destructor(do_func(manager::aspace_destroyed, this, std::placeholders::_1));
 }
 
 manager::~manager()
@@ -107,8 +107,8 @@ manager::link(hal::ptr dst, hal::ptr src, size_t count, int flags)
     ASSERTION(long_t(dst.get_offset()) % mapping::MinAlignment == 0);
     ASSERTION(long_t(src.get_offset()) % mapping::MinAlignment == 0);
 
-    hal::context_t *ctxDst = dst.get_context();
-    hal::context_t *ctxSrc = src.get_context();
+    hal::aspace *ctxDst = dst.get_context();
+    hal::aspace *ctxSrc = src.get_context();
 
     map_mapping_group &mappingsDst = get_aspace_mappings(*ctxDst);
     map_mapping_group &mappingsSrc = get_aspace_mappings(*ctxSrc);

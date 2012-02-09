@@ -18,7 +18,7 @@ address_space::get_context()
 }
 #endif
 
-address_space::address_space(hal::context_t &context,
+address_space::address_space(hal::aspace &context,
                              hal::stream_t &streamLaunch,
                              hal::stream_t &streamToAccelerator,
                              hal::stream_t &streamToHost,
