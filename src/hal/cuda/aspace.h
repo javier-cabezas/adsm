@@ -33,6 +33,13 @@ public:
 
 class code_repository;
 
+#if 0
+class GMAC_LOCAL aspace :
+    public hal::detail::aspace<implementation_traits>,
+    util::unique<aspace, GmacAddressSpaceId> {
+};
+#endif
+
 class GMAC_LOCAL aspace :
     public hal::detail::aspace<implementation_traits>,
     util::unique<aspace, GmacAddressSpaceId> {
