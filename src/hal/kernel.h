@@ -5,7 +5,7 @@ namespace __impl { namespace hal {
 
 namespace detail {
 
-template <typename B, typename I>
+template <typename I>
 class GMAC_LOCAL kernel_t {
 public:
     class GMAC_LOCAL config {
@@ -20,11 +20,6 @@ public:
         unsigned get_ndims() const;
 
         bool is_valid() const { return ndims_ != 0; }
-
-        // virtual const typename B::kernel_config &get_dims_global() const = 0;
-        // virtual const typename B::kernel_config &get_dims_group() const = 0;
-
-        // virtual gmacError_t set_arg(const void *arg, size_t size, unsigned index) = 0;
     };
 
     class GMAC_LOCAL arg_list {
@@ -60,16 +55,12 @@ public:
     };
 
 private:
-    typename B::kernel kernel_;
     std::string name_;
 
 protected:
-    kernel_t(typename B::kernel kernel, const std::string &name_);
+    kernel_t(const std::string &name_);
 
 public:
-    typename B::kernel &operator()();
-    const typename B::kernel &operator()() const;
-
     const std::string &get_name() const;
     //virtual launch &launch_config(config &config, arg_list &args, typename I::stream &stream) = 0;
 };

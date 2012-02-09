@@ -82,9 +82,9 @@ void initGmac(void)
 
     std::list<__impl::hal::platform *>::iterator itPlat;
     for (itPlat = platforms.begin(); itPlat != platforms.end(); ++itPlat) {
-        std::list<__impl::hal::device *> devices = (*itPlat)->get_devices();
+        __impl::hal::platform::list_device devices = (*itPlat)->get_devices();
 
-        std::list<__impl::hal::device *>::iterator itDev;
+        __impl::hal::platform::list_device::iterator itDev;
 
         for (itDev = devices.begin(); itDev != devices.end(); ++itDev) {
             Process_->get_resource_manager().register_device(**itDev);

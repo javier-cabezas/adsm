@@ -5,9 +5,9 @@ namespace __impl { namespace hal {
 
 namespace detail {
 
-template <typename D> 
+template <typename I> 
 inline
-coherence_domain<D>::coherence_domain()
+coherence_domain<I>::coherence_domain()
 {
 }
 

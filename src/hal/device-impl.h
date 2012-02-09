@@ -28,7 +28,9 @@ platform<I>::get_devices()
 
 template <typename I> 
 inline
-device<I>::device(type t, typename I::coherence_domain &coherenceDomain) :
+device<I>::device(type t, typename I::platform &platform,
+                          typename I::coherence_domain &coherenceDomain) :
+    platform_(platform),
     coherenceDomain_(coherenceDomain),
     type_(t)
 {

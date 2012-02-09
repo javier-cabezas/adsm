@@ -34,16 +34,18 @@ public:
 class code_repository;
 
 class GMAC_LOCAL context_t :
-    public hal::detail::context_t<device, backend_traits, implementation_traits>,
+    public hal::detail::context_t<implementation_traits>,
     util::unique<context_t, GmacAddressSpaceId> {
-    typedef hal::detail::context_t<device, backend_traits, implementation_traits> Parent;
+    typedef hal::detail::context_t<implementation_traits> Parent;
 
     friend class buffer_t;
     friend class _event_common_t;
     friend class event_ptr;
     friend class event_deleter;
-    friend class detail::stream_t<backend_traits, implementation_traits>;
+    //friend class detail::stream_t<implementation_traits>;
     friend class stream_t;
+
+    CUcontext context_;
 
     _event_t *get_new_event(bool async, _event_t::type t);
     void dispose_event(_event_t &event);
@@ -73,6 +75,9 @@ public:
     code_repository &get_code_repository();
 
     void set();
+
+    CUcontext &operator()();
+    const CUcontext &operator()() const;
 };
 
 }}}

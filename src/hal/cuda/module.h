@@ -121,7 +121,7 @@ public:
 typedef std::vector<module_descriptor *> vector_module_descriptor;
 
 class GMAC_LOCAL code_repository :
-    public hal::detail::code_repository<device, backend_traits, implementation_traits> {
+    public hal::detail::code_repository<implementation_traits> {
 protected:
 
 	std::vector<CUmodule> mods_;

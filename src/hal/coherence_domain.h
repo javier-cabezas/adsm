@@ -9,21 +9,21 @@ namespace __impl { namespace hal {
 
 namespace detail {
 
-template <typename D> 
+template <typename I> 
 class GMAC_LOCAL coherence_domain :
-    D::SetSiblings {
-    typedef typename D::SetSiblings Parent;
+    I::device::set_siblings {
+    typedef typename I::device::set_siblings Parent;
 protected:
     coherence_domain();
 
 public:
-    gmacError_t add_device(D &device);
-    gmacError_t create_stream(D &device);
+    gmacError_t add_device(typename I::device &device);
+    gmacError_t create_stream(typename I::device &device);
 
     size_t size();
 
-    typename D::SetSiblings &get_devices();
-    const typename D::SetSiblings &get_devices() const;
+    typename I::device::set_siblings &get_devices();
+    const typename I::device::set_siblings &get_devices() const;
 };
 
 }

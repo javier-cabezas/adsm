@@ -1,3 +1,5 @@
+#include <sys/sysinfo.h>
+
 #include "config/common.h"
 
 #include "coherence_domain.h"
@@ -28,9 +30,7 @@ init()
     return ret;
 }
 
-cuda::map_context_repository Modules_("map_context_repository");
-
-std::list<cuda::platform *>
+cuda::list_platform
 get_platforms()
 {
     static bool initialized = false;
@@ -64,12 +64,12 @@ get_platforms()
         if(attr != CU_COMPUTEMODE_PROHIBITED) {
             cuda::coherence_domain *coherenceDomain = new cuda::coherence_domain();
             // TODO: detect coherence domain correctly. Now using one per device.
-            cuda::device *dev = new cuda::device(cuDev, *coherenceDomain);
+            cuda::device *dev = new cuda::gpu(cuDev, *p, *coherenceDomain);
             p->add_device(*dev);
             devRealCount++;
         }
 #else
-        cuda::device *dev = new cuda::device(cuDev, *coherenceDomain);
+        cuda::device *dev = new cuda::gpu(cuDev, *p, *coherenceDomain);
         p->add_device(*dev);
         devRealCount++;
 #endif
@@ -77,6 +77,15 @@ get_platforms()
 
     if(devRealCount == 0)
         MESSAGE("No CUDA-enabled devices found");
+
+
+    {
+        cuda::coherence_domain *cpuDomain = new cuda::coherence_domain();
+
+        for (int i = 0; i < get_nprocs(); ++i) {
+            p->add_device(*new cuda::cpu(*p, *cpuDomain));
+        }
+    }
 
     std::list<cuda::platform *> ret;
     ret.push_back(p);
@@ -116,65 +125,6 @@ gmacError_t error(CUresult err)
         default: error = gmacErrorUnknown;
     }
     return error;
-}
-
-_event_t *
-context_t::get_new_event(bool async,_event_t::type t)
-{
-    _event_t *ret = queueEvents_.pop();
-    if (ret == NULL) {
-        ret = new _event_t(async, t, *this);
-    } else {
-        ret->reset(async, t);
-    }
-
-    return ret;
-}
-
-void
-context_t::dispose_event(_event_t &event)
-{
-    queueEvents_.push(event);
-}
-
-context_t::context_t(CUcontext ctx, device &dev) :
-    Parent(ctx, dev)
-{
-    TRACE(LOCAL, "Creating context: %p", (*this)());
-}
-
-code_repository &
-context_t::get_code_repository()
-{
-    code_repository *repository;
-    map_context_repository::iterator it = Modules_.find(this);
-    if (it == Modules_.end()) {
-        set();
-
-        repository = module_descriptor::create_modules();
-        Modules_.insert(map_context_repository::value_type(this, repository));
-    } else {
-        repository = it->second;
-    }
-
-    return *repository;
-}
-
-stream_t::stream_t(CUstream stream, context_t &context) :
-    Parent(stream, context)
-{
-    TRACE(LOCAL, "Creating stream: %p", (*this)());
-}
-
-gmacError_t
-stream_t::sync()
-{
-    get_context().set(); 
-
-    TRACE(LOCAL, "Waiting for stream: %p", (*this)());
-    CUresult ret = cuStreamSynchronize((*this)());
-
-    return cuda::error(ret);
 }
 
 }}}

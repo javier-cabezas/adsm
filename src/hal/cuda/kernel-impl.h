@@ -5,8 +5,23 @@ namespace __impl { namespace hal { namespace cuda {
 
 inline
 kernel_t::kernel_t(CUfunction func, const std::string &name) :
-    Parent(func, name)
+    Parent(name),
+    kernel_(func)
 {
+}
+
+inline
+CUfunction &
+kernel_t::operator()()
+{
+    return kernel_;
+}
+
+inline
+const CUfunction &
+kernel_t::operator()() const
+{
+    return kernel_;
 }
 
 #if 0
@@ -21,7 +36,7 @@ kernel_t::launch_config(parent::config &conf, parent::arg_list &args, stream_t &
 
 inline
 kernel_t::launch::launch(kernel_t &parent, config &conf, arg_list &args, stream_t &stream) :
-    hal::detail::kernel_t<backend_traits, implementation_traits>::launch(parent, conf, args, stream)
+    hal::detail::kernel_t<implementation_traits>::launch(parent, conf, args, stream)
 {
 }
 
@@ -107,7 +122,7 @@ kernel_t::launch::execute(gmacError_t &err)
 
 inline
 kernel_t::config::config(dim3 global, dim3 group, size_t shared, cudaStream_t tokens) :
-    hal::detail::kernel_t<backend_traits, implementation_traits>::config(3),
+    hal::detail::kernel_t<implementation_traits>::config(3),
     dimsGlobal_(global),
     dimsGroup_(group),
     memShared_(shared)

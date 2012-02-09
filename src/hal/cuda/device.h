@@ -20,13 +20,39 @@ class GMAC_LOCAL platform :
 {
 };
 
+
 class GMAC_LOCAL device :
     public hal_device,
     public util::unique<device>,
     public gmac::util::mutex<device> {
     friend class context_t;
 
+    friend list_platform hal::get_platforms();
+
     typedef hal_device parent;
+
+protected:
+    device(parent::type t, platform &plat, coherence_domain &coherenceDomain);
+
+#if 0
+    context_t *create_context(const set_siblings &siblings, gmacError_t &err);
+    gmacError_t destroy_context(context_t &context);
+
+    stream_t *create_stream(context_t &context);
+    gmacError_t destroy_stream(stream_t &stream);
+
+    bool has_direct_copy(const device &dev) const;
+
+    gmacError_t get_info(GmacDeviceInfo &info);
+#endif
+};
+
+
+class GMAC_LOCAL gpu :
+    public device {
+    friend class context_t;
+
+    typedef device parent;
 protected:
     CUdevice cudaDevice_;
 
@@ -37,9 +63,9 @@ protected:
     bool isInfoInitialized_;
 
 public:
-    device(CUdevice cudaDevice, coherence_domain &coherenceDomain);
+    gpu(CUdevice cudaDevice, platform &plat, coherence_domain &coherenceDomain);
 
-    context_t *create_context(const SetSiblings &siblings, gmacError_t &err);
+    context_t *create_context(const set_siblings &siblings, gmacError_t &err);
     gmacError_t destroy_context(context_t &context);
 
     stream_t *create_stream(context_t &context);
@@ -51,7 +77,30 @@ public:
     size_t get_total_memory() const;
     size_t get_free_memory() const;
 
-    bool has_direct_copy(const parent &dev) const;
+    bool has_direct_copy(const device &dev) const;
+
+    gmacError_t get_info(GmacDeviceInfo &info);
+};
+
+class GMAC_LOCAL cpu :
+    public device {
+    typedef device parent;
+public:
+    cpu(platform &plat, coherence_domain &coherenceDomain);
+
+    context_t *create_context(const set_siblings &siblings, gmacError_t &err);
+
+    gmacError_t destroy_context(context_t &context);
+
+    stream_t *create_stream(context_t &context);
+
+    gmacError_t destroy_stream(stream_t &stream);
+
+    size_t get_total_memory() const;
+
+    size_t get_free_memory() const;
+
+    bool has_direct_copy(const device &dev) const;
 
     gmacError_t get_info(GmacDeviceInfo &info);
 };
