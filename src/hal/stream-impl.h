@@ -3,42 +3,38 @@
 
 namespace __impl { namespace hal { namespace detail {
 
-template <typename I>
 inline
-stream_t<I>::stream_t(context_parent_t &context) :
+stream::stream(aspace &as) :
 #if 0
     lockBuffer_("lock_buffer"),
     buffer_(NULL),
 #endif
-    gmac::util::spinlock<stream_t<I> >("stream_t"),
-    context_(context)
+    gmac::util::spinlock<stream>("stream"),
+    aspace_(as)
 {
 }
 
-template <typename I>
 inline
-typename stream_t<I>::context_parent_t &
-stream_t<I>::get_context()
+aspace &
+stream::get_aspace()
 {
-    return context_;
+    return aspace_;
 }
 
-template <typename I>
 inline
 void
-stream_t<I>::set_last_event(typename I::event_ptr event)
+stream::set_last_event(event_ptr event)
 {
     this->lock();
     lastEvent_ = event;
     this->unlock();
 }
 
-template <typename I>
 inline
-typename I::event_ptr
-stream_t<I>::get_last_event()
+event_ptr
+stream::get_last_event()
 {
-    typename I::event_ptr ret;
+    event_ptr ret;
     this->lock();
     ret = lastEvent_;
     this->unlock();

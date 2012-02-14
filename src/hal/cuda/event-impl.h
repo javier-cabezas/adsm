@@ -11,11 +11,11 @@ _event_common_t::_event_common_t() :
 
 inline
 void
-_event_common_t::begin(stream_t &stream)
+_event_common_t::begin(stream &stream)
 {
     stream_ = &stream;
 
-    stream.get_context().set(); 
+    stream_->get_aspace().set(); 
 
     CUresult err;
     err = cuEventCreate(&eventStart_, CU_EVENT_DEFAULT);
@@ -33,13 +33,13 @@ void
 _event_common_t::end()
 {
     ASSERTION(stream_ != NULL);
-    stream_->get_context().set(); 
+    stream_->get_aspace().set(); 
 
     cuEventRecord(eventEnd_, (*stream_)());
 }
 
 inline
-stream_t &
+stream &
 _event_common_t::get_stream()
 {
     ASSERTION(stream_ != NULL);
@@ -49,8 +49,15 @@ _event_common_t::get_stream()
 
 inline
 _event_t::_event_t(bool async, type t, aspace &context) :
-    Parent(async, t, context)
+    parent(async, t, context)
 {
+}
+
+inline
+aspace &
+_event_t::get_aspace()
+{
+    return reinterpret_cast<aspace &>(parent::get_aspace());
 }
 
 inline
@@ -61,7 +68,7 @@ _event_t::sync()
     lock_write();
 
     if (synced_ == false) {
-        get_stream().get_context().set();
+        get_stream().get_aspace().set();
 
         TRACE(LOCAL, "event<"FMT_ID">: waiting for event", get_print_id());
         CUresult res = cuEventSynchronize(eventEnd_);
@@ -120,13 +127,24 @@ inline
 void
 event_deleter::operator()(_event_t *ev)
 {
-    ev->get_context().dispose_event(*ev);
+    ev->get_aspace().dispose_event(*ev);
 }
 
+#if 0
+
 inline
-event_ptr::event_ptr(bool async, _event_t::type t, aspace &context) :
+event_ptr::event_ptr(bool async, typename _event_t::type t, aspace &context) :
     ptrEvent_(context.get_new_event(async, t), event_deleter())
 {
+}
+#endif
+
+
+inline static
+event_ptr
+create_event(bool async, _event_t::type t, aspace &as)
+{
+    return event_ptr(as.get_new_event(async, t), event_deleter());
 }
 
 }}}

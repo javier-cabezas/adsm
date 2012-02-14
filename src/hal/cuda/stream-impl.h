@@ -4,8 +4,8 @@
 namespace __impl { namespace hal { namespace cuda {
 
 inline
-stream_t::stream_t(CUstream stream, aspace &context) :
-    Parent(context),
+stream::stream(CUstream stream, aspace &context) :
+    parent(context),
     stream_(stream)
 {
     TRACE(LOCAL, "Creating stream: %p", (*this)());
@@ -13,9 +13,9 @@ stream_t::stream_t(CUstream stream, aspace &context) :
 
 inline
 gmacError_t
-stream_t::sync()
+stream::sync()
 {
-    get_context().set(); 
+    get_aspace().set(); 
 
     TRACE(LOCAL, "Waiting for stream: %p", (*this)());
     CUresult ret = cuStreamSynchronize((*this)());
@@ -24,12 +24,12 @@ stream_t::sync()
 }
 
 inline
-stream_t::Parent::state
-stream_t::query()
+stream::parent::state
+stream::query()
 {
-    Parent::state ret = Running;
+    parent::state ret = Running;
 
-    get_context().set();
+    get_aspace().set();
 
     CUresult res = cuStreamQuery(stream_);
 
@@ -46,21 +46,21 @@ stream_t::query()
 
 inline
 aspace &
-stream_t::get_context()
+stream::get_aspace()
 {
-    return reinterpret_cast<aspace &>(Parent::get_context());
+    return reinterpret_cast<aspace &>(parent::get_aspace());
 }
 
 inline
 CUstream &
-stream_t::operator()()
+stream::operator()()
 {
     return stream_;
 }
 
 inline
 const CUstream &
-stream_t::operator()() const
+stream::operator()() const
 {
     return stream_;
 }

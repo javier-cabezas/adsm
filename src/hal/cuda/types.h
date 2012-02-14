@@ -15,28 +15,34 @@ class coherence_domain;
 class platform;
 class device;
 class aspace;
-class stream_t;
-class kernel_t;
+class stream;
+class kernel;
 class texture_t;
 class variable_t;
 class code_repository;
 class _event_t;
-class event_ptr;
+typedef util::shared_ptr<_event_t> event_ptr;
 class event_list;
 class buffer_t;
 
-typedef __impl::hal::_ptr_t<_cuda_ptr_t,
-                            aspace> ptr_t;
+typedef __impl::hal::_ptr_t<
+                             _cuda_ptr_t,
+                             aspace,
+                             device
+                           > ptr_t;
 
-typedef __impl::hal::_const_ptr_t<_cuda_ptr_t,
-                                   aspace> ptr_const_t;
+typedef __impl::hal::_const_ptr_t<
+                                   _cuda_ptr_t,
+                                   aspace,
+                                   device
+                                 > ptr_const_t;
 
 typedef hal::detail::implementation_traits<coherence_domain,
                                            platform,
                                            device,
                                            aspace,
-                                           stream_t,
-                                           kernel_t,
+                                           stream,
+                                           kernel,
                                            texture_t,
                                            variable_t,
                                            code_repository,

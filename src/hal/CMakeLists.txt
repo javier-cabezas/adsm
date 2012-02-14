@@ -1,11 +1,15 @@
+add_subdirectory(cpu)
 add_subdirectory(${API_DIR})
 
 set(hal_SRC
     coherence_domain.h
     coherence_domain-impl.h
     aspace.h
+    aspace.cpp
     aspace-impl.h
+    copy.cpp
     device.h
+    device.cpp
     device-impl.h
     event.h
     event-impl.h

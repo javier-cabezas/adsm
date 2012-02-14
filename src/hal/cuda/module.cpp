@@ -89,7 +89,7 @@ code_repository::code_repository(const vector_module_descriptor & dVector)
             TRACE(LOCAL, "Registering kernel: %s", k->get_name().c_str());
             CUfunction func;
             res = cuModuleGetFunction(&func, mod, k->get_name().c_str());
-            kernels_.insert(map_kernel::value_type(k->get_key(), new kernel_t(func, k->get_name())));
+            kernels_.insert(map_kernel::value_type(k->get_key(), new kernel(func, k->get_name())));
         }
 
         module_descriptor::vector_variable::const_iterator v;

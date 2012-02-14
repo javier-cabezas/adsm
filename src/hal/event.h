@@ -8,14 +8,12 @@ namespace __impl { namespace hal {
 
 namespace detail {
 
-template <typename I>
-class GMAC_LOCAL _event_t :
-    public util::list_trigger<>,
-    public gmac::util::lock_rw<_event_t<I> > {
-    friend class I::context;
-    friend class I::kernel;
+class aspace;
 
-    typedef typename I::context context_parent_t;
+class GMAC_LOCAL _event :
+    public util::list_trigger<>,
+    public gmac::util::lock_rw<_event > {
+
 public:
     enum type {
         TransferToHost,
@@ -35,7 +33,7 @@ public:
     };
 
 private:
-    context_parent_t &context_;
+    aspace &aspace_;
 
 protected:
     bool async_;
@@ -49,10 +47,10 @@ protected:
     hal::time_t timeStart_;
     hal::time_t timeEnd_;
 
-    _event_t(bool async, type t, context_parent_t &context);
+    _event(bool async, type t, aspace &as);
 
 public:
-    context_parent_t &get_context();
+    aspace &get_aspace();
 
     type get_type() const;
     virtual state get_state() = 0;
@@ -62,13 +60,20 @@ public:
     hal::time_t get_time_start() const;
     hal::time_t get_time_end() const;
 
+    virtual gmacError_t sync() = 0;
+    virtual void set_synced() = 0;
+
     bool is_synced() const;
 };
 
-template <typename I>
+typedef util::shared_ptr<_event> event_ptr;
+
 class GMAC_LOCAL list_event {
-    virtual void add_event(typename I::event_ptr event) = 0;
 public:
+    virtual void add_event(event_ptr event) = 0;
+
+    virtual gmacError_t sync() = 0;
+    virtual void set_synced() = 0;
 };
 
 }

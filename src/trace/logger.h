@@ -86,6 +86,7 @@ get_class_name(const char *mangled);
 
 #define GLOBAL "GMAC"
 #define LOCAL  get_name_logger(typeid(*this).name())
+#define STATIC(c) get_name_logger(typeid(c).name())
 
 #if defined(DEBUG)
 #   if defined(__GNUC__)

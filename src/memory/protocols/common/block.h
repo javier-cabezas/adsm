@@ -135,7 +135,7 @@ public:
         return get_device_const_addr(get_bounds().start);
     }
 
-    host_ptr get_shadow() const;
+    hal::ptr get_shadow() const;
 
     virtual hal::event_ptr sync_to_device(gmacError_t &err) = 0;
     virtual hal::event_ptr sync_to_host(gmacError_t &err) = 0;

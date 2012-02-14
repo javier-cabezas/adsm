@@ -107,8 +107,8 @@ manager::link(hal::ptr dst, hal::ptr src, size_t count, int flags)
     ASSERTION(long_t(dst.get_offset()) % mapping::MinAlignment == 0);
     ASSERTION(long_t(src.get_offset()) % mapping::MinAlignment == 0);
 
-    hal::aspace *ctxDst = dst.get_context();
-    hal::aspace *ctxSrc = src.get_context();
+    hal::aspace *ctxDst = dst.get_aspace();
+    hal::aspace *ctxSrc = src.get_aspace();
 
     map_mapping_group &mappingsDst = get_aspace_mappings(*ctxDst);
     map_mapping_group &mappingsSrc = get_aspace_mappings(*ctxSrc);

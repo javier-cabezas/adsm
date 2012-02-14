@@ -67,10 +67,10 @@ class GMAC_LOCAL address_space :
 
     hal::aspace &ctx_;
 
-    hal::stream_t &streamLaunch_;
-    hal::stream_t &streamToAccelerator_;
-    hal::stream_t &streamToHost_;
-    hal::stream_t &streamAccelerator_;
+    hal::stream &streamLaunch_;
+    hal::stream &streamToAccelerator_;
+    hal::stream &streamToHost_;
+    hal::stream &streamAccelerator_;
 
     process &proc_;
 
@@ -87,10 +87,10 @@ class GMAC_LOCAL address_space :
 
 public:
     address_space(hal::aspace &context,
-                  hal::stream_t &streamLaunch,
-                  hal::stream_t &streamToAccelerator,
-                  hal::stream_t &streamToHost,
-                  hal::stream_t &streamAccelerator,
+                  hal::stream &streamLaunch,
+                  hal::stream &streamToAccelerator,
+                  hal::stream &streamToHost,
+                  hal::stream &streamAccelerator,
                   process &proc);
 
     virtual ~address_space();

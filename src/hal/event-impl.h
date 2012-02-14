@@ -3,11 +3,10 @@
 
 namespace __impl { namespace hal { namespace detail {
 
-template <typename I>
 inline
-_event_t<I>::_event_t(bool async, type t, context_parent_t &context) :
-    gmac::util::lock_rw<_event_t>("_event_t"),
-    context_(context),
+_event::_event(bool async, type t, aspace &as) :
+    gmac::util::lock_rw<_event>("_event"),
+    aspace_(as),
     async_(async),
     synced_(async? false: true),
     type_(t),
@@ -16,18 +15,16 @@ _event_t<I>::_event_t(bool async, type t, context_parent_t &context) :
 {
 }
 
-template <typename I>
 inline
-typename I::context &
-_event_t<I>::get_context()
+aspace &
+_event::get_aspace()
 {
-    return context_;
+    return aspace_;
 }
 
-template <typename I>
 inline
-typename _event_t<I>::type
-_event_t<I>::get_type() const
+_event::type
+_event::get_type() const
 {
     return type_;
 }
@@ -35,42 +32,38 @@ _event_t<I>::get_type() const
 #if 0
 template <typename I>
 inline
-typename _event_t<I>::state
-_event_t<I>::get_state()
+typename _event::state
+_event::get_state()
 {
     return state_;
 }
 #endif
 
-template <typename I>
 inline
 hal::time_t
-_event_t<I>::get_time_queued() const
+_event::get_time_queued() const
 {
     return timeQueued_;
 }
 
 
-template <typename I>
 inline
 hal::time_t
-_event_t<I>::get_time_submit() const
+_event::get_time_submit() const
 {
     return timeSubmit_;
 }
 
-template <typename I>
 inline
 hal::time_t
-_event_t<I>::get_time_start() const
+_event::get_time_start() const
 {
     return timeStart_;
 }
 
-template <typename I>
 inline
 hal::time_t
-_event_t<I>::get_time_end() const
+_event::get_time_end() const
 {
     return timeEnd_;
 }
@@ -79,7 +72,7 @@ _event_t<I>::get_time_end() const
 template <typename I>
 inline
 void
-_event_t<I>::set_state(state s)
+_event::set_state(state s)
 {
     state_ = s;
 }
@@ -87,16 +80,15 @@ _event_t<I>::set_state(state s)
 template <typename I>
 inline
 void
-_event_t<I>::set_synced(bool synced)
+_event::set_synced(bool synced)
 {
     synced_ = synced;
 }
 #endif
 
-template <typename I>
 inline
 bool
-_event_t<I>::is_synced() const
+_event::is_synced() const
 {
     return synced_;
 }

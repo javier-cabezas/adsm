@@ -5,9 +5,21 @@
 
 namespace __impl { namespace hal { namespace cuda {
 
+inline aspace &
+buffer_t::get_aspace()
+{
+    return reinterpret_cast<aspace &>(parent::get_aspace());
+}
+
+inline const aspace &
+buffer_t::get_aspace() const
+{
+    return reinterpret_cast<const aspace &>(parent::get_aspace());
+}
+
 inline
-buffer_t::buffer_t(host_ptr addr, size_t size, aspace &context) :
-    Parent(size, context),
+buffer_t::buffer_t(host_ptr addr, size_t size, aspace &as) :
+    parent(size, as),
     addr_(addr)
 {
 }
@@ -20,10 +32,10 @@ buffer_t::get_addr()
 }
 
 inline
-ptr_t
+hal::ptr
 buffer_t::get_device_addr()
 {
-    return get_context().get_device_addr_from_pinned(addr_);
+    return get_aspace().get_device_addr_from_pinned(addr_);
 }
 
 inline
@@ -35,16 +47,16 @@ aspace::set()
 }
 
 inline
-ptr_t
+hal::ptr
 aspace::get_device_addr_from_pinned(host_ptr addr)
 {
-    ptr_t ret;
+    hal::ptr ret;
     set();
 
     CUdeviceptr ptr;
     CUresult res = cuMemHostGetDevicePointer(&ptr, addr, 0);
     if (res == CUDA_SUCCESS) {
-        ret = ptr_t(ptr_t::backend_ptr(ptr), this);
+        ret = hal::ptr(hal::ptr::backend_ptr(ptr), this);
     }
 
     return ret;

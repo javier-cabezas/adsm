@@ -6,13 +6,39 @@
 
 #include "gtest/gtest.h"
 
+static __impl::hal::device *device;
+static __impl::hal::aspace *as1;
+static __impl::hal::aspace *as2;
+
 void
 mapping_test::SetUpTestCase()
 {
+    // Inititalize platform
+    gmacError_t err = __impl::hal::init();
+    ASSERT_TRUE(err == gmacSuccess);
+    // Get platforms
+    __impl::hal::list_platform platforms = __impl::hal::get_platforms();
+    ASSERT_TRUE(platforms.size() > 0);
+    // Get devices
+    __impl::hal::platform::list_device devices = platforms.front()->get_devices(__impl::hal::device::DEVICE_TYPE_GPU);
+    ASSERT_TRUE(devices.size() > 0);
+    device = devices.front();
+    // Create address spaces
+    as1 = device->create_aspace(__impl::hal::device::None, err);
+    ASSERT_TRUE(err == gmacSuccess);
+    as2 = device->create_aspace(__impl::hal::device::None, err);
+    ASSERT_TRUE(err == gmacSuccess);
 }
 
 void mapping_test::TearDownTestCase()
 {
+    gmacError_t err;
+    err = device->destroy_aspace(*as1);
+    ASSERT_TRUE(err == gmacSuccess);
+    err = device->destroy_aspace(*as2);
+    ASSERT_TRUE(err == gmacSuccess);
+
+    __impl::hal::fini();
 }
 
 typedef __impl::util::bounds<ptr> alloc;
@@ -22,7 +48,7 @@ TEST_F(mapping_test, prepend_block)
     static const unsigned BASE_ADDR = 0x100;
     static const unsigned OFFSET    = 0x400;
 
-    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), (__impl::hal::aspace *)(0x1));
+    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), as1);
 
     mapping_ptr m0 = new mapping(p0 + OFFSET);
 
@@ -50,7 +76,7 @@ TEST_F(mapping_test, prepend_block2)
     static const unsigned BASE_ADDR = 0x100;
     static const unsigned OFFSET    = 0x400;
 
-    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), (__impl::hal::aspace *)(0x1));
+    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), as1);
 
     mapping_ptr m0 = new mapping(p0 + OFFSET);
 
@@ -78,7 +104,7 @@ TEST_F(mapping_test, append_block)
 {
     static const unsigned BASE_ADDR = 0x100;
 
-    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), (__impl::hal::aspace *)(0x1));
+    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), as1);
 
     mapping_ptr m0 = new mapping(p0);
 
@@ -123,7 +149,7 @@ TEST_F(mapping_test, append_mapping)
     static const unsigned BLOCK_SIZE = 0x300;
     static const unsigned OFFSET     = BLOCK_SIZE + 0x100;
 
-    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), (__impl::hal::aspace *)(0x1));
+    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), as1);
     ptr p1 = p0 + OFFSET;
 
     mapping_ptr m0 = new mapping(p0);
@@ -157,7 +183,7 @@ TEST_F(mapping_test, append_mapping2)
     static const unsigned BLOCK_SIZE = 0x300;
     static const unsigned OFFSET     = BLOCK_SIZE - 0x100;
 
-    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), (__impl::hal::aspace *)(0x1));
+    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), as1);
     ptr p1 = p0 + OFFSET;
 
     mapping_ptr m0 = new mapping(p0);
@@ -188,7 +214,7 @@ TEST_F(mapping_test, append_mapping3)
     static const unsigned BLOCK_SIZE = 0x300;
     static const unsigned OFFSET     = BLOCK_SIZE;
 
-    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), (__impl::hal::aspace *)(0x1));
+    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), as1);
     ptr p1 = p0 + OFFSET;
 
     mapping_ptr m0 = new mapping(p0);
@@ -221,8 +247,8 @@ TEST_F(mapping_test, append_mapping4)
     static const unsigned BLOCK_SIZE = 0x300;
     static const unsigned OFFSET     = BLOCK_SIZE;
 
-    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), (__impl::hal::aspace *)(0x1));
-    ptr p1 = ptr(ptr::backend_ptr(BASE_ADDR), (__impl::hal::aspace *)(0x2));
+    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), as1);
+    ptr p1 = ptr(ptr::backend_ptr(BASE_ADDR), as2);
 
     mapping_ptr m0 = new mapping(p0);
     mapping_ptr m1 = new mapping(p1 + OFFSET);

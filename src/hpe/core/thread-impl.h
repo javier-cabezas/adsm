@@ -31,6 +31,8 @@
 
 namespace __impl { namespace core { namespace hpe {
 
+#if 0
+
 inline
 thread &
 thread::get_current_thread()
@@ -189,6 +191,8 @@ thread::get_kernel_launch(vdevice &dev)
 
     return it->second;
 }
+
+#endif
 
 }}}
 

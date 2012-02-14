@@ -35,6 +35,28 @@ init()
     return ret;
 }
 
+gmacError_t
+fini()
+{
+    if (hal_initialized == false) {
+        FATAL("HAL not initialized");
+    }
+
+    gmacError_t ret = gmacSuccess;
+
+    hal_initialized = false;
+
+    for (cuda::list_platform::iterator it  = platforms.begin();
+                                       it != platforms.end();
+                                     ++it) {
+        delete (*it);
+    }
+
+    platforms.clear();
+
+    return ret;
+}
+
 cuda::list_platform
 get_platforms()
 {
@@ -69,7 +91,7 @@ get_platforms()
             if(attr != CU_COMPUTEMODE_PROHIBITED) {
                 cuda::coherence_domain *coherenceDomain = new cuda::coherence_domain();
                 // TODO: detect coherence domain correctly. Now using one per device.
-                cuda::device *dev = new cuda::gpu(cuDev, *p, *coherenceDomain);
+                cuda::device *dev = new cuda::device(cuDev, *p, *coherenceDomain);
                 p->add_device(*dev);
                 devRealCount++;
             }
@@ -86,6 +108,7 @@ get_platforms()
         /////////////////////
         // Backend devices //
         /////////////////////
+#if 0
         {
             cuda::coherence_domain *cpuDomain = new cuda::coherence_domain();
 
@@ -93,6 +116,7 @@ get_platforms()
                 p->add_device(*new cuda::cpu(*p, *cpuDomain));
             }
         }
+#endif
 
         platforms.push_back(p);
     }

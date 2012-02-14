@@ -52,7 +52,7 @@ module_descriptor::add(texture_descriptor &t)
     textures_.push_back(t);
 }
 
-inline kernel_t *
+inline hal_kernel *
 code_repository::get_kernel(gmac_kernel_id_t key)
 {
     map_kernel::const_iterator k;
@@ -61,7 +61,7 @@ code_repository::get_kernel(gmac_kernel_id_t key)
     return k->second;
 }
 
-inline kernel_t *
+inline hal_kernel *
 code_repository::get_kernel(const std::string &name)
 {
     FATAL("Not implemented");

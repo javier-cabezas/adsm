@@ -57,10 +57,10 @@ class vdevice;
 struct GMAC_LOCAL address_space_resources {
     hal::aspace *context_;
 
-    hal::stream_t *streamLaunch_;
-    hal::stream_t *streamToAccelerator_;
-    hal::stream_t *streamToHost_;
-    hal::stream_t *streamAccelerator_;
+    hal::stream *streamLaunch_;
+    hal::stream *streamToAccelerator_;
+    hal::stream *streamToHost_;
+    hal::stream *streamAccelerator_;
 };
 
 typedef util::shared_ptr<address_space> address_space_ptr;

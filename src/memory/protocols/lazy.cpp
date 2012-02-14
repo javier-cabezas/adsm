@@ -406,11 +406,11 @@ lazy_base::memset(const common::block_ptr b, size_t blockOffset, int v, size_t c
     case lazy_types::ReadOnly:
         ret = block->get_owner()->memset_async(block->get_device_addr() + blockOffset, v, count, err);
         if(err != gmacSuccess) break;
-        ::memset(block->get_shadow() + blockOffset, v, count);
+        ::memset(block->get_shadow().get_host_addr() + blockOffset, v, count);
         break;
     case lazy_types::Dirty:
     case lazy_types::HostOnly:
-        ::memset(block->get_shadow() + blockOffset, v, count);
+        ::memset(block->get_shadow().get_host_addr() + blockOffset, v, count);
         break;
     case lazy_types::Incoherent:
         FATAL("memset incoherent block");
@@ -452,7 +452,8 @@ lazy_base::copy_block_to_block(common::block_ptr d, size_t dstOff,
     } else if (src->get_state() == lazy_types::Dirty && dst->get_state() == lazy_types::Dirty) {
         // memcpy
         TRACE(LOCAL, "D -> D");
-        ::memcpy(dst->get_shadow() + dstOff, src->get_shadow() + srcOff, count);
+        ::memcpy(dst->get_shadow().get_host_addr() + dstOff,
+                 src->get_shadow().get_host_addr() + srcOff, count);
     } else if (src->get_state() == lazy_types::ReadOnly &&
                dst->get_state() == lazy_types::ReadOnly) {
         TRACE(LOCAL, "R -> R");
@@ -466,7 +467,8 @@ lazy_base::copy_block_to_block(common::block_ptr d, size_t dstOff,
                                                hal::const_ptr(src->get_shadow() + srcOff), count, err);
         }
         if (err == gmacSuccess) {
-            ::memcpy(dst->get_shadow() + dstOff, src->get_shadow() + srcOff, count);
+            ::memcpy(dst->get_shadow().get_host_addr() + dstOff,
+                     src->get_shadow().get_host_addr() + srcOff, count);
         }
     } else if (src->get_state() == lazy_types::Invalid &&
                dst->get_state() == lazy_types::ReadOnly) {
@@ -505,12 +507,14 @@ lazy_base::copy_block_to_block(common::block_ptr d, size_t dstOff,
         TRACE(LOCAL, "D -> R");
         // host-to-host
         if (err == gmacSuccess) {
-            ::memcpy(dst->get_shadow() + dstOff, src->get_shadow() + srcOff, count);
+            ::memcpy(dst->get_shadow().get_host_addr() + dstOff,
+                     src->get_shadow().get_host_addr() + srcOff, count);
         }
     } else if (src->get_state() == lazy_types::ReadOnly && dst->get_state() == lazy_types::Dirty) {
         TRACE(LOCAL, "R -> D");
         // host-to-host
-        ::memcpy(dst->get_shadow() + dstOff, src->get_shadow() + srcOff, count);
+        ::memcpy(dst->get_shadow().get_host_addr() + dstOff,
+                 src->get_shadow().get_host_addr() + srcOff, count);
     }
 
     TRACE(LOCAL, "Finished");
@@ -531,19 +535,29 @@ lazy_base::copy_to_block(common::block_ptr d, size_t dstOff,
     if (dst->get_state() == lazy_types::Invalid) {
         TRACE(LOCAL, "-> I");
         // Copy acc-acc
+#if 0
         ret = dst->get_owner()->copy_async(dst->get_device_addr() + dstOff,
                                            hal::const_ptr(src), count, err);
+#endif
+        ret = dst->get_owner()->copy_async(dst->get_device_addr() + dstOff,
+                                           hal::ptr::null, count, err);
     } else if (dst->get_state() == lazy_types::Dirty) {
         // memcpy
         TRACE(LOCAL, "-> D");
-        ::memcpy(dst->get_shadow() + dstOff, src, count);
+        ::memcpy(dst->get_shadow().get_host_addr() + dstOff,
+                 src, count);
     } else if (dst->get_state() == lazy_types::ReadOnly) {
         TRACE(LOCAL, "-> R");
         // Copy acc-to-acc
+#if 0
         ret = dst->get_owner()->copy_async(dst->get_device_addr() + dstOff,
                                            hal::const_ptr(src), count, err);
+#endif
+        ret = dst->get_owner()->copy_async(dst->get_device_addr() + dstOff,
+                                           hal::ptr::null, count, err);
         // memcpy
-        ::memcpy(dst->get_shadow() + dstOff, src, count);
+        ::memcpy(dst->get_shadow().get_host_addr() + dstOff,
+                 src, count);
     }
 
     TRACE(LOCAL, "Finished");
@@ -564,19 +578,27 @@ lazy_base::copy_from_block(host_ptr dst,
     if (src->get_state() == lazy_types::Invalid) {
         TRACE(LOCAL, "I ->");
         // Copy acc-acc
+#if 0
         ret = src->get_owner()->copy_async(hal::ptr(dst),
+                                           src->get_device_const_addr() + srcOff, count, err);
+#endif
+        ret = src->get_owner()->copy_async(hal::ptr::null,
                                            src->get_device_const_addr() + srcOff, count, err);
     } else if (src->get_state() == lazy_types::Dirty) {
         // memcpy
         TRACE(LOCAL, "D ->");
-        ::memcpy(dst, src->get_shadow() + srcOff, count);
+        ::memcpy(dst, src->get_shadow().get_host_addr() + srcOff, count);
     } else if (src->get_state() == lazy_types::ReadOnly) {
         TRACE(LOCAL, "R ->");
         // Copy acc-to-acc
+#if 0
         ret = src->get_owner()->copy_async(hal::ptr(dst),
                                            src->get_device_const_addr() + srcOff, count, err);
+#endif
+        ret = src->get_owner()->copy_async(hal::ptr::null,
+                                           src->get_device_const_addr() + srcOff, count, err);
         // memcpy
-        ::memcpy(dst, src->get_shadow() + srcOff, count);
+        ::memcpy(dst, src->get_shadow().get_host_addr() + srcOff, count);
     }
 
     TRACE(LOCAL, "Finished");
@@ -602,7 +624,7 @@ lazy_base::to_io_device(hal::device_output &output,
     } else if (src->get_state() == lazy_types::Dirty) {
         // write to device
         TRACE(LOCAL, "D ->");
-        output.write(src->get_shadow() + srcOff, count);
+        output.write(src->get_shadow().get_host_addr() + srcOff, count);
     } else if (src->get_state() == lazy_types::ReadOnly) {
         TRACE(LOCAL, "R ->");
         // Copy acc-to-disk
@@ -633,11 +655,11 @@ lazy_base::from_io_device(common::block_ptr d, size_t dstOff,
     } else if (dst->get_state() == lazy_types::Dirty) {
         // memcpy
         TRACE(LOCAL, "-> D");
-        input.read(dst->get_shadow() + dstOff, count);
+        input.read(dst->get_shadow().get_host_addr() + dstOff, count);
     } else if (dst->get_state() == lazy_types::ReadOnly) {
         TRACE(LOCAL, "-> R");
         // disk-to-host
-        input.read(dst->get_shadow() + dstOff, count);
+        input.read(dst->get_shadow().get_host_addr() + dstOff, count);
 
         // Copy host-to-acc
         ret = dst->get_owner()->copy_async(dst->get_device_addr() + dstOff,

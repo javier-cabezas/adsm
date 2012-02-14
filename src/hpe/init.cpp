@@ -77,6 +77,7 @@ void initGmac(void)
     gmacError_t err = __impl::hal::init();
     CFATAL(err == gmacSuccess, "Error initializing HAL");
 
+#if 0
     std::list<__impl::hal::platform *> platforms = __impl::hal::get_platforms();
     CFATAL(platforms.size() > 0, "HAL found no platforms");
 
@@ -90,6 +91,7 @@ void initGmac(void)
             Process_->get_resource_manager().register_device(**itDev);
         }
     }
+#endif
 
     Process_->init();
 }
@@ -100,7 +102,9 @@ namespace __impl {
         namespace hpe {
             //Mode &getCurrentVirtualDevice() { return __impl::core::hpe::thread::get_current_thread().getCurrentVirtualDevice(); }
             process &get_process() { return *Process_; }
+#if 0
             vdevice &get_virtual_device() { return __impl::core::hpe::thread::get_current_thread().get_current_virtual_device(); }
+#endif
         }
     }
 

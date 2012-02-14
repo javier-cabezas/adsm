@@ -37,10 +37,11 @@ block::size() const
     return size_;
 }
 
-host_ptr
+hal::ptr
 block::get_shadow() const
 {
-    return parent_.get_bounds_shadow().start + offset_;
+    //return hal::ptr(parent_.get_bounds_shadow().start + offset_);
+    return hal::ptr::null;
 }
 
 unsigned

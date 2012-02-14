@@ -94,7 +94,7 @@ gmacGetDeviceInfo(unsigned acc, GmacDeviceInfo *info)
         ret = gmacErrorInvalidValue;
     }
     gmac::trace::ExitCurrentFunction();
-    thread::get_current_thread().set_last_error(ret);
+    //thread::get_current_thread().set_last_error(ret);
     exitGmac();
     return ret;
 }
@@ -102,10 +102,10 @@ gmacGetDeviceInfo(unsigned acc, GmacDeviceInfo *info)
 GMAC_API unsigned APICALL
 gmacGetCurrentDeviceId()
 {
-    unsigned ret;
+    unsigned ret = 0;
     enterGmac();
     gmac::trace::EnterCurrentFunction();
-    ret = thread::get_current_thread().get_current_virtual_device().get_address_space()->get_hal_context().get_device().get_print_id();
+    //ret = thread::get_current_thread().get_current_virtual_device().get_address_space()->get_hal_context().get_device().get_print_id();
     gmac::trace::ExitCurrentFunction();
     exitGmac();
     return ret;
@@ -118,7 +118,7 @@ gmacGetFreeMemory(unsigned acc, size_t *freeMemory)
     gmac::trace::EnterCurrentFunction();
     gmacError_t ret = get_resource_manager().get_device_free_mem(acc, *freeMemory);
     gmac::trace::ExitCurrentFunction();
-    thread::get_current_thread().set_last_error(ret);
+    //thread::get_current_thread().set_last_error(ret);
     exitGmac();
     return ret;
 }
@@ -132,7 +132,7 @@ gmacMigrate(unsigned acc)
     gmac::trace::EnterCurrentFunction();
     ret = get_process().migrate(acc);
     gmac::trace::ExitCurrentFunction();
-    thread::get_current_thread().set_last_error(ret);
+    //thread::get_current_thread().set_last_error(ret);
     exitGmac();
     return ret;
 }
@@ -188,9 +188,9 @@ gmacCreateVirtualDevice(GmacVirtualDeviceId *vDeviceId, GmacAddressSpaceId aspac
     gmacError_t ret = gmacSuccess;
     enterGmac();
     gmac::trace::EnterCurrentFunction();
-    vdevice *dev = get_resource_manager().create_virtual_device(aspaceId, ret);
+    //vdevice *dev = get_resource_manager().create_virtual_device(aspaceId, ret);
     if (ret == gmacSuccess) {
-        *vDeviceId = dev->get_id();
+        //*vDeviceId = dev->get_id();
     }
     gmac::trace::ExitCurrentFunction();
     exitGmac();
@@ -205,12 +205,14 @@ gmacDeleteVirtualDevice(GmacVirtualDeviceId vDeviceId)
     gmacError_t ret = gmacSuccess;
     enterGmac();
     gmac::trace::EnterCurrentFunction();
+#if 0
     vdevice *dev = thread::get_current_thread().get_virtual_device(vDeviceId);
     if (dev != NULL) {
         ret = get_resource_manager().destroy_virtual_device(*dev);
     } else {
         ret = gmacErrorInvalidValue;
     }
+#endif
     gmac::trace::ExitCurrentFunction();
     exitGmac();
 
@@ -224,12 +226,14 @@ gmacSetVirtualDevice(GmacVirtualDeviceId vDeviceId)
     gmacError_t ret = gmacSuccess;
     enterGmac();
     gmac::trace::EnterCurrentFunction();
+#if 0
     vdevice *dev = thread::get_current_thread().get_virtual_device(vDeviceId);
     if (dev != NULL) {
         thread::get_current_thread().set_current_virtual_device(*dev);
     } else {
         ret = gmacErrorInvalidValue;
     }
+#endif
     gmac::trace::ExitCurrentFunction();
     exitGmac();
 
@@ -255,7 +259,7 @@ gmacMemoryMap(void *cpuPtr, size_t count, GmacProtection prot)
     return ret;
 #endif
     gmacError_t ret = gmacErrorFeatureNotSupported;
-    thread::get_current_thread().set_last_error(ret);
+    //thread::get_current_thread().set_last_error(ret);
     return ret;
 }
 
@@ -278,7 +282,7 @@ gmacMemoryUnmap(void *cpuPtr, size_t count)
     return ret;
 #endif
     gmacError_t ret = gmacErrorFeatureNotSupported;
-    thread::get_current_thread().set_last_error(ret);
+    //thread::get_current_thread().set_last_error(ret);
     return ret;
 }
 
@@ -289,20 +293,24 @@ gmacMalloc(void **cpuPtr, size_t count)
     gmacError_t ret = gmacSuccess;
     if (count == 0) {
         *cpuPtr = NULL;
-        thread::get_current_thread().set_last_error(ret);
+        //thread::get_current_thread().set_last_error(ret);
         return ret;
     }
     enterGmac();
     gmac::trace::EnterCurrentFunction();
     if(has_allocator() && count < (BlockSize / 2)) {
+#if 0
         *cpuPtr = get_allocator().alloc(thread::get_current_thread().get_current_virtual_device().get_address_space(), count, host_ptr(RETURN_ADDRESS));
+#endif
     }
     else {
         count = (int(count) < getpagesize())? getpagesize(): count;
+#if 0
         ret = get_manager().alloc(thread::get_current_thread().get_current_virtual_device().get_address_space(), (host_ptr *) cpuPtr, count);
+#endif
     }
     gmac::trace::ExitCurrentFunction();
-    thread::get_current_thread().set_last_error(ret);
+    //thread::get_current_thread().set_last_error(ret);
     exitGmac();
     return ret;
 }
@@ -314,7 +322,7 @@ gmacGlobalMalloc(void **cpuPtr, size_t count, GmacGlobalMallocType hint)
     gmacError_t ret = gmacSuccess;
     if(count == 0) {
         *cpuPtr = NULL;
-        thread::get_current_thread().set_last_error(ret);
+        //thread::get_current_thread().set_last_error(ret);
         return ret;
     }
     enterGmac();
@@ -322,7 +330,7 @@ gmacGlobalMalloc(void **cpuPtr, size_t count, GmacGlobalMallocType hint)
     count = (count < (size_t)getpagesize()) ? (size_t)getpagesize(): count;
     ret = get_manager().globalAlloc(thread::get_current_thread().get_current_virtual_device().get_address_space(), (host_ptr *)cpuPtr, count, hint);
     gmac::trace::ExitCurrentFunction();
-    thread::get_current_thread().set_last_error(ret);
+    //thread::get_current_thread().set_last_error(ret);
     exitGmac();
     return ret;
 }
@@ -335,17 +343,19 @@ gmacFree(void *cpuPtr)
     gmacError_t ret = gmacSuccess;
     enterGmac();
     if(cpuPtr == NULL) {
-        thread::get_current_thread().set_last_error(ret);
+        //thread::get_current_thread().set_last_error(ret);
         exitGmac();
         return ret;
     }
     gmac::trace::EnterCurrentFunction();
+#if 0
     __impl::core::hpe::address_space_ptr aspace = thread::get_current_thread().get_current_virtual_device().get_address_space();
     if(has_allocator() == false || get_allocator().free(aspace, host_ptr(cpuPtr)) == false) {
         ret = get_manager().free(aspace, host_ptr(cpuPtr));
     }
+#endif
     gmac::trace::ExitCurrentFunction();
-    thread::get_current_thread().set_last_error(ret);
+    //thread::get_current_thread().set_last_error(ret);
     exitGmac();
     return ret;
 }
@@ -357,7 +367,9 @@ gmacPtr(const void *ptr)
 {
     __impl::hal::ptr ret;
     enterGmac();
+#if 0
     ret = get_manager().translate(thread::get_current_thread().get_current_virtual_device().get_address_space(), host_ptr(ptr));
+#endif
     exitGmac();
     TRACE(GLOBAL, "Translate %p to %p", ptr, ret.get_base() + ret.get_offset());
     return __gmac_accptr_t(ret.get_base() + ret.get_offset());
@@ -368,6 +380,7 @@ gmacError_t GMAC_LOCAL
 gmacLaunch(__impl::core::hpe::kernel::launch_ptr launch)
 {
     gmacError_t ret = gmacSuccess;
+#if 0
     vdevice &dev = launch->get_virtual_device();
     __impl::core::hpe::address_space_ptr aspace = dev.get_address_space();
     manager &manager = get_manager();
@@ -391,7 +404,8 @@ gmacLaunch(__impl::core::hpe::kernel::launch_ptr launch)
         CFATAL(ret == gmacSuccess, "Error waiting for kernel");
     }
 
-    thread::get_current_thread().set_last_error(ret);
+    //thread::get_current_thread().set_last_error(ret);
+#endif
 
     return ret;
 }
@@ -402,9 +416,11 @@ gmacLaunch(gmac_kernel_id_t k, __impl::hal::kernel_t::config &config, __impl::co
 {
     enterGmac();
     gmac::trace::EnterCurrentFunction();
+    gmacError_t ret = gmacSuccess;
+
+#if 0
     vdevice &dev = thread::get_current_thread().get_current_virtual_device();
     kernel::launch_ptr launch;
-    gmacError_t ret;
     launch = dev.launch(k, config, args, ret);
 
     if(ret == gmacSuccess) {
@@ -413,7 +429,8 @@ gmacLaunch(gmac_kernel_id_t k, __impl::hal::kernel_t::config &config, __impl::co
 
     gmac::trace::ExitCurrentFunction();
 
-    thread::get_current_thread().set_last_error(ret);
+    //thread::get_current_thread().set_last_error(ret);
+#endif
     exitGmac();
 
     return ret;
@@ -424,10 +441,12 @@ gmacThreadSynchronize(kernel::launch_ptr launch)
 {
     gmacError_t ret = gmacSuccess;
     if(AutoSync == false) {
+#if 0
         vdevice &dev = thread::get_current_thread().get_current_virtual_device();
         dev.wait(launch);
         TRACE(GLOBAL, "Memory Sync");
         ret = get_manager().acquire_objects(dev.get_address_space(), launch->get_arg_list().get_objects());
+#endif
     }
     return ret;
 }
@@ -441,15 +460,17 @@ gmacThreadSynchronize()
 
     gmacError_t ret = gmacSuccess;
     if (AutoSync == false) {
+#if 0
         vdevice &dev = thread::get_current_thread().get_current_virtual_device();
         __impl::core::hpe::address_space_ptr aspace = dev.get_address_space();
         dev.wait();
         TRACE(GLOBAL, "Memory Sync");
         ret = get_manager().acquire_objects(aspace);
+#endif
     }
 
     gmac::trace::ExitCurrentFunction();
-    thread::get_current_thread().set_last_error(ret);
+    //thread::get_current_thread().set_last_error(ret);
     exitGmac();
     return ret;
 }
@@ -459,7 +480,10 @@ GMAC_API gmacError_t APICALL
 gmacGetLastError()
 {
     enterGmac();
-    gmacError_t ret = thread::get_current_thread().get_last_error();
+    gmacError_t ret = gmacSuccess;
+#if 0
+    ret = thread::get_current_thread().get_last_error();
+#endif
     exitGmac();
     return ret;
 }
@@ -471,7 +495,9 @@ gmacMemset(void *s, int c, size_t size)
 {
     enterGmac();
     void *ret = s;
+#if 0
     get_manager().memset(thread::get_current_thread().get_current_virtual_device().get_address_space(), host_ptr(s), c, size);
+#endif
     exitGmac();
     return ret;
 }
@@ -491,7 +517,9 @@ gmacMemcpy(void *dst, const void *src, size_t size)
         exitGmac();
         return ::memcpy(dst, src, size);
     }
+#if 0
     get_manager().memcpy(thread::get_current_thread().get_current_virtual_device().get_address_space(), host_ptr(dst), host_ptr(src), size);
+#endif
 
     exitGmac();
     return ret;
@@ -543,7 +571,7 @@ __gmacFlushDirty()
 {
     enterGmac();
     gmacError_t ret = get_manager().flush_dirty(thread::get_current_thread().get_current_virtual_device());
-    thread::get_current_thread().set_last_error(ret);
+    //thread::get_current_thread().set_last_error(ret);
     exitGmac();
     return ret;
 }
