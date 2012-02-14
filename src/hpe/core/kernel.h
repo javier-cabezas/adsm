@@ -41,6 +41,7 @@ WITH THE SOFTWARE.  */
 namespace __impl { namespace core { namespace hpe {
 
 class vdevice;
+#if 0
 
 class GMAC_LOCAL kernel :
     public hal::kernel_t {
@@ -74,16 +75,16 @@ public:
     };
 
     class GMAC_LOCAL launch :
-        public hal::kernel_t::launch {
+        public hal::kernel_launch {
         friend class kernel;
 
-        typedef hal::kernel_t::launch Parent;
+        typedef hal::kernel_launch Parent;
 
         vdevice &dev_;
 
-        launch(kernel &parent, vdevice &dev, hal::kernel_t::config &conf,
+        launch(kernel &parent, vdevice &dev, hal::kernel_config &conf,
                                              hal::kernel_t::arg_list &args, 
-                                             hal::stream_t &stream, gmacError_t &ret);
+                                             hal::stream &stream, gmacError_t &ret);
 
     public:
         gmacError_t wait();
@@ -102,12 +103,27 @@ public:
 
     const std::string &get_name() const { return hal::kernel_t::get_name(); }
 
-    launch_ptr launch_config(vdevice &dev, hal::kernel_t::config &conf, hal::kernel_t::arg_list &args, hal::stream_t &stream, gmacError_t &err);
+    launch_ptr launch_config(vdevice &dev, hal::kernel_t::config &conf, hal::kernel_t::arg_list &args, hal::stream &stream, gmacError_t &err);
+};
+
+#endif
+
+class GMAC_LOCAL kernel {
+public:
+    class GMAC_LOCAL launch {
+    };
+
+    class GMAC_LOCAL arg_list {
+    };
+
+    typedef launch *launch_ptr;
 };
 
 }}}
 
+#if 0
 #include "kernel-impl.h"
+#endif
 
 #endif
 

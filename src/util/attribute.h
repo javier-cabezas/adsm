@@ -18,7 +18,7 @@ public:
 
     static attribute_id register_attribute()
     {
-        return AtomicInc(id_);
+        return AtomicInc(id_) - 1;
     }
 
     attributes() :

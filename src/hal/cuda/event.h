@@ -18,11 +18,11 @@ namespace cuda {
 class GMAC_LOCAL _event_common_t {
     friend class aspace;
     friend class device;
-    friend class event_ptr;
-    friend class kernel_t;
+    friend class kernel;
+    friend class kernel_cpu;
     friend class list_event;
 
-    stream_t *stream_;
+    stream *stream_;
 
 protected:
     CUevent eventStart_;
@@ -33,27 +33,28 @@ protected:
     // Not instantiable
     _event_common_t();
 
-    void begin(stream_t &stream);
+    void begin(stream &stream);
     void end();
 
-    stream_t &get_stream();
+    stream &get_stream();
 };
 
 class GMAC_LOCAL _event_t :
-    public hal::detail::_event_t<implementation_traits>,
+    public hal::detail::_event,
     public _event_common_t,
     public util::unique<_event_t> {
 
     friend class aspace;
-    friend class event_ptr;
 
-    typedef hal::detail::_event_t<implementation_traits> Parent;
+    typedef hal::detail::_event parent;
 
 protected:
     virtual void reset(bool async, type t);
 
-    _event_t(bool async, Parent::type t, aspace &context);
+    _event_t(bool async, parent::type t, aspace &context);
 public:
+    aspace &get_aspace();
+
     gmacError_t sync();
 
     void set_synced();
@@ -66,9 +67,14 @@ public:
     void operator()(_event_t *ev);
 };
 
+static
+event_ptr
+create_event(bool async, _event_t::type t, aspace &as);
+
+#if 0
 class GMAC_LOCAL event_ptr {
     friend class aspace;
-    friend class kernel_t;
+    friend class kernel;
 
 private:
     util::shared_ptr<_event_t> ptrEvent_;
@@ -147,23 +153,26 @@ public:
         ptrEvent_->add_trigger(fun);
     }
 };
+#endif
 
-typedef hal::detail::list_event<implementation_traits> list_event_detail;
+typedef hal::detail::event_ptr hal_event_ptr;
+typedef hal::detail::list_event list_event_detail;
+typedef hal::detail::stream hal_stream;
 
 class GMAC_LOCAL list_event :
     public list_event_detail,
     protected std::list<event_ptr> {
-    typedef std::list<event_ptr> Parent;
+    typedef std::list<event_ptr> parent;
 
     friend class aspace;
-    friend class kernel_t;
+    friend class kernel;
 
-    void set_barrier(stream_t &stream);
-    void set_synced();
+    void set_barrier(hal_stream &stream);
 public:
     gmacError_t sync();
+    void set_synced();
 
-    void add_event(event_ptr event); 
+    void add_event(hal_event_ptr event); 
 
     size_t size() const;
 };

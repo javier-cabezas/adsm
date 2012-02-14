@@ -5,14 +5,9 @@
 
 namespace __impl { namespace hal { namespace cuda {
 
-device::device(parent::type type, platform &plat, coherence_domain &coherenceDomain) :
-    parent(type, plat, coherenceDomain),
-    gmac::util::mutex<device>("device")
-{
-}
-
-gpu::gpu(CUdevice cudaDevice, platform &plat, coherence_domain &coherenceDomain) :
+device::device(CUdevice cudaDevice, platform &plat, coherence_domain &coherenceDomain) :
     parent(parent::DEVICE_TYPE_GPU, plat, coherenceDomain),
+    lock("device"),
     cudaDevice_(cudaDevice),
     isInfoInitialized_(false)
 {
@@ -27,8 +22,8 @@ gpu::gpu(CUdevice cudaDevice, platform &plat, coherence_domain &coherenceDomain)
     integrated_ = (val != 0);
 }
 
-aspace *
-gpu::create_context(const set_siblings &siblings, gmacError_t &err)
+hal_aspace *
+device::create_aspace(const set_siblings &siblings, gmacError_t &err)
 {
     CUcontext ctx, tmp;
     unsigned int flags = 0;
@@ -55,49 +50,52 @@ gpu::create_context(const set_siblings &siblings, gmacError_t &err)
 }
 
 gmacError_t
-gpu::destroy_context(aspace &context)
+device::destroy_aspace(hal_aspace &_as)
 {
-    CUresult ret = cuCtxDestroy(context());
-    delete &context;
+    aspace &as = reinterpret_cast<aspace &>(_as);
+    CUresult ret = cuCtxDestroy(as());
+    delete &as;
 
     return error(ret);
 }
 
-stream_t *
-gpu::create_stream(aspace &context)
+hal_stream *
+device::create_stream(hal_aspace &_as)
 {
-    context.set(); 
+    aspace &as = reinterpret_cast<aspace &>(_as);
+    as.set(); 
 
-    CUstream stream;
-    CUresult ret = cuStreamCreate(&stream, 0);
+    CUstream s;
+    CUresult ret = cuStreamCreate(&s, 0);
     CFATAL(ret == CUDA_SUCCESS, "Unable to create CUDA stream");
 
-    return new stream_t(stream, context);
+    return new stream(s, as);
 }
 
 gmacError_t
-gpu::destroy_stream(stream_t &stream)
+device::destroy_stream(hal_stream &_s)
 {
-    CUresult ret = cuStreamDestroy(stream());
-    delete &stream;
+    stream &s = reinterpret_cast<stream &>(_s);
+    CUresult ret = cuStreamDestroy(s());
+    delete &s;
 
     return error(ret);
 }
 
 int
-gpu::get_major() const
+device::get_major() const
 {
     return major_;
 }
 
 int
-gpu::get_minor() const
+device::get_minor() const
 {
     return minor_;
 }
 
 size_t
-gpu::get_total_memory() const
+device::get_total_memory() const
 {
     size_t total, dummy;
     CUresult ret = cuMemGetInfo(&dummy, &total);
@@ -106,7 +104,7 @@ gpu::get_total_memory() const
 }
 
 size_t
-gpu::get_free_memory() const
+device::get_free_memory() const
 {
     size_t free, dummy;
     CUresult ret = cuMemGetInfo(&free, &dummy);
@@ -115,7 +113,7 @@ gpu::get_free_memory() const
 }
 
 bool
-gpu::has_direct_copy(const device&_dev) const
+device::has_direct_copy(const hal_device&_dev) const
 {
 #if 0
     const device &dev = reinterpret_cast<const device &>(_dev);
@@ -133,9 +131,9 @@ gpu::has_direct_copy(const device&_dev) const
 }
 
 gmacError_t
-gpu::get_info(GmacDeviceInfo &info)
+device::get_info(GmacDeviceInfo &info)
 {
-    lock();
+    lock::lock();
     if (!isInfoInitialized_) {
         static const size_t MaxAcceleratorNameLength = 128;
         char deviceName[MaxAcceleratorNameLength];
@@ -179,12 +177,13 @@ gpu::get_info(GmacDeviceInfo &info)
 
         isInfoInitialized_ = true;
     }
-    unlock();
+    lock::unlock();
 
     info = info_;
     return gmacSuccess;
 }
 
+#if 0
 cpu::cpu(platform &plat, coherence_domain &coherenceDomain) :
     parent(parent::DEVICE_TYPE_CPU, plat, coherenceDomain)
 {
@@ -242,6 +241,7 @@ cpu::get_info(GmacDeviceInfo &info)
 {
     return gmacSuccess;
 }
+#endif
 
 }}}
 

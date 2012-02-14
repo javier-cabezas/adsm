@@ -12,7 +12,7 @@
 namespace __impl { namespace hal { namespace cuda {
 
 class GMAC_LOCAL coherence_domain :
-    public hal::detail::coherence_domain<device>,
+    public hal::detail::coherence_domain,
     public util::unique<coherence_domain> {
 public:
     coherence_domain();

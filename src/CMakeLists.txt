@@ -17,7 +17,7 @@ add_subdirectory(uvas)
 
 add_subdirectory(libs)
 
-add_subdirectory(hpe)
+# add_subdirectory(hpe)
 
 group_gmac_sources(gmac-common gmac-config gmac-util gmac-dbc gmac-hal gmac-hal-api)
 group_gmac_sources(gmac-trace gmac-trace)

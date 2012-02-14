@@ -44,7 +44,9 @@ process::process() :
 
 process::~process()
 {
+#if 0
     if (thread::has_current_thread()) fini_thread(true);
+#endif
 }
 
 void process::init()
@@ -63,6 +65,7 @@ void process::init_thread(bool userThread, THREAD_T tidParent)
         }
 
         // Set the private per-thread variables
+#if 0
         thread *t = new thread(*this);
         ASSERTION(mapThreads_.find(util::get_thread_id()) == mapThreads_.end(),
                 "Thread already registered");
@@ -71,6 +74,7 @@ void process::init_thread(bool userThread, THREAD_T tidParent)
 
         gmacError_t err = resourceManager_.init_thread(*t, parent);
         ASSERTION(err == gmacSuccess);
+#endif
     }
 }
 

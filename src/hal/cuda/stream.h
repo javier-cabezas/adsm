@@ -13,23 +13,23 @@ namespace __impl { namespace hal {
     
 namespace cuda {
 
-class GMAC_LOCAL stream_t :
-    public hal::detail::stream_t<implementation_traits> {
-    typedef hal::detail::stream_t<implementation_traits> Parent;
+class GMAC_LOCAL stream :
+    public hal::detail::stream {
+
+    typedef hal::detail::stream parent;
 
     CUstream stream_;
 
 public:
-    stream_t(CUstream stream, aspace &context);
+    stream(CUstream stream, aspace &as);
 
-    aspace &get_context();
+    aspace &get_aspace();
 
-    Parent::state query();
+    parent::state query();
     gmacError_t sync();
 
     CUstream &operator()();
     const CUstream &operator()() const;
-
 };
 
 }}}

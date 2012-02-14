@@ -22,6 +22,8 @@
 
 using namespace __impl::core::hpe;
 
+#if 0
+
 SYM(int, pthread_create__, pthread_t *__restrict, __const pthread_attr_t *, void *(*)(void *), void *);
 
 void threadInit(void)
@@ -93,3 +95,5 @@ int pthread_create(pthread_t *__restrict newthread,
     if(externCall) exitGmac();
     return ret;
 }
+
+#endif

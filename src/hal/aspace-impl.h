@@ -3,50 +3,64 @@
 
 namespace __impl { namespace hal { namespace detail {
 
-template <typename I>
 inline
-buffer_t<I>::buffer_t(size_t size, typename I::context &context) :
-    context_(context),
+buffer::buffer(size_t size, aspace &as) :
+    aspace_(as),
     size_(size)
 {
 }
 
-template <typename I>
 inline
-typename I::context &
-buffer_t<I>::get_context()
+aspace &
+buffer::get_aspace()
 {
-    return context_;
+    return aspace_;
 }
 
-template <typename I>
 inline
-const typename I::context &
-buffer_t<I>::get_context() const
+const aspace &
+buffer::get_aspace() const
 {
-    return context_;
+    return aspace_;
 }
 
-template <typename I>
+inline void
+buffer::set_event(event_ptr event)
+{
+    event_ = event;
+}
+
+inline
+gmacError_t
+buffer::wait()
+{
+    gmacError_t ret = gmacSuccess;
+    if (event_) {
+        ret = event_->sync();
+    }
+
+    return ret;
+}
+
+
 inline
 size_t
-buffer_t<I>::get_size() const
+buffer::get_size() const
 {
     return size_;
 }
 
-template <typename I>
 inline
-queue_event<I>::queue_event() :
+queue_event::queue_event() :
     Lock("queue_event")
 {
 }
 
-template <typename I>
-typename I::event *
-queue_event<I>::pop()
+inline
+_event *
+queue_event::pop()
 {
-    typename I::event *ret = NULL;
+    _event *ret = NULL;
 
     Lock::lock();
     if (Parent::size() > 0) {
@@ -58,18 +72,18 @@ queue_event<I>::pop()
     return ret;
 }
 
-template <typename I>
+inline
 void
-queue_event<I>::push(typename I::event &event)
+queue_event::push(_event &event)
 {
 	Lock::lock();
     Parent::push(&event);
     Lock::unlock();
 }
 
-template <typename I>
+inline
 host_ptr
-aspace<I>::get_memory(size_t size)
+aspace::get_memory(size_t size)
 {
     host_ptr mem = (host_ptr) mapMemory_.pop(size);
 
@@ -80,379 +94,45 @@ aspace<I>::get_memory(size_t size)
     return mem;
 }
 
-template <typename I>
 inline void
-aspace<I>::put_memory(void *ptr, size_t size)
+aspace::put_memory(void *ptr, size_t size)
 {
     mapMemory_.push(ptr, size);
 }
 
-template <typename I>
 inline
-aspace<I>::aspace(I_device &dev) :
+aspace::aspace(device &dev) :
     device_(dev),
     nBuffersIn_(0),
     nBuffersOut_(0)
 {
 }
 
-template <typename I>
 inline
-typename aspace<I>::I_device &
-aspace<I>::get_device()
+device &
+aspace::get_device()
 {
     return device_;
 }
 
-template <typename I>
 inline
-const typename aspace<I>::I_device &
-aspace<I>::get_device() const
+const device &
+aspace::get_device() const
 {
     return device_;
 }
 
-
-template <typename I>
-typename I::event_ptr 
-aspace<I>::copy(typename I::ptr dst, typename I::ptr_const src, size_t count, typename I::stream &stream, list_event<I> &_dependencies, gmacError_t &err)
-{
-    typename I::event_ptr ret = copy_backend(dst, src, count, stream, &_dependencies, err);
-    if (err == gmacSuccess) {
-        _dependencies.set_synced();
-    }
-
-    return ret;
-}
-
-template <typename I>
-typename I::event_ptr 
-aspace<I>::copy(typename I::ptr dst, typename I::ptr_const src, size_t count, typename I::stream &stream, typename I::event_ptr event, gmacError_t &err)
-{
-    typename I::event_list list;
-    list.add_event(event);
-
-    typename I::event_ptr ret = copy_backend(dst, src, count, stream, &list, err);
-    if (err == gmacSuccess) {
-        event->set_synced();
-    }
-
-    return ret;
-}
-
-template <typename I>
-typename I::event_ptr 
-aspace<I>::copy(typename I::ptr dst, typename I::ptr_const src, size_t count, typename I::stream &stream, gmacError_t &err)
-{
-    return copy_backend(dst, src, count, stream, NULL, err);
-}
-
-template <typename I>
-typename I::event_ptr
-aspace<I>::copy(typename I::ptr dst, device_input &input, size_t count, typename I::stream &stream, list_event<I> &_dependencies, gmacError_t &err)
-{
-    typename I::event_ptr ret = copy_backend(dst, input, count, stream, &_dependencies, err);
-    if (err == gmacSuccess) {
-        _dependencies.set_synced();
-    }
-
-    return ret;
-}
-
-template <typename I>
-typename I::event_ptr
-aspace<I>::copy(typename I::ptr dst, device_input &input, size_t count, typename I::stream &stream, typename I::event_ptr event, gmacError_t &err)
-{
-    typename I::event_list list;
-    list.add_event(event);
-
-    typename I::event_ptr ret = copy_backend(dst, input, count, stream, &list, err);
-    if (err == gmacSuccess) {
-        event->set_synced();
-    }
-}
-
-template <typename I>
-typename I::event_ptr
-aspace<I>::copy(typename I::ptr dst, device_input &input, size_t count, typename I::stream &stream, gmacError_t &err)
-{
-    return copy_backend(dst, input, count, stream, NULL, err);
-}
-
-template <typename I>
-typename I::event_ptr
-aspace<I>::copy(device_output &output, typename I::ptr_const src, size_t count, typename I::stream &stream, list_event<I> &_dependencies, gmacError_t &err)
-{
-    typename I::event_ptr ret = copy_backend(output, src, count, stream, &_dependencies, err);
-    if (err == gmacSuccess) {
-        _dependencies.set_synced();
-    }
-
-    return ret;
-}
-
-template <typename I>
-typename I::event_ptr
-aspace<I>::copy(device_output &output, typename I::ptr_const src, size_t count, typename I::stream &stream, typename I::event_ptr event, gmacError_t &err)
-{
-    typename I::event_list list;
-    list.add_event(event);
-
-    typename I::event_ptr ret = copy_backend(output, src, count, stream, &list, err);
-    if (err == gmacSuccess) {
-        event->set_synced();
-    }
-
-    return ret;
-}
-
-template <typename I>
-typename I::event_ptr
-aspace<I>::copy(device_output &output, typename I::ptr_const src, size_t count, typename I::stream &stream, gmacError_t &err)
-{
-    return copy_backend(output, src, count, stream, NULL, err);
-}
-
-template <typename I>
-typename I::event_ptr 
-aspace<I>::copy_async(typename I::ptr dst, typename I::ptr_const src, size_t count, typename I::stream &stream, list_event<I> &_dependencies, gmacError_t &err)
-{
-    typename I::event_ptr ret = copy_async_backend(dst, src, count, stream, &_dependencies, err);
-    if (err == gmacSuccess) {
-        _dependencies.set_synced();
-    }
-
-    return ret;
-}
-
-template <typename I>
-typename I::event_ptr 
-aspace<I>::copy_async(typename I::ptr dst, typename I::ptr_const src, size_t count, typename I::stream &stream, typename I::event_ptr event, gmacError_t &err)
-{
-    typename I::event_list list;
-    list.add_event(event);
-
-    typename I::event_ptr ret = copy_async_backend(dst, src, count, stream, &list, err);
-    if (err == gmacSuccess) {
-        event->set_synced();
-    }
-
-    return ret;
-}
-
-template <typename I>
-typename I::event_ptr 
-aspace<I>::copy_async(typename I::ptr dst, typename I::ptr_const src, size_t count, typename I::stream &stream, gmacError_t &err)
-{
-    return copy_async_backend(dst, src, count, stream, NULL, err);
-}
-
-template <typename I>
-typename I::event_ptr
-aspace<I>::copy_async(typename I::ptr dst, device_input &input, size_t count, typename I::stream &stream, list_event<I> &_dependencies, gmacError_t &err)
-{
-    typename I::event_ptr ret = copy_async_backend(dst, input, count, stream, &_dependencies, err);
-    if (err == gmacSuccess) {
-        _dependencies.set_synced();
-    }
-
-    return ret;
-}
-
-template <typename I>
-typename I::event_ptr
-aspace<I>::copy_async(typename I::ptr dst, device_input &input, size_t count, typename I::stream &stream, typename I::event_ptr event, gmacError_t &err)
-{
-    typename I::event_list list;
-    list.add_event(event);
-
-    typename I::event_ptr ret = copy_async_backend(dst, input, count, stream, &list, err);
-    if (err == gmacSuccess) {
-        event->set_synced();
-    }
-
-    return ret;
-}
-
-template <typename I>
-typename I::event_ptr
-aspace<I>::copy_async(typename I::ptr dst, device_input &input, size_t count, typename I::stream &stream, gmacError_t &err)
-{
-    return copy_async_backend(dst, input, count, stream, NULL, err);
-}
-
-template <typename I>
-typename I::event_ptr
-aspace<I>::copy_async(device_output &output, typename I::ptr_const src, size_t count, typename I::stream &stream, list_event<I> &_dependencies, gmacError_t &err)
-{
-    typename I::event_ptr ret = copy_async_backend(output, src, count, stream, &_dependencies, err);
-    if (err == gmacSuccess) {
-        _dependencies.set_synced();
-    }
-
-    return ret;
-}
-
-template <typename I>
-typename I::event_ptr
-aspace<I>::copy_async(device_output &output, typename I::ptr_const src, size_t count, typename I::stream &stream, typename I::event_ptr event, gmacError_t &err)
-{
-    typename I::event_list list;
-    list.add_event(event);
-
-    typename I::event_ptr ret = copy_async_backend(output, src, count, stream, &list, err);
-    if (err == gmacSuccess) {
-        event->set_synced();
-    }
-
-    return ret;
-}
-
-template <typename I>
-typename I::event_ptr
-aspace<I>::copy_async(device_output &output, typename I::ptr_const src, size_t count, typename I::stream &stream, gmacError_t &err)
-{
-    return copy_async_backend(output, src, count, stream, NULL, err);
-}
-
-template <typename I>
-typename I::event_ptr 
-aspace<I>::memset(typename I::ptr dst, int c, size_t count, typename I::stream &stream, list_event<I> &_dependencies, gmacError_t &err)
-{
-    typename I::event_ptr ret = memset_backend(dst, c, count, stream, &_dependencies, err);
-    if (err == gmacSuccess) {
-        _dependencies.set_synced();
-    }
-
-    return ret;
-}
-
-template <typename I>
-typename I::event_ptr 
-aspace<I>::memset(typename I::ptr dst, int c, size_t count, typename I::stream &stream, typename I::event_ptr event, gmacError_t &err)
-{
-    typename I::event_list list;
-    list.add_event(event);
-
-    typename I::event_ptr ret = memset_backend(dst, c, count, stream, &list, err);
-    if (err == gmacSuccess) {
-        event->set_synced();
-    }
-
-    return ret;
-}
-
-template <typename I>
-typename I::event_ptr 
-aspace<I>::memset(typename I::ptr dst, int c, size_t count, typename I::stream &stream, gmacError_t &err)
-{
-    return memset_backend(dst, c, count, stream, NULL, err);
-}
-
-template <typename I>
-typename I::event_ptr 
-aspace<I>::memset_async(typename I::ptr dst, int c, size_t count, typename I::stream &stream, list_event<I> &_dependencies, gmacError_t &err)
-{
-    typename I::event_ptr ret = memset_async_backend(dst, c, count, stream, &_dependencies, err);
-    if (err == gmacSuccess) {
-        _dependencies.set_synced();
-    }
-
-    return ret;
-}
-
-template <typename I>
-typename I::event_ptr 
-aspace<I>::memset_async(typename I::ptr dst, int c, size_t count, typename I::stream &stream, typename I::event_ptr event, gmacError_t &err)
-{
-    typename I::event_list list;
-    list.add_event(event);
-
-    typename I::event_ptr ret = memset_async_backend(dst, c, count, stream, &list, err);
-    if (err == gmacSuccess) {
-        event->set_synced();
-    }
-
-    return ret;
-}
-
-template <typename I>
-typename I::event_ptr 
-aspace<I>::memset_async(typename I::ptr dst, int c, size_t count, typename I::stream &stream, gmacError_t &err)
-{
-    return memset_async_backend(dst, c, count, stream, NULL, err);
-}
-
-template <typename I>
-typename I::buffer *
-aspace<I>::get_input_buffer(size_t size, typename I::stream &stream, typename I::event_ptr event)
-{
-    typename I::buffer *buffer = mapFreeBuffersIn_.pop(size);
-
-    if (buffer == NULL) {
-        nBuffersIn_.lock();
-        if (nBuffersIn_ < MaxBuffersIn_) {
-            nBuffersIn_++;
-            nBuffersIn_.unlock();
-
-            gmacError_t err;
-            buffer = alloc_buffer(size, GMAC_PROT_READ, stream, err);
-            ASSERTION(err == gmacSuccess);
-        } else {
-            nBuffersIn_.unlock();
-            buffer = mapUsedBuffersIn_.pop(size);
-            buffer->wait();
-        }
-    } else {
-        TRACE(LOCAL, "Reusing input buffer");
-    }
-
-    buffer->set_event(event);
-
-    mapUsedBuffersIn_.push(buffer, buffer->get_size());
-
-    return buffer;
-}
-
-template <typename I>
-typename I::buffer *
-aspace<I>::get_output_buffer(size_t size, typename I::stream &stream, typename I::event_ptr event)
-{
-    typename I::buffer *buffer = mapFreeBuffersOut_.pop(size);
-
-    if (buffer == NULL) {
-        if (nBuffersOut_ < MaxBuffersOut_) {
-            gmacError_t err;
-
-            buffer = alloc_buffer(size, GMAC_PROT_WRITE, stream, err);
-            ASSERTION(err == gmacSuccess);
-            nBuffersOut_++;
-        } else {
-            buffer = mapUsedBuffersOut_.pop(size);
-            buffer->wait();
-        }
-    } else {
-        TRACE(LOCAL, "Reusing output buffer");
-    }
-
-    buffer->set_event(event);
-
-    mapUsedBuffersOut_.push(buffer, buffer->get_size());
-
-    return buffer;
-}
-
-template <typename I>
+inline
 void
-aspace<I>::put_input_buffer(typename I::buffer &buffer)
+aspace::put_input_buffer(buffer &buffer)
 {
     mapUsedBuffersIn_.remove(&buffer, buffer.get_size());
     mapFreeBuffersIn_.push(&buffer, buffer.get_size());
 }
 
-template <typename I>
+inline
 void
-aspace<I>::put_output_buffer(typename I::buffer &buffer)
+aspace::put_output_buffer(buffer &buffer)
 {
     mapUsedBuffersOut_.remove(&buffer, buffer.get_size());
     mapFreeBuffersOut_.push(&buffer, buffer.get_size());

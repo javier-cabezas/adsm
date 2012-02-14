@@ -193,6 +193,12 @@ namespace __impl { namespace util {
 	{
 		const static bool value = is_pointer<T>::value || is_shared_ptr<T>::value;
 	};
+
+    template <typename T, typename T2>
+    shared_ptr<T> reinterpret_ptr(const shared_ptr<T2> &ptr)
+    {
+        return shared_ptr<T>(ptr, reinterpret_cast<T *>(ptr.get()));
+    }
 }}
 
 #endif

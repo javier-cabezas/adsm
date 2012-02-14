@@ -43,22 +43,22 @@ object::set_last_event(hal::event_ptr event)
 
     lock::lock();
     switch (event->get_type()) {
-    case hal::event_ptr::type::TransferToHost:
+    case hal::event_type::TransferToHost:
         lastToHost_ = event;
         break;
-    case hal::event_ptr::type::TransferToDevice:
+    case hal::event_type::TransferToDevice:
         lastToDevice_ = event;
         break;
-    case hal::event_ptr::type::TransferHost:
+    case hal::event_type::TransferHost:
         lastHost_ = event;
         break;
-    case hal::event_ptr::type::TransferDevice:
+    case hal::event_type::TransferDevice:
         lastDevice_ = event;
         break;
-    case hal::event_ptr::type::Kernel:
+    case hal::event_type::Kernel:
         lastKernel_ = event;
         break;
-    case hal::event_ptr::type::Invalid:
+    case hal::event_type::Invalid:
         goto no_update_last_event;
     }
 
@@ -68,21 +68,21 @@ no_update_last_event:
 }
 
 inline hal::event_ptr
-object::get_last_event(hal::event_ptr::type type) const
+object::get_last_event(hal::event_type type) const
 {
     lock::lock();
     switch (type) {
-    case hal::event_ptr::type::TransferToHost:
+    case hal::event_type::TransferToHost:
         return lastToHost_;
-    case hal::event_ptr::type::TransferToDevice:
+    case hal::event_type::TransferToDevice:
         return lastToDevice_;
-    case hal::event_ptr::type::TransferHost:
+    case hal::event_type::TransferHost:
         return lastHost_;
-    case hal::event_ptr::type::TransferDevice:
+    case hal::event_type::TransferDevice:
         return lastDevice_;
-    case hal::event_ptr::type::Kernel:
+    case hal::event_type::Kernel:
         return lastKernel_;
-    case hal::event_ptr::type::Invalid:
+    case hal::event_type::Invalid:
         return hal::event_ptr();
     }
     lock::unlock();

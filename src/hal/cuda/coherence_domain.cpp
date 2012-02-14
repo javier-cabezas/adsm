@@ -4,7 +4,7 @@
 namespace __impl { namespace hal { namespace cuda {
 
 coherence_domain::coherence_domain() :
-    hal::detail::coherence_domain<device>()
+    hal::detail::coherence_domain()
 {
 }
 

@@ -402,7 +402,7 @@ public:
     TESTABLE gmacError_t memcpy_from_object(host_ptr dst,
                                             size_t objOffset, size_t count);
     
-    hal::event_ptr get_last_event(hal::event_ptr::type type) const;
+    hal::event_ptr get_last_event(hal::event_type type) const;
 
 #if 0
     void lock() const

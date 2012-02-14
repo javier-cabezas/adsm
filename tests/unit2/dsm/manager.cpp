@@ -7,7 +7,7 @@
 #include "gtest/gtest.h"
 
 static __impl::hal::device *device = NULL;
-static __impl::hal::aspace *ctx1 = NULL;
+static __impl::hal::aspace *as1    = NULL;
 static manager *mgr = NULL;
 
 __impl::hal::ptr::backend_type
@@ -30,26 +30,29 @@ const size_t manager_mapping_test::MAP5_SIZE = 0x0800;
 void
 manager_mapping_test::SetUpTestCase()
 {
-    if (device == NULL) {
-        // Inititalize platform
-        gmacError_t err = __impl::hal::init();
-        ASSERT_TRUE(err == gmacSuccess);
-        // Get platforms
-        __impl::hal::list_platform platforms = __impl::hal::get_platforms();
-        ASSERT_TRUE(platforms.size() > 0);
-        // Get devices
-        __impl::hal::platform::list_device devices = platforms.front()->get_devices(__impl::hal::device::DEVICE_TYPE_GPU);
-        ASSERT_TRUE(devices.size() > 0);
-        device = devices.front();
-        mgr = new manager();
-        // Create address space
-        ctx1 = device->create_context(__impl::hal::device::None, err);
-        ASSERT_TRUE(err == gmacSuccess);
-    }
+    // Inititalize platform
+    gmacError_t err = __impl::hal::init();
+    ASSERT_TRUE(err == gmacSuccess);
+    // Get platforms
+    __impl::hal::list_platform platforms = __impl::hal::get_platforms();
+    ASSERT_TRUE(platforms.size() > 0);
+    // Get devices
+    __impl::hal::platform::list_device devices = platforms.front()->get_devices(__impl::hal::device::DEVICE_TYPE_GPU);
+    ASSERT_TRUE(devices.size() > 0);
+    device = devices.front();
+    mgr = new manager();
+    // Create address space
+    as1 = device->create_aspace(__impl::hal::device::None, err);
+    ASSERT_TRUE(err == gmacSuccess);
 }
 
 void manager_mapping_test::TearDownTestCase()
 {
+    gmacError_t err;
+    err = device->destroy_aspace(*as1);
+    ASSERT_TRUE(err == gmacSuccess);
+
+    __impl::hal::fini();
 }
 
 TEST_F(manager_mapping_test, mappings_in_range)
@@ -57,7 +60,7 @@ TEST_F(manager_mapping_test, mappings_in_range)
     gmacError_t err;
 
     // We will use the same base allocation
-    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), ctx1) + MAP0_OFF;
+    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), as1) + MAP0_OFF;
     ptr p1 = p0 + (MAP1_OFF - MAP0_OFF);
     ptr p2 = p0 + (MAP2_OFF - MAP0_OFF);
     ptr p3 = p0 + (MAP3_OFF - MAP0_OFF);
@@ -91,17 +94,17 @@ TEST_F(manager_mapping_test, mappings_in_range)
     err = m5->append(b5);
     ASSERT_TRUE(err == gmacSuccess);
 
-    err = mgr->helper_insert(*ctx1, m0);
+    err = mgr->helper_insert(*as1, m0);
     ASSERT_TRUE(err == gmacSuccess);
-    err = mgr->helper_insert(*ctx1, m1);
+    err = mgr->helper_insert(*as1, m1);
     ASSERT_TRUE(err == gmacSuccess);
-    err = mgr->helper_insert(*ctx1, m2);
+    err = mgr->helper_insert(*as1, m2);
     ASSERT_TRUE(err == gmacSuccess);
-    err = mgr->helper_insert(*ctx1, m3);
+    err = mgr->helper_insert(*as1, m3);
     ASSERT_TRUE(err == gmacSuccess);
-    err = mgr->helper_insert(*ctx1, m4);
+    err = mgr->helper_insert(*as1, m4);
     ASSERT_TRUE(err == gmacSuccess);
-    err = mgr->helper_insert(*ctx1, m5);
+    err = mgr->helper_insert(*as1, m5);
     ASSERT_TRUE(err == gmacSuccess);
 
     delete b0;

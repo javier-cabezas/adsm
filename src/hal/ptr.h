@@ -24,7 +24,7 @@ furnished to do so, subject to the following conditions:
      derived from this Software without specific prior written permission.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+IMPLIED, DNCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
 CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
@@ -72,24 +72,37 @@ protected:
     }
 };
 
-template <bool Const, typename Ptr, typename Ctx>
-class GMAC_LOCAL _base_ptr_t :
-    public _common_ptr_t<Const> {
+template <bool C, typename T, typename T2>
+struct static_union {
+    typedef T type;
+};
 
-    typedef _common_ptr_t<Const> parent;
+template <typename T, typename T2>
+struct static_union<false, T, T2> {
+    typedef T2 type;
+};
 
-    friend class _base_ptr_t<false, Ptr, Ctx>;
-    friend class _base_ptr_t<true,  Ptr, Ctx>;
+template <bool Const, typename Ptr, typename Aspace, typename D>
+class GMAC_LOCAL _base_ptr_t {
+    friend class _base_ptr_t<false, Ptr, Aspace, D>;
+    friend class _base_ptr_t<true,  Ptr, Aspace, D>;
 
 protected:
+    typedef typename static_union<Const, host_const_ptr, host_ptr>::type HPtr;
+
+    Aspace *aspace_;
+
+    HPtr ptrHost_;
     Ptr ptrDev_;
-    Ctx *ctx_;
+
+    //static_union<Const, host_const_ptr, host_ptr> ptr_;
+
 
 public:
     static const char *address_fmt;
     static const char *offset_fmt;
 
-    typedef typename parent::address_type address_type;
+    typedef HPtr address_type;
     typedef size_t offset_type;
 
     typedef Ptr backend_ptr;
@@ -103,70 +116,72 @@ public:
 
     inline
     _base_ptr_t() :
-        parent(0),
-        ptrDev_(0),
-        ctx_(0)
+        aspace_(0),
+        ptrHost_(0),
+        ptrDev_(0)
     {
     }
 
     inline
-    _base_ptr_t(Ptr ptr, Ctx *ctx) :
-        parent(0),
-        ptrDev_(ptr),
-        ctx_(ctx)
+    _base_ptr_t(Ptr ptr, Aspace *aspace) :
+        aspace_(aspace),
+        ptrHost_(0),
+        ptrDev_(ptr)
     {
+        ASSERTION(aspace != NULL);
     }
 
     inline
-    explicit _base_ptr_t(host_ptr ptr) :
-        parent(ptr),
-        ptrDev_(0),
-        ctx_(0)
+    explicit _base_ptr_t(host_ptr ptr, Aspace *aspace) :
+        aspace_(aspace),
+        ptrHost_(ptr),
+        ptrDev_(0)
     {
+        ASSERTION(aspace != NULL);
     }
 
     template <bool Const2 = Const>
     inline
-    explicit _base_ptr_t(typename std::enable_if<Const2, host_const_ptr>::type ptr) :
-        parent(ptr),
-        ptrDev_(0),
-        ctx_(0)
+    explicit _base_ptr_t(typename std::enable_if<Const2, host_const_ptr>::type ptr, Aspace *aspace) :
+        aspace_(aspace),
+        ptrHost_(ptr),
+        ptrDev_(0)
     {
+        ASSERTION(aspace != NULL);
     }
-
 
     inline
     _base_ptr_t(const _base_ptr_t &ptr) :
-        parent(ptr),
-        ptrDev_(ptr.ptrDev_),
-        ctx_(ptr.ctx_)
+        aspace_(ptr.aspace_),
+        ptrHost_(ptr.ptrHost_),
+        ptrDev_(ptr.ptrDev_)
     {
     }
 
     template <bool Const2>
     inline
-    _base_ptr_t(const _base_ptr_t<Const2, Ptr, Ctx> &ptr) :
-        parent(ptr.ptrHost_),
-        ptrDev_(ptr.ptrDev_),
-        ctx_(ptr.ctx_)
+    _base_ptr_t(const _base_ptr_t<Const2, Ptr, Aspace, D> &ptr) :
+        aspace_(ptr.aspace_),
+        ptrHost_(ptr.ptrHost_),
+        ptrDev_(ptr.ptrDev_)
     {
     }
 
     inline
     operator bool() const
     {
-        return (this->get_context() != NULL && ptrDev_ != NULL) || this->ptrHost_ != NULL;
+        return (this->get_aspace() != NULL);
     }
 
     template <bool Const2>
     inline
     _base_ptr_t &
-    operator=(const typename std::enable_if<!Const && Const2, _base_ptr_t<Const2, Ptr, Ctx> >::type &ptr)
+    operator=(const typename std::enable_if<!Const && Const2, _base_ptr_t<Const2, Ptr, Aspace, D> >::type &ptr)
     {
         if (this != &ptr) {
-            this->ptrHost_ = ptr.ptrHost_;
+            ptrHost_ = ptr.ptrHost_;
             ptrDev_ = ptr.ptrDev_;
-            ctx_    = ptr.ctx_;
+            aspace_ = ptr.aspace_;
         }
         return *this;
     }
@@ -174,11 +189,11 @@ public:
     template <bool Const2>
     inline
     bool
-    operator==(const _base_ptr_t<Const2, Ptr, Ctx> &ptr) const
+    operator==(const _base_ptr_t<Const2, Ptr, Aspace, D> &ptr) const
     {
-        ASSERTION(ptr.ctx_ == this->ctx_, "Comparing pointers from different address spaces");
+        ASSERTION(ptr.aspace_ == this->aspace_, "Comparing pointers from different address spaces");
         bool ret;
-        if (ctx_ == NULL) {
+        if (is_host_ptr()) {
             ret = (this->ptrHost_ == ptr.ptrHost_);
         } else {
             ret = (ptrDev_ == ptr.ptrDev_);
@@ -189,7 +204,7 @@ public:
     template <bool Const2>
     inline
     bool
-    operator!=(const _base_ptr_t<Const2, Ptr, Ctx> &ptr) const
+    operator!=(const _base_ptr_t<Const2, Ptr, Aspace, D> &ptr) const
     {
         return !(*this == ptr);
     }
@@ -197,12 +212,12 @@ public:
     template <bool Const2>
     inline
     bool
-    operator<(const _base_ptr_t<Const2, Ptr, Ctx> &ptr) const
+    operator<(const _base_ptr_t<Const2, Ptr, Aspace, D> &ptr) const
     {
-        ASSERTION(ptr.ctx_ == this->ctx_, "Comparing pointers from different address spaces");
+        ASSERTION(ptr.aspace_ == this->aspace_, "Comparing pointers from different address spaces");
 
         bool ret;
-        if (ctx_ == NULL) {
+        if (is_host_ptr()) {
             return this->ptrHost_ < ptr.ptrHost_;
         } else {
             return ptrDev_  < ptr.ptrDev_;
@@ -213,12 +228,12 @@ public:
     template <bool Const2>
     inline
     bool
-    operator<=(const _base_ptr_t<Const2, Ptr, Ctx> &ptr) const
+    operator<=(const _base_ptr_t<Const2, Ptr, Aspace, D> &ptr) const
     {
-        ASSERTION(ptr.ctx_ == this->ctx_, "Comparing pointers from different address spaces");
+        ASSERTION(ptr.aspace_ == this->aspace_, "Comparing pointers from different address spaces");
 
         bool ret;
-        if (ctx_ == NULL) {
+        if (is_host_ptr()) {
             return this->ptrHost_ <= ptr.ptrHost_;
         } else {
             return ptrDev_  <= ptr.ptrDev_;
@@ -229,12 +244,12 @@ public:
     template <bool Const2>
     inline
     bool
-    operator>(const _base_ptr_t<Const2, Ptr, Ctx> &ptr) const
+    operator>(const _base_ptr_t<Const2, Ptr, Aspace, D> &ptr) const
     {
-        ASSERTION(ptr.ctx_ == this->ctx_, "Comparing pointers from different address spaces");
+        ASSERTION(ptr.aspace_ == this->aspace_, "Comparing pointers from different address spaces");
 
         bool ret;
-        if (ctx_ == NULL) {
+        if (is_host_ptr()) {
             return this->ptrHost_ > ptr.ptrHost_;
         } else {
             return ptrDev_  > ptr.ptrDev_;
@@ -245,15 +260,15 @@ public:
     template <bool Const2>
     inline
     bool
-    operator>=(const _base_ptr_t<Const2, Ptr, Ctx> &ptr) const
+    operator>=(const _base_ptr_t<Const2, Ptr, Aspace, D> &ptr) const
     {
-        ASSERTION(ptr.ctx_ == this->ctx_, "Comparing pointers from different address spaces");
+        ASSERTION(ptr.aspace_ == this->aspace_, "Comparing pointers from different address spaces");
 
         bool ret;
-        if (ctx_ == NULL) {
+        if (is_host_ptr()) {
             return this->ptrHost_ >= ptr.ptrHost_;
         } else {
-            return ptrDev_  >= ptr.ptrDev_;
+            return this->ptrDev_  >= ptr.ptrDev_;
         }
         return ret;
 
@@ -264,10 +279,10 @@ public:
     _base_ptr_t &
     operator+=(const T &off)
     {
-        if (ctx_ == NULL) {
+        if (is_host_ptr()) {
             this->ptrHost_ += off;
         } else {
-            ptrDev_ += off;
+            this->ptrDev_ += off;
         }
         return *this;
     }
@@ -287,11 +302,11 @@ public:
     _base_ptr_t &
     operator-=(const T &off)
     {
-        if (ctx_ == NULL) {
+        if (is_host_ptr()) {
             ASSERTION(this->ptrHost_ >= host_ptr(off));
             this->ptrHost_ -= off;
         } else {
-            ptrDev_ -= off;
+            this->ptrDev_ -= off;
         }
         return *this;
     }
@@ -311,7 +326,7 @@ public:
     get_base() const
     {
         ASSERTION(is_device_ptr());
-        return ptrDev_.get_base();
+        return this->ptrDev_.get_base();
     }
 
     template <bool Const2 = Const>
@@ -349,51 +364,60 @@ public:
     get_offset() const
     {
         ASSERTION(is_device_ptr());
-        return ptrDev_.offset();
+        return this->ptrDev_.offset();
     }
 
+#if 0
     template <bool Const2 = Const>
     inline
-    typename std::enable_if<!Const2, Ctx>::type *
-    get_context()
+    typename std::enable_if<!Const2, Aspace>::type *
+    get_aspace()
     {
-        return ctx_;
+        return aspace_;
+    }
+#endif
+
+    inline
+    Aspace *
+    get_aspace()
+    {
+        return aspace_;
     }
 
     inline
-    const Ctx *
-    get_context() const
+    const Aspace *
+    get_aspace() const
     {
-        return ctx_;
+        return aspace_;
     }
 
     inline
     bool
     is_host_ptr() const
     {
-        return this->ctx_ == NULL;
+        return this->aspace_->get_device().get_type() == D::DEVICE_TYPE_CPU;
     }
 
     inline
     bool
     is_device_ptr() const
     {
-        return this->ctx_ != NULL;
+        return this->aspace_->get_device().get_type() != D::DEVICE_TYPE_CPU;
     }
 };
 
-template <bool Const, typename Ptr, typename Ctx>
-const char *_base_ptr_t<Const, Ptr, Ctx>::address_fmt = "%p";
+template <bool Const, typename Ptr, typename Aspace, typename D>
+const char *_base_ptr_t<Const, Ptr, Aspace, D>::address_fmt = "%p";
 
-template <bool Const, typename Ptr, typename Ctx>
-const char *_base_ptr_t<Const, Ptr, Ctx>::offset_fmt = FMT_SIZE;
+template <bool Const, typename Ptr, typename Aspace, typename D>
+const char *_base_ptr_t<Const, Ptr, Aspace, D>::offset_fmt = FMT_SIZE;
 
 
-template <typename Ptr, typename Ctx>
+template <typename Ptr, typename Aspace, typename D>
 class GMAC_LOCAL _const_ptr_t :
-    public _base_ptr_t<true, Ptr, Ctx> {
-    typedef _base_ptr_t<true, Ptr, Ctx> parent;
-    typedef _base_ptr_t<false, Ptr, Ctx> parent_noconst;
+    public _base_ptr_t<true, Ptr, Aspace, D> {
+    typedef _base_ptr_t<true, Ptr, Aspace, D> parent;
+    typedef _base_ptr_t<false, Ptr, Aspace, D> parent_noconst;
 
 public:
     inline
@@ -403,20 +427,20 @@ public:
     }
 
     inline
-    _const_ptr_t(Ptr ptr, Ctx *ctx) :
-        parent(ptr, ctx)
+    _const_ptr_t(Ptr ptr, Aspace *aspace) :
+        parent(ptr, aspace)
     {
     }
 
     inline
-    explicit _const_ptr_t(host_const_ptr ptr) :
-        parent(ptr)
+    explicit _const_ptr_t(host_const_ptr ptr, Aspace *aspace) :
+        parent(ptr, aspace)
     {
     }
 
     inline
-    explicit _const_ptr_t(host_ptr ptr) :
-        parent(ptr)
+    explicit _const_ptr_t(host_ptr ptr, Aspace *aspace) :
+        parent(ptr, aspace)
     {
     }
 
@@ -433,10 +457,10 @@ public:
     }
 };
 
-template <typename Ptr, typename Ctx>
+template <typename Ptr, typename Aspace, typename D>
 class GMAC_LOCAL _ptr_t :
-    public _base_ptr_t<false, Ptr, Ctx> {
-    typedef _base_ptr_t<false, Ptr, Ctx> parent;
+    public _base_ptr_t<false, Ptr, Aspace, D> {
+    typedef _base_ptr_t<false, Ptr, Aspace, D> parent;
 
 public:
     inline
@@ -446,14 +470,14 @@ public:
     }
 
     inline
-    _ptr_t(Ptr ptr, Ctx *ctx) :
-        parent(ptr, ctx)
+    _ptr_t(Ptr ptr, Aspace *aspace) :
+        parent(ptr, aspace)
     {
     }
 
     inline
-    explicit _ptr_t(host_ptr ptr) :
-        parent(ptr)
+    explicit _ptr_t(host_ptr ptr, Aspace *aspace) :
+        parent(ptr, aspace)
     {
     }
 
@@ -468,11 +492,42 @@ public:
         parent(ptr)
     {
     }
+
+    static _ptr_t null;
 };
+
+
+template <typename Ptr, typename Aspace, typename D>
+_ptr_t<Ptr, Aspace, D> _ptr_t<Ptr, Aspace, D>::null = _ptr_t();
 
 }}
 
-#include "ptr-impl.h"
+#ifdef USE_CUDA
+#include "cuda/ptr.h"
+#else
+#include "opencl/ptr.h"
+#endif
+
+namespace __impl { namespace hal { namespace detail {
+class aspace;
+class device;
+}}}
+
+namespace __impl { namespace hal {
+typedef __impl::hal::_ptr_t<
+                            _cuda_ptr_t,
+                            detail::aspace,
+                            detail::device
+                            > ptr;
+
+typedef __impl::hal::_const_ptr_t<
+                                   _cuda_ptr_t,
+                                   detail::aspace,
+                                   detail::device
+                                 > const_ptr;
+}}
+
+//#include "ptr-impl.h"
 
 #endif /* PTR_H */
 

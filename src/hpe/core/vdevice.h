@@ -49,6 +49,7 @@ WITH THE SOFTWARE.  */
 
 #include "kernel.h"
 
+#if 0
 namespace __impl {
 
 namespace memory {
@@ -56,6 +57,7 @@ namespace memory {
     class map_object;
     class block;
 }
+
 
 namespace core {
 
@@ -81,7 +83,7 @@ protected:
 
     address_space_ptr aspace_;
 
-    hal::stream_t &streamLaunch_;
+    hal::stream &streamLaunch_;
 #ifdef USE_VM
     __impl::memory::vm::Bitmap bitmap_;
 #endif
@@ -113,7 +115,7 @@ public:
     */
     vdevice(process &proc,
             address_space_ptr aspace,
-            hal::stream_t &streamLaunch);
+            hal::stream &streamLaunch);
 
 #if 0
     /**
@@ -232,7 +234,7 @@ public:
      */
     //gmacError_t prepareForCall();
 
-    hal::stream_t &eventStream();
+    hal::stream &eventStream();
 
     /**
      * Tells if the accelerator on which the vdevice is running shares memory with the CPU
@@ -248,7 +250,9 @@ public:
 
 }}}
 
+
 #include "vdevice-impl.h"
+#endif
 
 #ifdef USE_DBC
 #include "hpe/core/dbc/vdevice.h"

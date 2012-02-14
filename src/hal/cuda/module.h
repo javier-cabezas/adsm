@@ -120,8 +120,10 @@ public:
 
 typedef std::vector<module_descriptor *> vector_module_descriptor;
 
+typedef hal::detail::kernel hal_kernel;
+
 class GMAC_LOCAL code_repository :
-    public hal::detail::code_repository<implementation_traits> {
+    public hal::detail::code_repository {
 protected:
 
 	std::vector<CUmodule> mods_;
@@ -130,7 +132,7 @@ protected:
 	typedef std::map<cuda_variable_t, variable_t> map_variable;
 	typedef std::map<std::string, variable_t> map_variable_name;
 	typedef std::map<cuda_texture_t, texture_t> map_texture;
-    typedef std::map<gmac_kernel_id_t, kernel_t *> map_kernel;
+    typedef std::map<gmac_kernel_id_t, kernel *> map_kernel;
 
     map_kernel kernels_;
     map_variable variables_;
@@ -150,8 +152,8 @@ public:
     void register_kernels(T &t) const;
 #endif
 
-    kernel_t *get_kernel(gmac_kernel_id_t key);
-    kernel_t *get_kernel(const std::string &name);
+    hal_kernel *get_kernel(gmac_kernel_id_t key);
+    hal_kernel *get_kernel(const std::string &name);
 
     const variable_t *variable(cuda_variable_t key) const;
 	const variable_t *constant(cuda_variable_t key) const;

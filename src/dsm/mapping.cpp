@@ -101,7 +101,7 @@ gmacError_t
 mapping::append(mapping_ptr map)
 {
     if ((map->addr_.get_offset()  <  (addr_.get_offset() + size_)) ||
-        (map->addr_.get_context() != (addr_.get_context()))) {
+        (map->addr_.get_aspace() !=  (addr_.get_aspace()))) {
         return gmacErrorInvalidValue;
     }
 

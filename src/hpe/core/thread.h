@@ -61,6 +61,7 @@ public:
 };
 #endif
 
+#if 0
 /** Contains some thread-dependent values */
 class GMAC_LOCAL thread :
     public core::thread {
@@ -108,6 +109,7 @@ public:
 
     static thread &get_current_thread();
 };
+#endif
 
 }}}
 
@@ -115,7 +117,7 @@ public:
 
 #ifdef USE_DBC
 namespace __dbc { namespace core { namespace hpe {
-    typedef __impl::core::hpe::thread thread;
+    //typedef __impl::core::hpe::thread thread;
 }}}
 #endif
 

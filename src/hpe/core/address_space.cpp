@@ -19,10 +19,10 @@ address_space::get_context()
 #endif
 
 address_space::address_space(hal::aspace &context,
-                             hal::stream_t &streamLaunch,
-                             hal::stream_t &streamToAccelerator,
-                             hal::stream_t &streamToHost,
-                             hal::stream_t &streamAccelerator,
+                             hal::stream &streamLaunch,
+                             hal::stream &streamToAccelerator,
+                             hal::stream &streamToHost,
+                             hal::stream &streamAccelerator,
                              process &proc) :
     parent(parent::Device),
     lock("address_space"),
@@ -147,17 +147,17 @@ address_space::copy(hal::ptr dst, hal::const_ptr src, size_t count)
         src.is_device_ptr()) {
         // TODO: use the event
         // hal::event_ptr event =
-        ctx_.copy(dst, src, count, streamAccelerator_, ret);
+        hal::copy(dst, src, count, streamAccelerator_, ret);
     } else if (dst.is_device_ptr() &&
                src.is_host_ptr()) {
         // TODO: use the event
         // hal::event_ptr event =
-        ctx_.copy(dst, src, count, streamToAccelerator_, ret);
+        hal::copy(dst, src, count, streamToAccelerator_, ret);
     } else if (dst.is_host_ptr() &&
                src.is_device_ptr()) {
         // TODO: use the event
         // hal::event_ptr event =
-        ctx_.copy(dst, src, count, streamToHost_, ret);
+        hal::copy(dst, src, count, streamToHost_, ret);
     } else if (dst.is_host_ptr() &&
                src.is_host_ptr()) {
         // TODO: use the event
@@ -178,7 +178,7 @@ address_space::copy(hal::ptr dst, hal::device_input &input, size_t count)
 
     // TODO: use the event
     // hal::event_ptr event =
-        ctx_.copy(dst, input, count, streamToAccelerator_, ret);
+        hal::copy(dst, input, count, streamToAccelerator_, ret);
     return ret;
 }
 
@@ -189,7 +189,7 @@ address_space::copy(hal::device_output &output, hal::const_ptr src, size_t count
 
     // TODO: use the event
     // hal::event_ptr event =
-        ctx_.copy(output, src, count, streamToHost_, ret);
+        hal::copy(output, src, count, streamToHost_, ret);
     return ret;
 }
 
@@ -200,13 +200,13 @@ address_space::copy_async(hal::ptr dst, hal::const_ptr src, size_t count, gmacEr
 
     if (dst.is_device_ptr() &&
         src.is_device_ptr()) {
-        ret = ctx_.copy_async(dst, src, count, streamAccelerator_, err);
+        ret = hal::copy_async(dst, src, count, streamAccelerator_, err);
     } else if (dst.is_device_ptr() &&
                src.is_host_ptr()) {
-        ret = ctx_.copy_async(dst, src, count, streamToAccelerator_, err);
+        ret = hal::copy_async(dst, src, count, streamToAccelerator_, err);
     } else if (dst.is_host_ptr() &&
                src.is_device_ptr()) {
-        ret = ctx_.copy_async(dst, src, count, streamToHost_, err);
+        ret = hal::copy_async(dst, src, count, streamToHost_, err);
     } else if (dst.is_host_ptr() &&
                src.is_host_ptr()) {
         memcpy(dst.get_host_addr(),
@@ -222,14 +222,14 @@ address_space::copy_async(hal::ptr dst, hal::const_ptr src, size_t count, gmacEr
 hal::event_ptr
 address_space::copy_async(hal::ptr dst, hal::device_input &input, size_t count, gmacError_t &err)
 {
-    hal::event_ptr ret = ctx_.copy_async(dst, input, count, streamToAccelerator_, err);
+    hal::event_ptr ret = hal::copy_async(dst, input, count, streamToAccelerator_, err);
     return ret;
 }
 
 hal::event_ptr
 address_space::copy_async(hal::device_output &output, hal::const_ptr src, size_t count, gmacError_t &err)
 {
-    hal::event_ptr ret = ctx_.copy_async(output, src, count, streamToHost_, err);
+    hal::event_ptr ret = hal::copy_async(output, src, count, streamToHost_, err);
     return ret;
 }
 
@@ -240,14 +240,14 @@ address_space::memset(hal::ptr addr, int c, size_t count)
 
     // TODO: use the event
     // hal::event_ptr event =
-        ctx_.memset(addr, c, count, streamAccelerator_, ret);
+        hal::memset(addr, c, count, streamAccelerator_, ret);
     return ret;
 }
 
 hal::event_ptr
 address_space::memset_async(hal::ptr addr, int c, size_t count, gmacError_t &err)
 {
-    hal::event_ptr ret = ctx_.memset_async(addr, c, count, streamAccelerator_, err);
+    hal::event_ptr ret = hal::memset_async(addr, c, count, streamAccelerator_, err);
 
     return ret;
 }
@@ -269,8 +269,10 @@ address_space::get_kernel(gmac_kernel_id_t k)
     } else {
         const hal::kernel_t *kernelHal = ctx_.get_code_repository().get_kernel(k);
         if (kernelHal != NULL) {
+#if 0
             ret = new kernel(*kernelHal);
             kernels_.insert(map_kernel::value_type(k, ret));
+#endif
         }
     }
     return ret;

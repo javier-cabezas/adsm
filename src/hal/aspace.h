@@ -11,6 +11,8 @@
 #include "util/locked_counter.h"
 #include "util/trigger.h"
 
+#include "ptr.h"
+
 namespace __impl { namespace hal {
 
 namespace detail {
@@ -87,13 +89,14 @@ public:
     }
 };
 
-
-
-template <typename I>
+class aspace;
+class _event;
+class kernel;
+class stream;
 class list_event;
+typedef util::shared_ptr<_event> event_ptr;
 
-template <typename I>
-class GMAC_LOCAL buffer_t {
+class GMAC_LOCAL buffer {
 public:
     enum type {
         ToHost,
@@ -101,81 +104,61 @@ public:
         DeviceToDevice
     };
 private:
-    typename I::context &context_;
+    aspace &aspace_;
     size_t size_;
 
-    typename I::event_ptr event_;
+    event_ptr event_;
 
 protected:
-    buffer_t(size_t size, typename I::context &context);
+    buffer(size_t size, aspace &as);
 
     type get_type() const;
 
 public:
     virtual host_ptr get_addr() = 0;
-    virtual typename I::ptr get_device_addr() = 0;
-    typename I::context &get_context();
-    const typename I::context &get_context() const;
+    virtual ptr get_device_addr() = 0;
+    aspace &get_aspace();
+    const aspace &get_aspace() const;
     size_t get_size() const;
 
-    void set_event(typename I::event_ptr event)
-    {
-        event_ = event;
-    }
+    void set_event(event_ptr event);
 
-    gmacError_t wait()
-    {
-        gmacError_t ret = gmacSuccess;
-        if (event_) {
-            ret = event_->sync();
-        }
-
-        return ret;
-    }
+    gmacError_t wait();
 };
 
-template <typename I>
 class GMAC_LOCAL code_repository
 {
 public:
-    virtual typename I::kernel *get_kernel(gmac_kernel_id_t key) = 0;
-    virtual typename I::kernel *get_kernel(const std::string &name) = 0;
+    virtual kernel *get_kernel(gmac_kernel_id_t key) = 0;
+    virtual kernel *get_kernel(const std::string &name) = 0;
 };
 
-template <typename I>
 class GMAC_LOCAL queue_event :
-    std::queue<typename I::event *>,
-    gmac::util::spinlock<queue_event<I> > {
+    std::queue<_event *>,
+    gmac::util::spinlock<queue_event> {
 
-    typedef std::queue<typename I::event *> Parent;
-    typedef gmac::util::spinlock<queue_event<I> > Lock;
+    typedef std::queue<_event *> Parent;
+    typedef gmac::util::spinlock<queue_event> Lock;
 
 public:
     queue_event();
-    typename I::event *pop();
-    void push(typename I::event &event);
+    _event *pop();
+    void push(_event &event);
 };
 
-template <typename I>
 class GMAC_LOCAL aspace :
-    public util::attributes<aspace<I> >,
-    public util::on_construction<typename I::context>,
-    public util::on_destruction<typename I::context> {
+    public util::attributes<aspace>,
+    public util::on_construction<aspace>,
+    public util::on_destruction<aspace> {
 
 private:
     typedef map_pool<void> map_memory;
-    typedef map_pool<typename I::buffer> map_buffer;
+    typedef map_pool<buffer> map_buffer;
 
 protected:
     typedef util::locked_counter<unsigned, gmac::util::spinlock<aspace> > buffer_counter;
 
-    typedef typename I::ptr I_ptr;
-    typedef typename I::ptr_const I_ptr_const;
-    typedef typename I::event_ptr I_event_ptr;
-    typedef typename I::stream I_stream;
-    typedef typename I::device I_device;
-
-    I_device &device_;
+    device &device_;
 
     static const unsigned &MaxBuffersIn_;
     static const unsigned &MaxBuffersOut_;
@@ -191,82 +174,45 @@ protected:
     map_buffer mapUsedBuffersIn_;
     map_buffer mapUsedBuffersOut_;
 
-    queue_event<I> queueEvents_;
+    queue_event queueEvents_;
 
     host_ptr get_memory(size_t size);
     void put_memory(void *ptr, size_t size);
 
-    typename I::buffer *get_input_buffer(size_t size, I_stream &stream, I_event_ptr event);
-    void put_input_buffer(typename I::buffer &buffer);
+    buffer *get_input_buffer(size_t size, stream &stream, event_ptr event);
+    void put_input_buffer(buffer &buffer);
  
-    typename I::buffer *get_output_buffer(size_t size, I_stream &stream, I_event_ptr event);
-    void put_output_buffer(typename I::buffer &buffer);
+    buffer *get_output_buffer(size_t size, stream &stream, event_ptr event);
+    void put_output_buffer(buffer &buffer);
 
-    virtual typename I::buffer *alloc_buffer(size_t size, GmacProtection hint, I_stream &stream, gmacError_t &err) = 0;
-    virtual gmacError_t free_buffer(typename I::buffer &buffer) = 0;
+    virtual buffer *alloc_buffer(size_t size, GmacProtection hint, stream &stream, gmacError_t &err) = 0;
+    virtual gmacError_t free_buffer(buffer &buffer) = 0;
 
-    aspace(I_device &device);
-
-    virtual I_event_ptr copy_backend(I_ptr dst, I_ptr_const src, size_t count, I_stream &stream, list_event<I> *dependencies, gmacError_t &err) = 0;
-    virtual I_event_ptr copy_backend(I_ptr dst, device_input &input, size_t count, I_stream &stream, list_event<I> *dependencies, gmacError_t &err) = 0;
-    virtual I_event_ptr copy_backend(device_output &output, I_ptr_const src, size_t count, I_stream &stream, list_event<I> *dependencies, gmacError_t &err) = 0;
-    virtual I_event_ptr memset_backend(I_ptr dst, int c, size_t count, I_stream &stream, list_event<I> *dependencies, gmacError_t &err) = 0;
-
-    virtual I_event_ptr copy_async_backend(I_ptr dst, I_ptr_const src, size_t count, I_stream &stream, list_event<I> *dependencies, gmacError_t &err) = 0;
-    virtual I_event_ptr copy_async_backend(I_ptr dst, device_input &input, size_t count, I_stream &stream, list_event<I> *dependencies, gmacError_t &err) = 0;
-    virtual I_event_ptr copy_async_backend(device_output &output, I_ptr_const src, size_t count, I_stream &stream, list_event<I> *dependencies, gmacError_t &err) = 0;
-    virtual I_event_ptr memset_async_backend(I_ptr dst, int c, size_t count, I_stream &stream, list_event<I> *dependencies, gmacError_t &err) = 0;
+    aspace(device &device);
 
 public:
-    I_device &get_device();
-    const I_device &get_device() const;
+    device &get_device();
+    const device &get_device() const;
 
-    virtual I_ptr alloc(size_t size, gmacError_t &err) = 0;
-    virtual I_ptr alloc_host_pinned(size_t size, GmacProtection hint, gmacError_t &err) = 0;
+    virtual ptr alloc(size_t size, gmacError_t &err) = 0;
+    virtual ptr alloc_host_pinned(size_t size, GmacProtection hint, gmacError_t &err) = 0;
 
-    virtual gmacError_t free(I_ptr acc) = 0;
-    virtual gmacError_t free_host_pinned(I_ptr I_ptr) = 0;
+    virtual gmacError_t free(ptr acc) = 0;
+    virtual gmacError_t free_host_pinned(ptr ptr) = 0;
 
-    I_event_ptr copy(I_ptr dst, I_ptr_const src, size_t count, I_stream &stream, list_event<I> &dependencies, gmacError_t &err);
-    I_event_ptr copy(I_ptr dst, I_ptr_const src, size_t count, I_stream &stream, I_event_ptr event, gmacError_t &err);
-    I_event_ptr copy(I_ptr dst, I_ptr_const src, size_t count, I_stream &stream, gmacError_t &err);
+    virtual code_repository &get_code_repository() = 0;
 
-    I_event_ptr copy(I_ptr dst, device_input &input, size_t count, I_stream &stream, list_event<I> &dependencies, gmacError_t &err);
-    I_event_ptr copy(I_ptr dst, device_input &input, size_t count, I_stream &stream, I_event_ptr event, gmacError_t &err);
-    I_event_ptr copy(I_ptr dst, device_input &input, size_t count, I_stream &stream, gmacError_t &err);
+    virtual event_ptr copy(hal::ptr dst, hal::const_ptr src, size_t count, stream &stream, list_event *dependencies, gmacError_t &err) = 0;
+    virtual event_ptr copy_async(hal::ptr dst, hal::const_ptr src, size_t count, stream &stream, list_event *dependencies, gmacError_t &err) = 0;
 
-    I_event_ptr copy(device_output &output, I_ptr_const src, size_t count, I_stream &stream, list_event<I> &dependencies, gmacError_t &err);
-    I_event_ptr copy(device_output &output, I_ptr_const src, size_t count, I_stream &stream, I_event_ptr event, gmacError_t &err);
-    I_event_ptr copy(device_output &output, I_ptr_const src, size_t count, I_stream &stream, gmacError_t &err);
+    virtual event_ptr copy(hal::ptr dst, device_input &input, size_t count, stream &stream, list_event *dependencies, gmacError_t &err) = 0;
+    virtual event_ptr copy(device_output &output, hal::const_ptr src, size_t count, stream &stream, list_event *dependencies, gmacError_t &err) = 0;
+    virtual event_ptr memset(hal::ptr dst, int c, size_t count, stream &stream, list_event *dependencies, gmacError_t &err) = 0;
+    virtual event_ptr copy_async(hal::ptr dst, device_input &input, size_t count, stream &stream, list_event *dependencies, gmacError_t &err) = 0;
+    virtual event_ptr copy_async(device_output &output, hal::const_ptr src, size_t count, stream &stream, list_event *dependencies, gmacError_t &err) = 0;
+    virtual event_ptr memset_async(hal::ptr dst, int c, size_t count, stream &stream, list_event *dependencies, gmacError_t &err) = 0;
 
-    I_event_ptr copy_async(I_ptr dst, I_ptr_const src, size_t count, I_stream &stream, list_event<I> &dependencies, gmacError_t &err);
-    I_event_ptr copy_async(I_ptr dst, I_ptr_const src, size_t count, I_stream &stream, I_event_ptr event, gmacError_t &err);
-    I_event_ptr copy_async(I_ptr dst, I_ptr_const src, size_t count, I_stream &stream, gmacError_t &err);
-
-    I_event_ptr copy_async(I_ptr dst, device_input &input, size_t count, I_stream &stream, list_event<I> &dependencies, gmacError_t &err);
-    I_event_ptr copy_async(I_ptr dst, device_input &input, size_t count, I_stream &stream, I_event_ptr event, gmacError_t &err);
-    I_event_ptr copy_async(I_ptr dst, device_input &input, size_t count, I_stream &stream, gmacError_t &err);
-
-    I_event_ptr copy_async(device_output &output, I_ptr_const src, size_t count, I_stream &stream, list_event<I> &dependencies, gmacError_t &err);
-    I_event_ptr copy_async(device_output &output, I_ptr_const src, size_t count, I_stream &stream, I_event_ptr event, gmacError_t &err);
-    I_event_ptr copy_async(device_output &output, I_ptr_const src, size_t count, I_stream &stream, gmacError_t &err);
-
-    I_event_ptr memset(I_ptr dst, int c, size_t count, I_stream &stream, list_event<I> &dependencies, gmacError_t &err);
-    I_event_ptr memset(I_ptr dst, int c, size_t count, I_stream &stream, I_event_ptr event, gmacError_t &err);
-    I_event_ptr memset(I_ptr dst, int c, size_t count, I_stream &stream, gmacError_t &err);
-
-    I_event_ptr memset_async(I_ptr dst, int c, size_t count, I_stream &stream, list_event<I> &dependencies, gmacError_t &err);
-    I_event_ptr memset_async(I_ptr dst, int c, size_t count, I_stream &stream, I_event_ptr event, gmacError_t &err);
-    I_event_ptr memset_async(I_ptr dst, int c, size_t count, I_stream &stream, gmacError_t &err);
-
-    virtual typename I::code_repository &get_code_repository() = 0;
 };
-
-template <typename I>
-const unsigned &aspace<I>::MaxBuffersIn_  = config::params::HALInputBuffersPerContext;
-
-template <typename I>
-const unsigned &aspace<I>::MaxBuffersOut_ = config::params::HALOutputBuffersPerContext;
 
 }
 

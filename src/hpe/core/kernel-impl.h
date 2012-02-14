@@ -29,10 +29,10 @@ kernel::kernel(const hal::kernel_t &parent) :
 }
 
 inline
-kernel::launch::launch(kernel &parent, vdevice &dev, hal::kernel_t::config &conf,
+kernel::launch::launch(kernel &parent, vdevice &dev, hal::kernel_config &conf,
                                                      hal::kernel_t::arg_list &args, 
-                                                     hal::stream_t &stream, gmacError_t &ret) :
-    hal::kernel_t::launch::launch(parent, conf, args, stream),
+                                                     hal::stream &stream, gmacError_t &ret) :
+    hal::kernel_launch::launch(parent, conf, args, stream),
     dev_(dev)
 {
     ret = gmacSuccess;
@@ -61,7 +61,7 @@ kernel::launch::get_arg_list()
 
 inline
 kernel::launch_ptr
-kernel::launch_config(vdevice &dev, hal::kernel_t::config &conf, hal::kernel_t::arg_list &args, hal::stream_t &stream, gmacError_t &err)
+kernel::launch_config(vdevice &dev, hal::kernel_t::config &conf, hal::kernel_t::arg_list &args, hal::stream &stream, gmacError_t &err)
 {
     launch_ptr ret(new launch(*this, dev, conf, args, stream, err)); 
 

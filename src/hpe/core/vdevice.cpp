@@ -7,8 +7,10 @@
 
 namespace __impl { namespace core { namespace hpe {
 
+#if 0
+
 vdevice::vdevice(process &proc, address_space_ptr aspace,
-                 hal::stream_t &streamLaunch) :
+                 hal::stream &streamLaunch) :
     proc_(proc),
     aspace_(aspace),
     streamLaunch_(streamLaunch)
@@ -83,5 +85,7 @@ vdevice::cleanUp()
 #endif
     return gmacSuccess;
 }
+
+#endif
 
 }}}

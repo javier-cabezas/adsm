@@ -14,16 +14,19 @@ namespace __impl { namespace hal {
     
 namespace cuda {
 
-class GMAC_LOCAL kernel_t :
-    public hal::detail::kernel_t<implementation_traits> {
+typedef hal::detail::event_ptr hal_event_ptr;
+typedef hal::detail::kernel hal_kernel;
 
-    typedef hal::detail::kernel_t<implementation_traits> Parent;
+class GMAC_LOCAL kernel :
+    public hal_kernel {
+
+    typedef hal_kernel parent;
     
 public:
     class launch;
 
     class GMAC_LOCAL config :
-        public hal::detail::kernel_t<implementation_traits>::config {
+        public hal::detail::kernel::config {
         friend class launch;
 
         dim3 dimsGlobal_;
@@ -38,7 +41,7 @@ public:
     };
 
     class GMAC_LOCAL arg_list :
-        public hal::detail::kernel_t<implementation_traits>::arg_list {
+        public hal::detail::kernel::arg_list {
         friend class launch;
 
         unsigned nArgs_;
@@ -56,23 +59,34 @@ public:
     };
 
     class GMAC_LOCAL launch :
-        public hal::detail::kernel_t<implementation_traits>::launch {
+        public parent::launch {
+
+        config &config_;
+        arg_list &args_;
 
     public:
-        launch(kernel_t &parent, config &conf, arg_list &args, stream_t &stream);
+        launch(kernel &parent, config &conf, arg_list &args, stream &stream);
 
-        event_ptr execute(list_event_detail &dependencies, gmacError_t &err);
-        event_ptr execute(event_ptr event, gmacError_t &err);
-        event_ptr execute(gmacError_t &err);
+        stream &get_stream();
+        const stream &get_stream() const;
+
+        const kernel &get_kernel() const;
+
+        const config &get_config() const;
+        const arg_list &get_arg_list() const;
+
+        hal_event_ptr execute(list_event_detail &dependencies, gmacError_t &err);
+        hal_event_ptr execute(hal_event_ptr event, gmacError_t &err);
+        hal_event_ptr execute(gmacError_t &err);
     };
 
     CUfunction kernel_;
 
-    kernel_t(CUfunction func, const std::string &name);
+    kernel(CUfunction func, const std::string &name);
 
     CUfunction &operator()();
     const CUfunction &operator()() const;
-    //launch &launch_config(Parent::config &config, Parent::arg_list &args, stream_t &stream);
+    //launch &launch_config(Parent::config &config, Parent::arg_list &args, stream &stream);
 };
 
 }}}

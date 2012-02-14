@@ -64,7 +64,7 @@ vdevice::wait()
     return ret;
 }
 
-inline hal::stream_t&
+inline hal::stream&
 vdevice::eventStream()
 {
     return streamLaunch_;

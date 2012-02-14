@@ -5,8 +5,7 @@ namespace __impl { namespace hal {
 
 namespace detail {
 
-template <typename I>
-class GMAC_LOCAL kernel_t {
+class GMAC_LOCAL kernel {
 public:
     class GMAC_LOCAL config {
     private:
@@ -29,36 +28,32 @@ public:
 
     class GMAC_LOCAL launch {
     private:
-        kernel_t &kernel_;
-        typename I::kernel::config &config_;
-        typename I::kernel::arg_list &args_;
-        typename I::stream &stream_;
+        kernel &kernel_;
+        stream &stream_;
 
     protected:
-        typename I::event_ptr event_;
+        event_ptr event_;
 
-        launch(typename I::kernel &kernel, typename I::kernel::config &config, typename I::kernel::arg_list &args, typename I::stream &stream);
+        launch(kernel &kernel, stream &stream);
 
     public:
-        typename I::stream &get_stream();
-        const typename I::stream &get_stream() const;
+        stream &get_stream();
+        const stream &get_stream() const;
  
-        const typename I::kernel &get_kernel() const;
-        const typename I::kernel::config &get_config() const;
-        const typename I::kernel::arg_list &get_arg_list() const;
+        const kernel &get_kernel() const;
+        
+        virtual event_ptr execute(list_event &dependencies, gmacError_t &err) = 0;
+        virtual event_ptr execute(event_ptr event, gmacError_t &err) = 0;
+        virtual event_ptr execute(gmacError_t &err) = 0;
 
-        virtual typename I::event_ptr execute(list_event<I> &dependencies, gmacError_t &err) = 0;
-        virtual typename I::event_ptr execute(typename I::event_ptr event, gmacError_t &err) = 0;
-        virtual typename I::event_ptr execute(gmacError_t &err) = 0;
-
-        typename I::event_ptr get_event();
+        event_ptr get_event();
     };
 
 private:
     std::string name_;
 
 protected:
-    kernel_t(const std::string &name_);
+    kernel(const std::string &name_);
 
 public:
     const std::string &get_name() const;
