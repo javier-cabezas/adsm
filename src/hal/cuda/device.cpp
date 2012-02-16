@@ -46,7 +46,7 @@ device::create_aspace(const set_siblings &siblings, gmacError_t &err)
 
     err = error(res);
 
-    return new aspace(ctx, *this);
+    return aspace::create<aspace>(ctx, *this);
 }
 
 gmacError_t
@@ -54,7 +54,8 @@ device::destroy_aspace(hal_aspace &_as)
 {
     aspace &as = reinterpret_cast<aspace &>(_as);
     CUresult ret = cuCtxDestroy(as());
-    delete &as;
+
+    aspace::destroy(as);
 
     return error(ret);
 }

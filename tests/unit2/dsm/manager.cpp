@@ -52,6 +52,8 @@ void manager_mapping_test::TearDownTestCase()
     err = device->destroy_aspace(*as1);
     ASSERT_TRUE(err == gmacSuccess);
 
+    delete mgr;
+
     __impl::hal::fini();
 }
 
@@ -120,6 +122,4 @@ TEST_F(manager_mapping_test, mappings_in_range)
     delete m3;
     delete m4;
     delete m5;
-
-    delete mgr;
 }

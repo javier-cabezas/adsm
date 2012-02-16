@@ -395,14 +395,16 @@ public:
     bool
     is_host_ptr() const
     {
-        return this->aspace_->get_device().get_type() == D::DEVICE_TYPE_CPU;
+        D &d = this->aspace_->get_device();
+        return d.get_type() == D::DEVICE_TYPE_CPU;
     }
 
     inline
     bool
     is_device_ptr() const
     {
-        return this->aspace_->get_device().get_type() != D::DEVICE_TYPE_CPU;
+        D &d = this->aspace_->get_device();
+        return d.get_type() != D::DEVICE_TYPE_CPU;
     }
 };
 

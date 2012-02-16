@@ -106,6 +106,13 @@ aspace::aspace(device &dev) :
     nBuffersIn_(0),
     nBuffersOut_(0)
 {
+    printf("ASPACE: %p\n", this);
+}
+
+inline
+aspace::~aspace()
+{
+    printf("~ASPACE: %p\n", this);
 }
 
 inline

@@ -3,17 +3,17 @@
 namespace __impl { namespace dsm {
 
 void
-manager::aspace_created(manager *m, hal::aspace &aspace)
+manager::event_handler(hal::aspace &aspace, util::event::construct)
 {
     map_mapping_group *ret = new map_mapping_group();
-    aspace.set_attribute<map_mapping_group>(m->AttributeMappings_, ret);
+    aspace.set_attribute<map_mapping_group>(AttributeMappings_, ret);
 }
 
 void
-manager::aspace_destroyed(manager *m, hal::aspace &aspace)
+manager::event_handler(hal::aspace &aspace, util::event::destruct)
 {
     // Get the mappings from the address space, to avoid an extra map
-    map_mapping_group *ret = aspace.get_attribute<map_mapping_group>(m->AttributeMappings_);
+    map_mapping_group *ret = aspace.get_attribute<map_mapping_group>(AttributeMappings_);
     ASSERTION(ret != NULL);
     delete ret;
 }
@@ -93,12 +93,22 @@ manager::insert_mapping(map_mapping_group &mappings, mapping_ptr m)
 manager::manager() :
     AttributeMappings_(hal::aspace::register_attribute())
 {
+#if 0
     hal::aspace::add_constructor(do_func(manager::aspace_created, this, std::placeholders::_1));
     hal::aspace::add_destructor(do_func(manager::aspace_destroyed, this, std::placeholders::_1));
+#endif
+    util::event::add_observer<hal::aspace, util::event::construct>(*this);
+    util::event::add_observer<hal::aspace, util::event::destruct>(*this);
 }
 
 manager::~manager()
 {
+#if 0
+    hal::aspace::remove_constructor(do_func(manager::aspace_created, this, std::placeholders::_1));
+    hal::aspace::remove_destructor(do_func(manager::aspace_destroyed, this, std::placeholders::_1));
+#endif
+    util::event::remove_observer<hal::aspace, util::event::construct>(*this);
+    util::event::remove_observer<hal::aspace, util::event::destruct>(*this);
 }
 
 gmacError_t
