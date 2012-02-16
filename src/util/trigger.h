@@ -184,7 +184,155 @@ public:
     {
         triggers_.push_back(new functor<F, T, void>(fun));
     }
+
+    template <typename F>
+    bool remove_trigger(F fun)
+    {
+#if 0
+        auto it = std::find(triggers_.begin(), triggers_.end(), fun);
+        if (it != triggers_.end()) {
+            triggers_.remove(it);
+            return true;
+        } else {
+            return false;
+        }
+#endif
+        return true;
+    }
 };
+
+template <typename F, typename T, typename Evt>
+class GMAC_LOCAL observer_class {
+public:
+    typedef Evt event_type;
+
+    static void event()
+    {
+        
+    }
+};
+
+// Event type tags
+namespace event {
+struct construct {};
+struct destruct {};
+}
+
+template <typename T, typename Evt>
+class observable_base;
+
+template <typename T, typename Evt>
+class GMAC_LOCAL observer {
+    friend class observable_base<T, Evt>;
+protected:
+    virtual void event_handler(T &obj, Evt evt) = 0;
+public:
+    typedef Evt event_type;
+};
+
+template <typename T, typename Evt>
+class GMAC_LOCAL observable_base {
+    typedef std::list<observer<T, Evt> *> list_observer;
+    static list_observer observers_;
+
+public:
+    typedef observer<T, Evt> observer_type;
+
+protected:
+    
+
+public:
+    typedef Evt event_type;
+
+    static void update(T &obj)
+    {
+        typename list_observer::iterator it = observers_.begin();
+
+        for (; it != observers_.end(); ++it) {
+            (*it)->event_handler(obj, Evt());
+        }
+    }
+
+    static void add_observer(observer_type &obs)
+    {
+        observers_.push_back(&obs);
+    }
+
+    static bool remove_observer(observer_type &obs)
+    {
+        typename list_observer::iterator it = std::find(observers_.begin(),
+                                                        observers_.end(),
+                                                        &obs);
+        if (it != observers_.end()) {
+            observers_.erase(it);
+            return true;
+        } else {
+            return false;
+        }
+    }
+};
+
+template <typename T, typename Evt>
+typename observable_base<T, Evt>::list_observer observable_base<T, Evt>::observers_;
+
+template <typename T, typename Evt>
+class GMAC_LOCAL observable :
+    public observable_base<T, Evt> {
+    typedef observable_base<T, Evt> parent;
+
+public:
+};
+
+template <typename T>
+class GMAC_LOCAL observable<T, event::construct> :
+    public observable_base<T, event::construct> {
+
+    typedef observable_base<T, event::construct> parent;
+public:
+    template <typename S, typename... Args>
+    static S *create(Args &... args)
+    {
+        S *ret = new S(args...);
+
+        parent::update(*ret);
+
+        return ret;
+    }
+};
+
+template <typename T>
+class GMAC_LOCAL observable<T, event::destruct> :
+    public observable_base<T, event::destruct> {
+
+    typedef observable_base<T, event::construct> parent;
+
+public:
+    static void
+    destroy(T &obj)
+    {
+        parent::update(obj);
+
+        delete &obj;
+    }
+};
+
+namespace event {
+
+template <typename T, typename Evt>
+static void add_observer(observer<T, Evt> &obs)
+{
+    observable<T, Evt>::add_observer(obs);
+}
+
+template <typename T, typename Evt>
+static bool remove_observer(observer<T, Evt> &obs)
+{
+    return observable<T, Evt>::remove_observer(obs);
+}
+
+}
+
+#if 0
 
 template <typename T>
 class GMAC_LOCAL on_construction {
@@ -196,10 +344,23 @@ public:
         on_construction<T>::constructors_.exec_triggers(false, *reinterpret_cast<T *>(this));
     }
 
+    template <typename S>
+    on_construction(S &obj)
+    {
+        on_construction<T>::constructors_.exec_triggers(false, *reinterpret_cast<T *>(this));
+    }
+
+
     template <typename F>
     static void add_constructor(F fun)
     {
         constructors_.add_trigger(fun);
+    }
+
+    template <typename F>
+    static bool remove_constructor(F fun)
+    {
+        return constructors_.remove_trigger(fun);
     }
 
     static void fini()
@@ -215,16 +376,29 @@ template <typename T>
 class GMAC_LOCAL on_destruction {
     static list_trigger<T> destructors_;
 
-public:
-    ~on_destruction()
+protected:
+    virtual ~on_destruction()
     {
-        on_destruction<T>::destructors_.exec_triggers(false, *reinterpret_cast<T *>(this));
+    }
+public:
+    static void
+    destroy(on_destruction &obj)
+    {
+        on_destruction<T>::destructors_.exec_triggers(false, *reinterpret_cast<T *>(&obj));
+
+        delete &obj;
     }
 
     template <typename F>
     static void add_destructor(F fun)
     {
         destructors_.add_trigger(fun);
+    }
+
+    template <typename F>
+    static bool remove_destructor(F fun)
+    {
+        return destructors_.remove_trigger(fun);
     }
 
     static void fini()
@@ -235,6 +409,7 @@ public:
 
 template <typename T>
 list_trigger<T> on_destruction<T>::destructors_;
+#endif
 
 
 }}

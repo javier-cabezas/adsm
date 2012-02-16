@@ -148,8 +148,9 @@ public:
 
 class GMAC_LOCAL aspace :
     public util::attributes<aspace>,
-    public util::on_construction<aspace>,
-    public util::on_destruction<aspace> {
+    public util::observable<aspace, util::event::construct>,
+    public util::observable<aspace, util::event::destruct> {
+    friend class util::observable<aspace, util::event::destruct>;
 
 private:
     typedef map_pool<void> map_memory;
@@ -189,6 +190,7 @@ protected:
     virtual gmacError_t free_buffer(buffer &buffer) = 0;
 
     aspace(device &device);
+    virtual ~aspace();
 
 public:
     device &get_device();
