@@ -60,6 +60,7 @@ void manager_mapping_test::TearDownTestCase()
 TEST_F(manager_mapping_test, mappings_in_range)
 {
     gmacError_t err;
+    bool berr;
 
     // We will use the same base allocation
     ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), as1) + MAP0_OFF;
@@ -96,18 +97,21 @@ TEST_F(manager_mapping_test, mappings_in_range)
     err = m5->append(b5);
     ASSERT_TRUE(err == gmacSuccess);
 
-    err = mgr->helper_insert(*as1, m0);
-    ASSERT_TRUE(err == gmacSuccess);
-    err = mgr->helper_insert(*as1, m1);
-    ASSERT_TRUE(err == gmacSuccess);
-    err = mgr->helper_insert(*as1, m2);
-    ASSERT_TRUE(err == gmacSuccess);
-    err = mgr->helper_insert(*as1, m3);
-    ASSERT_TRUE(err == gmacSuccess);
-    err = mgr->helper_insert(*as1, m4);
-    ASSERT_TRUE(err == gmacSuccess);
-    err = mgr->helper_insert(*as1, m5);
-    ASSERT_TRUE(err == gmacSuccess);
+    berr = mgr->helper_insert(*as1, m0);
+    ASSERT_TRUE(berr);
+    berr = mgr->helper_insert(*as1, m1);
+    ASSERT_TRUE(berr);
+    berr = mgr->helper_insert(*as1, m2);
+    ASSERT_TRUE(berr);
+    berr = mgr->helper_insert(*as1, m3);
+    ASSERT_TRUE(berr);
+    berr = mgr->helper_insert(*as1, m4);
+    ASSERT_TRUE(berr);
+    berr = mgr->helper_insert(*as1, m5);
+    ASSERT_TRUE(berr);
+
+    berr = mgr->helper_clear_mappings(*as1);
+    ASSERT_TRUE(berr);
 
     delete b0;
     delete b1;
