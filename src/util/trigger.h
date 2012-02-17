@@ -304,7 +304,7 @@ template <typename T>
 class GMAC_LOCAL observable<T, event::destruct> :
     public observable_base<T, event::destruct> {
 
-    typedef observable_base<T, event::construct> parent;
+    typedef observable_base<T, event::destruct> parent;
 
 public:
     static void

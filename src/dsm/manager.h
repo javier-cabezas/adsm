@@ -59,7 +59,7 @@ protected:
     typedef std::map<size_t, mapping_ptr> map_mapping;
     typedef map_mapping *map_mapping_ptr;
 
-    typedef std::map<hal::ptr::backend_type, map_mapping_ptr> map_mapping_group;
+    typedef std::map<hal::ptr::backend_type, map_mapping> map_mapping_group;
     typedef __impl::util::observer<hal::aspace, util::event::construct> observer_type;
 
     friend bool mapping_fits(map_mapping &, mapping_ptr);

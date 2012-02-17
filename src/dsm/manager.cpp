@@ -42,7 +42,7 @@ manager::get_mappings_in_range(map_mapping_group &mappings, hal::ptr addr, size_
         return range_mapping(it, it);
     }
 
-    map_mapping &group = *itGroup->second;
+    map_mapping &group = itGroup->second;
     map_mapping::iterator begin, end;
     map_mapping::iterator it = group.upper_bound(addr.get_offset());
 
@@ -79,12 +79,12 @@ manager::insert_mapping(map_mapping_group &mappings, mapping_ptr m)
     map_mapping_group::iterator it = mappings.find(m->get_ptr().get_base());
 
     if (it == mappings.end()) {
-        map_mapping *map = new map_mapping();
-        map->insert(map_mapping::value_type(m->get_ptr().get_offset() + m->get_bounds().get_size(), m));
+        map_mapping map;
+        map.insert(map_mapping::value_type(m->get_ptr().get_offset() + m->get_bounds().get_size(), m));
         mappings.insert(map_mapping_group::value_type(m->get_ptr().get_base(), map));
     } else {
-        ASSERTION(mapping_fits(*it->second, m) == true);
-        it->second->insert(map_mapping::value_type(m->get_ptr().get_offset() + m->get_bounds().get_size(), m));
+        ASSERTION(mapping_fits(it->second, m) == true);
+        it->second.insert(map_mapping::value_type(m->get_ptr().get_offset() + m->get_bounds().get_size(), m));
     }
 
     return gmacSuccess;

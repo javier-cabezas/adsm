@@ -98,13 +98,23 @@ public:
     //////////////////////
     // Helper functions //
     //////////////////////
-    gmacError_t helper_insert(__impl::hal::aspace &ctx, mapping_ptr m)
+    bool helper_insert(__impl::hal::aspace &ctx, mapping_ptr m)
     {
         gmacError_t ret;
 
         parent::map_mapping_group &group = parent::get_aspace_mappings(ctx);
         ret = parent::insert_mapping(group, m);
 
-        return ret;
+        return ret == gmacSuccess;
     }
+
+    bool helper_clear_mappings(__impl::hal::aspace &ctx)
+    {
+        parent::map_mapping_group &group = parent::get_aspace_mappings(ctx);
+
+        group.clear();
+
+        return true;
+    }
+
 };
