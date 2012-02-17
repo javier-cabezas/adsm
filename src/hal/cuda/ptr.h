@@ -122,7 +122,7 @@ public:
     inline _cuda_ptr_t &
     operator-=(const T &off)
     {
-        ASSERTION(off_ >= off);
+        ASSERTION(T(off_) >= off);
         off_ -= off;
         return *this;
     }
