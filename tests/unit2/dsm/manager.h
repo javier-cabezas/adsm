@@ -13,7 +13,7 @@ using __impl::dsm::coherence::block;
 using __impl::dsm::coherence::block_ptr;
 
 class manager_mapping_test : public testing::Test {
-protected:
+public:
     static __impl::hal::ptr::backend_type BASE_ADDR;
 
     static const int MAP0_OFF;
@@ -30,6 +30,7 @@ protected:
     static const size_t MAP4_SIZE;
     static const size_t MAP5_SIZE;
 
+protected:
 	static void SetUpTestCase();
 	static void TearDownTestCase();
 };
@@ -43,15 +44,24 @@ class GMAC_LOCAL manager :
     typedef __impl::dsm::manager parent;
 
 public:
+    // Forward types
+    typedef parent::range_mapping range_mapping;
+    typedef parent::map_mapping_group map_mapping_group;
+
+    // Forward protected functions
     static void aspace_created(manager *m, __impl::hal::aspace &aspace);
     static void aspace_destroyed(manager *m, __impl::hal::aspace &aspace);
-
-    map_mapping_group &get_aspace_mappings(__impl::hal::aspace &ctx);
 
     range_mapping
     get_mappings_in_range(map_mapping_group &mappings, __impl::hal::ptr begin, size_t count)
     {
         return parent::get_mappings_in_range(mappings, begin, count);
+    }
+
+    map_mapping_group &
+    get_aspace_mappings(__impl::hal::aspace &aspace)
+    {
+        return parent::get_aspace_mappings(aspace);
     }
 
     virtual ~manager()

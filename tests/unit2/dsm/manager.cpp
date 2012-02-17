@@ -57,32 +57,36 @@ void manager_mapping_test::TearDownTestCase()
     __impl::hal::fini();
 }
 
-TEST_F(manager_mapping_test, mappings_in_range)
+static ptr         p0, p1, p2, p3, p4, p5;
+static mapping_ptr m0, m1, m2, m3, m4, m5;
+static block_ptr   b0, b1, b2, b3, b4, b5;
+
+static void range_init()
 {
+    // We use the same base allocation
+    p0 = ptr(ptr::backend_ptr(manager_mapping_test::BASE_ADDR), as1) + manager_mapping_test::MAP0_OFF;
+    p1 = p0 + (manager_mapping_test::MAP1_OFF - manager_mapping_test::MAP0_OFF);
+    p2 = p0 + (manager_mapping_test::MAP2_OFF - manager_mapping_test::MAP0_OFF);
+    p3 = p0 + (manager_mapping_test::MAP3_OFF - manager_mapping_test::MAP0_OFF);
+    p4 = p0 + (manager_mapping_test::MAP4_OFF - manager_mapping_test::MAP0_OFF);
+    p5 = p0 + (manager_mapping_test::MAP5_OFF - manager_mapping_test::MAP0_OFF);
+
+    m0 = new mapping(p0);
+    m1 = new mapping(p1);
+    m2 = new mapping(p2);
+    m3 = new mapping(p3);
+    m4 = new mapping(p4);
+    m5 = new mapping(p5);
+
+    b0 = new block(manager_mapping_test::MAP0_SIZE);
+    b1 = new block(manager_mapping_test::MAP1_SIZE);
+    b2 = new block(manager_mapping_test::MAP2_SIZE);
+    b3 = new block(manager_mapping_test::MAP3_SIZE);
+    b4 = new block(manager_mapping_test::MAP4_SIZE);
+    b5 = new block(manager_mapping_test::MAP5_SIZE);
+
     gmacError_t err;
     bool berr;
-
-    // We will use the same base allocation
-    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), as1) + MAP0_OFF;
-    ptr p1 = p0 + (MAP1_OFF - MAP0_OFF);
-    ptr p2 = p0 + (MAP2_OFF - MAP0_OFF);
-    ptr p3 = p0 + (MAP3_OFF - MAP0_OFF);
-    ptr p4 = p0 + (MAP4_OFF - MAP0_OFF);
-    ptr p5 = p0 + (MAP5_OFF - MAP0_OFF);
-
-    mapping_ptr m0 = new mapping(p0);
-    mapping_ptr m1 = new mapping(p1);
-    mapping_ptr m2 = new mapping(p2);
-    mapping_ptr m3 = new mapping(p3);
-    mapping_ptr m4 = new mapping(p4);
-    mapping_ptr m5 = new mapping(p5);
-
-    block_ptr b0 = new block(MAP0_SIZE);
-    block_ptr b1 = new block(MAP1_SIZE);
-    block_ptr b2 = new block(MAP2_SIZE);
-    block_ptr b3 = new block(MAP3_SIZE);
-    block_ptr b4 = new block(MAP4_SIZE);
-    block_ptr b5 = new block(MAP5_SIZE);
 
     err = m0->append(b0);
     ASSERT_TRUE(err == gmacSuccess);
@@ -109,6 +113,11 @@ TEST_F(manager_mapping_test, mappings_in_range)
     ASSERT_TRUE(berr);
     berr = mgr->helper_insert(*as1, m5);
     ASSERT_TRUE(berr);
+}
+
+static void range_fini()
+{
+    bool berr;
 
     berr = mgr->helper_clear_mappings(*as1);
     ASSERT_TRUE(berr);
@@ -126,4 +135,92 @@ TEST_F(manager_mapping_test, mappings_in_range)
     delete m3;
     delete m4;
     delete m5;
+}
+
+template <typename T>
+T
+get_last_in_range(range<T> &r)
+{
+    for (typename range<T>::iterator it =  r.begin;
+                                     it != r.end;
+                                   ++it) {
+        typename range<T>::iterator it2 = it;
+        ++it2;
+        if (it2 == r.end) return it;
+    }
+    return r.end;
+}
+
+
+TEST_F(manager_mapping_test, mappings_in_range)
+{
+    range_init();
+
+    manager::map_mapping_group &group = mgr->get_aspace_mappings(*as1);
+
+    // CASE1
+    // p0, p0 + (p5 - p0): [p0, p4]
+    //
+    manager::range_mapping range = mgr->get_mappings_in_range(group, p0,
+                                                              manager_mapping_test::MAP5_OFF -
+                                                              manager_mapping_test::MAP0_OFF);
+    ASSERT_TRUE((*range.begin)->get_ptr() == p0);
+    ASSERT_TRUE((*get_last_in_range(range))->get_ptr() == p4);
+
+    // CASE2
+    // p0, p0 + (p5 - p0) + 1: [p0, p5] 
+    //
+    manager::range_mapping range2 = mgr->get_mappings_in_range(group, p0,
+                                                               manager_mapping_test::MAP5_OFF -
+                                                               manager_mapping_test::MAP0_OFF + 1);
+    ASSERT_TRUE((*range2.begin)->get_ptr() == p0);
+    ASSERT_TRUE((*get_last_in_range(range2))->get_ptr() == p5);
+
+    // CASE3
+    // p0 + size0, p0 + (p5 - p0): [p1, p4] 
+    //
+    manager::range_mapping range3 = mgr->get_mappings_in_range(group, p0 + manager_mapping_test::MAP0_SIZE,
+                                                               (manager_mapping_test::MAP5_OFF -
+                                                                manager_mapping_test::MAP0_OFF) -
+                                                               manager_mapping_test::MAP0_SIZE);
+    ASSERT_TRUE((*range3.begin)->get_ptr() == p1);
+    ASSERT_TRUE((*get_last_in_range(range3))->get_ptr() == p4);
+
+    // CASE4
+    // p0 + size0 - 1, p0 + (p5 - p0): [p0, p4] 
+    //
+    manager::range_mapping range4 = mgr->get_mappings_in_range(group, p0 + (manager_mapping_test::MAP0_SIZE - 1),
+                                                               (manager_mapping_test::MAP5_OFF -
+                                                                manager_mapping_test::MAP0_OFF) -
+                                                                manager_mapping_test::MAP0_SIZE);
+    ASSERT_TRUE((*range4.begin)->get_ptr() == p0);
+    ASSERT_TRUE((*get_last_in_range(range4))->get_ptr() == p4);
+
+    // CASE5
+    // p3, p3 + size3: [p3, p3] 
+    //
+    manager::range_mapping range5 = mgr->get_mappings_in_range(group, p3,
+                                                               manager_mapping_test::MAP3_SIZE);
+    ASSERT_TRUE((*range5.begin)->get_ptr() == p3);
+    ASSERT_TRUE((*get_last_in_range(range5))->get_ptr() == p3);
+
+
+    // CASE6
+    // p3 - 1, p3 + size3 - 1: [p2, p3] 
+    //
+    manager::range_mapping range6 = mgr->get_mappings_in_range(group, p3 - 1,
+                                                               manager_mapping_test::MAP3_SIZE);
+    ASSERT_TRUE((*range6.begin)->get_ptr() == p2);
+    ASSERT_TRUE((*get_last_in_range(range6))->get_ptr() == p3);
+
+    // CASE7
+    // p4 - 1, p4 + size4 - 1: [p4, p4] 
+    //
+    manager::range_mapping range7 = mgr->get_mappings_in_range(group, p4 - 1,
+                                                               manager_mapping_test::MAP4_SIZE);
+    ASSERT_TRUE((*range7.begin)->get_ptr() == p4);
+    ASSERT_TRUE((*get_last_in_range(range7))->get_ptr() == p4);
+
+    
+    range_fini();
 }
