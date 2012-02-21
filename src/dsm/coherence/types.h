@@ -34,6 +34,8 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_DSM_COHERENCE_TYPES_H_
 #define GMAC_DSM_COHERENCE_TYPES_H_
 
+#include "util/smart_ptr.h"
+
 namespace __impl { namespace dsm { namespace coherence {
 
 static const size_t &BlockSize = config::params::BlockSize;
@@ -46,7 +48,7 @@ enum state {
 
 class block;
 
-typedef block *block_ptr;
+typedef util::shared_ptr<block> block_ptr;
 
 }}}
 

@@ -52,8 +52,8 @@ TEST_F(mapping_test, prepend_block)
 
     mapping_ptr m0 = new mapping(p0 + OFFSET);
 
-    block_ptr b0 = new block(0x100);
-    block_ptr b1 = new block(0x300);
+    block_ptr b0 = mapping::helper_create_block(0x100);
+    block_ptr b1 = mapping::helper_create_block(0x300);
 
     gmacError_t err;
 
@@ -66,9 +66,6 @@ TEST_F(mapping_test, prepend_block)
     ASSERT_TRUE(m0->get_bounds().get_size() == (b0->get_size() + b1->get_size()));
 
     delete m0;
-
-    delete b0;
-    delete b1;
 }
 
 TEST_F(mapping_test, prepend_block2)
@@ -80,8 +77,8 @@ TEST_F(mapping_test, prepend_block2)
 
     mapping_ptr m0 = new mapping(p0 + OFFSET);
 
-    block_ptr b0 = new block(0x100);
-    block_ptr b1 = new block(0x400);
+    block_ptr b0 = mapping::helper_create_block(0x100);
+    block_ptr b1 = mapping::helper_create_block(0x400);
 
     gmacError_t err;
 
@@ -95,9 +92,6 @@ TEST_F(mapping_test, prepend_block2)
     ASSERT_TRUE(m0->get_bounds().get_size() == b0->get_size());
 
     delete m0;
-
-    delete b0;
-    delete b1;
 }
 
 TEST_F(mapping_test, append_block)
@@ -108,10 +102,10 @@ TEST_F(mapping_test, append_block)
 
     mapping_ptr m0 = new mapping(p0);
 
-    block_ptr b0 = new block(0x100);
-    block_ptr b1 = new block(0x400);
-    block_ptr b2 = new block(0x400);
-    block_ptr b3 = new block(0x000);
+    block_ptr b0 = mapping::helper_create_block(0x100);
+    block_ptr b1 = mapping::helper_create_block(0x400);
+    block_ptr b2 = mapping::helper_create_block(0x400);
+    block_ptr b3 = mapping::helper_create_block(0x000);
 
     gmacError_t err;
 
@@ -136,11 +130,6 @@ TEST_F(mapping_test, append_block)
                                                 b2->get_size()));
 
     delete m0;
-
-    delete b0;
-    delete b1;
-    delete b2;
-    delete b3;
 }
 
 TEST_F(mapping_test, append_mapping)
@@ -155,8 +144,8 @@ TEST_F(mapping_test, append_mapping)
     mapping_ptr m0 = new mapping(p0);
     mapping_ptr m1 = new mapping(p1);
 
-    block_ptr b0 = new block(BLOCK_SIZE);
-    block_ptr b1 = new block(BLOCK_SIZE);
+    block_ptr b0 = mapping::helper_create_block(BLOCK_SIZE);
+    block_ptr b1 = mapping::helper_create_block(BLOCK_SIZE);
 
     gmacError_t err;
 
@@ -172,9 +161,6 @@ TEST_F(mapping_test, append_mapping)
 
     delete m0;
     delete m1;
-
-    delete b0;
-    delete b1;
 }
 
 TEST_F(mapping_test, append_mapping2)
@@ -189,8 +175,8 @@ TEST_F(mapping_test, append_mapping2)
     mapping_ptr m0 = new mapping(p0);
     mapping_ptr m1 = new mapping(p1);
 
-    block_ptr b0 = new block(BLOCK_SIZE);
-    block_ptr b1 = new block(BLOCK_SIZE);
+    block_ptr b0 = mapping::helper_create_block(BLOCK_SIZE);
+    block_ptr b1 = mapping::helper_create_block(BLOCK_SIZE);
 
     gmacError_t err;
 
@@ -203,9 +189,6 @@ TEST_F(mapping_test, append_mapping2)
 
     delete m0;
     delete m1;
-
-    delete b0;
-    delete b1;
 }
 
 TEST_F(mapping_test, append_mapping3)
@@ -220,8 +203,8 @@ TEST_F(mapping_test, append_mapping3)
     mapping_ptr m0 = new mapping(p0);
     mapping_ptr m1 = new mapping(p1);
 
-    block_ptr b0 = new block(BLOCK_SIZE);
-    block_ptr b1 = new block(BLOCK_SIZE);
+    block_ptr b0 = mapping::helper_create_block(BLOCK_SIZE);
+    block_ptr b1 = mapping::helper_create_block(BLOCK_SIZE);
 
     gmacError_t err;
 
@@ -236,9 +219,6 @@ TEST_F(mapping_test, append_mapping3)
 
     delete m0;
     delete m1;
-
-    delete b0;
-    delete b1;
 }
 
 TEST_F(mapping_test, append_mapping4)
@@ -253,8 +233,8 @@ TEST_F(mapping_test, append_mapping4)
     mapping_ptr m0 = new mapping(p0);
     mapping_ptr m1 = new mapping(p1 + OFFSET);
 
-    block_ptr b0 = new block(BLOCK_SIZE);
-    block_ptr b1 = new block(BLOCK_SIZE);
+    block_ptr b0 = mapping::helper_create_block(BLOCK_SIZE);
+    block_ptr b1 = mapping::helper_create_block(BLOCK_SIZE);
 
     gmacError_t err;
 
@@ -267,8 +247,5 @@ TEST_F(mapping_test, append_mapping4)
 
     delete m0;
     delete m1;
-
-    delete b0;
-    delete b1;
 }
 
