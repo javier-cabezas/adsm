@@ -288,6 +288,24 @@ TEST_F(manager_mapping_test, insert_mappings)
     err = m_b7->append(b_b7);
     ASSERT_TRUE(err == gmacSuccess);
 
+    bool berr;
+    berr = mgr->helper_insert(*as1, m_b0);
+    ASSERT_TRUE(berr);
+    berr = mgr->helper_insert(*as1, m_b1);
+    ASSERT_TRUE(berr);
+    berr = mgr->helper_insert(*as1, m_b2);
+    ASSERT_FALSE(berr);
+    berr = mgr->helper_insert(*as1, m_b3);
+    ASSERT_FALSE(berr);
+    berr = mgr->helper_insert(*as1, m_b4);
+    ASSERT_FALSE(berr);
+    berr = mgr->helper_insert(*as1, m_b5);
+    ASSERT_FALSE(berr);
+    berr = mgr->helper_insert(*as1, m_b6);
+    ASSERT_FALSE(berr);
+    berr = mgr->helper_insert(*as1, m_b7);
+    ASSERT_FALSE(berr);
+
     delete m_b0;
     delete m_b1;
     delete m_b2;
