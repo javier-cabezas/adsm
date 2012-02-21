@@ -36,16 +36,23 @@ WITH THE SOFTWARE.  */
 
 #include "hal/types.h"
 
+#include "util/factory.h"
 #include "util/misc.h"
 
 #include "coherence.h"
 
 namespace __impl { namespace dsm {
 
-class mapping {
+class GMAC_LOCAL mapping :
+    public util::factory<coherence::block,
+                         coherence::block_ptr> {
+
 protected:
     hal::ptr addr_;
     size_t size_;
+
+    typedef util::factory<coherence::block,
+                          coherence::block_ptr> factory_block;
 
     typedef std::list<coherence::block_ptr> list_block;
     list_block blocks_;

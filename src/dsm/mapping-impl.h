@@ -33,7 +33,7 @@ mapping::merge_mappings(util::range<I> range, hal::ptr::offset_type off, size_t 
         size_t prefix = (*range.begin)->get_bounds().start - off;
         ASSERTION(count > prefix);
 
-        coherence::block_ptr b = new coherence::block(prefix);
+        coherence::block_ptr b = factory_block::create(prefix);
         (*range.begin)->prepend(b);
     } else if ((*range.begin)->get_bounds().start < off) {
         // Split the blocks within the first mapping if needed
@@ -76,7 +76,7 @@ mapping::link(hal::ptr ptr1, util::range<I> range1, submappings &sub1,
         map2 = new mapping(ptr2);
 
         /// TODO: 
-        coherence::block_ptr b = new coherence::block(count);
+        coherence::block_ptr b = factory_block::create(count);
 
         ret = map1->prepend(b);
         ASSERTION(ret == gmacSuccess);

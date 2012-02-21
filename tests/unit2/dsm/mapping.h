@@ -20,7 +20,7 @@ class mapping;
 
 typedef mapping *mapping_ptr;
 
-class mapping :
+class GMAC_LOCAL mapping :
     public __impl::dsm::mapping
 {
     typedef __impl::dsm::mapping parent;
@@ -65,5 +65,14 @@ public:
     template <typename I>
     static gmacError_t link(ptr ptr1, range<I> range1, submappings &sub1,
                             ptr ptr2, range<I> range2, submappings &sub2, size_t count, int flags);
+
+    //////////////////////
+    // Helper functions //
+    //////////////////////
+    static block_ptr
+    helper_create_block(size_t size)
+    {
+        return parent::factory_block::create(size);
+    }
 
 };

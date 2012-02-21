@@ -109,7 +109,8 @@ mapping::append(mapping_ptr map)
 
     // Add a new block between the mappings if needed
     if (map->get_bounds().start > get_bounds().end) {
-        coherence::block_ptr b = new coherence::block(map->get_bounds().start - get_bounds().end);
+        coherence::block_ptr b = factory_block::create(map->get_bounds().start - get_bounds().end);
+
         blocks_.push_back(b);
 
         size_ += b->get_size(); 

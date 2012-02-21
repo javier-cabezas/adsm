@@ -201,17 +201,6 @@ public:
     }
 };
 
-template <typename F, typename T, typename Evt>
-class GMAC_LOCAL observer_class {
-public:
-    typedef Evt event_type;
-
-    static void event()
-    {
-        
-    }
-};
-
 // Event type tags
 namespace event {
 struct construct {};
@@ -222,29 +211,39 @@ template <typename T, typename Evt>
 class observable_base;
 
 template <typename T, typename Evt>
-class GMAC_LOCAL observer {
+class GMAC_LOCAL observer_base {
     friend class observable_base<T, Evt>;
+public:
 protected:
+    typedef observable_base<T, Evt> observing;
+
     virtual void event_handler(T &obj, Evt evt) = 0;
 public:
+    typedef void (*handler_type)(T &obj, Evt evt);
     typedef Evt event_type;
 };
 
 template <typename T, typename Evt>
+class GMAC_LOCAL observer_class {
+public:
+};
+
+template <typename T, typename Evt>
 class GMAC_LOCAL observable_base {
-    typedef std::list<observer<T, Evt> *> list_observer;
+    typedef std::list<observer_base<T, Evt> *> list_observer;
     static list_observer observers_;
 
-public:
-    typedef observer<T, Evt> observer_type;
+    typedef std::list<typename observer_base<T, Evt>::handler_type> list_observer_class;
+    static list_observer_class observersClass_;
 
-protected:
-    
+public:
+    typedef observer_base<T, Evt> observer_type;
 
 public:
     typedef Evt event_type;
 
-    static void update(T &obj)
+    static void
+    update(T &obj)
     {
         typename list_observer::iterator it = observers_.begin();
 
@@ -253,12 +252,14 @@ public:
         }
     }
 
-    static void add_observer(observer_type &obs)
+    static void
+    add_observer(observer_type &obs)
     {
         observers_.push_back(&obs);
     }
 
-    static bool remove_observer(observer_type &obs)
+    static bool
+    remove_observer(observer_type &obs)
     {
         typename list_observer::iterator it = std::find(observers_.begin(),
                                                         observers_.end(),
@@ -270,7 +271,55 @@ public:
             return false;
         }
     }
+
+#if 0
+    template <typename S>
+    static void
+    add_observer_class()
+    {
+        observersClass_.push_back(S::event_handler);
+    }
+
+    template <typename S>
+    static bool
+    remove_observer_class()
+    {
+        typename list_observer_class::iterator it = std::find(observersClass_.begin(),
+                                                              observersClass_.end(),
+                                                              S::event_handler);
+        if (it != observersClass_.end()) {
+            observersClass_.erase(it);
+            return true;
+        } else {
+            return false;
+        }
+    }
+#endif
 };
+
+template <typename T, typename Evt, bool Auto = true>
+class GMAC_LOCAL observer :
+    public observer_base<T, Evt> {
+    typedef observer_base<T, Evt> parent;
+protected:
+    inline
+    observer()
+    {
+        observable_base<T, Evt>::add_observer(*this);
+    }
+
+    inline
+    virtual ~observer()
+    {
+        parent::observing::remove_observer(*this);
+    }
+};
+
+template <typename T, typename Evt>
+class GMAC_LOCAL observer<T, Evt, false> :
+    public observer_base<T, Evt> {
+};
+
 
 template <typename T, typename Evt>
 typename observable_base<T, Evt>::list_observer observable_base<T, Evt>::observers_;
@@ -290,7 +339,8 @@ class GMAC_LOCAL observable<T, event::construct> :
     typedef observable_base<T, event::construct> parent;
 public:
     template <typename S, typename... Args>
-    static S *create(Args &... args)
+    static S *
+    create(Args &... args)
     {
         S *ret = new S(args...);
 
@@ -318,17 +368,35 @@ public:
 
 namespace event {
 
+#if 0
+template <typename T, typename Evt, typename S>
+static void
+add_observer()
+{
+    observable<T, Evt>::template add_observer_class<S>();
+}
+
+template <typename T, typename Evt, typename S>
+static void
+remove_observer()
+{
+    observable<T, Evt>::template remove_observer_class<S>();
+}
+
 template <typename T, typename Evt>
-static void add_observer(observer<T, Evt> &obs)
+static void
+add_observer(observer_base<T, Evt> &obs)
 {
     observable<T, Evt>::add_observer(obs);
 }
 
 template <typename T, typename Evt>
-static bool remove_observer(observer<T, Evt> &obs)
+static bool
+remove_observer(observer_base<T, Evt> &obs)
 {
     return observable<T, Evt>::remove_observer(obs);
 }
+#endif
 
 }
 

@@ -14,21 +14,6 @@ using __impl::dsm::coherence::block_ptr;
 
 class manager_mapping_test : public testing::Test {
 public:
-    static __impl::hal::ptr::backend_type BASE_ADDR;
-
-    static const int MAP0_OFF;
-    static const int MAP1_OFF;
-    static const int MAP2_OFF;
-    static const int MAP3_OFF;
-    static const int MAP4_OFF;
-    static const int MAP5_OFF;
-
-    static const size_t MAP0_SIZE;
-    static const size_t MAP1_SIZE;
-    static const size_t MAP2_SIZE;
-    static const size_t MAP3_SIZE;
-    static const size_t MAP4_SIZE;
-    static const size_t MAP5_SIZE;
 
 protected:
 	static void SetUpTestCase();
@@ -126,5 +111,4 @@ public:
 
         return true;
     }
-
 };

@@ -36,6 +36,7 @@ WITH THE SOFTWARE.  */
 
 #include <map>
 
+#include "util/factory.h"
 #include "util/lock.h"
 
 #include "dsm/types.h"
@@ -44,10 +45,11 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace dsm { namespace coherence {
 
-class block;
-
-class block :
+class GMAC_LOCAL block :
     gmac::util::lock_rw<block> {
+
+    friend class util::factory<block, block_ptr>;
+
     struct mapping_descriptor {
         mapping_ptr mapping_;
         state state_;
@@ -60,8 +62,10 @@ class block :
     typedef std::map<dsm::address_space_ptr, mapping_descriptor> reverse_mappings;
     reverse_mappings rmappings_;
 
-public:
     block(size_t size);
+
+public:
+
     gmacError_t acquire(int flags);
     gmacError_t release();
 

@@ -91,24 +91,14 @@ manager::insert_mapping(map_mapping_group &mappings, mapping_ptr m)
 }
 
 manager::manager() :
+    observer_construct(),
+    observer_destruct(),
     AttributeMappings_(hal::aspace::register_attribute())
 {
-#if 0
-    hal::aspace::add_constructor(do_func(manager::aspace_created, this, std::placeholders::_1));
-    hal::aspace::add_destructor(do_func(manager::aspace_destroyed, this, std::placeholders::_1));
-#endif
-    util::event::add_observer<hal::aspace, util::event::construct>(*this);
-    util::event::add_observer<hal::aspace, util::event::destruct>(*this);
 }
 
 manager::~manager()
 {
-#if 0
-    hal::aspace::remove_constructor(do_func(manager::aspace_created, this, std::placeholders::_1));
-    hal::aspace::remove_destructor(do_func(manager::aspace_destroyed, this, std::placeholders::_1));
-#endif
-    util::event::remove_observer<hal::aspace, util::event::construct>(*this);
-    util::event::remove_observer<hal::aspace, util::event::destruct>(*this);
 }
 
 gmacError_t

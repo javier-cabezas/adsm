@@ -46,15 +46,23 @@ namespace __impl {
 
 namespace dsm {
 
-class manager;
+class GMAC_LOCAL mierda :
+    public util::observable<mierda, util::event::construct>
+    {
+};
+
 
 //! DSM Manager Interface
 
 //! DSM Managers orchestate the data transfers between host and accelerator memories
 class GMAC_LOCAL manager :
     public __impl::util::singleton<dsm::manager>,
-    public __impl::util::observer<hal::aspace, util::event::construct>,
-    public __impl::util::observer<hal::aspace, util::event::destruct> {
+    public util::observer<hal::aspace, util::event::construct>,
+    public util::observer<hal::aspace, util::event::destruct> {
+
+    typedef util::observer<hal::aspace, util::event::construct> observer_construct;
+    typedef util::observer<hal::aspace, util::event::destruct>  observer_destruct;
+
 protected:
     typedef std::map<size_t, mapping_ptr> map_mapping;
     typedef map_mapping *map_mapping_ptr;
@@ -68,6 +76,9 @@ protected:
 
     void event_handler(hal::aspace &aspace, util::event::construct);
     void event_handler(hal::aspace &aspace, util::event::destruct);
+
+    static void event_handler(mierda &m, util::event::construct);
+    static void event_handler(mierda &m, util::event::destruct);
 
     map_mapping_group &get_aspace_mappings(hal::aspace &ctx);
 
