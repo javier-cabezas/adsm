@@ -12,19 +12,19 @@ static manager *mgr = NULL;
 
 static ptr::backend_type BASE_ADDR = 0x0000;
 
-static const int MAP0_OFF = 0x0100;
-static const int MAP1_OFF = 0x1000;
-static const int MAP2_OFF = 0x2000;
-static const int MAP3_OFF = 0x3000;
-static const int MAP4_OFF = 0x4000;
-static const int MAP5_OFF = 0x5000;
+static const int MAP0_OFF =  100;
+static const int MAP1_OFF = 1000;
+static const int MAP2_OFF = 2000;
+static const int MAP3_OFF = 3000;
+static const int MAP4_OFF = 4000;
+static const int MAP5_OFF = 5000;
 
-static const size_t MAP0_SIZE = 0x0100;
-static const size_t MAP1_SIZE = 0x0200;
-static const size_t MAP2_SIZE = 0x1000;
-static const size_t MAP3_SIZE = 0x0900;
-static const size_t MAP4_SIZE = 0x0700;
-static const size_t MAP5_SIZE = 0x0800;
+static const size_t MAP0_SIZE =  100;
+static const size_t MAP1_SIZE =  200;
+static const size_t MAP2_SIZE = 1000;
+static const size_t MAP3_SIZE =  900;
+static const size_t MAP4_SIZE =  700;
+static const size_t MAP5_SIZE =  800;
 
 void
 manager_mapping_test::SetUpTestCase()
@@ -216,27 +216,29 @@ TEST_F(manager_mapping_test, mappings_in_range)
     range_fini();
 }
 
-static const int MAP_B0_OFF = 0x0900;
-static const int MAP_B1_OFF = 0x1200;
-static const int MAP_B2_OFF = 0x2000;
-static const int MAP_B3_OFF = 0x2600;
-static const int MAP_B4_OFF = 0x3000;
-static const int MAP_B5_OFF = 0x3600;
-static const int MAP_B6_OFF = 0x3950;
-static const int MAP_B7_OFF = 0x5500;
+static const int MAP_B0_OFF =   50;
+static const int MAP_B1_OFF =  900;
+static const int MAP_B2_OFF = 1200;
+static const int MAP_B3_OFF = 2000;
+static const int MAP_B4_OFF = 2600;
+static const int MAP_B5_OFF = 3000;
+static const int MAP_B6_OFF = 3600;
+static const int MAP_B7_OFF = 3950;
+static const int MAP_B8_OFF = 5500;
 
-static const size_t MAP_B0_SIZE = 0x0200;
-static const size_t MAP_B1_SIZE = 0x0200;
-static const size_t MAP_B2_SIZE = 0x0200;
-static const size_t MAP_B3_SIZE = 0x0500;
-static const size_t MAP_B4_SIZE = 0x0100;
-static const size_t MAP_B5_SIZE = 0x0500;
-static const size_t MAP_B6_SIZE = 0x0050;
-static const size_t MAP_B7_SIZE = 0x0100;
+static const size_t MAP_B0_SIZE = 100;
+static const size_t MAP_B1_SIZE = 200;
+static const size_t MAP_B2_SIZE = 200;
+static const size_t MAP_B3_SIZE = 200;
+static const size_t MAP_B4_SIZE = 500;
+static const size_t MAP_B5_SIZE = 100;
+static const size_t MAP_B6_SIZE = 500;
+static const size_t MAP_B7_SIZE =  50;
+static const size_t MAP_B8_SIZE = 100;
 
-static ptr         p_b0, p_b1, p_b2, p_b3, p_b4, p_b5, p_b6, p_b7;
-static mapping_ptr m_b0, m_b1, m_b2, m_b3, m_b4, m_b5, m_b6, m_b7;
-static block_ptr   b_b0, b_b1, b_b2, b_b3, b_b4, b_b5, b_b6, b_b7;
+static ptr         p_b0, p_b1, p_b2, p_b3, p_b4, p_b5, p_b6, p_b7, p_b8;
+static mapping_ptr m_b0, m_b1, m_b2, m_b3, m_b4, m_b5, m_b6, m_b7, m_b8;
+static block_ptr   b_b0, b_b1, b_b2, b_b3, b_b4, b_b5, b_b6, b_b7, b_b8;
 
 TEST_F(manager_mapping_test, insert_mappings)
 {
@@ -249,8 +251,9 @@ TEST_F(manager_mapping_test, insert_mappings)
     p_b3 = p0 + (MAP_B3_OFF - MAP0_OFF);
     p_b4 = p0 + (MAP_B4_OFF - MAP0_OFF);
     p_b5 = p0 + (MAP_B5_OFF - MAP0_OFF);
-    p_b6 = p0 + (MAP_B5_OFF - MAP0_OFF);
-    p_b7 = p0 + (MAP_B5_OFF - MAP0_OFF);
+    p_b6 = p0 + (MAP_B6_OFF - MAP0_OFF);
+    p_b7 = p0 + (MAP_B7_OFF - MAP0_OFF);
+    p_b8 = p0 + (MAP_B8_OFF - MAP0_OFF);
 
     m_b0 = new mapping(p_b0);
     m_b1 = new mapping(p_b1);
@@ -260,6 +263,7 @@ TEST_F(manager_mapping_test, insert_mappings)
     m_b5 = new mapping(p_b5);
     m_b6 = new mapping(p_b6);
     m_b7 = new mapping(p_b7);
+    m_b8 = new mapping(p_b8);
 
     b_b0 = mapping::helper_create_block(MAP_B0_SIZE);
     b_b1 = mapping::helper_create_block(MAP_B1_SIZE);
@@ -269,6 +273,7 @@ TEST_F(manager_mapping_test, insert_mappings)
     b_b5 = mapping::helper_create_block(MAP_B5_SIZE);
     b_b6 = mapping::helper_create_block(MAP_B6_SIZE);
     b_b7 = mapping::helper_create_block(MAP_B7_SIZE);
+    b_b8 = mapping::helper_create_block(MAP_B8_SIZE);
 
     gmacError_t err;
     err = m_b0->append(b_b0);
@@ -287,14 +292,16 @@ TEST_F(manager_mapping_test, insert_mappings)
     ASSERT_TRUE(err == gmacSuccess);
     err = m_b7->append(b_b7);
     ASSERT_TRUE(err == gmacSuccess);
+    err = m_b8->append(b_b8);
+    ASSERT_TRUE(err == gmacSuccess);
 
     bool berr;
     berr = mgr->helper_insert(*as1, m_b0);
-    ASSERT_TRUE(berr);
-    berr = mgr->helper_insert(*as1, m_b1);
-    ASSERT_TRUE(berr);
-    berr = mgr->helper_insert(*as1, m_b2);
     ASSERT_FALSE(berr);
+    berr = mgr->helper_insert(*as1, m_b1);
+    ASSERT_FALSE(berr);
+    berr = mgr->helper_insert(*as1, m_b2);
+    ASSERT_TRUE(berr);
     berr = mgr->helper_insert(*as1, m_b3);
     ASSERT_FALSE(berr);
     berr = mgr->helper_insert(*as1, m_b4);
@@ -304,6 +311,8 @@ TEST_F(manager_mapping_test, insert_mappings)
     berr = mgr->helper_insert(*as1, m_b6);
     ASSERT_FALSE(berr);
     berr = mgr->helper_insert(*as1, m_b7);
+    ASSERT_TRUE(berr);
+    berr = mgr->helper_insert(*as1, m_b8);
     ASSERT_FALSE(berr);
 
     delete m_b0;
@@ -314,6 +323,7 @@ TEST_F(manager_mapping_test, insert_mappings)
     delete m_b5;
     delete m_b6;
     delete m_b7;
+    delete m_b8;
 
     range_fini();
 }

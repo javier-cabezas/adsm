@@ -82,11 +82,17 @@ manager::insert_mapping(map_mapping_group &mappings, mapping_ptr m)
         map_mapping map;
         map.insert(map_mapping::value_type(m->get_ptr().get_offset() + m->get_bounds().get_size(), m));
         mappings.insert(map_mapping_group::value_type(m->get_ptr().get_base(), map));
+        TRACE(LOCAL, "Inserting mapping: "FMT_SIZE"-"FMT_SIZE, m->get_ptr().get_offset(),
+                                                               m->get_ptr().get_offset() + m->get_bounds().get_size());
     } else {
         if (mapping_fits(it->second, m)) {
             it->second.insert(map_mapping::value_type(m->get_ptr().get_offset() + m->get_bounds().get_size(), m));
+            TRACE(LOCAL, "Inserting mapping: "FMT_SIZE"-"FMT_SIZE, m->get_ptr().get_offset(),
+                                                                   m->get_ptr().get_offset() + m->get_bounds().get_size());
         } else {
             //ASSERTION(mapping_fits(it->second, m) == true);
+            TRACE(LOCAL, "NOT inserting mapping: "FMT_SIZE"-"FMT_SIZE, m->get_ptr().get_offset(),
+                                                                       m->get_ptr().get_offset() + m->get_bounds().get_size());
             return gmacErrorInvalidValue;
         }
     }
