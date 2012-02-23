@@ -47,6 +47,8 @@ class GMAC_LOCAL mapping :
     public util::factory<coherence::block,
                          coherence::block_ptr> {
 
+    friend class util::factory<mapping, mapping_ptr>;
+
 protected:
     hal::ptr addr_;
     size_t size_;
@@ -73,9 +75,9 @@ protected:
 
     gmacError_t prepend(coherence::block_ptr b);
     gmacError_t append(coherence::block_ptr b);
-    gmacError_t append(mapping_ptr map);
 
     mapping(hal::ptr addr);
+    mapping(const mapping &m);
 
 public:
     static const size_t MinAlignment = 4096;
@@ -85,9 +87,8 @@ public:
     gmacError_t acquire(size_t offset, size_t count, int flags);
     gmacError_t release(size_t offset, size_t count);
 
-    template <typename I>
-    static gmacError_t link(hal::ptr ptr1, util::range<I> range1, submappings &sub1,
-                            hal::ptr ptr2, util::range<I> range2, submappings &sub2, size_t count, int flags);
+    static gmacError_t link(hal::ptr ptr1, mapping_ptr m1,
+                            hal::ptr ptr2, mapping_ptr m2, size_t count, int flags);
 
     //static submappings split(hal::ptr addr, size_t count);
 
@@ -95,6 +96,8 @@ public:
     bounds get_bounds() const;
 
     hal::ptr get_ptr() const;
+
+    gmacError_t append(mapping_ptr m);
 };
 
 }}

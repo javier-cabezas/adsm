@@ -34,6 +34,8 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_DSM_TYPES_H_
 #define GMAC_DSM_TYPES_H_
 
+#include "util/smart_ptr.h"
+
 namespace __impl { namespace dsm {
 
 class address_space;

@@ -67,7 +67,7 @@ gmacError_t map_object::dumpObject(const std::string &dir, std::string prefix, p
 {
     object_ptr obj = get_object(ptr, 1);
     lock_read();
-    ASSERTION(obj != NULL);
+    ASSERTION(bool(obj));
     std::stringstream name;
     name << dir << prefix << "#" << obj->get_print_id() << "-" << obj->getDumps(stat) << "_" << protocols::common::StatisticName[stat];
 

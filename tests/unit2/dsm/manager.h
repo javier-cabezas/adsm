@@ -37,16 +37,23 @@ public:
     static void aspace_created(manager *m, __impl::hal::aspace &aspace);
     static void aspace_destroyed(manager *m, __impl::hal::aspace &aspace);
 
+    template <bool IsOpen>
     range_mapping
     get_mappings_in_range(map_mapping_group &mappings, __impl::hal::ptr begin, size_t count)
     {
-        return parent::get_mappings_in_range(mappings, begin, count);
+        return parent::get_mappings_in_range<IsOpen>(mappings, begin, count);
     }
 
     map_mapping_group &
     get_aspace_mappings(__impl::hal::aspace &aspace)
     {
         return parent::get_aspace_mappings(aspace);
+    }
+
+    mapping_ptr
+    merge_mappings(ptr p, size_t count, range_mapping &range)
+    {
+        return merge_mappings(p, count, range);
     }
 
     virtual ~manager()

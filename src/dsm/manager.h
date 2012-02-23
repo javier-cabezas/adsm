@@ -58,12 +58,15 @@ class GMAC_LOCAL mierda :
 class GMAC_LOCAL manager :
     public __impl::util::singleton<dsm::manager>,
     public util::observer<hal::aspace, util::event::construct>,
-    public util::observer<hal::aspace, util::event::destruct> {
+    public util::observer<hal::aspace, util::event::destruct>,
+    public util::factory<mapping, mapping_ptr> {
 
     typedef util::observer<hal::aspace, util::event::construct> observer_construct;
     typedef util::observer<hal::aspace, util::event::destruct>  observer_destruct;
 
 protected:
+    typedef util::factory<mapping, mapping_ptr> factory_mapping;
+
     typedef std::map<size_t, mapping_ptr> map_mapping;
     typedef map_mapping *map_mapping_ptr;
 
@@ -83,9 +86,12 @@ protected:
     map_mapping_group &get_aspace_mappings(hal::aspace &ctx);
 
     typedef util::range<util::iterator_wrap_associative_second<map_mapping::iterator> > range_mapping;
+    template <bool IsOpen>
     range_mapping get_mappings_in_range(map_mapping_group &mappings, hal::ptr begin, size_t count);
 
     gmacError_t insert_mapping(map_mapping_group &mappings, mapping_ptr m);
+
+    mapping_ptr merge_mappings(hal::ptr p, size_t count, range_mapping &range);
 
     /**
      * Default destructor

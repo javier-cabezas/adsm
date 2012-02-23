@@ -41,7 +41,8 @@ template <typename T, typename S = T *>
 class GMAC_LOCAL factory {
 protected:
     template <typename... Args>
-    static S create(Args... args)
+    inline
+    static S create(Args &&... args)
     {
         S s(new T(args...));
         return s;
@@ -52,7 +53,8 @@ template <typename T>
 class GMAC_LOCAL factory<T, T *> {
 protected:
     template <typename... Args>
-    static T *create(Args... args)
+    inline
+    static T *create(Args &&... args)
     {
         return new T(args...);
     }
