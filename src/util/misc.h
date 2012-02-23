@@ -63,24 +63,40 @@ struct bounds {
 };
 
 template <typename I>
-struct range {
-    typedef I iterator;
+class range {
+    const I begin_;
+    const I end_;
 
-    const I begin;
-    const I end;
+public:
+    typedef I iterator;
 
     inline
     range(I _begin, I _end) :
-        begin(_begin),
-        end(_end)
+        begin_(_begin),
+        end_(_end)
     {
     }
 
     inline bool
     is_empty() const
     {
-        return begin == end;
+        return begin_ == end_;
     }
+
+
+    inline const I &
+    begin() const
+    {
+        return begin_;
+    }
+
+    inline const I &
+    end() const
+    {
+        return end_;
+    }
+
+
 };
 
 }}

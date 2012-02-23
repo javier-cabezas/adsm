@@ -52,16 +52,17 @@ mapping::merge_mappings(util::range<I> range, hal::ptr::offset_type off, size_t 
     return *range.begin;
 }
 
-template <typename I>
+inline
 gmacError_t
-mapping::link(hal::ptr ptr1, util::range<I> range1, submappings &sub1,
-              hal::ptr ptr2, util::range<I> range2, submappings &sub2, size_t count, int flags)
+mapping::link(hal::ptr ptr1, mapping_ptr m1,
+              hal::ptr ptr2, mapping_ptr m2, size_t count, int flags)
 {
     ASSERTION(long_t(ptr1.get_offset()) % MinAlignment == 0);
     ASSERTION(long_t(ptr2.get_offset()) % MinAlignment == 0);
 
-    gmacError_t ret;
+    gmacError_t ret = gmacSuccess;
 
+#if 0
     I begin1 = range1.begin;
     I end1   = range1.end;
     I begin2 = range2.begin;
@@ -83,8 +84,10 @@ mapping::link(hal::ptr ptr1, util::range<I> range1, submappings &sub1,
         ret = map2->prepend(b);
         ASSERTION(ret == gmacSuccess);
 
+#if 0
         sub1.push_back(map1);
         sub2.push_back(map2);
+#endif
     } else if (begin1 == end1) {
         mapping_ptr map1, map2;
         map1 = new mapping(ptr1);
@@ -102,6 +105,7 @@ mapping::link(hal::ptr ptr1, util::range<I> range1, submappings &sub1,
         ret = mapping::dup2(map1, ptr1.get_offset(),
                             map2, ptr2.get_offset(), count);
     }
+#endif
 
     return ret;
 }

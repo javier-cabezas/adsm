@@ -134,6 +134,13 @@ mapping::mapping(hal::ptr addr) :
 {
 }
 
+mapping::mapping(const mapping &m) :
+    addr_(m.addr_),
+    size_(m.size_),
+    blocks_(m.blocks_)
+{
+}
+
 gmacError_t
 mapping::acquire(size_t offset, size_t count, int flags)
 {
@@ -141,7 +148,7 @@ mapping::acquire(size_t offset, size_t count, int flags)
 
     range_block range = get_blocks_in_range(offset, count);
 
-    for (range_block::iterator i = range.begin; i != range.end; ++i) {
+    for (range_block::iterator i = range.begin(); i != range.end(); ++i) {
         err = (*i)->acquire(flags);
         if (err != gmacSuccess) break;
     }
@@ -156,7 +163,7 @@ mapping::release(size_t offset, size_t count)
 
     range_block range = get_blocks_in_range(offset, count);
 
-    for (range_block::iterator i = range.begin; i != range.end; i++) {
+    for (range_block::iterator i = range.begin(); i != range.end(); i++) {
         err = (*i)->release();
         if (err != gmacSuccess) break;
     }
