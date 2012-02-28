@@ -62,8 +62,10 @@ protected:
     typedef util::range<list_block::iterator> range_block;
     range_block get_blocks_in_range(size_t offset, size_t count);
 
+#if 0
     template <typename I>
     static mapping_ptr merge_mappings(util::range<I> range, size_t off, size_t count);
+#endif
 
     static gmacError_t dup2(mapping_ptr map1, hal::ptr::offset_type off1,
                             mapping_ptr map2, hal::ptr::offset_type off2, size_t count);
@@ -72,6 +74,89 @@ protected:
                     hal::ptr::offset_type off2, size_t count);
 
     gmacError_t split(hal::ptr::offset_type off, size_t count);
+
+    //typedef std::pair<list_block::iterator, size_t> pair_block_info;
+    class cursor_block {
+        list_block::iterator it_;
+        size_t offBlock_;
+        size_t offLocal_;
+
+    public:
+        cursor_block(list_block::iterator it,
+                     size_t offBlock,
+                     size_t offLocal) :
+            it_(it),
+            offBlock_(offBlock),
+            offLocal_(offLocal)
+        {
+        }
+
+        coherence::block_ptr get_block()
+        {
+            return *it_;
+        }
+
+        coherence::block_ptr get_block() const
+        {
+            return *it_;
+        }
+
+        size_t get_offset() const
+        {
+            return offBlock_ + offLocal_;
+        }
+
+        size_t get_offset_block() const
+        {
+            return offBlock_;
+        }
+
+        size_t get_offset_local() const
+        {
+            return offLocal_;
+        }
+
+        size_t get_bytes_to_next_block() const
+        {
+            return get_block()->get_size() - offLocal_;
+        }
+
+        size_t advance_block()
+        {
+            size_t ret = get_bytes_to_next_block();
+            ++it_;
+            offBlock_ += ret;
+            offLocal_ = 0;
+
+            return ret;
+        }
+
+        void advance_bytes(size_t bytes)
+        {
+            ASSERTION(get_bytes_to_next_block() > bytes);
+            offLocal_ += bytes;
+        }
+
+        void reset(list_block::iterator it, bool keepOffset = true)
+        {
+            it_ = it;
+            if (!keepOffset) {
+                offBlock_ = 0;
+                offLocal_ = 0;
+            }
+        }
+
+        list_block::iterator
+        get_iterator()
+        {
+            return it_;
+        }
+    };
+
+    cursor_block get_first_block(hal::ptr p);
+
+    list_block::iterator split_block(list_block::iterator it, size_t offset);
+    cursor_block split_block(cursor_block cursor, size_t offset);
 
     gmacError_t prepend(coherence::block_ptr b);
     gmacError_t append(coherence::block_ptr b);
@@ -90,7 +175,7 @@ public:
     static gmacError_t link(hal::ptr ptr1, mapping_ptr m1,
                             hal::ptr ptr2, mapping_ptr m2, size_t count, int flags);
 
-    //static submappings split(hal::ptr addr, size_t count);
+    unsigned get_nblocks() const;
 
     typedef util::bounds<size_t> bounds;
     bounds get_bounds() const;

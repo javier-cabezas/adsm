@@ -95,9 +95,6 @@ protected:
     HPtr ptrHost_;
     Ptr ptrDev_;
 
-    //static_union<Const, host_const_ptr, host_ptr> ptr_;
-
-
 public:
     static const char *address_fmt;
     static const char *offset_fmt;
@@ -300,6 +297,25 @@ public:
     template <typename T>
     inline
     _base_ptr_t &
+    operator++() const
+    {
+        *this += 1;
+        return *this;
+    }
+
+    template <typename T>
+    inline
+    _base_ptr_t
+    operator++(int dummy) const
+    {
+        _base_ptr_t ret(*this);
+        *this += 1;
+        return ret;
+    }
+
+    template <typename T>
+    inline
+    _base_ptr_t &
     operator-=(const T &off)
     {
         if (is_host_ptr()) {
@@ -311,6 +327,24 @@ public:
         return *this;
     }
 
+#if 0
+    template <>
+    _base_ptr_t &
+    operator-=(const _base_ptr_t &ptr)
+    {
+        ASSERTION(aspace_ == ptr.aspace_);
+        if (is_host_ptr()) {
+            ptrHost_ -= ptr.ptrHost_;
+        } else {
+            ASSERTION(get_base()   == ptr.get_base());
+            ASSERTION(get_offset() >  ptr.get_offset());
+            ptrDev_ -= ptr.get_offset();
+        }
+
+        return *this;
+    }
+#endif
+
     template <typename T>
     inline
     const _base_ptr_t
@@ -318,6 +352,44 @@ public:
     {
         _base_ptr_t ret(*this);
         ret -= off;
+        return ret;
+    }
+
+    template <typename T>
+    inline
+    const _base_ptr_t
+    operator-(const _base_ptr_t &ptr) const
+    {
+        ASSERTION(aspace_ == ptr.aspace_);
+        _base_ptr_t ret(*this);
+
+        if (is_host_ptr()) {
+            ret.ptrHost_ -= ptr.ptrHost_;
+        } else {
+            ASSERTION(get_base()   == ptr.get_base());
+            ASSERTION(get_offset() >  ptr.get_offset());
+            ret.ptrDev_ -= ptr.get_offset();
+        }
+
+        return ret;
+    }
+
+    template <typename T>
+    inline
+    _base_ptr_t &
+    operator--() const
+    {
+        *this -= 1;
+        return *this;
+    }
+
+    template <typename T>
+    inline
+    _base_ptr_t
+    operator--(int dummy) const
+    {
+        _base_ptr_t ret(*this);
+        *this -= 1;
         return ret;
     }
 
@@ -407,6 +479,25 @@ public:
         return d.get_type() != D::DEVICE_TYPE_CPU;
     }
 };
+
+#if 0
+template <>
+template <>
+_base_ptr_t<true, Ptr, Aspace, D> &
+_base_ptr_t<true, Ptr, Aspace, D>::operator-=(const _base_ptr_t<Const, Ptr, Aspace, D> &ptr)
+{
+    ASSERTION(aspace_ == ptr.aspace_);
+    if (is_host_ptr()) {
+        ptrHost_ -= ptr.ptrHost_;
+    } else {
+        ASSERTION(get_base()   == ptr.get_base());
+        ASSERTION(get_offset() >  ptr.get_offset());
+        ptrDev_ -= ptr.get_offset();
+    }
+
+    return *this;
+}
+#endif
 
 template <bool Const, typename Ptr, typename Aspace, typename D>
 const char *_base_ptr_t<Const, Ptr, Aspace, D>::address_fmt = "%p";

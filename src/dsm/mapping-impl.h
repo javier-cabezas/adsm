@@ -4,6 +4,13 @@
 namespace __impl { namespace dsm {
 
 inline
+unsigned
+mapping::get_nblocks() const
+{
+    return unsigned(blocks_.size());
+}
+
+inline
 mapping::bounds
 mapping::get_bounds() const
 {
@@ -17,97 +24,6 @@ hal::ptr
 mapping::get_ptr() const
 {
     return addr_;
-}
-
-template <typename I>
-mapping_ptr
-mapping::merge_mappings(util::range<I> range, hal::ptr::offset_type off, size_t count)
-{
-    ASSERTION(range.is_empty() == false, "Merging an empty range");
-
-    I it = range.begin;
-
-    if ((*range.begin)->get_bounds().start > off) {
-        // Grow first mapping upwards 
-        // Create block for the memory preceeding any existing mapping
-        size_t prefix = (*range.begin)->get_bounds().start - off;
-        ASSERTION(count > prefix);
-
-        coherence::block_ptr b = factory_block::create(prefix);
-        (*range.begin)->prepend(b);
-    } else if ((*range.begin)->get_bounds().start < off) {
-        // Split the blocks within the first mapping if needed
-        (*range.begin)->split(off, count);
-    }
-
-    // Merge the mappings into the first one
-    ++it;
-
-    for (; it != range.end; ++it) {
-        ASSERTION((*range.begin)->addr_.get_base() ==
-                           (*it)->addr_.get_base());
-        (*range.begin)->append(*it);
-    }
-
-    return *range.begin;
-}
-
-inline
-gmacError_t
-mapping::link(hal::ptr ptr1, mapping_ptr m1,
-              hal::ptr ptr2, mapping_ptr m2, size_t count, int flags)
-{
-    ASSERTION(long_t(ptr1.get_offset()) % MinAlignment == 0);
-    ASSERTION(long_t(ptr2.get_offset()) % MinAlignment == 0);
-
-    gmacError_t ret = gmacSuccess;
-
-#if 0
-    I begin1 = range1.begin;
-    I end1   = range1.end;
-    I begin2 = range2.begin;
-    I end2   = range2.end;
-
-    // Case1
-    // No previous links in both ranges: link new mappings
-    if (begin1 == end1 && begin2 == end2) {
-        mapping_ptr map1, map2;
-
-        map1 = new mapping(ptr1);
-        map2 = new mapping(ptr2);
-
-        /// TODO: 
-        coherence::block_ptr b = factory_block::create(count);
-
-        ret = map1->prepend(b);
-        ASSERTION(ret == gmacSuccess);
-        ret = map2->prepend(b);
-        ASSERTION(ret == gmacSuccess);
-
-#if 0
-        sub1.push_back(map1);
-        sub2.push_back(map2);
-#endif
-    } else if (begin1 == end1) {
-        mapping_ptr map1, map2;
-        map1 = new mapping(ptr1);
-        map2 = merge_mappings(range2, ptr2.get_offset(), count);
-        ret = map1->dup(ptr1.get_offset(), map2, ptr2.get_offset(), count);
-    } else if (begin2 == end2) {
-        mapping_ptr map1, map2;
-        map2 = new mapping(ptr2);
-        map1 = merge_mappings(range1, ptr1.get_offset(), count);
-        ret = map2->dup(ptr2.get_offset(), map1, ptr1.get_offset(), count);
-    } else {
-        mapping_ptr map1, map2;
-        map1 = merge_mappings(range1, ptr1.get_offset(), count);
-        map2 = merge_mappings(range2, ptr2.get_offset(), count);
-        ret = mapping::dup2(map1, ptr1.get_offset(),
-                            map2, ptr2.get_offset(), count);
-    }
-#endif
-
-    return ret;
 }
 
 }}

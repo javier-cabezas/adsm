@@ -86,12 +86,12 @@ protected:
     map_mapping_group &get_aspace_mappings(hal::aspace &ctx);
 
     typedef util::range<util::iterator_wrap_associative_second<map_mapping::iterator> > range_mapping;
-    template <bool IsOpen>
+    template <bool GetAdjacent>
     range_mapping get_mappings_in_range(map_mapping_group &mappings, hal::ptr begin, size_t count);
 
     gmacError_t insert_mapping(map_mapping_group &mappings, mapping_ptr m);
 
-    mapping_ptr merge_mappings(hal::ptr p, size_t count, range_mapping &range);
+    mapping_ptr merge_mappings(range_mapping &range);
 
     /**
      * Default destructor

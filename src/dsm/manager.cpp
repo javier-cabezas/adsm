@@ -66,7 +66,7 @@ manager::insert_mapping(map_mapping_group &mappings, mapping_ptr m)
 }
 
 mapping_ptr
-manager::merge_mappings(hal::ptr p, size_t count, range_mapping &range)
+manager::merge_mappings(range_mapping &range)
 {
     ASSERTION(!range.is_empty());
 
@@ -108,8 +108,8 @@ manager::link(hal::ptr dst, hal::ptr src, size_t count, int flags)
     range_mapping rangeDst = get_mappings_in_range<false>(mappingsDst, dst, count);
     range_mapping rangeSrc = get_mappings_in_range<false>(mappingsSrc, src, count);
 
-    mapping_ptr mDst = merge_mappings(dst, count, rangeDst);
-    mapping_ptr mSrc = merge_mappings(src, count, rangeSrc);
+    mapping_ptr mDst = merge_mappings(rangeDst);
+    mapping_ptr mSrc = merge_mappings(rangeSrc);
 
     mapping::submappings subDst, subSrc;
 
