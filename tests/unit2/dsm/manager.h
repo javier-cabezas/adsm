@@ -50,10 +50,10 @@ public:
         return parent::get_aspace_mappings(aspace);
     }
 
-    mapping_ptr
-    merge_mappings(ptr p, size_t count, range_mapping &range)
+    __impl::dsm::mapping_ptr
+    merge_mappings(range_mapping &range)
     {
-        return merge_mappings(p, count, range);
+        return parent::merge_mappings(range);
     }
 
     virtual ~manager()

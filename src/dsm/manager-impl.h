@@ -3,14 +3,20 @@
 
 namespace __impl { namespace dsm {
 
-template <bool IsOpen>
+template <bool GetAdjacent>
 manager::range_mapping
 manager::get_mappings_in_range(map_mapping_group &mappings, hal::ptr addr, size_t count)
 {
     ASSERTION(count > 0);
     ASSERTION(addr);
 
-    if (!IsOpen) ++count;
+    if (GetAdjacent) {
+        ++count;
+        if (addr.get_offset() > 0) {
+            ++count;
+            addr -= 1;
+        }
+    }
 
     map_mapping_group::iterator itGroup = mappings.find(addr.get_base());
 

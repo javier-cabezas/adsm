@@ -51,23 +51,37 @@ class GMAC_LOCAL block :
     friend class util::factory<block, block_ptr>;
 
     struct mapping_descriptor {
-        mapping_ptr mapping_;
+        size_t off_;
         state state_;
+
+        mapping_descriptor(size_t off, state s) :
+            off_(off),
+            state_(s)
+        {
+        }
     };
 
     size_t size_;
 
     typedef gmac::util::lock_rw<block> lock;
 
-    typedef std::map<dsm::address_space_ptr, mapping_descriptor> reverse_mappings;
-    reverse_mappings rmappings_;
+    typedef std::map<mapping_ptr, mapping_descriptor> mappings;
+    mappings mappings_;
+
+    typedef std::list<mapping_ptr> list_mappings;
+    typedef std::map<dsm::address_space_ptr, list_mappings> aspace_mappings;
+    aspace_mappings aspaceMappings_;
 
     block(size_t size);
 
 public:
+    block_ptr split(size_t off);
 
-    gmacError_t acquire(int flags);
-    gmacError_t release();
+    gmacError_t acquire(mapping_ptr aspace, int flags);
+    gmacError_t release(mapping_ptr aspace);
+
+    gmacError_t register_mapping(mapping_ptr m, size_t off);
+    gmacError_t unregister_mapping(mapping_ptr m);
 
     size_t get_size() const;
 };
