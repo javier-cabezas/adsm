@@ -136,6 +136,19 @@ void dummy_assertion(bool /*b*/, ...)
 #define FATAL(fmt, ...) __impl::trace::Logger::__Fatal(fmt, ##__VA_ARGS__)
 #define CFATAL(c, ...) __impl::trace::Logger::__CFatal(c, "Condition '"#c"' failed", LOCATION_STRING)
 
+
+#if defined(CHECK_IS_ASSERTION)
+#define CHECK(c, e) ASSERTION(c, ##__VA_ARGS__)
+#else
+#define CHECK(c, e)                         \
+    do {                                    \
+        if (c) break;                       \
+        if (::config::params::Verbose)      \
+            WARNING("Check '"#c"' failed"); \
+        return e;                           \
+    } while (0)
+#endif
+
 #include "util/atomics.h"
 #include "util/Parameter.h"
 #include "util/private.h"

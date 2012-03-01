@@ -55,14 +55,14 @@ TEST_F(mapping_test, prepend_block)
     block_ptr b0 = mapping::helper_create_block(0x100);
     block_ptr b1 = mapping::helper_create_block(0x300);
 
-    gmacError_t err;
+    error_dsm err;
 
     ASSERT_TRUE(m0->get_bounds().get_size() == 0);
     err = m0->prepend(b0);
-    ASSERT_TRUE(err == gmacSuccess);
+    ASSERT_TRUE(err == __impl::dsm::DSM_SUCCESS);
     ASSERT_TRUE(m0->get_bounds().get_size() == b0->get_size());
     err = m0->prepend(b1);
-    ASSERT_TRUE(err == gmacSuccess);
+    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
     ASSERT_TRUE(m0->get_bounds().get_size() == (b0->get_size() + b1->get_size()));
 
     delete m0;
@@ -80,15 +80,15 @@ TEST_F(mapping_test, prepend_block2)
     block_ptr b0 = mapping::helper_create_block(0x100);
     block_ptr b1 = mapping::helper_create_block(0x400);
 
-    gmacError_t err;
+    error_dsm err;
 
     ASSERT_TRUE(m0->get_bounds().get_size() == 0);
     err = m0->prepend(b0);
-    ASSERT_TRUE(err == gmacSuccess);
+    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
     ASSERT_TRUE(m0->get_bounds().get_size() == b0->get_size());
     // The OFFSET 0x400 is not enough to fit the second block, TOTAL 0x500
     err = m0->prepend(b1);
-    ASSERT_FALSE(err == gmacSuccess);
+    ASSERT_FALSE(err == error_dsm::DSM_SUCCESS);
     ASSERT_TRUE(m0->get_bounds().get_size() == b0->get_size());
 
     delete m0;
@@ -107,24 +107,24 @@ TEST_F(mapping_test, append_block)
     block_ptr b2 = mapping::helper_create_block(0x400);
     block_ptr b3 = mapping::helper_create_block(0x000);
 
-    gmacError_t err;
+    error_dsm err;
 
     ASSERT_TRUE(m0->get_bounds().get_size() == 0);
     err = m0->append(b0);
-    ASSERT_TRUE(err == gmacSuccess);
+    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
     ASSERT_TRUE(m0->get_bounds().get_size() == b0->get_size());
     err = m0->append(b1);
-    ASSERT_TRUE(err == gmacSuccess);
+    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
     ASSERT_TRUE(m0->get_bounds().get_size() == (b0->get_size() +
                                                 b1->get_size()));
     err = m0->append(b2);
-    ASSERT_TRUE(err == gmacSuccess);
+    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
     ASSERT_TRUE(m0->get_bounds().get_size() == (b0->get_size() +
                                                 b1->get_size() +
                                                 b2->get_size()));
     err = m0->append(b3);
     // Blocks of size 0 are not allowed
-    ASSERT_FALSE(err == gmacSuccess);
+    ASSERT_FALSE(err == error_dsm::DSM_SUCCESS);
     ASSERT_TRUE(m0->get_bounds().get_size() == (b0->get_size() +
                                                 b1->get_size() +
                                                 b2->get_size()));
@@ -147,14 +147,14 @@ TEST_F(mapping_test, append_mapping)
     block_ptr b0 = mapping::helper_create_block(BLOCK_SIZE);
     block_ptr b1 = mapping::helper_create_block(BLOCK_SIZE);
 
-    gmacError_t err;
+    error_dsm err;
 
     err = m0->append(b0);
-    ASSERT_TRUE(err == gmacSuccess);
+    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
     err = m1->append(b1);
-    ASSERT_TRUE(err == gmacSuccess);
+    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
     err = m0->append(m1);
-    ASSERT_TRUE(err == gmacSuccess);
+    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
     ASSERT_TRUE(m0->get_bounds().get_size() == (b0->get_size() +
                                                 b1->get_size() +
                                                 (OFFSET - b0->get_size())));
@@ -178,14 +178,14 @@ TEST_F(mapping_test, append_mapping2)
     block_ptr b0 = mapping::helper_create_block(BLOCK_SIZE);
     block_ptr b1 = mapping::helper_create_block(BLOCK_SIZE);
 
-    gmacError_t err;
+    error_dsm err;
 
     err = m0->append(b0);
-    ASSERT_TRUE(err == gmacSuccess);
+    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
     err = m1->append(b1);
-    ASSERT_TRUE(err == gmacSuccess);
+    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
     err = m0->append(m1);
-    ASSERT_FALSE(err == gmacSuccess);
+    ASSERT_FALSE(err == error_dsm::DSM_SUCCESS);
 
     delete m0;
     delete m1;
@@ -206,14 +206,14 @@ TEST_F(mapping_test, append_mapping3)
     block_ptr b0 = mapping::helper_create_block(BLOCK_SIZE);
     block_ptr b1 = mapping::helper_create_block(BLOCK_SIZE);
 
-    gmacError_t err;
+    error_dsm err;
 
     err = m0->append(b0);
-    ASSERT_TRUE(err == gmacSuccess);
+    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
     err = m1->append(b1);
-    ASSERT_TRUE(err == gmacSuccess);
+    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
     err = m0->append(m1);
-    ASSERT_TRUE(err == gmacSuccess);
+    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
     ASSERT_TRUE(m0->get_bounds().get_size() == (b0->get_size() +
                                                 b1->get_size()));
 
@@ -236,14 +236,14 @@ TEST_F(mapping_test, append_mapping4)
     block_ptr b0 = mapping::helper_create_block(BLOCK_SIZE);
     block_ptr b1 = mapping::helper_create_block(BLOCK_SIZE);
 
-    gmacError_t err;
+    error_dsm err;
 
     err = m0->append(b0);
-    ASSERT_TRUE(err == gmacSuccess);
+    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
     err = m1->append(b1);
-    ASSERT_TRUE(err == gmacSuccess);
+    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
     err = m0->append(m1);
-    ASSERT_FALSE(err == gmacSuccess);
+    ASSERT_FALSE(err == error_dsm::DSM_SUCCESS);
 
     delete m0;
     delete m1;

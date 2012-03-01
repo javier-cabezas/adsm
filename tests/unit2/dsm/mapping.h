@@ -20,6 +20,8 @@ class mapping;
 
 typedef mapping *mapping_ptr;
 
+typedef __impl::dsm::error error_dsm;
+
 class GMAC_LOCAL mapping :
     public __impl::dsm::mapping
 {
@@ -31,25 +33,19 @@ public:
     template <typename I>
     static mapping_ptr merge_mappings(range<I> range, ptr::offset_type off, size_t count);
 
-    static gmacError_t dup2(mapping_ptr map1, ptr::offset_type off1,
-                            mapping_ptr map2, ptr::offset_type off2, size_t count);
+    error_dsm split(ptr::offset_type off, size_t count);
 
-    gmacError_t dup(ptr::offset_type off1, mapping_ptr map2,
-                    ptr::offset_type off2, size_t count);
-
-    gmacError_t split(ptr::offset_type off, size_t count);
-
-    gmacError_t prepend(block_ptr b)
+    error_dsm prepend(block_ptr b)
     {
         return parent::prepend(b);
     }
 
-    gmacError_t append(block_ptr b)
+    error_dsm append(block_ptr b)
     {
         return parent::append(b);
     }
 
-    gmacError_t append(mapping_ptr map)
+    error_dsm append(mapping_ptr map)
     {
         return parent::append(map);
     }
@@ -59,12 +55,12 @@ public:
     {
     }
 
-    gmacError_t acquire(ptr::offset_type offset, size_t count, int flags);
-    gmacError_t release(ptr::offset_type offset, size_t count);
+    error_dsm acquire(ptr::offset_type offset, size_t count, int flags);
+    error_dsm release(ptr::offset_type offset, size_t count);
 
     template <typename I>
-    static gmacError_t link(ptr ptr1, range<I> range1, submappings &sub1,
-                            ptr ptr2, range<I> range2, submappings &sub2, size_t count, int flags);
+    static error_dsm link(ptr ptr1, range<I> range1, submappings &sub1,
+                          ptr ptr2, range<I> range2, submappings &sub2, size_t count, int flags);
 
     //////////////////////
     // Helper functions //

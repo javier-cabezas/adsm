@@ -319,7 +319,7 @@ public:
     operator-=(const T &off)
     {
         if (is_host_ptr()) {
-            ASSERTION(this->ptrHost_ >= host_ptr(off));
+            ASSERTION(this->ptrHost_ >= host_ptr(long_t(off)));
             this->ptrHost_ -= off;
         } else {
             this->ptrDev_ -= off;

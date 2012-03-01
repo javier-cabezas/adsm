@@ -203,6 +203,7 @@ inline void Logger::__Message(const char *fmt, ...)
     va_start(list, fmt);
 	VFPRINTF(stdout, fmt, list);
     va_end(list);
+    fprintf(stdout, "\n");
 }
 
 
@@ -212,6 +213,7 @@ inline void Logger::__Warning(const char *fmt, ...)
     va_start(list, fmt);
 	VFPRINTF(stderr, fmt, list);
     va_end(list);
+    fprintf(stderr, "\n");
 }
 
 

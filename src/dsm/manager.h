@@ -46,12 +46,6 @@ namespace __impl {
 
 namespace dsm {
 
-class GMAC_LOCAL mierda :
-    public util::observable<mierda, util::event::construct>
-    {
-};
-
-
 //! DSM Manager Interface
 
 //! DSM Managers orchestate the data transfers between host and accelerator memories
@@ -80,18 +74,17 @@ protected:
     void event_handler(hal::aspace &aspace, util::event::construct);
     void event_handler(hal::aspace &aspace, util::event::destruct);
 
-    static void event_handler(mierda &m, util::event::construct);
-    static void event_handler(mierda &m, util::event::destruct);
-
     map_mapping_group &get_aspace_mappings(hal::aspace &ctx);
 
     typedef util::range<util::iterator_wrap_associative_second<map_mapping::iterator> > range_mapping;
     template <bool GetAdjacent>
     range_mapping get_mappings_in_range(map_mapping_group &mappings, hal::ptr begin, size_t count);
 
-    gmacError_t insert_mapping(map_mapping_group &mappings, mapping_ptr m);
+    error insert_mapping(map_mapping_group &mappings, mapping_ptr m);
 
     mapping_ptr merge_mappings(range_mapping &range);
+    
+    error replace_mappings(map_mapping_group &mappings, range_mapping &range, mapping_ptr mNew);
 
     /**
      * Default destructor
@@ -114,21 +107,21 @@ public:
      * \param err Reference to store the error code for the operation
      * \return Address that identifies the allocated memory
      */
-    gmacError_t link(hal::ptr ptr1, hal::ptr ptr2, size_t count, int flags);
-    gmacError_t unlink(hal::ptr mapping, size_t count);
+    error link(hal::ptr dst, hal::ptr src, size_t count, int flags);
+    error unlink(hal::ptr mapping, size_t count);
 
-    gmacError_t acquire(hal::ptr mapping, size_t count, int flags);
-    gmacError_t release(hal::ptr mapping, size_t count);
+    error acquire(hal::ptr mapping, size_t count, int flags);
+    error release(hal::ptr mapping, size_t count);
 
-    gmacError_t sync(hal::ptr mapping, size_t count);
+    error sync(hal::ptr mapping, size_t count);
 
-    gmacError_t memcpy(hal::ptr dst, hal::ptr src, size_t count);
-    gmacError_t memset(hal::ptr ptr, int c, size_t count);
+    error memcpy(hal::ptr dst, hal::ptr src, size_t count);
+    error memset(hal::ptr ptr, int c, size_t count);
 
-    gmacError_t from_io_device(hal::ptr addr, hal::device_input &input, size_t count);
-    gmacError_t to_io_device(hal::device_output &output, hal::const_ptr addr, size_t count);
+    error from_io_device(hal::ptr addr, hal::device_input &input, size_t count);
+    error to_io_device(hal::device_output &output, hal::const_ptr addr, size_t count);
 
-    gmacError_t flush_dirty(address_space_ptr aspace);
+    error flush_dirty(address_space_ptr aspace);
 };
 
 }}

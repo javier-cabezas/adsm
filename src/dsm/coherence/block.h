@@ -75,13 +75,17 @@ class GMAC_LOCAL block :
     block(size_t size);
 
 public:
+    virtual ~block();
+
     block_ptr split(size_t off);
 
-    gmacError_t acquire(mapping_ptr aspace, int flags);
-    gmacError_t release(mapping_ptr aspace);
+    error acquire(mapping_ptr aspace, int flags);
+    error release(mapping_ptr aspace);
 
-    gmacError_t register_mapping(mapping_ptr m, size_t off);
-    gmacError_t unregister_mapping(mapping_ptr m);
+    error register_mapping(mapping_ptr m, size_t off);
+    error unregister_mapping(mapping_ptr m);
+
+    error transfer_mappings(block_ptr b);
 
     size_t get_size() const;
 };

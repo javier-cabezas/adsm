@@ -1,5 +1,6 @@
 #include "unit2/dsm/manager.h"
 
+#include "dsm/types.h"
 #include "hal/types.h"
 
 #include "util/misc.h"
@@ -84,21 +85,21 @@ static void range_init()
     b4 = mapping::helper_create_block(MAP4_SIZE);
     b5 = mapping::helper_create_block(MAP5_SIZE);
 
-    gmacError_t err;
+    error_dsm err;
     bool berr;
 
     err = m0->append(b0);
-    ASSERT_TRUE(err == gmacSuccess);
+    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
     err = m1->append(b1);
-    ASSERT_TRUE(err == gmacSuccess);
+    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
     err = m2->append(b2);
-    ASSERT_TRUE(err == gmacSuccess);
+    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
     err = m3->append(b3);
-    ASSERT_TRUE(err == gmacSuccess);
+    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
     err = m4->append(b4);
-    ASSERT_TRUE(err == gmacSuccess);
+    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
     err = m5->append(b5);
-    ASSERT_TRUE(err == gmacSuccess);
+    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
 
     berr = mgr->helper_insert(*as1, m0);
     ASSERT_TRUE(berr);
@@ -349,25 +350,25 @@ TEST_F(manager_mapping_test, insert_mappings)
     b_b7 = mapping::helper_create_block(MAP_B7_SIZE);
     b_b8 = mapping::helper_create_block(MAP_B8_SIZE);
 
-    gmacError_t err;
+    error_dsm err;
     err = m_b0->append(b_b0);
-    ASSERT_TRUE(err == gmacSuccess);
+    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
     err = m_b1->append(b_b1);
-    ASSERT_TRUE(err == gmacSuccess);
+    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
     err = m_b2->append(b_b2);
-    ASSERT_TRUE(err == gmacSuccess);
+    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
     err = m_b3->append(b_b3);
-    ASSERT_TRUE(err == gmacSuccess);
+    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
     err = m_b4->append(b_b4);
-    ASSERT_TRUE(err == gmacSuccess);
+    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
     err = m_b5->append(b_b5);
-    ASSERT_TRUE(err == gmacSuccess);
+    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
     err = m_b6->append(b_b6);
-    ASSERT_TRUE(err == gmacSuccess);
+    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
     err = m_b7->append(b_b7);
-    ASSERT_TRUE(err == gmacSuccess);
+    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
     err = m_b8->append(b_b8);
-    ASSERT_TRUE(err == gmacSuccess);
+    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
 
     bool berr;
     berr = mgr->helper_insert(*as1, m_b0);
@@ -430,11 +431,57 @@ TEST_F(manager_mapping_test, merge_mappings)
     ASSERT_TRUE((*get_last_in_range(range2))->get_ptr() == p4);
 
     __impl::dsm::mapping_ptr merged2 = mgr->merge_mappings(range2);
-    ASSERT_TRUE(merged->get_bounds().get_size() == (MAP4_OFF - MAP0_OFF + MAP4_SIZE));
+    ASSERT_TRUE(merged2->get_bounds().get_size() == (MAP4_OFF - MAP0_OFF + MAP4_SIZE));
 
-    ASSERT_TRUE(merged->get_nblocks() == 5 + 3);
+    ASSERT_TRUE(merged2->get_nblocks() == 5 + 3);
 
     delete merged2;
 
     range_fini();
+}
+
+static __impl::hal::aspace *as2 = NULL;
+static ptr as1_p0, as1_p1, as1_p2;
+static ptr as2_p0, as2_p1, as2_p2;
+
+static const size_t LINK0_SIZE = 0x1000;
+
+static const size_t LINK0_OFF = 2 * 0x1000;
+
+static void link_init()
+{
+    gmacError_t err;
+
+    // Create additional address space
+    as2 = device->create_aspace(__impl::hal::device::None, err);
+    ASSERT_TRUE(err == gmacSuccess);
+
+    // We use the same base allocation
+    as1_p0 = ptr(ptr::backend_ptr(0), as1) + LINK0_OFF;
+    
+    // We use the same base allocation
+    as2_p0 = ptr(ptr::backend_ptr(0), as2) + LINK0_OFF;
+}
+
+static void link_fini()
+{
+    gmacError_t err;
+    err = device->destroy_aspace(*as2);
+    ASSERT_TRUE(err == gmacSuccess);
+}
+
+TEST_F(manager_mapping_test, link)
+{
+    link_init();
+
+    // Count is not multiple of page
+    error_dsm err = mgr->link(as1_p0, as2_p0, MAP0_SIZE, GMAC_PROT_READ);
+    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
+
+#if 0
+    err = mgr->link(as1_p0, as2_p0, LINK0_SIZE, GMAC_PROT_READ);
+    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
+#endif
+
+    link_fini();
 }

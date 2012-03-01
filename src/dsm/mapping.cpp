@@ -28,20 +28,20 @@ mapping::get_blocks_in_range(hal::ptr::offset_type offset, size_t count)
     return range_block(first, last);
 }
 
-gmacError_t
+error
 mapping::dup2(mapping_ptr map1, hal::ptr::offset_type off1,
               mapping_ptr map2, hal::ptr::offset_type off2, size_t count)
 {
-    gmacError_t ret = gmacSuccess;
+    error ret = DSM_SUCCESS;
 
     return ret;
 }
 
-gmacError_t
+error
 mapping::dup(hal::ptr::offset_type off1, mapping_ptr map2,
              hal::ptr::offset_type off2, size_t count)
 {
-    gmacError_t ret = gmacSuccess;
+    error ret = DSM_SUCCESS;
 
     list_block::iterator it;
     hal::ptr::offset_type off = off2;
@@ -71,11 +71,10 @@ mapping::get_first_block(hal::ptr p)
        ++it) {
         size_t blockSize = (*it)->get_size();
 
-        if ((p >= addr_) &&
-            (p <  addr_ + blockSize)) {
-            size_t offLocal = (addr_ + blockSize).get_offset() - p.get_offset();
-            cursor_block(it, offLocal, off);
-            break;
+        if ((p >= addr_ + off) &&
+            (p <  addr_ + off +  blockSize)) {
+            size_t offLocal = p.get_offset() - (addr_ + off).get_offset();
+            return cursor_block(it, off, offLocal);
         }
 
         off += blockSize;
@@ -105,46 +104,63 @@ mapping::split_block(cursor_block cursor, size_t offset)
     return cursor_block(it, cursor.get_offset_block(), cursor.get_offset_local());
 }
 
-gmacError_t
+error
 mapping::prepend(coherence::block_ptr b)
 {
-    gmacError_t ret = gmacSuccess;
+    error ret = DSM_SUCCESS;
 
     if (b->get_size() <= addr_.get_offset()) {
         blocks_.push_front(b);
         addr_ -= b->get_size();
         size_ += b->get_size();
     } else {
-        ret = gmacErrorInvalidValue;
+        ret = DSM_ERROR_INVALID_VALUE;
     }
 
     return ret;
 }
 
-gmacError_t
+error
 mapping::append(coherence::block_ptr b)
 {
-    gmacError_t ret = gmacSuccess;
+    error ret = DSM_SUCCESS;
 
     if (b->get_size() > 0) {
         blocks_.push_back(b);
         size_ += b->get_size();
     } else {
-        ret = gmacErrorInvalidValue;
+        ret = DSM_ERROR_INVALID_VALUE;
     }
 
     return ret;
 }
 
-gmacError_t
+error
+mapping::swap(coherence::block_ptr b, coherence::block_ptr bNew)
+{
+    ASSERTION(bool(b));
+    ASSERTION(bool(bNew));
+
+    ASSERTION(std::find(blocks_.begin(), blocks_.end(), b) != blocks_.end(), "Block not found in mapping");
+    ASSERTION(std::find(blocks_.begin(), blocks_.end(), bNew) == blocks_.end(), "Block already found in mapping");
+
+    bNew->transfer_mappings(b);
+
+    list_block::iterator it = std::find(blocks_.begin(), blocks_.end(), b);
+    (*it).swap(bNew);
+
+    return DSM_SUCCESS;
+}
+
+error
 mapping::append(mapping_ptr map)
 {
     if ((map->addr_.get_offset()  <  (addr_.get_offset() + size_)) ||
         (map->addr_.get_aspace() !=  (addr_.get_aspace()))) {
-        return gmacErrorInvalidValue;
+        return DSM_ERROR_INVALID_VALUE;
     }
 
-    gmacError_t ret = gmacSuccess;
+    error ret = DSM_SUCCESS;
 
     // Add a new block between the mappings if needed
     if (map->get_bounds().start > get_bounds().end) {
@@ -169,10 +185,29 @@ mapping::append(mapping_ptr map)
     return ret;
 }
 
+error
+mapping::resize(size_t pre, size_t post)
+{
+    error ret = DSM_SUCCESS;
+
+    if (pre > 0) {
+        coherence::block_ptr b = factory_block::create(pre);
+        ret = prepend(b);
+    }
+
+    if (post > 0 && ret == DSM_SUCCESS) {
+        coherence::block_ptr b = factory_block::create(post);
+        ret = append(b);
+    }
+
+    return ret;
+}
+
 mapping::mapping(hal::ptr addr) :
     addr_(addr),
     size_(0)
 {
+    TRACE(LOCAL, "Creating mapping %p", this);
 }
 
 mapping::mapping(const mapping &m) :
@@ -180,56 +215,63 @@ mapping::mapping(const mapping &m) :
     size_(m.size_),
     blocks_(m.blocks_)
 {
+    TRACE(LOCAL, "Creating mapping %p", this);
 }
 
-gmacError_t
+mapping::~mapping()
+{
+    TRACE(LOCAL, "Deleting mapping %p", this);
+    blocks_.clear();
+}
+
+error
 mapping::acquire(size_t offset, size_t count, int flags)
 {
-    gmacError_t err = gmacSuccess;
+    error err = DSM_SUCCESS;
 
     range_block range = get_blocks_in_range(offset, count);
 
     for (range_block::iterator i = range.begin(); i != range.end(); ++i) {
         err = (*i)->acquire(this, flags);
-        if (err != gmacSuccess) break;
+        if (err != DSM_SUCCESS) break;
     }
 
     return err;
 }
 
-gmacError_t
+error
 mapping::release(size_t offset, size_t count)
 {
-    gmacError_t err = gmacSuccess;
+    error err = DSM_SUCCESS;
 
     range_block range = get_blocks_in_range(offset, count);
 
     for (range_block::iterator i = range.begin(); i != range.end(); i++) {
         err = (*i)->release(this);
-        if (err != gmacSuccess) break;
+        if (err != DSM_SUCCESS) break;
     }
 
     return err;
 }
 
-gmacError_t
+error
 mapping::link(hal::ptr ptrDst, mapping_ptr mDst,
               hal::ptr ptrSrc, mapping_ptr mSrc, size_t count, int flags)
 {
-    ASSERTION(bool(ptrDst));
-    ASSERTION(bool(ptrSrc));
+    CHECK(bool(ptrDst), DSM_ERROR_INVALID_PTR);
+    CHECK(bool(ptrSrc), DSM_ERROR_INVALID_PTR);
 
-    ASSERTION(mDst != mSrc);
+    CHECK(mDst != mSrc, DSM_ERROR_INVALID_VALUE);
 
-    ASSERTION(count > 0);
+    CHECK(count > 0, DSM_ERROR_INVALID_VALUE);
 
-    ASSERTION(long_t(ptrDst.get_offset()) % MinAlignment == 0);
-    ASSERTION(long_t(ptrSrc.get_offset()) % MinAlignment == 0);
+    CHECK(long_t(ptrDst.get_offset()) % MinAlignment == 0, DSM_ERROR_INVALID_ALIGNMENT);
+    CHECK(long_t(ptrSrc.get_offset()) % MinAlignment == 0, DSM_ERROR_INVALID_ALIGNMENT);
 
-    ASSERTION(ptrDst > mDst->get_ptr());
-    ASSERTION(ptrSrc > mSrc->get_ptr());
+    CHECK(ptrDst >= mDst->get_ptr(), DSM_ERROR_INVALID_VALUE);
+    CHECK(ptrSrc >= mSrc->get_ptr(), DSM_ERROR_INVALID_VALUE);
 
-    gmacError_t ret = gmacSuccess;
+    error ret = DSM_SUCCESS;
 
     cursor_block cursorDst = mDst->get_first_block(ptrDst);
     cursor_block cursorSrc = mSrc->get_first_block(ptrSrc);
@@ -254,10 +296,6 @@ mapping::link(hal::ptr ptrDst, mapping_ptr mDst,
         ASSERTION(cursorDst.get_offset_local() == 0);
         ASSERTION(cursorSrc.get_offset_local() == 0);
 
-        // Register the mappings in the blocks
-        cursorDst.get_block()->register_mapping(mSrc, cursorSrc.get_offset_block());
-        cursorSrc.get_block()->register_mapping(mDst, cursorDst.get_offset_block());
-
         if ((cursorDst.get_block()->get_size() >= count) &&
             (cursorSrc.get_block()->get_size() >= count)) {
             // If the blocks are bigger than the mapping, split them
@@ -268,6 +306,10 @@ mapping::link(hal::ptr ptrDst, mapping_ptr mDst,
                 mSrc->split_block(cursorSrc, count);
             }
 
+            // Merge block owners into a single block
+            mDst->swap(cursorDst.get_block(), cursorSrc.get_block());
+
+            // We do not advance the iterator since we are done
             bytesSubmapping = count;
         } else {
             if ((cursorDst.get_block()->get_size() < count) &&
@@ -275,6 +317,9 @@ mapping::link(hal::ptr ptrDst, mapping_ptr mDst,
                 // If both blocks are smaller than the remaining size of the mapping
                 if (cursorDst.get_block()->get_size() ==
                     cursorSrc.get_block()->get_size()) {
+                    // Merge block owners into a single block
+                    cursorDst.get_block()->transfer_mappings(cursorSrc.get_block());
+
                     // If both blocks are equally sized, advance both cursors
                     cursorDst.advance_block();
                     cursorSrc.advance_block();
@@ -282,19 +327,25 @@ mapping::link(hal::ptr ptrDst, mapping_ptr mDst,
                     bytesSubmapping = cursorDst.get_block()->get_size();
                 } else if (cursorDst.get_block()->get_size() <
                            cursorSrc.get_block()->get_size()) {
+                    // Split src
+                    mSrc->split_block(cursorSrc, cursorDst.get_block()->get_size());
+                    // Merge block owners into a single block
+                    cursorDst.get_block()->transfer_mappings(cursorSrc.get_block());
                     // Move to next block in dst
                     size_t remainder = cursorDst.advance_block();
-                    // Split src and move to the newly created block
-                    mSrc->split_block(cursorSrc, remainder);
+                    // Move to next block in src
                     cursorSrc.advance_block();
 
                     bytesSubmapping = remainder;
                 } else if (cursorSrc.get_block()->get_size() <
                            cursorDst.get_block()->get_size()) {
+                    // Split dst
+                    mDst->split_block(cursorDst, cursorSrc.get_block()->get_size());
+                    // Merge block owners into a single block
+                    cursorDst.get_block()->transfer_mappings(cursorSrc.get_block());
                     // Move to next block in src
                     size_t remainder = cursorSrc.advance_block();
-                    // Split dst and move to the newly created block
-                    mDst->split_block(cursorDst, remainder);
+                    // Move to next block in dst
                     cursorDst.advance_block();
 
                     bytesSubmapping = remainder;
@@ -302,20 +353,26 @@ mapping::link(hal::ptr ptrDst, mapping_ptr mDst,
             } else if (cursorDst.get_block()->get_size() < count) {
                 // If dst block is smaller than the remaining size of the mapping
 
+                // Split src
+                mSrc->split_block(cursorSrc, cursorDst.get_block()->get_size());
+                // Merge block owners into a single block
+                cursorDst.get_block()->transfer_mappings(cursorSrc.get_block());
                 // Move to next block in dst
                 size_t remainder = cursorDst.advance_block();
-                // Split src and move to the newly created block
-                mSrc->split_block(cursorSrc, remainder);
+                // Move to next block in src
                 cursorSrc.advance_block();
 
                 bytesSubmapping = remainder;
             } else /*  cursorSrc.get_block()->get_size() < count */ {
                 // If src block is smaller than the remaining size of the mapping
 
+                // Split src
+                mDst->split_block(cursorDst, cursorSrc.get_block()->get_size());
+                // Merge block owners into a single block
+                cursorDst.get_block()->transfer_mappings(cursorSrc.get_block());
                 // Move to next block in src
                 size_t remainder = cursorSrc.advance_block();
-                // Split dst and move to the newly created block
-                mDst->split_block(cursorDst, remainder);
+                // Move to next block in dst
                 cursorDst.advance_block();
 
                 bytesSubmapping = remainder;
