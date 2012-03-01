@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2011 University of Illinois
+/* Copyright (c) 2009-2012 University of Illinois
                            Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -40,6 +40,7 @@ WITH THE SOFTWARE.  */
 #include "util/misc.h"
 
 #include "coherence.h"
+#include "error.h"
 
 namespace __impl { namespace dsm {
 
@@ -67,13 +68,13 @@ protected:
     static mapping_ptr merge_mappings(util::range<I> range, size_t off, size_t count);
 #endif
 
-    static gmacError_t dup2(mapping_ptr map1, hal::ptr::offset_type off1,
+    static error dup2(mapping_ptr map1, hal::ptr::offset_type off1,
                             mapping_ptr map2, hal::ptr::offset_type off2, size_t count);
 
-    gmacError_t dup(hal::ptr::offset_type off1, mapping_ptr map2,
+    error dup(hal::ptr::offset_type off1, mapping_ptr map2,
                     hal::ptr::offset_type off2, size_t count);
 
-    gmacError_t split(hal::ptr::offset_type off, size_t count);
+    error split(hal::ptr::offset_type off, size_t count);
 
     //typedef std::pair<list_block::iterator, size_t> pair_block_info;
     class cursor_block {
@@ -158,22 +159,26 @@ protected:
     list_block::iterator split_block(list_block::iterator it, size_t offset);
     cursor_block split_block(cursor_block cursor, size_t offset);
 
-    gmacError_t prepend(coherence::block_ptr b);
-    gmacError_t append(coherence::block_ptr b);
+    error prepend(coherence::block_ptr b);
+    error append(coherence::block_ptr b);
+
+    error swap(coherence::block_ptr b, coherence::block_ptr bNew);
 
     mapping(hal::ptr addr);
     mapping(const mapping &m);
 
 public:
+    virtual ~mapping();
+
     static const size_t MinAlignment = 4096;
 
     typedef std::list<mapping_ptr> submappings;
 
-    gmacError_t acquire(size_t offset, size_t count, int flags);
-    gmacError_t release(size_t offset, size_t count);
+    error acquire(size_t offset, size_t count, int flags);
+    error release(size_t offset, size_t count);
 
-    static gmacError_t link(hal::ptr ptr1, mapping_ptr m1,
-                            hal::ptr ptr2, mapping_ptr m2, size_t count, int flags);
+    static error link(hal::ptr ptr1, mapping_ptr m1,
+                      hal::ptr ptr2, mapping_ptr m2, size_t count, int flags);
 
     unsigned get_nblocks() const;
 
@@ -182,7 +187,9 @@ public:
 
     hal::ptr get_ptr() const;
 
-    gmacError_t append(mapping_ptr m);
+    error resize(size_t pre, size_t post);
+
+    error append(mapping_ptr m);
 };
 
 }}

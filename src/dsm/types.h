@@ -36,6 +36,8 @@ WITH THE SOFTWARE.  */
 
 #include "util/smart_ptr.h"
 
+#include "error.h"
+
 namespace __impl { namespace dsm {
 
 class address_space;

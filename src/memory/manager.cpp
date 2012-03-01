@@ -441,7 +441,7 @@ manager::memset(address_space_ptr aspace, host_ptr s, int c, size_t size)
 
     memory::map_object &map = aspaceOwner->get_object_map();
     object_ptr obj = map.get_object(s);
-    ASSERTION(obj != NULL);
+    ASSERTION(bool(obj));
     // Check for a fast path -- probably the user is just
     // initializing a single object or a portion of an object
     if(obj->get_bounds().start <= s && obj->get_bounds().end >= (s + size)) {

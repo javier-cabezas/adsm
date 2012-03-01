@@ -10,6 +10,7 @@ FRONTEND="-DUSE_CUDA=ON -DUSE_OPENCL=OFF"
 
 for i in $@
 do
+    echo $i
     case $i in
     --enable-debug)
         BUILD_TYPE="Debug"
@@ -78,6 +79,11 @@ do
     --enable-coverage)
         CMAKE_ARGS="${CMAKE_ARGS} -DUSE_COVERAGE=ON"
         ;;
+    --with-gcc=*)
+        compiler=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
+        echo "Setting compiler: ${compiler}"
+        CMAKE_ARGS="${CMAKE_ARGS} -DCMAKE_CXX_COMPILER=${compiler}"
+        ;;
     --enable-clang)
         CMAKE_ARGS="${CMAKE_ARGS} -DCMAKE_CXX_COMPILER=clang++"
         ;;
@@ -120,7 +126,7 @@ do
     --force-32bit)
         CMAKE_ARGS="${CMAKE_ARGS} -DUSE_32BITS=ON"
         ;;
-        esac
+    esac
 done
 
 GENERATOR=""
