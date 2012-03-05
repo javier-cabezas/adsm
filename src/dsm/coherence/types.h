@@ -47,7 +47,6 @@ enum state {
 };
 
 class block;
-
 typedef util::shared_ptr<block> block_ptr;
 
 }}}

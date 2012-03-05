@@ -103,17 +103,16 @@ block::unregister_mapping(const mapping &m)
 
 inline
 error
-block::transfer_mappings(block_ptr b)
+block::transfer_mappings(block &&b)
 {
-    CHECK(this != b.get(), DSM_ERROR_INVALID_VALUE);
-    CHECK(size_ == b->size_, DSM_ERROR_INVALID_VALUE);
+    CHECK(size_ == b.size_, DSM_ERROR_INVALID_VALUE);
 
-    TRACE(LOCAL, "block<"FMT_ID"> Transferring mappings from block<"FMT_ID">", get_print_id(), b->get_print_id());
+    TRACE(LOCAL, "block<"FMT_ID"> Transferring mappings from block<"FMT_ID">", get_print_id(), b.get_print_id());
 
-    for (auto pair : b->mappings_) {
-        // TODO: check what happens the same mapping was already registered
-        mappings_.insert(mappings::value_type(pair.first, pair.second)).second;
-    }
+    // TODO: check what happens the same mapping was already registered
+    mappings_.insert(b.mappings_.begin(), b.mappings_.end());
+
+    b.mappings_.clear();
 
     return DSM_SUCCESS;
 }
