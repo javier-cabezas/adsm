@@ -34,7 +34,7 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_DSM_COHERENCE_H_
 #define GMAC_DSM_COHERENCE_H_
 
-#include "coherence/block.h"
+//#include "coherence/block.h"
 #include "coherence/types.h"
 
 namespace __impl { namespace dsm {

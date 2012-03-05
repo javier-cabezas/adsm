@@ -27,8 +27,7 @@ typedef hal::detail::event_ptr hal_event_ptr;
 typedef hal::detail::stream hal_stream;
 
 class GMAC_LOCAL aspace :
-    public hal::detail::aspace,
-    util::unique<aspace, GmacAddressSpaceId> {
+    public hal::detail::aspace {
 
     typedef hal::detail::aspace parent;
 

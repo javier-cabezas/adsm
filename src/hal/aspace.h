@@ -147,6 +147,7 @@ public:
 };
 
 class GMAC_LOCAL aspace :
+    public util::unique<aspace, GmacAddressSpaceId>,
     public util::attributes<aspace>,
     public util::observable<aspace, util::event::construct>,
     public util::observable<aspace, util::event::destruct> {

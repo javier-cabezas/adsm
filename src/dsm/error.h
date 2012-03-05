@@ -31,50 +31,20 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
+#ifndef GMAC_DSM_ERROR_H_
+#define GMAC_DSM_ERROR_H_
 
-#ifndef GMAC_UTIL_FACTORY_H_
-#define GMAC_UTIL_FACTORY_H_
+namespace __impl { namespace dsm {
 
-namespace __impl { namespace util {
-
-template <typename T, typename S = T *>
-class GMAC_LOCAL factory {
-protected:
-    template <typename... Args>
-    inline
-    static S create(Args &&... args)
-    {
-        S s(new T(args...));
-        return s;
-    }
-
-    inline
-    static T *create(T &&p)
-    {
-        S s(std::move(p));
-        return s;
-    }
-};
-
-template <typename T>
-class GMAC_LOCAL factory<T, T *> {
-protected:
-    template <typename... Args>
-    inline
-    static T *create(Args &&... args)
-    {
-        return new T(args...);
-    }
-
-    inline
-    static T *create(T &&p)
-    {
-        return new T(std::move(p));
-    }
+enum error {
+    DSM_SUCCESS                 = 0,
+    DSM_ERROR_INVALID_ALIGNMENT    ,
+    DSM_ERROR_INVALID_PTR          ,
+    DSM_ERROR_INVALID_VALUE        ,
+    DSM_ERROR_INVALID_PROT         ,
+    DSM_ERROR_HAL                  
 };
 
 }}
 
 #endif
-
-/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

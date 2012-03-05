@@ -46,6 +46,7 @@ WITH THE SOFTWARE.  */
 namespace __impl { namespace dsm { namespace coherence {
 
 class GMAC_LOCAL block :
+    public util::unique<block>,
     gmac::util::lock_rw<block> {
 
     friend class util::factory<block, block_ptr>;
@@ -65,12 +66,14 @@ class GMAC_LOCAL block :
 
     typedef gmac::util::lock_rw<block> lock;
 
-    typedef std::map<mapping_ptr, mapping_descriptor> mappings;
+    typedef std::map<mapping_const_ptr, mapping_descriptor> mappings;
     mappings mappings_;
 
+#if 0
     typedef std::list<mapping_ptr> list_mappings;
     typedef std::map<dsm::address_space_ptr, list_mappings> aspace_mappings;
     aspace_mappings aspaceMappings_;
+#endif
 
     block(size_t size);
 
@@ -78,12 +81,13 @@ public:
     virtual ~block();
 
     block_ptr split(size_t off);
+    void shift(mapping_ptr m, size_t off);
 
     error acquire(mapping_ptr aspace, int flags);
     error release(mapping_ptr aspace);
 
     error register_mapping(mapping_ptr m, size_t off);
-    error unregister_mapping(mapping_ptr m);
+    error unregister_mapping(const mapping &m);
 
     error transfer_mappings(block_ptr b);
 

@@ -1,7 +1,16 @@
 #ifndef GMAC_DSM_MAPPING_IMPL_H_
 #define GMAC_DSM_MAPPING_IMPL_H_
 
+#include "coherence/block.h"
+
 namespace __impl { namespace dsm {
+
+inline
+size_t
+mapping::cursor_block::get_bytes_to_next_block() const
+{
+    return get_block()->get_size() - offLocal_;
+}
 
 inline
 unsigned

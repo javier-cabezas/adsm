@@ -44,7 +44,8 @@ class address_space;
 class mapping;
 
 typedef address_space *address_space_ptr;
-typedef mapping *mapping_ptr;
+typedef       mapping *mapping_ptr;
+typedef const mapping *mapping_const_ptr;
 
 }}
 
