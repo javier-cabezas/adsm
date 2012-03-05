@@ -162,16 +162,13 @@ mapping::swap(coherence::block_ptr b, coherence::block_ptr bNew)
 {
     TRACE(LOCAL, "mapping<"FMT_ID"> Swapping block<"FMT_ID"> with block<"FMT_ID">", get_print_id(), b->get_print_id(), bNew->get_print_id());
 
-    ASSERTION(bool(b));
-    ASSERTION(bool(bNew));
-
     ASSERTION(std::find(blocks_.begin(), blocks_.end(), b) != blocks_.end(), "Block does not belong to this mapping");
     ASSERTION(std::find(blocks_.begin(), blocks_.end(), bNew) == blocks_.end(), "Block already found in mapping");
 
-    bNew->transfer_mappings(b);
+    bNew->transfer_mappings(std::move(*b));
 
     list_block::iterator it = std::find(blocks_.begin(), blocks_.end(), b);
-    (*it).swap(bNew);
+    *it = bNew;
 
     return DSM_SUCCESS;
 }
@@ -364,7 +361,7 @@ mapping::link(hal::ptr ptrDst, mapping_ptr mDst,
                 if (cursorDst.get_block()->get_size() ==
                     cursorSrc.get_block()->get_size()) {
                     // Merge block owners into a single block
-                    cursorDst.get_block()->transfer_mappings(cursorSrc.get_block());
+                    cursorDst.get_block()->transfer_mappings(std::move(*cursorSrc.get_block()));
 
                     bytesSubmapping = cursorDst.get_block()->get_size();
 
@@ -376,7 +373,7 @@ mapping::link(hal::ptr ptrDst, mapping_ptr mDst,
                     // Split src
                     mSrc->split_block(cursorSrc, cursorDst.get_block()->get_size());
                     // Merge block owners into a single block
-                    cursorDst.get_block()->transfer_mappings(cursorSrc.get_block());
+                    cursorDst.get_block()->transfer_mappings(std::move(*cursorSrc.get_block()));
                     // Move to next block in dst
                     size_t remainder = cursorDst.advance_block();
                     // Move to next block in src
@@ -388,7 +385,7 @@ mapping::link(hal::ptr ptrDst, mapping_ptr mDst,
                     // Split dst
                     mDst->split_block(cursorDst, cursorSrc.get_block()->get_size());
                     // Merge block owners into a single block
-                    cursorDst.get_block()->transfer_mappings(cursorSrc.get_block());
+                    cursorDst.get_block()->transfer_mappings(std::move(*cursorSrc.get_block()));
                     // Move to next block in src
                     size_t remainder = cursorSrc.advance_block();
                     // Move to next block in dst
@@ -402,7 +399,7 @@ mapping::link(hal::ptr ptrDst, mapping_ptr mDst,
                 // Split src
                 mSrc->split_block(cursorSrc, cursorDst.get_block()->get_size());
                 // Merge block owners into a single block
-                cursorDst.get_block()->transfer_mappings(cursorSrc.get_block());
+                cursorDst.get_block()->transfer_mappings(std::move(*cursorSrc.get_block()));
                 // Move to next block in dst
                 size_t remainder = cursorDst.advance_block();
                 // Move to next block in src
@@ -415,7 +412,7 @@ mapping::link(hal::ptr ptrDst, mapping_ptr mDst,
                 // Split src
                 mDst->split_block(cursorDst, cursorSrc.get_block()->get_size());
                 // Merge block owners into a single block
-                cursorDst.get_block()->transfer_mappings(cursorSrc.get_block());
+                cursorDst.get_block()->transfer_mappings(std::move(*cursorSrc.get_block()));
                 // Move to next block in src
                 size_t remainder = cursorSrc.advance_block();
                 // Move to next block in dst

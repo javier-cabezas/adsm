@@ -89,7 +89,7 @@ public:
     error register_mapping(mapping_ptr m, size_t off);
     error unregister_mapping(const mapping &m);
 
-    error transfer_mappings(block_ptr b);
+    error transfer_mappings(block &&b);
 
     size_t get_size() const;
 };
