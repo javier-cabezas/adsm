@@ -5,7 +5,7 @@ namespace __impl { namespace dsm {
 void
 manager::event_handler(hal::aspace &aspace, util::event::construct)
 {
-    TRACE(LOCAL, "Handling aspace creation");
+    TRACE(LOCAL, "dsm::manager<"FMT_ID"> Handling aspace creation", get_print_id());
 
     map_mapping_group *ret = new map_mapping_group();
     aspace.set_attribute<map_mapping_group>(AttributeMappings_, ret);
@@ -14,32 +14,23 @@ manager::event_handler(hal::aspace &aspace, util::event::construct)
 void
 manager::event_handler(hal::aspace &aspace, util::event::destruct)
 {
-    TRACE(LOCAL, "Handling aspace destruction");
+    TRACE(LOCAL, "dsm::manager<"FMT_ID"> Handling aspace destruction", get_print_id());
 
     // Get the mappings from the address space, to avoid an extra map
-    map_mapping_group *ret = aspace.get_attribute<map_mapping_group>(AttributeMappings_);
-    ASSERTION(ret != NULL);
-    for (map_mapping_group::iterator it  = ret->begin();
-                                     it != ret->end();
-                                   ++it) {
-        
-        for (map_mapping::iterator it2  = it->second.begin();
-                                   it2 != it->second.end();
-                                 ++it2) {
-            delete it2->second;
-        }
-    }
+    map_mapping_group &group = get_aspace_mappings(aspace);
+    error err = delete_mappings(group);
+    ASSERTION(err == DSM_SUCCESS);
 
-    delete ret;
+    delete &group;
 }
 
 manager::map_mapping_group &
-manager::get_aspace_mappings(hal::aspace &ctx)
+manager::get_aspace_mappings(hal::aspace &aspace)
 {
     map_mapping_group *ret;
 
     // Get the mappings from the address space, to avoid an extra map
-    ret = ctx.get_attribute<map_mapping_group>(AttributeMappings_);
+    ret = aspace.get_attribute<map_mapping_group>(AttributeMappings_);
     ASSERTION(ret != NULL);
 
     return *ret;
@@ -62,16 +53,19 @@ manager::insert_mapping(map_mapping_group &mappings, mapping_ptr m)
         map_mapping map;
         map.insert(map_mapping::value_type(m->get_ptr().get_offset() + m->get_bounds().get_size(), m));
         mappings.insert(map_mapping_group::value_type(m->get_ptr().get_base(), map));
-        TRACE(LOCAL, "Inserting mapping: "FMT_SIZE"-"FMT_SIZE, m->get_ptr().get_offset(),
-                                                               m->get_ptr().get_offset() + m->get_bounds().get_size());
+        TRACE(LOCAL, "dsm::manager<"FMT_ID"> aspace<"FMT_ID"> Inserting mapping<"FMT_ID">", get_print_id(),
+                                                                                            m->get_ptr().get_aspace()->get_print_id(),
+                                                                                            m->get_print_id());
     } else {
         if (mapping_fits(it->second, m)) {
             it->second.insert(map_mapping::value_type(m->get_ptr().get_offset() + m->get_bounds().get_size(), m));
-            TRACE(LOCAL, "Inserting mapping: "FMT_SIZE"-"FMT_SIZE, m->get_ptr().get_offset(),
-                                                                   m->get_ptr().get_offset() + m->get_bounds().get_size());
+            TRACE(LOCAL, "dsm::manager<"FMT_ID"> aspace<"FMT_ID"> Inserting mapping<"FMT_ID">", get_print_id(),
+                                                                                                m->get_ptr().get_aspace()->get_print_id(),
+                                                                                                m->get_print_id());
         } else {
-            TRACE(LOCAL, "NOT inserting mapping: "FMT_SIZE"-"FMT_SIZE, m->get_ptr().get_offset(),
-                                                                       m->get_ptr().get_offset() + m->get_bounds().get_size());
+            TRACE(LOCAL, "dsm::manager<"FMT_ID"> aspace<"FMT_ID"> NOT inserting mapping<"FMT_ID">", get_print_id(),
+                                                                                                    m->get_ptr().get_aspace()->get_print_id(),
+                                                                                                    m->get_print_id());
             return DSM_ERROR_INVALID_VALUE;
         }
     }
@@ -84,12 +78,12 @@ manager::merge_mappings(range_mapping &range)
 {
     ASSERTION(!range.is_empty());
 
-    mapping_ptr ret = factory_mapping::create(*(*range.begin()));
+    mapping_ptr ret = factory_mapping::create(std::move(*(*range.begin())));
     range_mapping::iterator it = range.begin();
 
     ++it;
     for (; it != range.end(); ++it) {
-        error err = ret->append(*it);
+        error err = ret->append(std::move(**it));
         if (err != DSM_SUCCESS) break;
     }
 
@@ -99,6 +93,10 @@ manager::merge_mappings(range_mapping &range)
 error
 manager::replace_mappings(map_mapping_group &mappings, range_mapping &range, mapping_ptr mNew)
 {
+    TRACE(LOCAL, "dsm::manager<"FMT_ID"> Replacing mappings ["FMT_ID", "FMT_ID"]" , get_print_id(),
+                                                                                    (*range.begin())->get_print_id(),
+                                                                                    (*range.begin())->get_print_id());
+
     ASSERTION(!range.is_empty());
 
     ASSERTION((*range.begin())->get_ptr().get_base() == mNew->get_ptr().get_base());
@@ -108,7 +106,23 @@ manager::replace_mappings(map_mapping_group &mappings, range_mapping &range, map
     ASSERTION(it != mappings.end());
 
     it->second.erase(range.begin().base(), range.end().base());
+
+    ASSERTION(get_mappings_in_range<false>(mappings, mNew->get_ptr(), mNew->get_bounds().get_size()).is_empty() == true);
     it->second.insert(map_mapping::value_type(mNew->get_ptr().get_offset(), mNew));
+
+    return DSM_SUCCESS;
+}
+
+error
+manager::delete_mappings(map_mapping_group &mappings)
+{
+    for (auto &pairGroup : mappings) {
+        for (auto pairMapping : pairGroup.second) {
+            delete pairMapping.second;
+        }
+        pairGroup.second.clear();
+    }
+    mappings.clear();
 
     return DSM_SUCCESS;
 }
@@ -118,19 +132,25 @@ manager::manager() :
     observer_destruct(),
     AttributeMappings_(hal::aspace::register_attribute())
 {
-    TRACE(LOCAL, "Creating DSM manager");
+    TRACE(LOCAL, "dsm::manager<"FMT_ID"> Creating", get_print_id());
 }
 
 manager::~manager()
 {
-    TRACE(LOCAL, "Deleting DSM manager");
+    TRACE(LOCAL, "dsm::manager<"FMT_ID"> Deleting", get_print_id());
 }
 
 error
 manager::link(hal::ptr dst, hal::ptr src, size_t count, int flags)
 {
+    TRACE(LOCAL, "dsm::manager<"FMT_ID"> Link "FMT_SIZE" bytes", get_print_id(), count);
+
+    CHECK(dst.get_aspace() != src.get_aspace(), DSM_ERROR_INVALID_PTR);
+
     CHECK(long_t(dst.get_offset()) % mapping::MinAlignment == 0, DSM_ERROR_INVALID_ALIGNMENT);
     CHECK(long_t(src.get_offset()) % mapping::MinAlignment == 0, DSM_ERROR_INVALID_ALIGNMENT);
+
+    CHECK(count > 0, DSM_ERROR_INVALID_VALUE);
 
     hal::aspace *ctxDst = dst.get_aspace();
     hal::aspace *ctxSrc = src.get_aspace();
@@ -193,6 +213,8 @@ manager::link(hal::ptr dst, hal::ptr src, size_t count, int flags)
 error
 manager::unlink(hal::ptr mapping, size_t count)
 {
+    TRACE(LOCAL, "dsm::manager<"FMT_ID"> Unlink requested", get_print_id());
+
     FATAL("Not implemented");
     return DSM_SUCCESS;
 }

@@ -51,6 +51,7 @@ namespace dsm {
 //! DSM Managers orchestate the data transfers between host and accelerator memories
 class GMAC_LOCAL manager :
     public __impl::util::singleton<dsm::manager>,
+    public util::unique<dsm::manager>,
     public util::observer<hal::aspace, util::event::construct>,
     public util::observer<hal::aspace, util::event::destruct>,
     public util::factory<mapping, mapping_ptr> {
@@ -85,6 +86,8 @@ protected:
     mapping_ptr merge_mappings(range_mapping &range);
     
     error replace_mappings(map_mapping_group &mappings, range_mapping &range, mapping_ptr mNew);
+
+    error delete_mappings(map_mapping_group &mappings);
 
     /**
      * Default destructor

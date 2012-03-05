@@ -8,32 +8,42 @@ block::block(size_t size) :
     lock("block"),
     size_(size)
 {
-    TRACE(LOCAL, "Created new block %p", this);
+    TRACE(LOCAL, "block<"FMT_ID"> Creating "FMT_SIZE" bytes", get_print_id(), size);
 }
 
 inline
 block::~block()
 {
-    TRACE(LOCAL, "Deleting block %p", this);
+    TRACE(LOCAL, "block<"FMT_ID"> Deleting", get_print_id());
 }
 
 inline
 block_ptr
 block::split(size_t off)
 {
+    TRACE(LOCAL, "block<"FMT_ID"> Splitting "FMT_SIZE, get_print_id(), off);
+
     // Create new block
-    block *b = new block(size_ - off);
+    block *nBlock = new block(size_ - off);
     // Set new size
     size_ = off;
 
-    for (mappings::iterator it  = mappings_.begin();
-                            it != mappings_.end();
-                          ++it) {
-        bool inserted = b->mappings_.insert(mappings::value_type(it->first, it->second)).second;
+    for (auto m : mappings_) {
+        bool inserted = nBlock->mappings_.insert(mappings::value_type(m.first, m.second)).second;
         ASSERTION(inserted == true); 
     }
 
-    return block_ptr(b);
+    return block_ptr(nBlock);
+}
+
+inline
+void
+block::shift(mapping_ptr m, size_t off)
+{
+    mappings::iterator it = mappings_.find(m);
+    ASSERTION(it != mappings_.end());
+
+    it->second.off_ += off;
 }
 
 inline
@@ -65,7 +75,7 @@ inline
 error
 block::register_mapping(mapping_ptr m, size_t off)
 {
-    TRACE(LOCAL, "Register mapping into block %p", this);
+    TRACE(LOCAL, "block<"FMT_ID"> Register mapping<"FMT_ID">", get_print_id(), m->get_print_id());
 
     ASSERTION(mappings_.find(m) == mappings_.end(), "Mapping already registered");
     mapping_descriptor descr = {
@@ -78,12 +88,12 @@ block::register_mapping(mapping_ptr m, size_t off)
 
 inline
 error
-block::unregister_mapping(mapping_ptr m)
+block::unregister_mapping(const mapping &m)
 {
-    TRACE(LOCAL, "Unregister mapping from block %p", this);
+    TRACE(LOCAL, "block<"FMT_ID"> Unregister mapping<"FMT_ID">", get_print_id(), m.get_print_id());
 
     mappings::iterator it;
-    it = mappings_.find(m);
+    it = mappings_.find(&m);
 
     ASSERTION(it != mappings_.end(), "Mapping not registered");
     mappings_.erase(it);
@@ -95,19 +105,15 @@ inline
 error
 block::transfer_mappings(block_ptr b)
 {
-    TRACE(LOCAL, "Transferring mappings from block %p -> %p", b.get(), this);
-
+    CHECK(this != b.get(), DSM_ERROR_INVALID_VALUE);
     CHECK(size_ == b->size_, DSM_ERROR_INVALID_VALUE);
 
-    for (mappings::iterator it  = b->mappings_.begin();
-                            it != b->mappings_.end();
-                          ++it) {
-        ASSERTION(mappings_.find(it->first) == mappings_.end(), "Mapping already registered in this block"); 
-        bool inserted = mappings_.insert(mappings::value_type(it->first, it->second)).second;
-        ASSERTION(inserted == true); 
-    }
+    TRACE(LOCAL, "block<"FMT_ID"> Transferring mappings from block<"FMT_ID">", get_print_id(), b->get_print_id());
 
-    b.reset();
+    for (auto pair : b->mappings_) {
+        // TODO: check what happens the same mapping was already registered
+        mappings_.insert(mappings::value_type(pair.first, pair.second)).second;
+    }
 
     return DSM_SUCCESS;
 }

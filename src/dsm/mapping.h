@@ -41,10 +41,12 @@ WITH THE SOFTWARE.  */
 
 #include "coherence.h"
 #include "error.h"
+#include "types.h"
 
 namespace __impl { namespace dsm {
 
 class GMAC_LOCAL mapping :
+    public util::unique<mapping>,
     public util::factory<coherence::block,
                          coherence::block_ptr> {
 
@@ -63,16 +65,19 @@ protected:
     typedef util::range<list_block::iterator> range_block;
     range_block get_blocks_in_range(size_t offset, size_t count);
 
+    template <bool forward = true>
+    void shift_blocks(size_t offset);
+
 #if 0
     template <typename I>
     static mapping_ptr merge_mappings(util::range<I> range, size_t off, size_t count);
-#endif
 
     static error dup2(mapping_ptr map1, hal::ptr::offset_type off1,
                             mapping_ptr map2, hal::ptr::offset_type off2, size_t count);
 
     error dup(hal::ptr::offset_type off1, mapping_ptr map2,
                     hal::ptr::offset_type off2, size_t count);
+#endif
 
     error split(hal::ptr::offset_type off, size_t count);
 
@@ -117,10 +122,7 @@ protected:
             return offLocal_;
         }
 
-        size_t get_bytes_to_next_block() const
-        {
-            return get_block()->get_size() - offLocal_;
-        }
+        size_t get_bytes_to_next_block() const;
 
         size_t advance_block()
         {
@@ -165,7 +167,10 @@ protected:
     error swap(coherence::block_ptr b, coherence::block_ptr bNew);
 
     mapping(hal::ptr addr);
-    mapping(const mapping &m);
+    mapping(mapping &&m);
+
+    // Deleted functions
+    mapping(const mapping &) = delete;
 
 public:
     virtual ~mapping();
@@ -189,7 +194,7 @@ public:
 
     error resize(size_t pre, size_t post);
 
-    error append(mapping_ptr m);
+    error append(mapping &&m);
 };
 
 }}

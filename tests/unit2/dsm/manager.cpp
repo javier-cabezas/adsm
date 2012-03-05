@@ -119,15 +119,8 @@ static void range_fini()
 {
     bool berr;
 
-    berr = mgr->helper_clear_mappings(*as1);
+    berr = mgr->helper_delete_mappings(*as1);
     ASSERT_TRUE(berr);
-
-    delete m0;
-    delete m1;
-    delete m2;
-    delete m3;
-    delete m4;
-    delete m5;
 }
 
 template <typename T>
@@ -390,16 +383,6 @@ TEST_F(manager_mapping_test, insert_mappings)
     berr = mgr->helper_insert(*as1, m_b8);
     ASSERT_FALSE(berr);
 
-    delete m_b0;
-    delete m_b1;
-    delete m_b2;
-    delete m_b3;
-    delete m_b4;
-    delete m_b5;
-    delete m_b6;
-    delete m_b7;
-    delete m_b8;
-
     range_fini();
 }
 
@@ -413,26 +396,30 @@ TEST_F(manager_mapping_test, merge_mappings)
                                                                     MAP5_OFF -
                                                                     MAP0_OFF);
 
+    ASSERT_TRUE(range.is_empty() == false);
     ASSERT_TRUE((*range.begin())->get_ptr() == p0);
     ASSERT_TRUE((*get_last_in_range(range))->get_ptr() == p5);
 
     __impl::dsm::mapping_ptr merged = mgr->merge_mappings(range);
     ASSERT_TRUE(merged->get_bounds().get_size() == (MAP5_OFF - MAP0_OFF + MAP5_SIZE));
-
     ASSERT_TRUE(merged->get_nblocks() == 6 + 4);
 
     delete merged;
 
-    manager::range_mapping range2 = mgr->get_mappings_in_range<false>(group, p0,
-                                             MAP5_OFF -
-                                             MAP0_OFF);
+    range_fini();
 
+    range_init();
+
+    manager::range_mapping range2 = mgr->get_mappings_in_range<false>(group, p0,
+                                                                      MAP5_OFF -
+                                                                      MAP0_OFF);
+
+    ASSERT_TRUE(range2.is_empty() == false);
     ASSERT_TRUE((*range2.begin())->get_ptr() == p0);
     ASSERT_TRUE((*get_last_in_range(range2))->get_ptr() == p4);
 
     __impl::dsm::mapping_ptr merged2 = mgr->merge_mappings(range2);
     ASSERT_TRUE(merged2->get_bounds().get_size() == (MAP4_OFF - MAP0_OFF + MAP4_SIZE));
-
     ASSERT_TRUE(merged2->get_nblocks() == 5 + 3);
 
     delete merged2;
@@ -441,12 +428,22 @@ TEST_F(manager_mapping_test, merge_mappings)
 }
 
 static __impl::hal::aspace *as2 = NULL;
-static ptr as1_p0, as1_p1, as1_p2;
-static ptr as2_p0, as2_p1, as2_p2;
+static ptr as1_p0,  as1_p1,  as1_p2;
+static ptr as1_p0b, as1_p1b, as1_p2b;
+static ptr as2_p0,  as2_p1,  as2_p2;
+static ptr as2_p0b, as2_p1b, as2_p2b;
 
 static const size_t LINK0_SIZE = 0x1000;
+static const size_t LINK1_SIZE = 2 * 0x1000;
+static const size_t LINK2_SIZE = 0x1000;
 
-static const size_t LINK0_OFF = 2 * 0x1000;
+static const size_t LINK1_0_OFF = 2 * 0x1000;
+static const size_t LINK1_1_OFF = 4 * 0x1000;
+static const size_t LINK1_2_OFF = 7 * 0x1000;
+
+static const size_t LINK2_0_OFF = 4 * 0x1000;
+static const size_t LINK2_1_OFF = 6 * 0x1000;
+static const size_t LINK2_2_OFF = 9 * 0x1000;
 
 static void link_init()
 {
@@ -457,14 +454,29 @@ static void link_init()
     ASSERT_TRUE(err == gmacSuccess);
 
     // We use the same base allocation
-    as1_p0 = ptr(ptr::backend_ptr(0), as1) + LINK0_OFF;
-    
+    as1_p0  = ptr(ptr::backend_ptr(0x0), as1) + LINK1_0_OFF;
+    as1_p1  = ptr(ptr::backend_ptr(0x0), as1) + LINK1_1_OFF;
+    as1_p2  = ptr(ptr::backend_ptr(0x0), as1) + LINK1_2_OFF;
+    as1_p0b = ptr(ptr::backend_ptr(0x1), as1) + LINK1_0_OFF;
+    as1_p1b = ptr(ptr::backend_ptr(0x1), as1) + LINK1_1_OFF;
+    as1_p2b = ptr(ptr::backend_ptr(0x1), as1) + LINK1_2_OFF;
     // We use the same base allocation
-    as2_p0 = ptr(ptr::backend_ptr(0), as2) + LINK0_OFF;
+    as2_p0  = ptr(ptr::backend_ptr(0x10), as2) + LINK2_0_OFF;
+    as2_p1  = ptr(ptr::backend_ptr(0x10), as2) + LINK2_1_OFF;
+    as2_p2  = ptr(ptr::backend_ptr(0x10), as2) + LINK2_2_OFF;
+    as2_p0b = ptr(ptr::backend_ptr(0x11), as2) + LINK2_0_OFF;
+    as2_p1b = ptr(ptr::backend_ptr(0x11), as2) + LINK2_1_OFF;
+    as2_p2b = ptr(ptr::backend_ptr(0x11), as2) + LINK2_2_OFF;
 }
 
 static void link_fini()
 {
+    bool berr;
+    berr = mgr->helper_delete_mappings(*as1);
+    ASSERT_TRUE(berr);
+    berr = mgr->helper_delete_mappings(*as2);
+    ASSERT_TRUE(berr);
+
     gmacError_t err;
     err = device->destroy_aspace(*as2);
     ASSERT_TRUE(err == gmacSuccess);
@@ -474,14 +486,41 @@ TEST_F(manager_mapping_test, link)
 {
     link_init();
 
-    // Count is not multiple of page
-    error_dsm err = mgr->link(as1_p0, as2_p0, MAP0_SIZE, GMAC_PROT_READ);
-    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
+    error_dsm err = mgr->link(as1_p0, as1_p0b, LINK0_SIZE, GMAC_PROT_READ);
+    ASSERT_FALSE(err == error_dsm::DSM_SUCCESS);
+    ASSERT_FALSE(mgr->helper_get_mapping(as1_p0));
+    ASSERT_FALSE(mgr->helper_get_mapping(as1_p0b));
 
-#if 0
     err = mgr->link(as1_p0, as2_p0, LINK0_SIZE, GMAC_PROT_READ);
     ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
-#endif
+    ASSERT_TRUE(mgr->helper_get_mapping(as1_p0));
+    ASSERT_TRUE(mgr->helper_get_mapping(as1_p0)->get_ptr() == as1_p0);
+    ASSERT_TRUE(mgr->helper_get_mapping(as2_p0));
+    ASSERT_TRUE(mgr->helper_get_mapping(as2_p0)->get_ptr() == as2_p0);
+    ASSERT_TRUE(mgr->helper_get_mappings(*as1_p0.get_aspace(), as1_p0.get_base()).size() == 1);
+    ASSERT_TRUE(mgr->helper_get_mappings(*as2_p0.get_aspace(), as2_p0.get_base()).size() == 1);
+
+
+    link_fini();
+}
+
+TEST_F(manager_mapping_test, link2)
+{
+    link_init();
+
+    error_dsm err = mgr->link(as1_p1, as2_p1, LINK0_SIZE, GMAC_PROT_READ);
+    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
+    ASSERT_TRUE(mgr->helper_get_mapping(as1_p1));
+    ASSERT_TRUE(mgr->helper_get_mapping(as1_p1)->get_ptr() == as1_p1);
+    ASSERT_TRUE(mgr->helper_get_mapping(as2_p1));
+    ASSERT_TRUE(mgr->helper_get_mapping(as2_p1)->get_ptr() == as2_p1);
+    ASSERT_TRUE(mgr->helper_get_mappings(*as1_p1.get_aspace(), as1_p1.get_base()).size() == 1);
+    ASSERT_TRUE(mgr->helper_get_mappings(*as2_p1.get_aspace(), as2_p1.get_base()).size() == 1);
+
+    err = mgr->link(as1_p1, as2_p1, LINK2_2_OFF - LINK2_1_OFF +  LINK2_SIZE, GMAC_PROT_READ);
+    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
+    ASSERT_TRUE(mgr->helper_get_mappings(*as1_p1.get_aspace(), as1_p1.get_base()).size() == 1);
+    ASSERT_TRUE(mgr->helper_get_mappings(*as2_p1.get_aspace(), as2_p1.get_base()).size() == 1);
 
     link_fini();
 }

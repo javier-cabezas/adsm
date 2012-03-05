@@ -7,6 +7,7 @@
 #include "unit2/dsm/mapping.h"
 
 using __impl::util::range;
+using __impl::hal::const_ptr;
 using __impl::hal::ptr;
 
 using __impl::dsm::coherence::block;
@@ -41,7 +42,7 @@ public:
 
     template <bool IsOpen>
     range_mapping
-    get_mappings_in_range(map_mapping_group &mappings, __impl::hal::ptr begin, size_t count)
+    get_mappings_in_range(map_mapping_group &mappings, ptr begin, size_t count)
     {
         return parent::get_mappings_in_range<IsOpen>(mappings, begin, count);
     }
@@ -57,6 +58,13 @@ public:
     {
         return parent::merge_mappings(range);
     }
+
+    error_dsm
+    replace_mappings(map_mapping_group &mappings, range_mapping &range, __impl::dsm::mapping_ptr mNew)
+    {
+        return parent::replace_mappings(mappings, range, mNew);
+    }
+
 
     virtual ~manager()
     {
@@ -86,40 +94,64 @@ public:
                      __impl::hal::ptr ptr2, size_t count, int flags);
 #endif
 
-    error_dsm unlink(__impl::hal::ptr mapping, size_t count);
+    error_dsm unlink(ptr mapping, size_t count);
 
-    error_dsm acquire(__impl::hal::ptr mapping, size_t count, int flags);
-    error_dsm release(__impl::hal::ptr mapping, size_t count);
+    error_dsm acquire(ptr mapping, size_t count, int flags);
+    error_dsm release(ptr mapping, size_t count);
 
-    error_dsm sync(__impl::hal::ptr mapping, size_t count);
+    error_dsm sync(ptr mapping, size_t count);
 
-    error_dsm memcpy(__impl::hal::ptr dst, __impl::hal::ptr src, size_t count);
-    error_dsm memset(__impl::hal::ptr ptr, int c, size_t count);
+    error_dsm memcpy(ptr dst, ptr src, size_t count);
+    error_dsm memset(ptr p, int c, size_t count);
 
-    error_dsm from_io_device(__impl::hal::ptr addr, __impl::hal::device_input &input, size_t count);
-    error_dsm to_io_device(__impl::hal::device_output &output, __impl::hal::const_ptr addr, size_t count);
+    error_dsm from_io_device(ptr addr, __impl::hal::device_input &input, size_t count);
+    error_dsm to_io_device(__impl::hal::device_output &output, const_ptr addr, size_t count);
 
     error_dsm flush_dirty(__impl::dsm::address_space_ptr aspace);
 
     //////////////////////
     // Helper functions //
     //////////////////////
-    bool helper_insert(__impl::hal::aspace &ctx, mapping_ptr m)
+    bool
+    helper_insert(__impl::hal::aspace &as, mapping_ptr m)
     {
         error_dsm ret;
 
-        parent::map_mapping_group &group = parent::get_aspace_mappings(ctx);
+        parent::map_mapping_group &group = parent::get_aspace_mappings(as);
         ret = parent::insert_mapping(group, m);
 
         return ret == error_dsm::DSM_SUCCESS;
     }
 
-    bool helper_clear_mappings(__impl::hal::aspace &ctx)
+    bool
+    helper_delete_mappings(__impl::hal::aspace &as)
     {
-        parent::map_mapping_group &group = parent::get_aspace_mappings(ctx);
+        parent::map_mapping_group &group = parent::get_aspace_mappings(as);
 
-        group.clear();
+        return parent::delete_mappings(group) == error_dsm::DSM_SUCCESS;
+    }
 
-        return true;
+    parent::map_mapping &
+    helper_get_mappings(__impl::hal::aspace &as, ptr::backend_type p)
+    {
+        parent::map_mapping_group &group = parent::get_aspace_mappings(as);
+
+        parent::map_mapping_group::iterator it = group.find(p);
+        ASSERTION(it != group.end());
+
+        return it->second;
+    }
+
+    __impl::dsm::mapping_ptr
+    helper_get_mapping(ptr p)
+    {
+        parent::map_mapping_group &group = parent::get_aspace_mappings(*p.get_aspace());
+
+        parent::range_mapping range = parent::get_mappings_in_range<false>(group, p, 1);
+        if (range.is_empty()) {
+            return NULL;
+        }
+
+        return *range.begin();
     }
 };

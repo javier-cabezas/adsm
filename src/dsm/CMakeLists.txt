@@ -1,5 +1,6 @@
 set(dsm_SRC
     coherence.h
+    error.h
     manager.h
     manager-impl.h
     manager.cpp

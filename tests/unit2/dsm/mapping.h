@@ -45,9 +45,9 @@ public:
         return parent::append(b);
     }
 
-    error_dsm append(mapping_ptr map)
+    error_dsm append(mapping &&map)
     {
-        return parent::append(map);
+        return parent::append(std::move(map));
     }
 
     mapping(ptr addr) :

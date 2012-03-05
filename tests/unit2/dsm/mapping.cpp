@@ -153,7 +153,7 @@ TEST_F(mapping_test, append_mapping)
     ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
     err = m1->append(b1);
     ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
-    err = m0->append(m1);
+    err = m0->append(std::move(*m1));
     ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
     ASSERT_TRUE(m0->get_bounds().get_size() == (b0->get_size() +
                                                 b1->get_size() +
@@ -184,7 +184,7 @@ TEST_F(mapping_test, append_mapping2)
     ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
     err = m1->append(b1);
     ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
-    err = m0->append(m1);
+    err = m0->append(std::move(*m1));
     ASSERT_FALSE(err == error_dsm::DSM_SUCCESS);
 
     delete m0;
@@ -212,7 +212,7 @@ TEST_F(mapping_test, append_mapping3)
     ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
     err = m1->append(b1);
     ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
-    err = m0->append(m1);
+    err = m0->append(std::move(*m1));
     ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
     ASSERT_TRUE(m0->get_bounds().get_size() == (b0->get_size() +
                                                 b1->get_size()));
@@ -242,7 +242,7 @@ TEST_F(mapping_test, append_mapping4)
     ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
     err = m1->append(b1);
     ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
-    err = m0->append(m1);
+    err = m0->append(std::move(*m1));
     ASSERT_FALSE(err == error_dsm::DSM_SUCCESS);
 
     delete m0;
