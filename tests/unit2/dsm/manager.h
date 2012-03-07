@@ -65,8 +65,8 @@ public:
         return parent::replace_mappings(mappings, range, mNew);
     }
 
-
-    virtual ~manager()
+    virtual
+    ~manager()
     {
     }
 

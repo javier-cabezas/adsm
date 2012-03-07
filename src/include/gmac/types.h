@@ -42,19 +42,19 @@ WITH THE SOFTWARE.  */
 	typedef pid_t     PROCESS_T;
 #	define FMT_SIZE	   "%zd"
 #	if defined(__LP64__) 
-#		define FMT_TID "0x%lx"
+#		define FMT_TID "%lu"
 #	else
 #		if defined(DARWIN)
 #			define FMT_TID "%p"
 #		else
-#			define FMT_TID "0x%lx"
+#			define FMT_TID "%lu"
 #		endif
 #	endif
 #elif defined(_MSC_VER)
 #	include <windows.h>
 	typedef DWORD THREAD_T;
 	typedef DWORD PROCESS_T;
-#	define FMT_TID "0x%lx"
+#	define FMT_TID "%lu"
 #	define FMT_SIZE "%Id"
 #endif
 

@@ -41,7 +41,7 @@ _event_t::sync()
     lock_write();
 
     if (synced_ == false) {
-        TRACE(LOCAL, "event<"FMT_ID">: waiting for event", get_print_id());
+        TRACE(LOCAL, FMT_ID2" waiting for event", get_print_id2());
         cl_int res = clWaitForEvents(1, &event_);
         if (res == CL_SUCCESS) {
 #ifdef USE_TRACE
@@ -101,7 +101,7 @@ _event_t::set_synced()
     lock_write();
 
     if (synced_ == false) {
-        TRACE(LOCAL, "event<"FMT_ID">: setting event as synced", get_print_id());
+        TRACE(LOCAL, FMT_ID2" setting event as synced", get_print_id2());
 #ifdef USE_TRACE
         cl_ulong queued;
         cl_ulong submit;

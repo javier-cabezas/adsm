@@ -267,10 +267,10 @@ aspace::copy_async(hal::ptr dst, hal::const_ptr src, size_t count, hal_stream &_
     ret->begin(s);
     if (dst.is_device_ptr() &&
         src.is_device_ptr()) {
-        TRACE(LOCAL, "D (%p) -> D (%p) async copy ("FMT_SIZE" bytes) on stream: "FMT_ID,
+        TRACE(LOCAL, "D (%p) -> D (%p) async copy ("FMT_SIZE" bytes) on "FMT_ID2,
                      src.get_base() + src.get_offset(),
                      dst.get_base() + dst.get_offset(),
-                     count, s.get_print_id());
+                     count, s.get_print_id2());
 
         if (dst.get_aspace()->get_device().has_direct_copy(src.get_aspace()->get_device())) {
             res = cuMemcpyDtoDAsync(dst.get_base() + dst.get_offset(),
@@ -286,10 +286,10 @@ aspace::copy_async(hal::ptr dst, hal::const_ptr src, size_t count, hal_stream &_
         }
     } else if (dst.is_device_ptr() &&
                src.is_host_ptr()) {
-        TRACE(LOCAL, "H (%p) -> D (%p) async copy ("FMT_SIZE" bytes) on stream: "FMT_ID,
+        TRACE(LOCAL, "H (%p) -> D (%p) async copy ("FMT_SIZE" bytes) on "FMT_ID2,
                      src.get_host_addr(),
                      dst.get_base() + dst.get_offset(),
-                     count, s.get_print_id());
+                     count, s.get_print_id2());
         hal_buffer *buffer = get_output_buffer(count, s, ret);
 
         memcpy(buffer->get_addr(), src.get_host_addr(), count);
@@ -297,10 +297,10 @@ aspace::copy_async(hal::ptr dst, hal::const_ptr src, size_t count, hal_stream &_
         res = cuMemcpyHtoDAsync(dst.get_base() + dst.get_offset(), src.get_host_addr(), count, s());
     } else if (dst.is_host_ptr() &&
                src.is_device_ptr()) {
-        TRACE(LOCAL, "D (%p) -> H (%p) async copy ("FMT_SIZE" bytes) on stream: "FMT_ID,
+        TRACE(LOCAL, "D (%p) -> H (%p) async copy ("FMT_SIZE" bytes) on "FMT_ID2,
                      src.get_base() + src.get_offset(),
                      dst.get_host_addr(),
-                     count, s.get_print_id());
+                     count, s.get_print_id2());
         hal_event_ptr last = s.get_last_event();
         last->sync();
 
@@ -312,10 +312,10 @@ aspace::copy_async(hal::ptr dst, hal::const_ptr src, size_t count, hal_stream &_
         ret->add_trigger(do_func(memcpy, buffer->get_addr(), src.get_host_addr(), count));
     } else if (dst.is_host_ptr() &&
                src.is_host_ptr()) {
-        TRACE(LOCAL, "H (%p) -> H (%p) copy ("FMT_SIZE" bytes) on stream: "FMT_ID,
+        TRACE(LOCAL, "H (%p) -> H (%p) copy ("FMT_SIZE" bytes) on stream: "FMT_ID2,
                      src.get_host_addr(),
                      dst.get_host_addr(),
-                     count, s.get_print_id());
+                     count, s.get_print_id2());
 
         res = CUDA_SUCCESS;
         memcpy(dst.get_host_addr(), src.get_host_addr(), count);

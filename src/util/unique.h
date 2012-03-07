@@ -34,6 +34,12 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_UTIL_UNIQUE_H_
 #define GMAC_UTIL_UNIQUE_H_
 
+#include <string>
+#include <sstream>
+#include <typeinfo>
+
+#include "trace/logger.h"
+
 #include "atomics.h"
 
 namespace __impl { namespace util {
@@ -71,12 +77,30 @@ class GMAC_LOCAL unique {
 
 private:
     R id_;
+    mutable std::string idPrint_;
 
 public:
     unique();
 
     R get_id() const;
-    unsigned long get_print_id() const;
+    std::string get_class_name() const
+    {
+        static std::string strImpl = "__impl::";
+        static std::string strDbc  = "__dbc::";
+
+        std::string name = trace::get_class_name(typeid(T).name());
+        size_t pos = name.find(strImpl);
+        if (pos != std::string::npos) {
+            name = name.replace(pos, strImpl.size(), "");
+        }
+        pos = name.find(strDbc);
+        if (pos != std::string::npos) {
+            name = name.replace(pos, strDbc.size(), "");
+        }
+        return name;
+    }
+    //unsigned long get_print_id() const;
+    const char *get_print_id2() const;
 };
 
 class GMAC_LOCAL unique_release {
@@ -91,7 +115,7 @@ public:
 
 }}
 
-#define FMT_ID "%lu"
+#define FMT_ID2 "%s"
 
 #include "unique-impl.h"
 

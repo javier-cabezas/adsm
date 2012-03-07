@@ -197,26 +197,6 @@ void Logger::Print(const char *tag, const char *fmt)
 }
 #endif
 
-inline void Logger::__Message(const char *fmt, ...)
-{
-    va_list list;
-    va_start(list, fmt);
-	VFPRINTF(stdout, fmt, list);
-    va_end(list);
-    fprintf(stdout, "\n");
-}
-
-
-inline void Logger::__Warning(const char *fmt, ...)
-{
-    va_list list;
-    va_start(list, fmt);
-	VFPRINTF(stderr, fmt, list);
-    va_end(list);
-    fprintf(stderr, "\n");
-}
-
-
 #ifdef USE_CXX0X
 template <typename ...Types>
 inline
@@ -257,6 +237,41 @@ void Logger::__CFatal(bool c, const char *cStr, const char *fmt, ...)
 #endif
     abort();
 }
+
+
+#ifdef USE_CXX0X
+
+template <typename ...Types>
+inline void Logger::__Message(const char *fmt, Types ...list)
+{
+    Print("MESSAGE", fmt, list...);
+}
+
+template <typename ...Types>
+inline void Logger::__Warning(const char *fmt, Types ...list)
+{
+    Print("WARNING", fmt, list...);
+}
+
+#else
+inline void Logger::__Message(const char *fmt, ...)
+{
+    va_list list;
+    va_start(list, fmt);
+	VFPRINTF(stdout, fmt, list);
+    va_end(list);
+    fprintf(stdout, "\n");
+}
+
+inline void Logger::__Warning(const char *fmt, ...)
+{
+    va_list list;
+    va_start(list, fmt);
+	VFPRINTF(stderr, fmt, list);
+    va_end(list);
+    fprintf(stderr, "\n");
+}
+#endif
 
 }}
 

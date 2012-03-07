@@ -8,20 +8,20 @@ block::block(size_t size) :
     lock("block"),
     size_(size)
 {
-    TRACE(LOCAL, "block<"FMT_ID"> Creating "FMT_SIZE" bytes", get_print_id(), size);
+    TRACE(LOCAL, FMT_ID2" Creating "FMT_SIZE" bytes", get_print_id2(), size);
 }
 
 inline
 block::~block()
 {
-    TRACE(LOCAL, "block<"FMT_ID"> Deleting", get_print_id());
+    TRACE(LOCAL, FMT_ID2" Deleting", get_print_id2());
 }
 
 inline
 block_ptr
 block::split(size_t off)
 {
-    TRACE(LOCAL, "block<"FMT_ID"> Splitting "FMT_SIZE, get_print_id(), off);
+    TRACE(LOCAL, FMT_ID2" Splitting "FMT_SIZE, get_print_id2(), off);
 
     // Create new block
     block *nBlock = new block(size_ - off);
@@ -40,6 +40,8 @@ inline
 void
 block::shift(mapping_ptr m, size_t off)
 {
+    TRACE(LOCAL, FMT_ID2" Shift "FMT_SIZE" bytes", get_print_id2(), off);
+
     mappings::iterator it = mappings_.find(m);
     ASSERTION(it != mappings_.end());
 
@@ -48,8 +50,10 @@ block::shift(mapping_ptr m, size_t off)
 
 inline
 error
-block::acquire(mapping_ptr aspace, int flags)
+block::acquire(mapping_ptr m, int flags)
 {
+    TRACE(LOCAL, FMT_ID2" Acquire block for "FMT_ID2, get_print_id2(), m->get_print_id2());
+
     if (flags & GMAC_PROT_WRITE) {
         lock::lock_write();
     } else if (flags & GMAC_PROT_READ) {
@@ -64,8 +68,10 @@ block::acquire(mapping_ptr aspace, int flags)
 
 inline
 error
-block::release(mapping_ptr aspace)
+block::release(mapping_ptr m)
 {
+    TRACE(LOCAL, FMT_ID2" Release block from "FMT_ID2, get_print_id2(), m->get_print_id2());
+
     lock::unlock();
 
     return DSM_SUCCESS;
@@ -75,7 +81,7 @@ inline
 error
 block::register_mapping(mapping_ptr m, size_t off)
 {
-    TRACE(LOCAL, "block<"FMT_ID"> Register mapping<"FMT_ID">", get_print_id(), m->get_print_id());
+    TRACE(LOCAL, FMT_ID2" Register "FMT_ID2, get_print_id2(), m->get_print_id2());
 
     ASSERTION(mappings_.find(m) == mappings_.end(), "Mapping already registered");
     mapping_descriptor descr = {
@@ -90,7 +96,7 @@ inline
 error
 block::unregister_mapping(const mapping &m)
 {
-    TRACE(LOCAL, "block<"FMT_ID"> Unregister mapping<"FMT_ID">", get_print_id(), m.get_print_id());
+    TRACE(LOCAL, FMT_ID2" Unregister "FMT_ID2, get_print_id2(), m.get_print_id2());
 
     mappings::iterator it;
     it = mappings_.find(&m);
@@ -105,9 +111,10 @@ inline
 error
 block::transfer_mappings(block &&b)
 {
-    CHECK(size_ == b.size_, DSM_ERROR_INVALID_VALUE);
+    TRACE(LOCAL, FMT_ID2" Transferring mappings from "FMT_ID2, get_print_id2(), b.get_print_id2());
 
-    TRACE(LOCAL, "block<"FMT_ID"> Transferring mappings from block<"FMT_ID">", get_print_id(), b.get_print_id());
+    CHECK(this != &b, DSM_ERROR_INVALID_VALUE);
+    CHECK(size_ == b.size_, DSM_ERROR_INVALID_VALUE);
 
     // TODO: check what happens the same mapping was already registered
     mappings_.insert(b.mappings_.begin(), b.mappings_.end());

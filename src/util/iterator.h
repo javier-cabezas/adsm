@@ -96,6 +96,8 @@ class iterator_wrap_associative_first :
 {
     typedef iterator_expander<It> parent_expander;
 public:
+    typedef typename It::value_type::first_type value_type;
+
     iterator_wrap_associative_first(It it) :
         parent_expander(it)
     {
@@ -134,6 +136,8 @@ class iterator_wrap_associative_second :
 {
     typedef iterator_expander<It> parent_expander;
 public:
+    typedef typename It::value_type::second_type value_type;
+
     iterator_wrap_associative_second(It it) :
         parent_expander(it)
     {
