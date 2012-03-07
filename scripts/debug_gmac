@@ -1,0 +1,67 @@
+#!/bin/bash -e
+# --------------------------------------------
+# <+ PROGRAM_NAME +> - <+ SHORT_DESC +>
+# --------------------------------------------
+# File:   ../scripts/debug.sh
+# Author: Javier Cabezas <jcabezas in ac upc edu>
+#
+# Copyright (C) 2012, Javier Cabezas <jcabezas in ac upc edu> {{{
+#
+# This program is free software; you can redistribute it and/or 
+# modify it under the terms of the GNU General Public License 
+# as published by the Free Software Foundation; either 
+# version 2 of the License, or any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+# }}}
+#
+# <+ DESCRIPTION +>
+
+
+LAST_TAG=0
+SCRIPT_DIR=`dirname $0`
+
+for tag in $@
+do
+    if [ "$tag" = "--" ]
+    then
+        break
+    fi
+    LAST_TAG=$(( LAST_TAG + 1 ))
+done
+
+DEBUG=""
+I=0
+
+while [ $I -lt $LAST_TAG ]
+do
+    if [ $I -eq 0 ]
+    then
+        DEBUG="$1"
+    else
+        DEBUG="$DEBUG,$1"
+    fi
+
+    I=$(( $I + 1 ))
+    shift
+done
+
+shift
+CMD=""
+
+while [ $# -gt 0 ]
+do
+    CMD="$CMD $1"
+    shift
+done
+
+GMAC_VERBOSE=1 GMAC_DEBUG=$DEBUG $CMD 2>&1 | $SCRIPT_DIR/parse.py ${DEBUG//,/ }
+
+# vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab:

@@ -34,6 +34,8 @@ template <bool forward>
 void
 mapping::shift_blocks(size_t offset)
 {
+    TRACE(LOCAL, FMT_ID2" Shifting blocks by "FMT_SIZE" bytes", get_print_id2(), offset);
+
     for (coherence::block_ptr b : blocks_) {
         b->shift(this, size_);
     }
@@ -100,6 +102,8 @@ mapping::get_first_block(hal::ptr p)
 mapping::list_block::iterator
 mapping::split_block(list_block::iterator it, size_t offset)
 {
+    TRACE(LOCAL, FMT_ID2" Splitting block at offset "FMT_SIZE, get_print_id2(), offset);
+
     coherence::block_ptr blockNew = (*it)->split(offset);
 
     list_block::iterator ret = blocks_.insert(++it, blockNew);
@@ -110,6 +114,8 @@ mapping::split_block(list_block::iterator it, size_t offset)
 mapping::cursor_block
 mapping::split_block(cursor_block cursor, size_t offset)
 {
+    TRACE(LOCAL, FMT_ID2" Splitting block at offset "FMT_SIZE, get_print_id2(), offset);
+
     coherence::block_ptr blockNew = cursor.get_block()->split(offset);
 
     list_block::iterator it = blocks_.insert(++cursor.get_iterator(), blockNew);
@@ -120,7 +126,7 @@ mapping::split_block(cursor_block cursor, size_t offset)
 error
 mapping::prepend(coherence::block_ptr b)
 {
-    TRACE(LOCAL, "mapping<"FMT_ID"> Prepending block<"FMT_ID">", get_print_id(), b->get_print_id());
+    TRACE(LOCAL, FMT_ID2" Prepending "FMT_ID2, get_print_id2(), b->get_print_id2());
 
     error ret = DSM_SUCCESS;
 
@@ -141,7 +147,8 @@ mapping::prepend(coherence::block_ptr b)
 error
 mapping::append(coherence::block_ptr b)
 {
-    TRACE(LOCAL, "mapping<"FMT_ID"> Appending block<"FMT_ID">", get_print_id(), b->get_print_id());
+    TRACE(LOCAL, FMT_ID2" Appending "FMT_ID2,
+                 get_print_id2(), b->get_print_id2());
 
     error ret = DSM_SUCCESS;
 
@@ -160,23 +167,28 @@ mapping::append(coherence::block_ptr b)
 error
 mapping::swap(coherence::block_ptr b, coherence::block_ptr bNew)
 {
-    TRACE(LOCAL, "mapping<"FMT_ID"> Swapping block<"FMT_ID"> with block<"FMT_ID">", get_print_id(), b->get_print_id(), bNew->get_print_id());
+    TRACE(LOCAL, FMT_ID2" Swapping "FMT_ID2" with "FMT_ID2,
+                 get_print_id2(), b->get_print_id2(), bNew->get_print_id2());
 
+    ASSERTION(b != bNew);
     ASSERTION(std::find(blocks_.begin(), blocks_.end(), b) != blocks_.end(), "Block does not belong to this mapping");
     ASSERTION(std::find(blocks_.begin(), blocks_.end(), bNew) == blocks_.end(), "Block already found in mapping");
 
-    bNew->transfer_mappings(std::move(*b));
+    error ret = bNew->transfer_mappings(std::move(*b));
 
-    list_block::iterator it = std::find(blocks_.begin(), blocks_.end(), b);
-    *it = bNew;
+    if (ret == DSM_SUCCESS) {
+        list_block::iterator it = std::find(blocks_.begin(), blocks_.end(), b);
+        *it = bNew;
+    }
 
-    return DSM_SUCCESS;
+    return ret;
 }
 
 error
 mapping::append(mapping &&map)
 {
-    TRACE(LOCAL, "mapping<"FMT_ID"> Appending mapping<"FMT_ID">", get_print_id(), map.get_print_id());
+    TRACE(LOCAL, FMT_ID2" Appending "FMT_ID2,
+                 get_print_id2(), map.get_print_id2());
 
     if ((map.addr_.get_offset()  <  (addr_.get_offset() + size_)) ||
         (map.addr_.get_aspace() !=  (addr_.get_aspace()))) {
@@ -216,7 +228,7 @@ mapping::resize(size_t pre, size_t post)
 {
     error ret = DSM_SUCCESS;
 
-    TRACE(LOCAL, "mapping<"FMT_ID"> Resizing ["FMT_SIZE", "FMT_SIZE"]", get_print_id(), pre, post);
+    TRACE(LOCAL, FMT_ID2" Resizing ["FMT_SIZE", "FMT_SIZE"]", get_print_id2(), pre, post);
 
     if (pre > 0) {
         coherence::block_ptr b = factory_block::create(pre);
@@ -235,7 +247,7 @@ mapping::mapping(hal::ptr addr) :
     addr_(addr),
     size_(0)
 {
-    TRACE(LOCAL, "mapping<"FMT_ID"> Creating", get_print_id());
+    TRACE(LOCAL, FMT_ID2" Creating", get_print_id2());
 }
 
 mapping::mapping(mapping &&m) :
@@ -243,7 +255,7 @@ mapping::mapping(mapping &&m) :
     size_(m.size_),
     blocks_(m.blocks_)
 {
-    TRACE(LOCAL, "mapping<"FMT_ID"> Creating", get_print_id());
+    TRACE(LOCAL, FMT_ID2" Creating", get_print_id2());
 
     size_t size = 0;
     for (coherence::block_ptr b : blocks_) {
@@ -258,7 +270,7 @@ mapping::mapping(mapping &&m) :
 
 mapping::~mapping()
 {
-    TRACE(LOCAL, "mapping<"FMT_ID"> Deleting", get_print_id());
+    TRACE(LOCAL, FMT_ID2" Deleting", get_print_id2());
 
     for (coherence::block_ptr b : blocks_) {
         b->unregister_mapping(*this);
@@ -270,6 +282,9 @@ mapping::~mapping()
 error
 mapping::acquire(size_t offset, size_t count, int flags)
 {
+    TRACE(LOCAL, FMT_ID2" Acquire "FMT_SIZE":"FMT_SIZE,
+                 get_print_id2(), offset, count);
+
     error err = DSM_SUCCESS;
 
     range_block range = get_blocks_in_range(offset, count);
@@ -285,6 +300,9 @@ mapping::acquire(size_t offset, size_t count, int flags)
 error
 mapping::release(size_t offset, size_t count)
 {
+    TRACE(LOCAL, FMT_ID2" Release "FMT_SIZE":"FMT_SIZE,
+                 get_print_id2(), offset, count);
+
     error err = DSM_SUCCESS;
 
     range_block range = get_blocks_in_range(offset, count);
@@ -301,6 +319,10 @@ error
 mapping::link(hal::ptr ptrDst, mapping_ptr mDst,
               hal::ptr ptrSrc, mapping_ptr mSrc, size_t count, int flags)
 {
+    TRACE(STATIC(mapping), "dsm::mapping linking "FMT_ID2" and "FMT_ID2,
+                           mDst->get_print_id2(),
+                           mSrc->get_print_id2());
+
     CHECK(bool(ptrDst), DSM_ERROR_INVALID_PTR);
     CHECK(bool(ptrSrc), DSM_ERROR_INVALID_PTR);
 
@@ -350,7 +372,10 @@ mapping::link(hal::ptr ptrDst, mapping_ptr mDst,
             }
 
             // Merge block owners into a single block
-            mDst->swap(cursorDst.get_block(), cursorSrc.get_block());
+            ret = mDst->swap(cursorDst.get_block(), cursorSrc.get_block());
+            if (ret != DSM_SUCCESS) {
+                break;
+            }
 
             // We do not advance the iterator since we are done
             bytesSubmapping = count;
@@ -427,8 +452,6 @@ mapping::link(hal::ptr ptrDst, mapping_ptr mDst,
 
     return ret;
 }
-
-
 
 }}
 

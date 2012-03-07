@@ -105,7 +105,7 @@ gmacGetCurrentDeviceId()
     unsigned ret = 0;
     enterGmac();
     gmac::trace::EnterCurrentFunction();
-    //ret = thread::get_current_thread().get_current_virtual_device().get_address_space()->get_hal_context().get_device().get_print_id();
+    //ret = thread::get_current_thread().get_current_virtual_device().get_address_space()->get_hal_context().get_device().get_id().print();
     gmac::trace::ExitCurrentFunction();
     exitGmac();
     return ret;

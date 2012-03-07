@@ -407,14 +407,14 @@ public:
 #if 0
     void lock() const
     {
-        printf("["FMT_TID"] lock<"FMT_ID">\n", __impl::core::thread::get_debug_tid(), get_print_id());
+        printf("["FMT_TID"] "FMT_ID2"\n", __impl::core::thread::get_debug_tid(), get_print_id2());
         lock::lock();
-        printf("["FMT_TID"] locked<"FMT_ID">\n", __impl::core::thread::get_debug_tid(), get_print_id());
+        printf("["FMT_TID"] "FMT_ID2"\n", __impl::core::thread::get_debug_tid(), get_print_id2());
     }
 
     void unlock() const
     {
-        printf("["FMT_TID"] unlock<"FMT_ID">\n", __impl::core::thread::get_debug_tid(), get_print_id());
+        printf("["FMT_TID"] "FMT_ID2"\n", __impl::core::thread::get_debug_tid(), get_print_id2());
         lock::unlock();
     }
 #endif

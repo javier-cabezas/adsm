@@ -11,6 +11,7 @@
 #include <cxxabi.h>
 #define demangle(name) abi::__cxa_demangle(name, NULL, 0, NULL)
 
+namespace __impl { namespace trace {
 std::string
 get_class_name(const char *mangled)
 {
@@ -20,7 +21,7 @@ get_class_name(const char *mangled)
     free(p);
     return str;
 }
-
+}}
 
 #elif defined(_MSC_VER)
 

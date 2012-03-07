@@ -36,12 +36,30 @@ unique<T, R>::get_id() const
     return id_;
 }
 
+#if 0
 template <typename T, typename R>
 inline
 unsigned long
 unique<T, R>::get_print_id() const
 {
     return id_.print();
+}
+#endif
+
+template <typename T, typename R>
+inline
+const char *
+unique<T, R>::get_print_id2() const
+{
+    if (idPrint_.size() == 0) {
+        std::stringstream s;
+        s << this->get_class_name();
+        s << "<";
+        s << id_.print();
+        s << ">";
+        idPrint_ = s.str();
+    }
+    return idPrint_.c_str();
 }
 
 }}

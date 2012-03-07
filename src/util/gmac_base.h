@@ -156,7 +156,7 @@ class GMAC_LOCAL gmac_base
 private:
     static std::string get_type_name()
     {
-        return std::string(get_name_logger(typeid(T).name()));
+        return std::string(trace::get_name_logger(typeid(T).name()));
     }
 
     static std::string get_tmp_name(const R &id)

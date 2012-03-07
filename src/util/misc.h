@@ -69,6 +69,7 @@ class range {
 
 public:
     typedef I iterator;
+    typedef std::list<typename I::value_type> list;
 
     inline
     range(I _begin, I _end) :
@@ -96,7 +97,17 @@ public:
         return end_;
     }
 
+    list
+    to_list() const
+    {
+        list ret;
 
+        for (auto i : *this) {
+            ret.push_back(i);
+        }
+
+        return ret;
+    }
 };
 
 }}

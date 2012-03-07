@@ -282,8 +282,6 @@ TEST_F(manager_mapping_test, mappings_in_range_boundaries)
     range_fini();
 }
 
-
-
 static const int MAP_B0_OFF =   50;
 static const int MAP_B1_OFF =  900;
 static const int MAP_B2_OFF = 1200;
@@ -306,10 +304,11 @@ static const size_t MAP_B8_SIZE = 100;
 
 static ptr         p_b0, p_b1, p_b2, p_b3, p_b4, p_b5, p_b6, p_b7, p_b8;
 static mapping_ptr m_b0, m_b1, m_b2, m_b3, m_b4, m_b5, m_b6, m_b7, m_b8;
-static block_ptr   b_b0, b_b1, b_b2, b_b3, b_b4, b_b5, b_b6, b_b7, b_b8;
 
 TEST_F(manager_mapping_test, insert_mappings)
 {
+    block_ptr b_b0, b_b1, b_b2, b_b3, b_b4, b_b5, b_b6, b_b7, b_b8;
+
     range_init();
 
     // We use the same base allocation
@@ -366,22 +365,29 @@ TEST_F(manager_mapping_test, insert_mappings)
     bool berr;
     berr = mgr->helper_insert(*as1, m_b0);
     ASSERT_FALSE(berr);
+    delete m_b0;
     berr = mgr->helper_insert(*as1, m_b1);
     ASSERT_FALSE(berr);
+    delete m_b1;
     berr = mgr->helper_insert(*as1, m_b2);
     ASSERT_TRUE(berr);
     berr = mgr->helper_insert(*as1, m_b3);
     ASSERT_FALSE(berr);
+    delete m_b3;
     berr = mgr->helper_insert(*as1, m_b4);
     ASSERT_FALSE(berr);
+    delete m_b4;
     berr = mgr->helper_insert(*as1, m_b5);
     ASSERT_FALSE(berr);
+    delete m_b5;
     berr = mgr->helper_insert(*as1, m_b6);
     ASSERT_FALSE(berr);
+    delete m_b6;
     berr = mgr->helper_insert(*as1, m_b7);
     ASSERT_TRUE(berr);
     berr = mgr->helper_insert(*as1, m_b8);
     ASSERT_FALSE(berr);
+    delete m_b8;
 
     range_fini();
 }
@@ -499,7 +505,6 @@ TEST_F(manager_mapping_test, link)
     ASSERT_TRUE(mgr->helper_get_mapping(as2_p0)->get_ptr() == as2_p0);
     ASSERT_TRUE(mgr->helper_get_mappings(*as1_p0.get_aspace(), as1_p0.get_base()).size() == 1);
     ASSERT_TRUE(mgr->helper_get_mappings(*as2_p0.get_aspace(), as2_p0.get_base()).size() == 1);
-
 
     link_fini();
 }

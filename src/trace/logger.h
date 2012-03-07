@@ -75,18 +75,23 @@ inline static const char *__extract_file_name(const char *file) {
 #if defined(__GNUC__) && !defined(__APPLE__)
 #include <cxxabi.h>
 
+namespace __impl { namespace trace {
 extern __thread char nameBuffer[1024];
 std::string
 get_class_name(const char *mangled);
 
 #define get_name_logger(n) get_class_name(n).c_str()
+}}
 #else
+namespace __impl { namespace trace {
 #define get_name_logger(n) n
+}}
 #endif
 
+
 #define GLOBAL "GMAC"
-#define LOCAL  get_name_logger(typeid(*this).name())
-#define STATIC(c) get_name_logger(typeid(c).name())
+#define LOCAL  trace::get_name_logger(typeid(*this).name())
+#define STATIC(c) trace::get_name_logger(typeid(c).name())
 
 #if defined(DEBUG)
 #   if defined(__GNUC__)
@@ -132,7 +137,7 @@ void dummy_assertion(bool /*b*/, ...)
 #define MESSAGE(fmt, ...) { if (::config::params::Verbose) __impl::trace::Logger::__Message("<GMAC> "fmt"\n", ##__VA_ARGS__); }
 #endif
 
-#define WARNING(fmt, ...) __impl::trace::Logger::__Warning("("FMT_TID")" fmt, __impl::util::get_thread_id(), ##__VA_ARGS__)
+#define WARNING(fmt, ...) __impl::trace::Logger::__Warning("("FMT_TID") " fmt, ::config::params::DebugUseRealTID? __impl::util::get_thread_id(): __impl::core::thread::get_debug_tid(), ##__VA_ARGS__)
 #define FATAL(fmt, ...) __impl::trace::Logger::__Fatal(fmt, ##__VA_ARGS__)
 #define CFATAL(c, ...) __impl::trace::Logger::__CFatal(c, "Condition '"#c"' failed", LOCATION_STRING)
 
@@ -204,9 +209,6 @@ public:
     static void __Assertion(bool c, const char * cStr, const char *fmt, ...);
 #endif
 #endif // DEBUG
-
-    static void __Message(const char *fmt, ...);
-    static void __Warning(const char *fmt, ...);
 #ifdef USE_CXX0X
     template <typename ...Types>
     static void __Fatal(const char *fmt, Types ...list);
@@ -215,6 +217,16 @@ public:
 #else // TODO: remove this as soon as the other platforms support variadic templates
     static void __Fatal(const char *fmt, ...);
     static void __CFatal(bool c, const char * cStr, const char *fmt, ...);
+#endif
+
+#ifdef USE_CXX0X
+    template <typename ...Types>
+    static void __Message(const char *fmt, Types ...list);
+    template <typename ...Types>
+    static void __Warning(const char *fmt, Types ...list);
+#else // TODO: remove this as soon as the other platforms support variadic templates
+    static void __Message(const char *fmt, ...);
+    static void __Warning(const char *fmt, ...);
 #endif
 };
 
