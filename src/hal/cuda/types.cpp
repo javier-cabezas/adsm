@@ -85,29 +85,29 @@ get_platforms()
             if (cuDeviceGet(&cuDev, i) != CUDA_SUCCESS)
                 FATAL("Unable to access CUDA device");
             // TODO: create a context to retrieve information about the memory
-            cuda::phys::memory_ptr mem = cuda::phys::memory_ptr(new cuda::phys::memory(128 * 1024 * 1024));
+            cuda::phys::memory *mem = new cuda::phys::memory(128 * 1024 * 1024);
 
             cuda::phys::aspace::set_memory memories;
             memories.insert(mem);
 
             cuda::phys::processing_unit::set_memory_connection connections;
-            cuda::phys::processing_unit::memory_connection connection(mem, 0);
+            cuda::phys::processing_unit::memory_connection connection(*mem, 0);
             connections.insert(connection);
 
-            cuda::phys::aspace_ptr aspace = cuda::phys::aspace_ptr(new cuda::phys::aspace(memories));
+            cuda::phys::aspace *aspace = new cuda::phys::aspace(memories);
             cuda::phys::processing_unit::set_aspace aspaces;
             aspaces.insert(aspace);
 #if CUDA_VERSION >= 2020
             int attr = 0;
             if(cuDeviceGetAttribute(&attr, CU_DEVICE_ATTRIBUTE_COMPUTE_MODE, cuDev) != CUDA_SUCCESS)
                 FATAL("Unable to access CUDA device");
-            if(attr != CU_COMPUTEMODE_PROHIBITED) {
-                cuda::phys::processing_unit *pUnit = new cuda::phys::processing_unit(cuDev, *p, connections, aspaces);
+            if (attr != CU_COMPUTEMODE_PROHIBITED) {
+                cuda::phys::processing_unit *pUnit = new cuda::phys::processing_unit(cuDev, *p);
                 p->add_processing_unit(*pUnit);
                 devRealCount++;
             }
 #else
-            cuda::processing_unit *pUnit = new cuda::gpu(cuDev, *p, connections, aspaces);
+            cuda::processing_unit *pUnit = new cuda::gpu(cuDev, *p);
             p->add_processing_unit(*pUnit);
             devRealCount++;
 #endif

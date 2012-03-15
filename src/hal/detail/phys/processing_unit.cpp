@@ -3,21 +3,24 @@
 
 namespace __impl { namespace hal { namespace detail { namespace phys {
 
-processing_unit::processing_unit(type t, platform &platform,
-                                 set_memory_connection &memories,
-                                 set_aspace &aspaces) :
+processing_unit::processing_unit(type t, platform &platform) :
     platform_(platform),
-    type_(t),
-    memories_(memories),
-    aspaces_(aspaces)
+    type_(t)
 {
-    for (auto a : aspaces_) {
-        a->add_processing_unit(*this);
-    }
+}
 
-    for (auto m : memories_) {
-        m.mem->add_attached_unit(*this);
-    }
+void
+processing_unit::add_memory_connection(const memory_connection &connection)
+{
+    connections_.insert(connection);
+    connection.mem->add_attached_unit(*this);
+}
+
+void
+processing_unit::add_paspace(aspace &as)
+{
+    aspaces_.insert(&as);
+    as.add_processing_unit(*this);
 }
 
 }}}}

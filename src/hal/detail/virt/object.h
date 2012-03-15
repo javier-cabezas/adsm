@@ -17,22 +17,23 @@ class GMAC_LOCAL object :
 public:
     typedef std::map<aspace *, object_view *> map_view;
 private:
-    phys::memory_ptr memory_;
+    phys::memory *memory_;
     size_t size_;
     map_view views_;
 
 public:
-    object(phys::memory_ptr location, size_t size);
+    object(phys::memory &location, size_t size);
 
     object_view *create_view(aspace &as, ptrdiff_t offset, gmacError_t err);
 
-    phys::memory_ptr get_memory();
-    phys::memory_const_ptr get_memory() const;
+    const phys::memory &get_memory() const;
 
     size_t get_size() const
     {
         return size_;
     }
+
+    gmacError_t migrate(phys::memory &newLocation);
 };
 
 typedef util::shared_ptr<object>       object_ptr;

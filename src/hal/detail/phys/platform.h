@@ -18,8 +18,8 @@ class GMAC_LOCAL platform :
 {
 public:
     typedef std::set<processing_unit *> set_processing_unit;
-    typedef std::set<aspace_ptr>        set_aspace;
-    typedef std::set<memory_ptr>        set_memory;
+    typedef std::set<aspace *>          set_aspace;
+    typedef std::set<memory *>          set_memory;
 
 private:
     set_processing_unit pUnits_;
@@ -29,7 +29,7 @@ private:
 public:
     virtual ~platform();
     void add_processing_unit(processing_unit &d);
-    void add_paspace(aspace_ptr as);
+    void add_paspace(aspace &as);
 
     const set_processing_unit &get_processing_units() const;
     set_processing_unit get_processing_units(processing_unit::type type);

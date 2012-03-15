@@ -18,7 +18,7 @@ class processing_unit;
 class GMAC_LOCAL aspace :
     public util::unique<aspace> {
 public:
-    typedef std::set<memory_ptr> set_memory;
+    typedef std::set<memory *> set_memory;
     typedef std::set<processing_unit *> set_processing_unit;
 
 private:
@@ -55,9 +55,6 @@ public:
         return pUnits_;
     }
 };
-
-typedef util::shared_ptr<aspace>       aspace_ptr;
-typedef util::shared_ptr<const aspace> aspace_const_ptr;
 
 }
 

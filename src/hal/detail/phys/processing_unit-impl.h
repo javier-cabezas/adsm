@@ -33,15 +33,15 @@ processing_unit::get_type() const
 
 inline
 bool
-processing_unit::has_access(memory_ptr mem, memory_connection &connection)
+processing_unit::has_access(const memory &mem, memory_connection &connection)
 {
-    set_memory_connection::iterator it = std::find_if(memories_.begin(), memories_.end(),
-                                                      [&](const memory_connection &conn)
+    set_memory_connection::iterator it = std::find_if(connections_.begin(), connections_.end(),
+                                                      [&mem](const memory_connection &conn)
                                                       {
-                                                          return mem->get_id() == conn.mem->get_id();
+                                                          return &mem == conn.mem;
                                                       });
 
-    if (it != memories_.end()) {
+    if (it != connections_.end()) {
         connection = *it;
         return true;
     }
