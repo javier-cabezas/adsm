@@ -4,8 +4,8 @@
 namespace __impl { namespace hal { namespace cuda {
 
 inline
-stream::stream(CUstream stream, aspace &context) :
-    parent(context),
+stream::stream(CUstream stream, virt::aspace &as) :
+    parent(as),
     stream_(stream)
 {
     TRACE(LOCAL, "Creating stream: %p", (*this)());
@@ -45,10 +45,10 @@ stream::query()
 }
 
 inline
-aspace &
+virt::aspace &
 stream::get_aspace()
 {
-    return reinterpret_cast<aspace &>(parent::get_aspace());
+    return reinterpret_cast<virt::aspace &>(parent::get_aspace());
 }
 
 inline

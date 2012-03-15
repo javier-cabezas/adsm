@@ -1,6 +1,6 @@
-#include "types.h"
+#include "hal/types.h"
 
-namespace __impl { namespace hal { namespace detail {
+namespace __impl { namespace hal { namespace detail { namespace virt {
 
 const unsigned &aspace::MaxBuffersIn_  = config::params::HALInputBuffersPerContext;
 const unsigned &aspace::MaxBuffersOut_ = config::params::HALOutputBuffersPerContext;
@@ -60,6 +60,8 @@ aspace::get_output_buffer(size_t size, stream &stream, event_ptr event)
     mapUsedBuffersOut_.push(buffer, buffer->get_size());
 
     return buffer;
+}
+
 }
 
 }}}

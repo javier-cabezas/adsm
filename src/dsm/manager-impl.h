@@ -18,7 +18,7 @@ manager::get_mappings_in_range(map_mapping_group &mappings, hal::ptr addr, size_
         }
     }
 
-    map_mapping_group::iterator itGroup = mappings.find(addr.get_base());
+    map_mapping_group::iterator itGroup = mappings.find(&addr.get_view());
 
     // If we don't find the base allocation for the address, return empty range
     if (itGroup == mappings.end()) {

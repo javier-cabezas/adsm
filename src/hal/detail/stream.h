@@ -1,5 +1,5 @@
-#ifndef GMAC_HAL_TYPES_STREAM_H_
-#define GMAC_HAL_TYPES_STREAM_H_
+#ifndef GMAC_HAL_DETAIL_STREAM_H_
+#define GMAC_HAL_DETAIL_STREAM_H_
 
 #include <algorithm>
 #include <queue>
@@ -19,11 +19,11 @@ class GMAC_LOCAL stream :
     public gmac::util::spinlock<stream> {
 
 protected:
-    aspace &aspace_;
+    virt::aspace &aspace_;
 
     event_ptr lastEvent_;
 
-    stream(aspace &context);
+    stream(virt::aspace &as);
 
 public:
     enum state {
@@ -31,7 +31,7 @@ public:
         Running
     };
 
-    aspace &get_aspace();
+    virt::aspace &get_aspace();
 
     event_ptr get_last_event();
     void set_last_event(event_ptr event);

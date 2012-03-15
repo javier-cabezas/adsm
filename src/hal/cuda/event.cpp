@@ -73,7 +73,7 @@ list_event::set_synced()
 void
 list_event::add_event(hal_event_ptr event) 
 {
-    parent::push_back(util::reinterpret_ptr<_event_t, hal_event>(event));
+    parent::push_back(util::reinterpret_ptr<_event_t, virt::hal_event>(event));
 }
 
 }}}

@@ -1,11 +1,11 @@
 #ifndef GMAC_HAL_CUDA_PLATFORM_H_
 #define GMAC_HAL_CUDA_PLATFORM_H_
 
-#include "hal/platform.h"
+#include "hal/detail/phys/platform.h"
 
-namespace __impl { namespace hal { namespace cuda {
+namespace __impl { namespace hal { namespace cuda { namespace phys {
 
-typedef hal::detail::platform hal_platform;
+typedef hal::detail::phys::platform hal_platform;
 
 class GMAC_LOCAL platform :
     public hal_platform
@@ -13,7 +13,7 @@ class GMAC_LOCAL platform :
     typedef hal_platform parent;
 };
 
-}}}
+}}}}
 
 #endif /* PLATFORM_H */
 

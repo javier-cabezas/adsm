@@ -4,11 +4,11 @@
 #include "util/trigger.h"
 #include "util/smart_ptr.h"
 
-namespace __impl { namespace hal {
+namespace __impl { namespace hal { namespace detail {
 
-namespace detail {
-
-class aspace;
+namespace virt {
+    class aspace;
+}
 
 class GMAC_LOCAL _event :
     public util::list_trigger<>,
@@ -33,7 +33,7 @@ public:
     };
 
 private:
-    aspace &aspace_;
+    virt::aspace &aspace_;
 
 protected:
     bool async_;
@@ -47,10 +47,10 @@ protected:
     hal::time_t timeStart_;
     hal::time_t timeEnd_;
 
-    _event(bool async, type t, aspace &as);
+    _event(bool async, type t, virt::aspace &as);
 
 public:
-    aspace &get_aspace();
+    virt::aspace &get_vaspace();
 
     type get_type() const;
     virtual state get_state() = 0;

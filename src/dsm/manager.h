@@ -52,12 +52,12 @@ namespace dsm {
 class GMAC_LOCAL manager :
     public __impl::util::singleton<dsm::manager>,
     public util::unique<dsm::manager>,
-    public util::observer<hal::aspace, util::event::construct>,
-    public util::observer<hal::aspace, util::event::destruct>,
+    public util::observer<hal::virt::aspace, util::event::construct>,
+    public util::observer<hal::virt::aspace, util::event::destruct>,
     public util::factory<mapping, mapping_ptr> {
 
-    typedef util::observer<hal::aspace, util::event::construct> observer_construct;
-    typedef util::observer<hal::aspace, util::event::destruct>  observer_destruct;
+    typedef util::observer<hal::virt::aspace, util::event::construct> observer_construct;
+    typedef util::observer<hal::virt::aspace, util::event::destruct>  observer_destruct;
 
 protected:
     typedef util::factory<mapping, mapping_ptr> factory_mapping;
@@ -65,17 +65,17 @@ protected:
     typedef std::map<size_t, mapping_ptr> map_mapping;
     typedef map_mapping *map_mapping_ptr;
 
-    typedef std::map<hal::ptr::backend_type, map_mapping> map_mapping_group;
-    typedef __impl::util::observer<hal::aspace, util::event::construct> observer_type;
+    typedef std::map<hal::virt::object_view *, map_mapping> map_mapping_group;
+    typedef __impl::util::observer<hal::virt::aspace, util::event::construct> observer_type;
 
     friend bool mapping_fits(map_mapping &, mapping_ptr);
 
-    const hal::aspace::attribute_id AttributeMappings_;
+    const hal::virt::aspace::attribute_id AttributeMappings_;
 
-    void event_handler(hal::aspace &aspace, util::event::construct);
-    void event_handler(hal::aspace &aspace, util::event::destruct);
+    void event_handler(hal::virt::aspace &aspace, util::event::construct);
+    void event_handler(hal::virt::aspace &aspace, util::event::destruct);
 
-    map_mapping_group &get_aspace_mappings(hal::aspace &ctx);
+    map_mapping_group &get_aspace_mappings(hal::virt::aspace &as);
 
     typedef util::range<util::iterator_wrap_associative_second<map_mapping::iterator> > range_mapping;
     template <bool GetAdjacent>

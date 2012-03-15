@@ -2,9 +2,9 @@
 
 #include "config/common.h"
 
-#include "coherence_domain.h"
-#include "device.h"
-#include "platform.h"
+#include "phys/aspace.h"
+#include "phys/processing_unit.h"
+#include "phys/platform.h"
 #include "module.h"
 
 #define __GMAC_ERROR(r, err) case r: error = err; if(r == CUDA_ERROR_INVALID_HANDLE) abort(); break
@@ -15,7 +15,7 @@ static bool
 hal_initialized = false;
 
 static
-cuda::list_platform platforms;
+cuda::phys::list_platform platforms;
 
 gmacError_t
 init()
@@ -46,10 +46,8 @@ fini()
 
     hal_initialized = false;
 
-    for (cuda::list_platform::iterator it  = platforms.begin();
-                                       it != platforms.end();
-                                     ++it) {
-        delete (*it);
+    for (cuda::phys::platform *p : platforms) {
+        delete p;
     }
 
     platforms.clear();
@@ -57,7 +55,9 @@ fini()
     return ret;
 }
 
-cuda::list_platform
+namespace phys {
+
+cuda::phys::list_platform
 get_platforms()
 {
     if (hal_initialized == false) {
@@ -68,7 +68,7 @@ get_platforms()
         /////////////////////
         // Backend devices //
         /////////////////////
-        cuda::platform *p = new cuda::platform();
+        cuda::phys::platform *p = new cuda::phys::platform();
 
         int devCount = 0;
         int devRealCount = 0;
@@ -80,24 +80,35 @@ get_platforms()
         TRACE(GLOBAL, "Found %d CUDA capable devices", devCount);
 
         // Add accelerators to the system
-        for(int i = 0; i < devCount; i++) {
+        for (int i = 0; i < devCount; i++) {
             CUdevice cuDev;
-            if(cuDeviceGet(&cuDev, i) != CUDA_SUCCESS)
+            if (cuDeviceGet(&cuDev, i) != CUDA_SUCCESS)
                 FATAL("Unable to access CUDA device");
+            // TODO: create a context to retrieve information about the memory
+            cuda::phys::memory_ptr mem = cuda::phys::memory_ptr(new cuda::phys::memory(128 * 1024 * 1024));
+
+            cuda::phys::aspace::set_memory memories;
+            memories.insert(mem);
+
+            cuda::phys::processing_unit::set_memory_connection connections;
+            cuda::phys::processing_unit::memory_connection connection(mem, 0);
+            connections.insert(connection);
+
+            cuda::phys::aspace_ptr aspace = cuda::phys::aspace_ptr(new cuda::phys::aspace(memories));
+            cuda::phys::processing_unit::set_aspace aspaces;
+            aspaces.insert(aspace);
 #if CUDA_VERSION >= 2020
             int attr = 0;
             if(cuDeviceGetAttribute(&attr, CU_DEVICE_ATTRIBUTE_COMPUTE_MODE, cuDev) != CUDA_SUCCESS)
                 FATAL("Unable to access CUDA device");
             if(attr != CU_COMPUTEMODE_PROHIBITED) {
-                cuda::coherence_domain *coherenceDomain = new cuda::coherence_domain();
-                // TODO: detect coherence domain correctly. Now using one per device.
-                cuda::device *dev = new cuda::device(cuDev, *p, *coherenceDomain);
-                p->add_device(*dev);
+                cuda::phys::processing_unit *pUnit = new cuda::phys::processing_unit(cuDev, *p, connections, aspaces);
+                p->add_processing_unit(*pUnit);
                 devRealCount++;
             }
 #else
-            cuda::device *dev = new cuda::gpu(cuDev, *p, *coherenceDomain);
-            p->add_device(*dev);
+            cuda::processing_unit *pUnit = new cuda::gpu(cuDev, *p, connections, aspaces);
+            p->add_processing_unit(*pUnit);
             devRealCount++;
 #endif
         }
@@ -110,8 +121,6 @@ get_platforms()
         /////////////////////
 #if 0
         {
-            cuda::coherence_domain *cpuDomain = new cuda::coherence_domain();
-
             for (int i = 0; i < get_nprocs(); ++i) {
                 p->add_device(*new cuda::cpu(*p, *cpuDomain));
             }
@@ -122,6 +131,8 @@ get_platforms()
     }
 
     return platforms;
+}
+
 }
 
 }}

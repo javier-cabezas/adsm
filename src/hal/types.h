@@ -7,47 +7,50 @@
 
 #ifdef USE_CUDA
 #include "cuda/types.h"
-#include "cuda/device.h"
-#include "cuda/coherence_domain.h"
-#include "ptr.h"
+#include "cuda/phys/processing_unit.h"
+#include "cuda/phys/platform.h"
+#include "detail/ptr.h"
 
 namespace __impl { namespace hal {
-    typedef hal::detail::platform platform;
-    typedef hal::detail::device device;
 
-    typedef hal::detail::coherence_domain coherence_domain;
+namespace phys {
+    typedef hal::detail::phys::aspace aspace;
+    typedef hal::detail::phys::platform platform;
+    typedef hal::detail::phys::processing_unit processing_unit;
+
+    typedef hal::cuda::phys::list_platform list_platform;
+}
+
+namespace virt {
+    typedef hal::detail::virt::aspace aspace;
+    typedef hal::detail::virt::code_repository code_repository;
+    typedef hal::detail::virt::buffer buffer_t;
+    typedef hal::detail::virt::object object;
+    typedef hal::detail::virt::object_view object_view;
+}
 
     typedef hal::detail::kernel kernel_t;
     typedef hal::cuda::kernel::config kernel_config;
     typedef hal::cuda::kernel::launch kernel_launch;
-    typedef hal::detail::code_repository code_repository;
-    typedef hal::detail::aspace aspace;
     typedef hal::detail::stream stream;
     //typedef hal::cuda::event_ptr event_ptr;
     typedef hal::detail::_event::type event_type;
     typedef hal::detail::event_ptr event_ptr;
     typedef hal::cuda::list_event list_event;
 
-    typedef hal::detail::buffer buffer_t;
 
     //typedef hal::cuda::ptr_t ptr;
     //typedef hal::cuda::ptr_const_t const_ptr;
     //typedef hal::detail::ptr ptr;
     //typedef hal::detail::const_ptr const_ptr;
-
-    typedef hal::cuda::list_platform list_platform;
 }}
 
 #else
 #include "opencl/types.h"
-#include "opencl/device.h"
-#include "opencl/coherence_domain.h"
 
 namespace __impl { namespace hal {
     typedef hal::opencl::platform platform;
-    typedef hal::opencl::device device;
-
-    typedef hal::opencl::coherence_domain coherence_domain;
+    typedef hal::opencl::processing_unit processing_unit;
 
     typedef hal::opencl::kernel_t kernel_t;
     typedef hal::opencl::code_repository code_repository;
@@ -72,8 +75,10 @@ init();
 gmacError_t
 fini();
 
+namespace phys {
 list_platform
 get_platforms();
+}
 
 event_ptr copy(ptr dst, const_ptr src, size_t count, stream &stream, list_event &dependencies, gmacError_t &err);
 event_ptr copy(ptr dst, const_ptr src, size_t count, stream &stream, event_ptr event, gmacError_t &err);

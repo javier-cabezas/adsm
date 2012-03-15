@@ -48,16 +48,16 @@ _event_common_t::get_stream()
 }
 
 inline
-_event_t::_event_t(bool async, type t, aspace &context) :
-    parent(async, t, context)
+_event_t::_event_t(bool async, type t, virt::aspace &as) :
+    parent(async, t, as)
 {
 }
 
 inline
-aspace &
-_event_t::get_aspace()
+virt::aspace &
+_event_t::get_vaspace()
 {
-    return reinterpret_cast<aspace &>(parent::get_aspace());
+    return reinterpret_cast<virt::aspace &>(parent::get_vaspace());
 }
 
 inline
@@ -127,7 +127,7 @@ inline
 void
 event_deleter::operator()(_event_t *ev)
 {
-    ev->get_aspace().dispose_event(*ev);
+    ev->get_vaspace().dispose_event(*ev);
 }
 
 #if 0
@@ -142,7 +142,7 @@ event_ptr::event_ptr(bool async, typename _event_t::type t, aspace &context) :
 
 inline static
 event_ptr
-create_event(bool async, _event_t::type t, aspace &as)
+create_event(bool async, _event_t::type t, virt::aspace &as)
 {
     return event_ptr(as.get_new_event(async, t), event_deleter());
 }

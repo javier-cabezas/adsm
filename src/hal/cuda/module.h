@@ -60,6 +60,11 @@ typedef const struct textureReference *cuda_texture_t;
 typedef util::descriptor<gmac_kernel_id_t> kernel_descriptor;
 typedef util::descriptor<cuda_texture_t> texture_descriptor;
 
+class code_repository;
+
+typedef util::stl::locked_map<virt::aspace *, code_repository *> map_context_repository;
+
+
 class GMAC_LOCAL variable_descriptor : public util::descriptor<cuda_variable_t> {
 protected:
     bool constant_;
@@ -87,9 +92,6 @@ public:
 
     CUtexref texRef() const;
 };
-
-class code_repository;
-typedef util::stl::locked_map<aspace *, code_repository *> map_context_repository;
 
 class GMAC_LOCAL module_descriptor {
 	friend class code_repository;
@@ -123,7 +125,7 @@ typedef std::vector<module_descriptor *> vector_module_descriptor;
 typedef hal::detail::kernel hal_kernel;
 
 class GMAC_LOCAL code_repository :
-    public hal::detail::code_repository {
+    public hal::detail::virt::code_repository {
 protected:
 
 	std::vector<CUmodule> mods_;

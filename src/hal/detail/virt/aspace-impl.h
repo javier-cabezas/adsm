@@ -1,7 +1,9 @@
-#ifndef GMAC_HAL_ASPACE_IMPL_H_
-#define GMAC_HAL_ASPACE_IMPL_H_
+#ifndef GMAC_HAL_DETAIL_VIRT_ASPACE_IMPL_H_
+#define GMAC_HAL_DETAIL_VIRT_ASPACE_IMPL_H_
 
 namespace __impl { namespace hal { namespace detail {
+
+namespace virt {
 
 inline
 buffer::buffer(size_t size, aspace &as) :
@@ -101,11 +103,13 @@ aspace::put_memory(void *ptr, size_t size)
 }
 
 inline
-aspace::aspace(device &dev) :
-    device_(dev),
+aspace::aspace(phys::processing_unit &pu, phys::aspace &pas, gmacError_t &err) :
+    pu_(pu),
+    pas_(pas),
     nBuffersIn_(0),
     nBuffersOut_(0)
 {
+    err = gmacSuccess;
 }
 
 inline
@@ -114,17 +118,31 @@ aspace::~aspace()
 }
 
 inline
-device &
-aspace::get_device()
+phys::processing_unit &
+aspace::get_processing_unit()
 {
-    return device_;
+    return pu_;
 }
 
 inline
-const device &
-aspace::get_device() const
+const phys::processing_unit &
+aspace::get_processing_unit() const
 {
-    return device_;
+    return pu_;
+}
+
+inline
+phys::aspace &
+aspace::get_paspace()
+{
+    return pas_;
+}
+
+inline
+const phys::aspace &
+aspace::get_paspace() const
+{
+    return pas_;
 }
 
 inline
@@ -143,9 +161,9 @@ aspace::put_output_buffer(buffer &buffer)
     mapFreeBuffersOut_.push(&buffer, buffer.get_size());
 }
 
-} // namespace detail
+} // namespace virt
 
-}}
+}}}
 
 #endif
 

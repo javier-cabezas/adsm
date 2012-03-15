@@ -3,7 +3,7 @@
 
 #include "trace/logger.h"
 
-namespace __impl { namespace hal { namespace cuda {
+namespace __impl { namespace hal { namespace cuda { namespace virt {
 
 inline aspace &
 buffer_t::get_aspace()
@@ -46,6 +46,7 @@ aspace::set()
     ASSERTION(ret == CUDA_SUCCESS);
 }
 
+#if 0
 inline
 hal::ptr
 aspace::get_device_addr_from_pinned(host_ptr addr)
@@ -61,8 +62,9 @@ aspace::get_device_addr_from_pinned(host_ptr addr)
 
     return ret;
 }
+#endif
 
-}}}
+}}}}
 
 #endif
 

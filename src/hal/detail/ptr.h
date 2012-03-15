@@ -45,7 +45,6 @@ protected:
 
     host_ptr ptrHost_;
 
-    inline
     _common_ptr_t(host_ptr ptr) :
         ptrHost_(ptr)
     {
@@ -59,13 +58,11 @@ protected:
 
     host_const_ptr ptrHost_;
 
-    inline
     _common_ptr_t(host_ptr ptr) :
         ptrHost_(ptr)
     {
     }
 
-    inline
     _common_ptr_t(host_const_ptr ptr) :
         ptrHost_(ptr)
     {
@@ -82,327 +79,321 @@ struct static_union<false, T, T2> {
     typedef T2 type;
 };
 
-template <bool Const, typename Ptr, typename Aspace, typename D>
+template <typename Base>
+class GMAC_LOCAL backend_ptr_t
+{
+protected:
+    Base base_;
+    backend_ptr_t(Base base) :
+        base_(base)
+    {
+    }
+
+public:
+    typedef Base backend_type;
+
+    virtual backend_ptr_t &
+    operator=(const backend_ptr_t &ptr) = 0;
+
+    virtual bool
+    operator==(const backend_ptr_t &ptr) const = 0;
+
+    virtual bool
+    operator!=(const backend_ptr_t &ptr) const = 0;
+
+    virtual bool
+    operator< (const backend_ptr_t &ptr) const = 0;
+
+    virtual bool
+    operator<=(const backend_ptr_t &ptr) const = 0;
+
+    virtual bool
+    operator> (const backend_ptr_t &ptr) const = 0;
+
+    virtual bool
+    operator>=(const backend_ptr_t &ptr) const = 0;
+
+    virtual backend_ptr_t &
+    operator+=(const ptrdiff_t &off) = 0;
+
+    virtual backend_ptr_t &
+    operator-=(const ptrdiff_t &off) = 0;
+
+    backend_type
+    get_base() const
+    {
+        return base_;
+    }
+
+    virtual void *
+    get() const = 0;
+
+    virtual size_t
+    offset() const = 0;
+};
+
+template <bool Const, typename View>
 class GMAC_LOCAL _base_ptr_t {
-    friend class _base_ptr_t<false, Ptr, Aspace, D>;
-    friend class _base_ptr_t<true,  Ptr, Aspace, D>;
+    friend class _base_ptr_t<false, View>;
+    friend class _base_ptr_t<true,  View>;
 
 protected:
-    typedef typename static_union<Const, host_const_ptr, host_ptr>::type HPtr;
+#if 0
+    typedef typename static_union<Const,          // Condition
+                                  host_const_ptr, // If true
+                                  host_ptr        // If false
+                                  >::type HPtr;
+#endif
+    View *view_;
+    size_t offset_;
 
-    Aspace *aspace_;
-
-    HPtr ptrHost_;
-    Ptr ptrDev_;
+    //HPtr ptrHost_;
+    //Ptr ptrDev_;
 
 public:
     static const char *address_fmt;
     static const char *offset_fmt;
 
-    typedef HPtr address_type;
+    //typedef HPtr address_type;
     typedef size_t offset_type;
 
-    typedef Ptr backend_ptr;
-    typedef typename Ptr::backend_type backend_type;
+    //typedef Ptr backend_ptr;
+    //typedef typename Ptr::backend_type backend_type;
 
-    inline
     bool is_const() const
     {
         return Const;
     }
 
-    inline
     _base_ptr_t() :
-        aspace_(0),
-        ptrHost_(0),
-        ptrDev_(0)
+        view_(nullptr),
+        offset_(0)
     {
     }
 
-    inline
-    _base_ptr_t(Ptr ptr, Aspace *aspace) :
-        aspace_(aspace),
-        ptrHost_(0),
-        ptrDev_(ptr)
+    // TODO check if view has to be a reference
+    explicit _base_ptr_t(View *view, size_t offset = 0) :
+        view_(view),
+        offset_(offset)
     {
-        ASSERTION(aspace != NULL);
+        ASSERTION(view != NULL);
     }
 
-    inline
-    explicit _base_ptr_t(host_ptr ptr, Aspace *aspace) :
-        aspace_(aspace),
-        ptrHost_(ptr),
-        ptrDev_(0)
-    {
-        ASSERTION(aspace != NULL);
-    }
-
+#if 0
     template <bool Const2 = Const>
-    inline
-    explicit _base_ptr_t(typename std::enable_if<Const2, host_const_ptr>::type ptr, Aspace *aspace) :
-        aspace_(aspace),
+    explicit _base_ptr_t(typename std::enable_if<Const2, host_const_ptr>::type ptr, View *view) :
+        view_(view),
         ptrHost_(ptr),
         ptrDev_(0)
     {
         ASSERTION(aspace != NULL);
     }
+#endif
 
-    inline
     _base_ptr_t(const _base_ptr_t &ptr) :
-        aspace_(ptr.aspace_),
-        ptrHost_(ptr.ptrHost_),
-        ptrDev_(ptr.ptrDev_)
+        view_(ptr.view_),
+        offset_(ptr.offset_)
     {
     }
 
     template <bool Const2>
-    inline
-    _base_ptr_t(const _base_ptr_t<Const2, Ptr, Aspace, D> &ptr) :
-        aspace_(ptr.aspace_),
-        ptrHost_(ptr.ptrHost_),
-        ptrDev_(ptr.ptrDev_)
+    _base_ptr_t(const _base_ptr_t<Const2, View> &ptr) :
+        view_(ptr.view_),
+        offset_(ptr.offset_)
     {
+        static_assert(Const || !Const2, "Cannot create non-const pointer from const pointer");
     }
 
-    inline
     operator bool() const
     {
-        return (this->get_aspace() != NULL);
+        return (view_ != NULL);
     }
 
     template <bool Const2>
-    inline
     _base_ptr_t &
-    operator=(const typename std::enable_if<!Const && Const2, _base_ptr_t<Const2, Ptr, Aspace, D> >::type &ptr)
+    operator=(const _base_ptr_t<Const2, View> &ptr)
     {
+        static_assert(Const || !Const2, "Cannot assign const pointer to non-const pointer");
+
         if (this != &ptr) {
-            ptrHost_ = ptr.ptrHost_;
-            ptrDev_ = ptr.ptrDev_;
-            aspace_ = ptr.aspace_;
+            view_   = ptr.view_;
+            offset_ = ptr.offset_;
         }
         return *this;
     }
 
     template <bool Const2>
-    inline
     bool
-    operator==(const _base_ptr_t<Const2, Ptr, Aspace, D> &ptr) const
+    operator==(const _base_ptr_t<Const2, View> &ptr) const
     {
-        ASSERTION(ptr.aspace_ == this->aspace_, "Comparing pointers from different address spaces");
-        bool ret;
-        if (is_host_ptr()) {
-            ret = (this->ptrHost_ == ptr.ptrHost_);
-        } else {
-            ret = (ptrDev_ == ptr.ptrDev_);
-        }
-        return ret;
+        ASSERTION(ptr.view_.get_vaspace() == this->view_.get_vaspace(), "Comparing pointers from different address spaces");
+
+        return (ptr.view_ == view_) && (offset_ == offset_);
     }
 
     template <bool Const2>
-    inline
     bool
-    operator!=(const _base_ptr_t<Const2, Ptr, Aspace, D> &ptr) const
+    operator!=(const _base_ptr_t<Const2, View> &ptr) const
     {
         return !(*this == ptr);
     }
 
     template <bool Const2>
-    inline
     bool
-    operator<(const _base_ptr_t<Const2, Ptr, Aspace, D> &ptr) const
+    operator<(const _base_ptr_t<Const2, View> &ptr) const
     {
-        ASSERTION(ptr.aspace_ == this->aspace_, "Comparing pointers from different address spaces");
+        ASSERTION(ptr.view_ == this->view_, "Comparing pointers from different views");
 
-        bool ret;
-        if (is_host_ptr()) {
-            return this->ptrHost_ < ptr.ptrHost_;
-        } else {
-            return ptrDev_  < ptr.ptrDev_;
-        }
-        return ret;
+        return offset_ < ptr.offset_;
     }
 
     template <bool Const2>
-    inline
     bool
-    operator<=(const _base_ptr_t<Const2, Ptr, Aspace, D> &ptr) const
+    operator<=(const _base_ptr_t<Const2, View> &ptr) const
     {
-        ASSERTION(ptr.aspace_ == this->aspace_, "Comparing pointers from different address spaces");
+        ASSERTION(ptr.view_ == this->view_, "Comparing pointers from different views");
 
-        bool ret;
-        if (is_host_ptr()) {
-            return this->ptrHost_ <= ptr.ptrHost_;
-        } else {
-            return ptrDev_  <= ptr.ptrDev_;
-        }
-        return ret;
+        return offset_ <= ptr.offset_;
     }
 
     template <bool Const2>
-    inline
     bool
-    operator>(const _base_ptr_t<Const2, Ptr, Aspace, D> &ptr) const
+    operator>(const _base_ptr_t<Const2, View> &ptr) const
     {
-        ASSERTION(ptr.aspace_ == this->aspace_, "Comparing pointers from different address spaces");
+        ASSERTION(ptr.view_ == this->view_, "Comparing pointers from different views");
 
-        bool ret;
-        if (is_host_ptr()) {
-            return this->ptrHost_ > ptr.ptrHost_;
-        } else {
-            return ptrDev_  > ptr.ptrDev_;
-        }
-        return ret;
+        return offset_ > ptr.offset_;
     }
 
     template <bool Const2>
-    inline
     bool
-    operator>=(const _base_ptr_t<Const2, Ptr, Aspace, D> &ptr) const
+    operator>=(const _base_ptr_t<Const2, View> &ptr) const
     {
-        ASSERTION(ptr.aspace_ == this->aspace_, "Comparing pointers from different address spaces");
+        ASSERTION(ptr.view_ == this->view_, "Comparing pointers from different views");
 
-        bool ret;
-        if (is_host_ptr()) {
-            return this->ptrHost_ >= ptr.ptrHost_;
-        } else {
-            return this->ptrDev_  >= ptr.ptrDev_;
-        }
-        return ret;
-
+        return offset_ >= ptr.offset_;
     }
 
     template <typename T>
-    inline
     _base_ptr_t &
     operator+=(const T &off)
     {
-        if (is_host_ptr()) {
-            this->ptrHost_ += off;
-        } else {
-            this->ptrDev_ += off;
-        }
+        ASSERTION(offset_ + off < view_->get_object().get_size(), "Out of view boundaries");
+        
+        offset_ += off;
+
         return *this;
     }
 
     template <typename T>
-    inline
     const _base_ptr_t
     operator+(const T &off) const
     {
         _base_ptr_t ret(*this);
+
+        // operator+= performs the check for view boundaries
         ret += off;
+
         return ret;
     }
 
     template <typename T>
-    inline
     _base_ptr_t &
     operator++() const
     {
+        // operator+= performs the check for view boundaries
         *this += 1;
         return *this;
     }
 
     template <typename T>
-    inline
     _base_ptr_t
     operator++(int dummy) const
     {
         _base_ptr_t ret(*this);
+        // operator+= performs the check for view boundaries
         *this += 1;
         return ret;
     }
 
     template <typename T>
-    inline
     _base_ptr_t &
     operator-=(const T &off)
     {
-        if (is_host_ptr()) {
-            ASSERTION(this->ptrHost_ >= host_ptr(long_t(off)));
-            this->ptrHost_ -= off;
-        } else {
-            this->ptrDev_ -= off;
+        if (off > 0) {
+            ASSERTION(offset_ >= size_t(off), "Out of view boundaries");
+        } else if (off < 0) {
+            ASSERTION(offset_ - off < view_->get_object().get_size(), "Out of view boundaries");
         }
-        return *this;
-    }
 
-#if 0
-    template <>
-    _base_ptr_t &
-    operator-=(const _base_ptr_t &ptr)
-    {
-        ASSERTION(aspace_ == ptr.aspace_);
-        if (is_host_ptr()) {
-            ptrHost_ -= ptr.ptrHost_;
-        } else {
-            ASSERTION(get_base()   == ptr.get_base());
-            ASSERTION(get_offset() >  ptr.get_offset());
-            ptrDev_ -= ptr.get_offset();
-        }
+        offset_ -= off;
 
         return *this;
     }
-#endif
 
     template <typename T>
-    inline
     const _base_ptr_t
     operator-(const T &off) const
     {
         _base_ptr_t ret(*this);
+
+        // operator-= performs the check for view boundaries
         ret -= off;
         return ret;
     }
 
     template <typename T>
-    inline
-    const _base_ptr_t
+    ptrdiff_t
     operator-(const _base_ptr_t &ptr) const
     {
-        ASSERTION(aspace_ == ptr.aspace_);
-        _base_ptr_t ret(*this);
+        ASSERTION(ptr.view_ == this->view_, "Subtracting pointers from different views");
 
-        if (is_host_ptr()) {
-            ret.ptrHost_ -= ptr.ptrHost_;
-        } else {
-            ASSERTION(get_base()   == ptr.get_base());
-            ASSERTION(get_offset() >  ptr.get_offset());
-            ret.ptrDev_ -= ptr.get_offset();
-        }
-
-        return ret;
+        return offset_ - ptr.offset_;
     }
 
     template <typename T>
-    inline
     _base_ptr_t &
     operator--() const
     {
+        // operator-= performs the check for view boundaries
         *this -= 1;
         return *this;
     }
 
     template <typename T>
-    inline
     _base_ptr_t
     operator--(int dummy) const
     {
         _base_ptr_t ret(*this);
+        // operator-= performs the check for view boundaries
         *this -= 1;
         return ret;
     }
 
-    inline
+#if 0
     typename Ptr::backend_type
     get_base() const
     {
         ASSERTION(is_device_ptr());
         return this->ptrDev_.get_base();
     }
+#endif
+    View &
+    get_view()
+    {
+        ASSERTION(view_);
+        return *view_;
+    }
 
+    const View &
+    get_view() const
+    {
+        ASSERTION(view_);
+        return *view_;
+    }
+
+#if 0
     template <bool Const2 = Const>
-    inline
     typename std::enable_if<Const2, host_const_ptr>::type
     get_host_addr() const
     {
@@ -411,13 +402,13 @@ public:
     }
 
     template <bool Const2 = Const>
-    inline
     typename std::enable_if<!Const2, host_ptr>::type
     get_host_addr() const
     {
         ASSERTION(is_host_ptr());
         return this->ptrHost_;
     }
+#endif
 
 #if 0
     host_ptr_t
@@ -431,60 +422,64 @@ public:
     }
 #endif
 
-    inline
     size_t
     get_offset() const
     {
-        ASSERTION(is_device_ptr());
-        return this->ptrDev_.offset();
+        return offset_;
     }
 
 #if 0
     template <bool Const2 = Const>
-    inline
     typename std::enable_if<!Const2, Aspace>::type *
     get_aspace()
     {
         return aspace_;
     }
-#endif
 
-    inline
-    Aspace *
+    decltype(view_->get_vaspace()) &
     get_aspace()
     {
-        return aspace_;
+        ASSERTION(view_);
+        return &view_->get_vaspace();
     }
 
-    inline
+    const decltype(view_->get_vaspace()) &
+    get_aspace() const
+    {
+        ASSERTION(view_);
+        return &view_->get_vaspace();
+    }
+#endif
+
+
+#if 0
     const Aspace *
     get_aspace() const
     {
         return aspace_;
     }
 
-    inline
     bool
     is_host_ptr() const
     {
-        D &d = this->aspace_->get_device();
-        return d.get_type() == D::DEVICE_TYPE_CPU;
+        auto &o = view_->get_object();
+        return o.get_type() == D::PUNIT_TYPE_CPU;
     }
 
-    inline
     bool
     is_device_ptr() const
     {
-        D &d = this->aspace_->get_device();
-        return d.get_type() != D::DEVICE_TYPE_CPU;
+        D &d = this->aspace_->get_processing_unit();
+        return d.get_type() != D::PUNIT_TYPE_CPU;
     }
+#endif
 };
 
 #if 0
 template <>
 template <>
-_base_ptr_t<true, Ptr, Aspace, D> &
-_base_ptr_t<true, Ptr, Aspace, D>::operator-=(const _base_ptr_t<Const, Ptr, Aspace, D> &ptr)
+_base_ptr_t<true, Ptr, Aspace> &
+_base_ptr_t<true, Ptr, Aspace>::operator-=(const _base_ptr_t<Const, Ptr, Aspace> &ptr)
 {
     ASSERTION(aspace_ == ptr.aspace_);
     if (is_host_ptr()) {
@@ -499,88 +494,62 @@ _base_ptr_t<true, Ptr, Aspace, D>::operator-=(const _base_ptr_t<Const, Ptr, Aspa
 }
 #endif
 
-template <bool Const, typename Ptr, typename Aspace, typename D>
-const char *_base_ptr_t<Const, Ptr, Aspace, D>::address_fmt = "%p";
+template <bool Const, typename View>
+const char *_base_ptr_t<Const, View>::address_fmt = "%p";
 
-template <bool Const, typename Ptr, typename Aspace, typename D>
-const char *_base_ptr_t<Const, Ptr, Aspace, D>::offset_fmt = FMT_SIZE;
+template <bool Const, typename View>
+const char *_base_ptr_t<Const, View>::offset_fmt = FMT_SIZE;
 
 
-template <typename Ptr, typename Aspace, typename D>
+template <typename View>
 class GMAC_LOCAL _const_ptr_t :
-    public _base_ptr_t<true, Ptr, Aspace, D> {
-    typedef _base_ptr_t<true, Ptr, Aspace, D> parent;
-    typedef _base_ptr_t<false, Ptr, Aspace, D> parent_noconst;
+    public _base_ptr_t<true, View> {
+    typedef _base_ptr_t<true, View> parent;
+    typedef _base_ptr_t<false, View> parent_noconst;
 
 public:
-    inline
     _const_ptr_t() :
         parent()
     {
     }
 
-    inline
-    _const_ptr_t(Ptr ptr, Aspace *aspace) :
-        parent(ptr, aspace)
+    explicit _const_ptr_t(View *view, size_t offset = 0) :
+        parent(view, offset)
     {
     }
 
-    inline
-    explicit _const_ptr_t(host_const_ptr ptr, Aspace *aspace) :
-        parent(ptr, aspace)
-    {
-    }
-
-    inline
-    explicit _const_ptr_t(host_ptr ptr, Aspace *aspace) :
-        parent(ptr, aspace)
-    {
-    }
-
-    inline
     _const_ptr_t(const parent &ptr) :
         parent(ptr)
     {
     }
 
-    inline
     _const_ptr_t(const parent_noconst &ptr) :
         parent(ptr)
     {
     }
 };
 
-template <typename Ptr, typename Aspace, typename D>
+template <typename View>
 class GMAC_LOCAL _ptr_t :
-    public _base_ptr_t<false, Ptr, Aspace, D> {
-    typedef _base_ptr_t<false, Ptr, Aspace, D> parent;
+    public _base_ptr_t<false, View> {
+    typedef _base_ptr_t<false, View> parent;
 
 public:
-    inline
     _ptr_t() :
         parent()
     {
     }
 
-    inline
-    _ptr_t(Ptr ptr, Aspace *aspace) :
-        parent(ptr, aspace)
+    explicit _ptr_t(View *view, size_t offset = 0) :
+        parent(view, offset)
     {
     }
 
-    inline
-    explicit _ptr_t(host_ptr ptr, Aspace *aspace) :
-        parent(ptr, aspace)
-    {
-    }
-
-    inline
     _ptr_t(const _ptr_t &ptr) :
         parent(ptr)
     {
     }
 
-    inline
     _ptr_t(const parent &ptr) :
         parent(ptr)
     {
@@ -589,38 +558,30 @@ public:
     static _ptr_t null;
 };
 
-
-template <typename Ptr, typename Aspace, typename D>
-_ptr_t<Ptr, Aspace, D> _ptr_t<Ptr, Aspace, D>::null = _ptr_t();
+template <typename View>
+_ptr_t<View> _ptr_t<View>::null = _ptr_t();
 
 }}
 
+#if 0
 #ifdef USE_CUDA
-#include "cuda/ptr.h"
+#include "hal/cuda/ptr.h"
 #else
-#include "opencl/ptr.h"
+#include "hal/opencl/ptr.h"
+#endif
 #endif
 
-namespace __impl { namespace hal { namespace detail {
-class aspace;
-class device;
-}}}
+#include "virt/object.h"
 
 namespace __impl { namespace hal {
 typedef __impl::hal::_ptr_t<
-                            _cuda_ptr_t,
-                            detail::aspace,
-                            detail::device
-                            > ptr;
+                               detail::virt::object_view
+                           > ptr;
 
 typedef __impl::hal::_const_ptr_t<
-                                   _cuda_ptr_t,
-                                   detail::aspace,
-                                   detail::device
+                                     detail::virt::object_view
                                  > const_ptr;
 }}
-
-//#include "ptr-impl.h"
 
 #endif /* PTR_H */
 
