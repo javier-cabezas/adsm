@@ -6,39 +6,44 @@
 
 #include "gtest/gtest.h"
 
-static __impl::hal::device *device;
-static __impl::hal::aspace *as1;
-static __impl::hal::aspace *as2;
+namespace I_HAL = __impl::hal;
+
+static I_HAL::phys::processing_unit *pUnit;
+static I_HAL::phys::platform::set_aspace::value_type pas1;
+static I_HAL::virt::aspace *as1;
+static I_HAL::virt::aspace *as2;
 
 void
 mapping_test::SetUpTestCase()
 {
     // Inititalize platform
-    gmacError_t err = __impl::hal::init();
+    gmacError_t err = I_HAL::init();
     ASSERT_TRUE(err == gmacSuccess);
     // Get platforms
-    __impl::hal::list_platform platforms = __impl::hal::get_platforms();
+    I_HAL::phys::list_platform platforms = I_HAL::phys::get_platforms();
     ASSERT_TRUE(platforms.size() > 0);
-    // Get devices
-    __impl::hal::platform::list_device devices = platforms.front()->get_devices(__impl::hal::device::DEVICE_TYPE_GPU);
-    ASSERT_TRUE(devices.size() > 0);
-    device = devices.front();
+    // Get processing units
+    I_HAL::phys::platform::set_processing_unit pUnits = platforms.front()->get_processing_units(I_HAL::phys::processing_unit::PUNIT_TYPE_GPU);
+    ASSERT_TRUE(pUnits.size() > 0);
+    pUnit = *pUnits.begin();
+    I_HAL::phys::platform::set_aspace pAspaces = pUnit->get_paspaces();
+    pas1 = *pAspaces.begin();
     // Create address spaces
-    as1 = device->create_aspace(__impl::hal::device::None, err);
+    as1 = pas1->create_vaspace(err);
     ASSERT_TRUE(err == gmacSuccess);
-    as2 = device->create_aspace(__impl::hal::device::None, err);
+    as2 = pas1->create_vaspace(err);
     ASSERT_TRUE(err == gmacSuccess);
 }
 
 void mapping_test::TearDownTestCase()
 {
     gmacError_t err;
-    err = device->destroy_aspace(*as1);
+    err = pas1->destroy_vaspace(*as1);
     ASSERT_TRUE(err == gmacSuccess);
-    err = device->destroy_aspace(*as2);
+    err = pas1->destroy_vaspace(*as2);
     ASSERT_TRUE(err == gmacSuccess);
 
-    __impl::hal::fini();
+    I_HAL::fini();
 }
 
 typedef __impl::util::bounds<ptr> alloc;

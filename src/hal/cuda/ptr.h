@@ -37,32 +37,29 @@ WITH THE SOFTWARE.  */
 #include <cstdio>
 #include <cuda.h>
 
-#include "hal/ptr.h"
-
 namespace __impl { namespace hal {
 
-class _cuda_ptr_t {
+#if 0
+class _cuda_ptr_t : backend_ptr_t {
 private:
-    CUdeviceptr base_;
     size_t off_;
 
 public:
     typedef CUdeviceptr backend_type;
 
-    inline explicit
+    explicit
     _cuda_ptr_t(CUdeviceptr ptr) :
-        base_(ptr),
+        backend_ptr_t(ptr),
         off_(0)
     {
     }
 
-    inline
     operator CUdeviceptr() const
     {
         return base_ + off_;
     }
 
-    inline _cuda_ptr_t &
+    _cuda_ptr_t &
     operator=(const _cuda_ptr_t &ptr)
     {
         if (this != &ptr) {
@@ -72,79 +69,74 @@ public:
         return *this;
     }
 
-    inline bool
+    bool
     operator==(const _cuda_ptr_t &ptr) const
     {
         return this->base_ == ptr.base_ &&
                this->off_  == ptr.off_;
     }
 
-    inline bool
+#if 0
+    bool
     operator!=(const _cuda_ptr_t &ptr) const
     {
         return this->base_ != ptr.base_ ||
                this->off_  != ptr.off_;
     }
+#endif
 
-    inline bool
+    bool
     operator<(const _cuda_ptr_t &ptr) const
     {
         return base_ < ptr.base_ || (base_ == ptr.base_ && off_ < ptr.off_);
     }
 
-    inline bool
+    bool
     operator<=(const _cuda_ptr_t &ptr) const
     {
         return base_ < ptr.base_ || (base_ == ptr.base_ && off_ <= ptr.off_);
     }
 
-    inline bool
+    bool
     operator>(const _cuda_ptr_t &ptr) const
     {
         return base_ > ptr.base_ || (base_ == ptr.base_ && off_ > ptr.off_);
     }
 
-    inline bool
+    bool
     operator>=(const _cuda_ptr_t &ptr) const
     {
         return base_ > ptr.base_ || (base_ == ptr.base_ && off_ >= ptr.off_);
     }
 
-    template <typename T>
-    inline _cuda_ptr_t &
-    operator+=(const T &off)
+    _cuda_ptr_t &
+    operator+=(const ptrdiff_t &off)
     {
         off_ += off;
         return *this;
     }
 
-    template <typename T>
-    inline _cuda_ptr_t &
-    operator-=(const T &off)
+    _cuda_ptr_t &
+    operator-=(const ptrdiff_t &off)
     {
         ASSERTION(T(off_) >= off);
         off_ -= off;
         return *this;
     }
 
-    inline CUdeviceptr
-    get_base() const
-    {
-        return base_;
-    }
-
-    inline void *
+    void *
     get() const
     {
         return (void *)(base_ + off_);
     }
 
-    inline size_t
+    size_t
     offset() const
     {
         return off_;
     }
 };
+#endif
 
 }}
 

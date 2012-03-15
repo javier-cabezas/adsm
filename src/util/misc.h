@@ -34,6 +34,11 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_UTIL_MISC_H_
 #define GMAC_UTIL_MISC_H_
 
+#include <algorithm>
+#include <list>
+
+#include "config/common.h"
+
 namespace __impl { namespace util {
 
 template <typename S>
@@ -109,6 +114,44 @@ public:
         return ret;
     }
 };
+
+namespace algo {
+
+template <typename C, typename F>
+inline
+void for_each(C &c, F &&f)
+{
+    std::for_each(c.begin(), c.end(), f);
+}
+
+template <typename C, typename F>
+inline
+bool
+has_predicate(C &&c, F &&f)
+{
+    return std::find_if(c.begin(), c.end(), f) != c.end();
+}
+
+template <typename C, typename F>
+inline
+//decltype(std::find(typename C::iterator, typename C::iterator, F))
+typename C::iterator
+find(C &&c, F &&f)
+{
+    return std::find_if(c.begin(), c.end(), f);
+}
+
+#if 0
+template <typename C, typename F>
+inline
+decltype(std::count_if(typename C::iterator, typename C::iterator, F))
+count_if(C &&c, F &&f)
+{
+    return std::count_if(c.begin(), c.end(), f);
+}
+#endif
+
+}
 
 }}
 

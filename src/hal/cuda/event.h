@@ -5,8 +5,6 @@
 #include <driver_types.h>
 #include <vector_types.h>
 
-#include "hal/types-detail.h"
-
 #include "trace/logger.h"
 
 #include "util/unique.h"
@@ -15,8 +13,14 @@ namespace __impl { namespace hal {
     
 namespace cuda {
 
+namespace virt {
+    class aspace;
+}
+
+class stream;
+
 class GMAC_LOCAL _event_common_t {
-    friend class aspace;
+    friend class virt::aspace;
     friend class device;
     friend class kernel;
     friend class kernel_cpu;
@@ -44,16 +48,16 @@ class GMAC_LOCAL _event_t :
     public _event_common_t,
     public util::unique<_event_t> {
 
-    friend class aspace;
+    friend class virt::aspace;
 
     typedef hal::detail::_event parent;
 
 protected:
     virtual void reset(bool async, type t);
 
-    _event_t(bool async, parent::type t, aspace &context);
+    _event_t(bool async, parent::type t, virt::aspace &context);
 public:
-    aspace &get_aspace();
+    virt::aspace &get_vaspace();
 
     gmacError_t sync();
 
@@ -69,91 +73,7 @@ public:
 
 static
 event_ptr
-create_event(bool async, _event_t::type t, aspace &as);
-
-#if 0
-class GMAC_LOCAL event_ptr {
-    friend class aspace;
-    friend class kernel;
-
-private:
-    util::shared_ptr<_event_t> ptrEvent_;
-
-    event_ptr(bool async, _event_t::type t, aspace &context);
-
-    inline
-    void reset()
-    {
-        ptrEvent_.reset();
-    }
-public:
-    typedef _event_t event_type;
-    typedef _event_t::type type;
-
-    inline
-    event_ptr()
-    {
-    }
-
-#ifdef USE_CXX0X
-    inline
-    event_ptr(event_ptr &&event) :
-        ptrEvent_(std::move(event.ptrEvent_))
-    {
-    }
-#endif
-
-    inline
-    event_ptr(const event_ptr &event) :
-        ptrEvent_(event.ptrEvent_)
-    {
-    }
-
-    inline
-    event_ptr &operator=(const event_ptr &event)
-    {
-        if (&event != this) {
-            ptrEvent_ = event.ptrEvent_;
-        }
-
-        return *this;
-    }
-
-#ifdef USE_CXX0X
-    inline
-    event_ptr &operator=(event_ptr &&event)
-    {
-        ptrEvent_ = std::move(event.ptrEvent_);
-        return *this;
-    }
-#endif
-
-    inline
-    operator bool() const
-    {
-        return bool(ptrEvent_);
-    }
-
-    _event_t *operator->()
-    {
-        return ptrEvent_.get();
-    }
-
-    _event_t &operator*()
-    {
-        return *ptrEvent_.get();
-    }
-
-    template <typename F>
-    inline
-    void add_trigger(F fun)
-    {
-        ASSERTION(bool(ptrEvent_));
-
-        ptrEvent_->add_trigger(fun);
-    }
-};
-#endif
+create_event(bool async, _event_t::type t, virt::aspace &as);
 
 typedef hal::detail::event_ptr hal_event_ptr;
 typedef hal::detail::list_event list_event_detail;
@@ -164,7 +84,7 @@ class GMAC_LOCAL list_event :
     protected std::list<event_ptr> {
     typedef std::list<event_ptr> parent;
 
-    friend class aspace;
+    friend class virt::aspace;
     friend class kernel;
 
     void set_barrier(hal_stream &stream);

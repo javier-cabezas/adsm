@@ -80,6 +80,8 @@ private:
     mutable std::string idPrint_;
 
 public:
+    typedef R id_type;
+
     unique();
 
     R get_id() const;

@@ -4,7 +4,7 @@
 namespace __impl { namespace hal { namespace detail {
 
 inline
-_event::_event(bool async, type t, aspace &as) :
+_event::_event(bool async, type t, virt::aspace &as) :
     gmac::util::lock_rw<_event>("_event"),
     aspace_(as),
     async_(async),
@@ -16,8 +16,8 @@ _event::_event(bool async, type t, aspace &as) :
 }
 
 inline
-aspace &
-_event::get_aspace()
+virt::aspace &
+_event::get_vaspace()
 {
     return aspace_;
 }

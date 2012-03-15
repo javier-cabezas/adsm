@@ -7,8 +7,11 @@
 
 #include "gtest/gtest.h"
 
-static __impl::hal::device *device = NULL;
-static __impl::hal::aspace *as1    = NULL;
+namespace I_HAL = __impl::hal;
+
+static I_HAL::phys::processing_unit *pUnit;
+static I_HAL::phys::platform::set_aspace::value_type pas1;
+static I_HAL::virt::aspace *as1;
 static manager *mgr = NULL;
 
 static ptr::backend_type BASE_ADDR = 0x0000;
@@ -31,30 +34,32 @@ void
 manager_mapping_test::SetUpTestCase()
 {
     // Inititalize platform
-    gmacError_t err = __impl::hal::init();
+    gmacError_t err = I_HAL::init();
     ASSERT_TRUE(err == gmacSuccess);
     // Get platforms
-    __impl::hal::list_platform platforms = __impl::hal::get_platforms();
+    I_HAL::phys::list_platform platforms = I_HAL::phys::get_platforms();
     ASSERT_TRUE(platforms.size() > 0);
-    // Get devices
-    __impl::hal::platform::list_device devices = platforms.front()->get_devices(__impl::hal::device::DEVICE_TYPE_GPU);
-    ASSERT_TRUE(devices.size() > 0);
-    device = devices.front();
+    // Get processing units
+    I_HAL::phys::platform::set_processing_unit pUnits = platforms.front()->get_processing_units(I_HAL::phys::processing_unit::PUNIT_TYPE_GPU);
+    ASSERT_TRUE(pUnits.size() > 0);
+    pUnit = *pUnits.begin();
+    I_HAL::phys::platform::set_aspace pAspaces = pUnit->get_paspaces();
+    pas1 = *pAspaces.begin();
     mgr = new manager();
     // Create address space
-    as1 = device->create_aspace(__impl::hal::device::None, err);
+    as1 = pas1->create_vaspace(err);
     ASSERT_TRUE(err == gmacSuccess);
 }
 
 void manager_mapping_test::TearDownTestCase()
 {
     gmacError_t err;
-    err = device->destroy_aspace(*as1);
+    err = pas1->destroy_vaspace(*as1);
     ASSERT_TRUE(err == gmacSuccess);
 
     delete mgr;
 
-    __impl::hal::fini();
+    I_HAL::fini();
 }
 
 static ptr         p0, p1, p2, p3, p4, p5;
@@ -433,7 +438,7 @@ TEST_F(manager_mapping_test, merge_mappings)
     range_fini();
 }
 
-static __impl::hal::aspace *as2 = NULL;
+static I_HAL::virt::aspace *as2 = NULL;
 static ptr as1_p0,  as1_p1,  as1_p2;
 static ptr as1_p0b, as1_p1b, as1_p2b;
 static ptr as2_p0,  as2_p1,  as2_p2;
@@ -456,7 +461,7 @@ static void link_init()
     gmacError_t err;
 
     // Create additional address space
-    as2 = device->create_aspace(__impl::hal::device::None, err);
+    as2 = pas1->create_vaspace(err);
     ASSERT_TRUE(err == gmacSuccess);
 
     // We use the same base allocation
@@ -484,7 +489,7 @@ static void link_fini()
     ASSERT_TRUE(berr);
 
     gmacError_t err;
-    err = device->destroy_aspace(*as2);
+    err = pas1->destroy_vaspace(*as2);
     ASSERT_TRUE(err == gmacSuccess);
 }
 

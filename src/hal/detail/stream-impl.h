@@ -1,21 +1,17 @@
-#ifndef GMAC_HAL_STREAM_IMPL_H_
-#define GMAC_HAL_STREAM_IMPL_H_
+#ifndef GMAC_HAL_DETAIL_IMPL_H_
+#define GMAC_HAL_DETAIL_IMPL_H_
 
 namespace __impl { namespace hal { namespace detail {
 
 inline
-stream::stream(aspace &as) :
-#if 0
-    lockBuffer_("lock_buffer"),
-    buffer_(NULL),
-#endif
+stream::stream(virt::aspace &as) :
     gmac::util::spinlock<stream>("stream"),
     aspace_(as)
 {
 }
 
 inline
-aspace &
+virt::aspace &
 stream::get_aspace()
 {
     return aspace_;

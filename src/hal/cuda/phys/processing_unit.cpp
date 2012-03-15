@@ -1,13 +1,17 @@
 #include "trace/logger.h"
 
 #include "hal/types.h"
-#include "device.h"
+#include "aspace.h"
+#include "platform.h"
+#include "processing_unit.h"
 
-namespace __impl { namespace hal { namespace cuda {
+namespace __impl { namespace hal { namespace cuda { namespace phys {
 
-device::device(CUdevice cudaDevice, platform &plat, coherence_domain &coherenceDomain) :
-    parent(parent::DEVICE_TYPE_GPU, plat, coherenceDomain),
-    lock("device"),
+processing_unit::processing_unit(CUdevice cudaDevice, platform &plat,
+                                 hal_processing_unit::set_memory_connection &memories,
+                                 hal_processing_unit::set_aspace &aspaces) :
+    parent(parent::PUNIT_TYPE_GPU, plat, memories, aspaces),
+    lock("processing_unit"),
     cudaDevice_(cudaDevice),
     isInfoInitialized_(false)
 {
@@ -22,48 +26,10 @@ device::device(CUdevice cudaDevice, platform &plat, coherence_domain &coherenceD
     integrated_ = (val != 0);
 }
 
-hal_aspace *
-device::create_aspace(const set_siblings &siblings, gmacError_t &err)
-{
-    CUcontext ctx, tmp;
-    unsigned int flags = 0;
-#if CUDA_VERSION >= 2020
-    if(major_ >= 2 || (major_ == 1 && minor_ >= 1)) flags |= CU_CTX_MAP_HOST;
-#else
-    TRACE(LOCAL,"Host mapped memory not supported by the HW");
-#endif
-    CUresult res = cuCtxCreate(&ctx, flags, cudaDevice_);
-    if(res != CUDA_SUCCESS)
-        FATAL("Unable to create CUDA context %d", res);
-    res = cuCtxPopCurrent(&tmp);
-    ASSERTION(res == CUDA_SUCCESS);
-
-#ifdef USE_PEER_ACCESS
-    for (set_siblings::iterator it = siblings.begin(); it != siblings.end(); ++it) {
-        
-    }
-#endif
-
-    err = error(res);
-
-    return aspace::create<aspace>(ctx, *this);
-}
-
-gmacError_t
-device::destroy_aspace(hal_aspace &_as)
-{
-    aspace &as = reinterpret_cast<aspace &>(_as);
-    CUresult ret = cuCtxDestroy(as());
-
-    aspace::destroy(as);
-
-    return error(ret);
-}
-
 hal_stream *
-device::create_stream(hal_aspace &_as)
+processing_unit::create_stream(virt::hal_aspace &_as)
 {
-    aspace &as = reinterpret_cast<aspace &>(_as);
+    virt::aspace &as = reinterpret_cast<virt::aspace &>(_as);
     as.set(); 
 
     CUstream s;
@@ -74,7 +40,7 @@ device::create_stream(hal_aspace &_as)
 }
 
 gmacError_t
-device::destroy_stream(hal_stream &_s)
+processing_unit::destroy_stream(hal_stream &_s)
 {
     stream &s = reinterpret_cast<stream &>(_s);
     CUresult ret = cuStreamDestroy(s());
@@ -83,56 +49,51 @@ device::destroy_stream(hal_stream &_s)
     return error(ret);
 }
 
+CUdevice
+processing_unit::get_cuda_id() const
+{
+    return cudaDevice_;
+}
+
 int
-device::get_major() const
+processing_unit::get_major() const
 {
     return major_;
 }
 
 int
-device::get_minor() const
+processing_unit::get_minor() const
 {
     return minor_;
 }
 
 size_t
-device::get_total_memory() const
+processing_unit::get_total_memory() const
 {
     size_t total, dummy;
     CUresult ret = cuMemGetInfo(&dummy, &total);
-    CFATAL(ret == CUDA_SUCCESS, "Error getting device memory size: %d", ret);
+    CFATAL(ret == CUDA_SUCCESS, "Error getting processing unit memory size: %d", ret);
     return total;
 }
 
 size_t
-device::get_free_memory() const
+processing_unit::get_free_memory() const
 {
     size_t free, dummy;
     CUresult ret = cuMemGetInfo(&free, &dummy);
-    CFATAL(ret == CUDA_SUCCESS, "Error getting device memory size: %d", ret);
+    CFATAL(ret == CUDA_SUCCESS, "Error getting processing unit memory size: %d", ret);
     return free;
 }
 
 bool
-device::has_direct_copy(const hal_device&_dev) const
+processing_unit::has_direct_copy(const hal_processing_unit &pUnit) const
 {
-#if 0
-    const device &dev = reinterpret_cast<const device &>(_dev);
-    int canAccess;
-    if (this->get_platform().get_id() == dev.get_platform().get_id()) {
-        CUresult ret = cuDeviceCanAccessPeer(&canAccess, cudaDevice_, dev.cudaDevice_);
-        ASSERTION(ret == CUDA_SUCCESS, "Error querying devices");
-    } else {
-        canAccess = 0;
-    }
-
-    return canAccess == 1;
-#endif
+    FATAL("Not implemented");
     return true;
 }
 
 gmacError_t
-device::get_info(GmacDeviceInfo &info)
+processing_unit::get_info(GmacDeviceInfo &info)
 {
     lock::lock();
     if (!isInfoInitialized_) {
@@ -143,7 +104,7 @@ device::get_info(GmacDeviceInfo &info)
 
         info_.deviceName = deviceName;
         info_.vendorName = "NVIDIA Corporation";
-        info_.deviceType = GMAC_DEVICE_TYPE_GPU;
+        info_.deviceType = GMAC_PUNIT_TYPE_GPU;
         info_.vendorId = 1;
         info_.isAvailable = 1;
         
@@ -244,6 +205,6 @@ cpu::get_info(GmacDeviceInfo &info)
 }
 #endif
 
-}}}
+}}}}
 
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

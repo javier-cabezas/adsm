@@ -29,7 +29,7 @@ namespace __impl { namespace hal {
 event_ptr 
 copy(ptr dst, const_ptr src, size_t count, stream &stream, list_event &_dependencies, gmacError_t &err)
 {
-    event_ptr ret = dst.get_aspace()->copy(dst, src, count, stream, &_dependencies, err);
+    event_ptr ret = dst.get_view().get_vaspace().copy(dst, src, count, stream, &_dependencies, err);
     if (err == gmacSuccess) {
         _dependencies.set_synced();
     }
@@ -43,7 +43,7 @@ copy(ptr dst, const_ptr src, size_t count, stream &stream, event_ptr event, gmac
     list_event list;
     list.add_event(event);
 
-    event_ptr ret = dst.get_aspace()->copy(dst, src, count, stream, &list, err);
+    event_ptr ret = dst.get_view().get_vaspace().copy(dst, src, count, stream, &list, err);
     if (err == gmacSuccess) {
         event->set_synced();
     }
@@ -54,13 +54,13 @@ copy(ptr dst, const_ptr src, size_t count, stream &stream, event_ptr event, gmac
 event_ptr 
 copy(ptr dst, const_ptr src, size_t count, stream &stream, gmacError_t &err)
 {
-    return dst.get_aspace()->copy(dst, src, count, stream, NULL, err);
+    return dst.get_view().get_vaspace().copy(dst, src, count, stream, NULL, err);
 }
 
 event_ptr
 copy(ptr dst, device_input &input, size_t count, stream &stream, list_event &_dependencies, gmacError_t &err)
 {
-    event_ptr ret = dst.get_aspace()->copy(dst, input, count, stream, &_dependencies, err);
+    event_ptr ret = dst.get_view().get_vaspace().copy(dst, input, count, stream, &_dependencies, err);
     if (err == gmacSuccess) {
         _dependencies.set_synced();
     }
@@ -74,7 +74,7 @@ copy(ptr dst, device_input &input, size_t count, stream &stream, event_ptr event
     list_event list;
     list.add_event(event);
 
-    event_ptr ret = dst.get_aspace()->copy(dst, input, count, stream, &list, err);
+    event_ptr ret = dst.get_view().get_vaspace().copy(dst, input, count, stream, &list, err);
     if (err == gmacSuccess) {
         event->set_synced();
     }
@@ -85,13 +85,13 @@ copy(ptr dst, device_input &input, size_t count, stream &stream, event_ptr event
 event_ptr
 copy(ptr dst, device_input &input, size_t count, stream &stream, gmacError_t &err)
 {
-    return dst.get_aspace()->copy(dst, input, count, stream, NULL, err);
+    return dst.get_view().get_vaspace().copy(dst, input, count, stream, NULL, err);
 }
 
 event_ptr
 copy(device_output &output, const_ptr src, size_t count, stream &stream, list_event &_dependencies, gmacError_t &err)
 {
-    event_ptr ret = src.get_aspace()->copy(output, src, count, stream, &_dependencies, err);
+    event_ptr ret = src.get_view().get_vaspace().copy(output, src, count, stream, &_dependencies, err);
     if (err == gmacSuccess) {
         _dependencies.set_synced();
     }
@@ -105,7 +105,7 @@ copy(device_output &output, const_ptr src, size_t count, stream &stream, event_p
     list_event list;
     list.add_event(event);
 
-    event_ptr ret = src.get_aspace()->copy(output, src, count, stream, &list, err);
+    event_ptr ret = src.get_view().get_vaspace().copy(output, src, count, stream, &list, err);
     if (err == gmacSuccess) {
         event->set_synced();
     }
@@ -116,13 +116,13 @@ copy(device_output &output, const_ptr src, size_t count, stream &stream, event_p
 event_ptr
 copy(device_output &output, const_ptr src, size_t count, stream &stream, gmacError_t &err)
 {
-    return src.get_aspace()->copy(output, src, count, stream, NULL, err);
+    return src.get_view().get_vaspace().copy(output, src, count, stream, NULL, err);
 }
 
 event_ptr 
 copy_async(ptr dst, const_ptr src, size_t count, stream &stream, list_event &_dependencies, gmacError_t &err)
 {
-    event_ptr ret = dst.get_aspace()->copy_async(dst, src, count, stream, &_dependencies, err);
+    event_ptr ret = dst.get_view().get_vaspace().copy_async(dst, src, count, stream, &_dependencies, err);
     if (err == gmacSuccess) {
         _dependencies.set_synced();
     }
@@ -136,7 +136,7 @@ copy_async(ptr dst, const_ptr src, size_t count, stream &stream, event_ptr event
     list_event list;
     list.add_event(event);
 
-    event_ptr ret = dst.get_aspace()->copy_async(dst, src, count, stream, &list, err);
+    event_ptr ret = dst.get_view().get_vaspace().copy_async(dst, src, count, stream, &list, err);
     if (err == gmacSuccess) {
         event->set_synced();
     }
@@ -147,13 +147,13 @@ copy_async(ptr dst, const_ptr src, size_t count, stream &stream, event_ptr event
 event_ptr 
 copy_async(ptr dst, const_ptr src, size_t count, stream &stream, gmacError_t &err)
 {
-    return dst.get_aspace()->copy_async(dst, src, count, stream, NULL, err);
+    return dst.get_view().get_vaspace().copy_async(dst, src, count, stream, NULL, err);
 }
 
 event_ptr
 copy_async(ptr dst, device_input &input, size_t count, stream &stream, list_event &_dependencies, gmacError_t &err)
 {
-    event_ptr ret = dst.get_aspace()->copy_async(dst, input, count, stream, &_dependencies, err);
+    event_ptr ret = dst.get_view().get_vaspace().copy_async(dst, input, count, stream, &_dependencies, err);
     if (err == gmacSuccess) {
         _dependencies.set_synced();
     }
@@ -167,7 +167,7 @@ copy_async(ptr dst, device_input &input, size_t count, stream &stream, event_ptr
     list_event list;
     list.add_event(event);
 
-    event_ptr ret = dst.get_aspace()->copy_async(dst, input, count, stream, &list, err);
+    event_ptr ret = dst.get_view().get_vaspace().copy_async(dst, input, count, stream, &list, err);
     if (err == gmacSuccess) {
         event->set_synced();
     }
@@ -178,13 +178,13 @@ copy_async(ptr dst, device_input &input, size_t count, stream &stream, event_ptr
 event_ptr
 copy_async(ptr dst, device_input &input, size_t count, stream &stream, gmacError_t &err)
 {
-    return dst.get_aspace()->copy_async(dst, input, count, stream, NULL, err);
+    return dst.get_view().get_vaspace().copy_async(dst, input, count, stream, NULL, err);
 }
 
 event_ptr
 copy_async(device_output &output, const_ptr src, size_t count, stream &stream, list_event &_dependencies, gmacError_t &err)
 {
-    event_ptr ret = src.get_aspace()->copy_async(output, src, count, stream, &_dependencies, err);
+    event_ptr ret = src.get_view().get_vaspace().copy_async(output, src, count, stream, &_dependencies, err);
     if (err == gmacSuccess) {
         _dependencies.set_synced();
     }
@@ -198,7 +198,7 @@ copy_async(device_output &output, const_ptr src, size_t count, stream &stream, e
     list_event list;
     list.add_event(event);
 
-    event_ptr ret = src.get_aspace()->copy_async(output, src, count, stream, &list, err);
+    event_ptr ret = src.get_view().get_vaspace().copy_async(output, src, count, stream, &list, err);
     if (err == gmacSuccess) {
         event->set_synced();
     }
@@ -209,13 +209,13 @@ copy_async(device_output &output, const_ptr src, size_t count, stream &stream, e
 event_ptr
 copy_async(device_output &output, const_ptr src, size_t count, stream &stream, gmacError_t &err)
 {
-    return src.get_aspace()->copy_async(output, src, count, stream, NULL, err);
+    return src.get_view().get_vaspace().copy_async(output, src, count, stream, NULL, err);
 }
 
 event_ptr 
 memset(ptr dst, int c, size_t count, stream &stream, list_event &_dependencies, gmacError_t &err)
 {
-    event_ptr ret = dst.get_aspace()->memset(dst, c, count, stream, &_dependencies, err);
+    event_ptr ret = dst.get_view().get_vaspace().memset(dst, c, count, stream, &_dependencies, err);
     if (err == gmacSuccess) {
         _dependencies.set_synced();
     }
@@ -229,7 +229,7 @@ memset(ptr dst, int c, size_t count, stream &stream, event_ptr event, gmacError_
     list_event list;
     list.add_event(event);
 
-    event_ptr ret = dst.get_aspace()->memset(dst, c, count, stream, &list, err);
+    event_ptr ret = dst.get_view().get_vaspace().memset(dst, c, count, stream, &list, err);
     if (err == gmacSuccess) {
         event->set_synced();
     }
@@ -240,13 +240,13 @@ memset(ptr dst, int c, size_t count, stream &stream, event_ptr event, gmacError_
 event_ptr 
 memset(ptr dst, int c, size_t count, stream &stream, gmacError_t &err)
 {
-    return dst.get_aspace()->memset(dst, c, count, stream, NULL, err);
+    return dst.get_view().get_vaspace().memset(dst, c, count, stream, NULL, err);
 }
 
 event_ptr 
 memset_async(ptr dst, int c, size_t count, stream &stream, list_event &_dependencies, gmacError_t &err)
 {
-    event_ptr ret = dst.get_aspace()->memset_async(dst, c, count, stream, &_dependencies, err);
+    event_ptr ret = dst.get_view().get_vaspace().memset_async(dst, c, count, stream, &_dependencies, err);
     if (err == gmacSuccess) {
         _dependencies.set_synced();
     }
@@ -260,7 +260,7 @@ memset_async(ptr dst, int c, size_t count, stream &stream, event_ptr event, gmac
     list_event list;
     list.add_event(event);
 
-    event_ptr ret = dst.get_aspace()->memset_async(dst, c, count, stream, &list, err);
+    event_ptr ret = dst.get_view().get_vaspace().memset_async(dst, c, count, stream, &list, err);
     if (err == gmacSuccess) {
         event->set_synced();
     }
@@ -271,7 +271,7 @@ memset_async(ptr dst, int c, size_t count, stream &stream, event_ptr event, gmac
 event_ptr 
 memset_async(ptr dst, int c, size_t count, stream &stream, gmacError_t &err)
 {
-    return dst.get_aspace()->memset_async(dst, c, count, stream, NULL, err);
+    return dst.get_view().get_vaspace().memset_async(dst, c, count, stream, NULL, err);
 }
 
 }}

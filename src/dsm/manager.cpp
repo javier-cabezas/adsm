@@ -5,7 +5,7 @@
 namespace __impl { namespace dsm {
 
 void
-manager::event_handler(hal::aspace &aspace, util::event::construct)
+manager::event_handler(hal::virt::aspace &aspace, util::event::construct)
 {
     TRACE(LOCAL, FMT_ID2" Handle "FMT_ID2" creation", get_print_id2(), aspace.get_print_id2());
 
@@ -14,7 +14,7 @@ manager::event_handler(hal::aspace &aspace, util::event::construct)
 }
 
 void
-manager::event_handler(hal::aspace &aspace, util::event::destruct)
+manager::event_handler(hal::virt::aspace &aspace, util::event::destruct)
 {
     TRACE(LOCAL, FMT_ID2" Handle "FMT_ID2" destruction", get_print_id2(), aspace.get_print_id2());
 
@@ -27,7 +27,7 @@ manager::event_handler(hal::aspace &aspace, util::event::destruct)
 }
 
 manager::map_mapping_group &
-manager::get_aspace_mappings(hal::aspace &aspace)
+manager::get_aspace_mappings(hal::virt::aspace &aspace)
 {
     map_mapping_group *ret;
 
@@ -49,28 +49,28 @@ mapping_fits(manager::map_mapping &map, mapping_ptr m)
 error
 manager::insert_mapping(map_mapping_group &mappings, mapping_ptr m)
 {
-    map_mapping_group::iterator it = mappings.find(m->get_ptr().get_base());
+    map_mapping_group::iterator it = mappings.find(&m->get_ptr().get_view());
 
     if (it == mappings.end()) {
         map_mapping map;
         map.insert(map_mapping::value_type(m->get_ptr().get_offset() + m->get_bounds().get_size(), m));
-        mappings.insert(map_mapping_group::value_type(m->get_ptr().get_base(), map));
+        mappings.insert(map_mapping_group::value_type(&m->get_ptr().get_view(), map));
         TRACE(LOCAL, FMT_ID2" Inserting "FMT_ID2" in "FMT_ID2,
                      get_print_id2(),
                      m->get_print_id2(),
-                     m->get_ptr().get_aspace()->get_print_id2());
+                     m->get_ptr().get_view().get_vaspace().get_print_id2());
     } else {
         if (mapping_fits(it->second, m)) {
             it->second.insert(map_mapping::value_type(m->get_ptr().get_offset() + m->get_bounds().get_size(), m));
             TRACE(LOCAL, FMT_ID2" Inserting "FMT_ID2" in "FMT_ID2,
                          get_print_id2(),
                          m->get_print_id2(),
-                         m->get_ptr().get_aspace()->get_print_id2());
+                         m->get_ptr().get_view().get_vaspace().get_print_id2());
         } else {
             TRACE(LOCAL, FMT_ID2" NOT Inserting "FMT_ID2" in "FMT_ID2,
                          get_print_id2(),
                          m->get_print_id2(),
-                         m->get_ptr().get_aspace()->get_print_id2());
+                         m->get_ptr().get_view().get_vaspace().get_print_id2());
             return DSM_ERROR_INVALID_VALUE;
         }
     }
@@ -80,7 +80,7 @@ manager::insert_mapping(map_mapping_group &mappings, mapping_ptr m)
 
 template <typename R>
 static std::string
-get_range_string(R &range)
+get_range_string(const R &range)
 {
     bool first = true;
     std::ostringstream s;
@@ -101,7 +101,7 @@ manager::merge_mappings(range_mapping &range)
 {
     TRACE(LOCAL, FMT_ID2" Merging range (%s)", get_print_id2(), get_range_string(range).c_str());
 
-    ASSERTION(!range.is_empty());
+    ASSERTION(!range.is_empty(), "Merging an empty range of mappings");
 
     range_mapping::iterator it = range.begin();
     mapping_ptr ret = factory_mapping::create(std::move(**it));
@@ -123,12 +123,11 @@ manager::replace_mappings(map_mapping_group &mappings, range_mapping &range, map
                  get_range_string(range).c_str(),
                  mNew->get_print_id2());
 
-    ASSERTION(!range.is_empty());
+    ASSERTION(!range.is_empty(), "Replacing an empty range of mappings");
 
-    ASSERTION((*range.begin())->get_ptr().get_base() == mNew->get_ptr().get_base());
-    ASSERTION((*range.begin())->get_ptr().get_aspace() == mNew->get_ptr().get_aspace());
+    ASSERTION(&(*range.begin())->get_ptr().get_view() == &mNew->get_ptr().get_view());
 
-    map_mapping_group::iterator it = mappings.find(mNew->get_ptr().get_base());
+    map_mapping_group::iterator it = mappings.find(&mNew->get_ptr().get_view());
     ASSERTION(it != mappings.end());
 
     it->second.erase(range.begin().base(), range.end().base());
@@ -158,7 +157,7 @@ manager::delete_mappings(map_mapping_group &mappings)
 manager::manager() :
     observer_construct(),
     observer_destruct(),
-    AttributeMappings_(hal::aspace::register_attribute())
+    AttributeMappings_(hal::virt::aspace::register_attribute())
 {
     TRACE(LOCAL, FMT_ID2" Creating", get_print_id2());
 }
@@ -174,7 +173,7 @@ manager::link(hal::ptr dst, hal::ptr src, size_t count, int flags)
     TRACE(LOCAL, FMT_ID2" Link "FMT_SIZE" bytes", get_print_id2(), count);
 
     // Pointers must belong to different address spaces
-    CHECK(dst.get_aspace() != src.get_aspace(), DSM_ERROR_INVALID_PTR);
+    CHECK(&dst.get_view().get_vaspace() != &src.get_view().get_vaspace(), DSM_ERROR_INVALID_PTR);
 
     // Alignment checks
     CHECK(long_t(dst.get_offset()) % mapping::MinAlignment == 0, DSM_ERROR_INVALID_ALIGNMENT);
@@ -183,11 +182,11 @@ manager::link(hal::ptr dst, hal::ptr src, size_t count, int flags)
     // Link size must be greater than 0
     CHECK(count > 0, DSM_ERROR_INVALID_VALUE);
 
-    hal::aspace *ctxDst = dst.get_aspace();
-    hal::aspace *ctxSrc = src.get_aspace();
+    hal::virt::aspace &ctxDst = dst.get_view().get_vaspace();
+    hal::virt::aspace &ctxSrc = src.get_view().get_vaspace();
 
-    map_mapping_group &mappingsDst = get_aspace_mappings(*ctxDst);
-    map_mapping_group &mappingsSrc = get_aspace_mappings(*ctxSrc);
+    map_mapping_group &mappingsDst = get_aspace_mappings(ctxDst);
+    map_mapping_group &mappingsSrc = get_aspace_mappings(ctxSrc);
 
     range_mapping rangeDst = get_mappings_in_range<false>(mappingsDst, dst, count);
     range_mapping rangeSrc = get_mappings_in_range<false>(mappingsSrc, src, count);

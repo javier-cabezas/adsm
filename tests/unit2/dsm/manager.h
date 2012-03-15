@@ -37,8 +37,8 @@ public:
     typedef parent::map_mapping_group map_mapping_group;
 
     // Forward protected functions
-    static void aspace_created(manager *m, __impl::hal::aspace &aspace);
-    static void aspace_destroyed(manager *m, __impl::hal::aspace &aspace);
+    static void aspace_created(manager *m, __impl::hal::virt::aspace &aspace);
+    static void aspace_destroyed(manager *m, __impl::hal::virt::aspace &aspace);
 
     template <bool IsOpen>
     range_mapping
@@ -48,7 +48,7 @@ public:
     }
 
     map_mapping_group &
-    get_aspace_mappings(__impl::hal::aspace &aspace)
+    get_aspace_mappings(__impl::hal::virt::aspace &aspace)
     {
         return parent::get_aspace_mappings(aspace);
     }
@@ -113,7 +113,7 @@ public:
     // Helper functions //
     //////////////////////
     bool
-    helper_insert(__impl::hal::aspace &as, mapping_ptr m)
+    helper_insert(__impl::hal::virt::aspace &as, mapping_ptr m)
     {
         error_dsm ret;
 
@@ -124,7 +124,7 @@ public:
     }
 
     bool
-    helper_delete_mappings(__impl::hal::aspace &as)
+    helper_delete_mappings(__impl::hal::virt::aspace &as)
     {
         parent::map_mapping_group &group = parent::get_aspace_mappings(as);
 
@@ -132,11 +132,11 @@ public:
     }
 
     parent::map_mapping &
-    helper_get_mappings(__impl::hal::aspace &as, ptr::backend_type p)
+    helper_get_mappings(__impl::hal::virt::aspace &as, __impl::hal::virt::object_view &view)
     {
         parent::map_mapping_group &group = parent::get_aspace_mappings(as);
 
-        parent::map_mapping_group::iterator it = group.find(p);
+        parent::map_mapping_group::iterator it = group.find(&view);
         ASSERTION(it != group.end());
 
         return it->second;
@@ -145,7 +145,7 @@ public:
     __impl::dsm::mapping_ptr
     helper_get_mapping(ptr p)
     {
-        parent::map_mapping_group &group = parent::get_aspace_mappings(*p.get_aspace());
+        parent::map_mapping_group &group = parent::get_aspace_mappings(p.get_view().get_vaspace());
 
         parent::range_mapping range = parent::get_mappings_in_range<false>(group, p, 1);
         if (range.is_empty()) {

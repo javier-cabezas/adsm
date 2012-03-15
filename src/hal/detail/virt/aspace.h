@@ -1,5 +1,5 @@
-#ifndef GMAC_HAL_TYPES_ASPACE_H_
-#define GMAC_HAL_TYPES_ASPACE_H_
+#ifndef GMAC_HAL_DETAIL_VIRT_ASPACE_H_
+#define GMAC_HAL_DETAIL_VIRT_ASPACE_H_
 
 #include <list>
 #include <queue>
@@ -11,11 +11,19 @@
 #include "util/locked_counter.h"
 #include "util/trigger.h"
 
-#include "ptr.h"
+#include "hal/detail/ptr.h"
 
-namespace __impl { namespace hal {
+namespace __impl { namespace hal { namespace detail {
 
-namespace detail {
+class _event;
+class kernel;
+class stream;
+class list_event;
+typedef util::shared_ptr<_event> event_ptr;
+
+namespace virt {
+
+class aspace;
 
 template <typename T>
 class GMAC_LOCAL map_pool :
@@ -89,13 +97,6 @@ public:
     }
 };
 
-class aspace;
-class _event;
-class kernel;
-class stream;
-class list_event;
-typedef util::shared_ptr<_event> event_ptr;
-
 class GMAC_LOCAL buffer {
 public:
     enum type {
@@ -160,7 +161,8 @@ private:
 protected:
     typedef util::locked_counter<unsigned, gmac::util::spinlock<aspace> > buffer_counter;
 
-    device &device_;
+    phys::processing_unit &pu_;
+    phys::aspace &pas_;
 
     static const unsigned &MaxBuffersIn_;
     static const unsigned &MaxBuffersOut_;
@@ -190,18 +192,29 @@ protected:
     virtual buffer *alloc_buffer(size_t size, GmacProtection hint, stream &stream, gmacError_t &err) = 0;
     virtual gmacError_t free_buffer(buffer &buffer) = 0;
 
-    aspace(device &device);
+    aspace(phys::processing_unit &pu, phys::aspace &pas, gmacError_t &err);
     virtual ~aspace();
 
 public:
-    device &get_device();
-    const device &get_device() const;
+    phys::processing_unit &get_processing_unit();
+    const phys::processing_unit &get_processing_unit() const;
 
-    virtual ptr alloc(size_t size, gmacError_t &err) = 0;
-    virtual ptr alloc_host_pinned(size_t size, GmacProtection hint, gmacError_t &err) = 0;
+    phys::aspace &get_paspace();
+    const phys::aspace &get_paspace() const;
+
+    //virtual ptr alloc(size_t size, gmacError_t &err) = 0;
+    //virtual ptr alloc_host_pinned(size_t size, GmacProtection hint, gmacError_t &err) = 0;
+    //virtual ptr map(size_t size, gmacError_t &err) = 0;
+
+    virtual ptr map(virt::object &obj, gmacError_t &err) = 0;
+    virtual ptr map(virt::object &obj, ptrdiff_t offset, gmacError_t &err) = 0;
 
     virtual gmacError_t free(ptr acc) = 0;
+#if 0
     virtual gmacError_t free_host_pinned(ptr ptr) = 0;
+#endif
+
+    virtual bool has_direct_copy(hal::const_ptr ptr1, hal::const_ptr ptr2) = 0;
 
     virtual code_repository &get_code_repository() = 0;
 
@@ -214,12 +227,11 @@ public:
     virtual event_ptr copy_async(hal::ptr dst, device_input &input, size_t count, stream &stream, list_event *dependencies, gmacError_t &err) = 0;
     virtual event_ptr copy_async(device_output &output, hal::const_ptr src, size_t count, stream &stream, list_event *dependencies, gmacError_t &err) = 0;
     virtual event_ptr memset_async(hal::ptr dst, int c, size_t count, stream &stream, list_event *dependencies, gmacError_t &err) = 0;
-
 };
 
 }
 
-}}
+}}}
 
 #endif /* ASPACE_H */
 

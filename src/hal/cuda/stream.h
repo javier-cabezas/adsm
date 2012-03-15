@@ -5,8 +5,6 @@
 #include <driver_types.h>
 #include <vector_types.h>
 
-#include "hal/types-detail.h"
-
 #include "util/unique.h"
 
 namespace __impl { namespace hal {
@@ -21,9 +19,9 @@ class GMAC_LOCAL stream :
     CUstream stream_;
 
 public:
-    stream(CUstream stream, aspace &as);
+    stream(CUstream stream, virt::aspace &as);
 
-    aspace &get_aspace();
+    virt::aspace &get_aspace();
 
     parent::state query();
     gmacError_t sync();

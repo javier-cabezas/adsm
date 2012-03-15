@@ -1,11 +1,12 @@
 set(hal_cuda_SRC
-    coherence_domain.h
-    coherence_domain.cpp
-    device.h
-    device.cpp
-    aspace.h
-    aspace-impl.h
-    aspace.cpp
+    phys/aspace.h
+    phys/aspace.cpp
+    phys/processing_unit.h
+    phys/processing_unit.cpp
+    phys/platform.h
+    virt/aspace.h
+    virt/aspace-impl.h
+    virt/aspace.cpp
     event.h
     event-impl.h
     event.cpp
@@ -14,8 +15,6 @@ set(hal_cuda_SRC
     module.h
     module-impl.h
     module.cpp
-    platform.h
-    platform-impl.h
     ptr.h
     stream.h
     stream-impl.h

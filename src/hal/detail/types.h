@@ -55,38 +55,19 @@ public:
     virtual bool write(void *ptr, size_t count) = 0;
 };
 
-namespace detail {
- 
-template <typename CD, typename PL, typename D, typename C, typename S, typename K, typename T, typename V, typename R, typename E, typename EP, typename EL, typename B, typename P, typename PC>
-struct GMAC_LOCAL implementation_traits
-{
-    typedef CD coherence_domain;
-    typedef PL platform;
-    typedef D device;
-    typedef C context;
-    typedef S stream;
-    typedef K kernel;
-    typedef T texture;
-    typedef V variable;
-    typedef R code_repository;
-    typedef E event;
-    typedef EP event_ptr;
-    typedef EL event_list;
-    typedef B buffer;
-    typedef P ptr;
-    typedef PC ptr_const;
-};
-
-}
-
 }}
 
+#include "phys/memory.h"
+#include "phys/aspace.h"
+#include "phys/processing_unit.h"
 #include "stream.h"
-#include "aspace.h"
+#include "virt/aspace.h"
 #include "kernel.h"
 #include "event.h"
 
-#include "aspace-impl.h"
+#include "phys/memory-impl.h"
+#include "phys/processing_unit-impl.h"
+#include "virt/aspace-impl.h"
 #include "stream-impl.h"
 #include "kernel-impl.h"
 #include "event-impl.h"

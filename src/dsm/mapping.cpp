@@ -191,7 +191,7 @@ mapping::append(mapping &&map)
                  get_print_id2(), map.get_print_id2());
 
     if ((map.addr_.get_offset()  <  (addr_.get_offset() + size_)) ||
-        (map.addr_.get_aspace() !=  (addr_.get_aspace()))) {
+        (&map.addr_.get_view() !=  &addr_.get_view())) {
         return DSM_ERROR_INVALID_VALUE;
     }
 

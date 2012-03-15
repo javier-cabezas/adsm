@@ -5,10 +5,10 @@
 #include <driver_types.h>
 #include <vector_types.h>
 
-#include "hal/types-detail.h"
-
 #include "util/ReusableObject.h"
 #include "util/unique.h"
+
+#include "types.h"
 
 namespace __impl { namespace hal {
     
