@@ -10,6 +10,11 @@
 
 namespace __impl { namespace hal {
     
+class list_platform;
+class platform;
+
+list_platform get_platforms();
+
 namespace detail {
     
 namespace virt {
@@ -21,21 +26,20 @@ class stream;
 namespace phys {
 
 class aspace;
-typedef util::shared_ptr<aspace> aspace_ptr;
-
 class coherence_domain;
 class memory;
 class platform;
 
 class GMAC_LOCAL processing_unit :
     public util::unique<processing_unit> {
+    friend list_platform hal::get_platforms();
 public:
     struct memory_connection {
-        memory_ptr mem;
+        memory *mem;
         unsigned long latency;
 
-        memory_connection(memory_ptr _mem, unsigned long _latency) :
-            mem(_mem),
+        memory_connection(memory &_mem, unsigned long _latency) :
+            mem(&_mem),
             latency(_latency)
         {
         }
@@ -49,7 +53,7 @@ public:
     };
 
     typedef std::set<memory_connection> set_memory_connection;
-    typedef std::set<aspace_ptr>        set_aspace;
+    typedef std::set<aspace *>          set_aspace;
 
     enum type {
         PUNIT_TYPE_CPU = 0,
@@ -60,15 +64,16 @@ protected:
     bool integrated_;
     type type_;
 
-    set_memory_connection memories_;
+    set_memory_connection connections_;
     set_aspace aspaces_;
 
-    processing_unit(type t, platform &platform,
-                    set_memory_connection &memories,
-                    set_aspace &aspaces);
+    processing_unit(type t, platform &platform);
 public:
     virtual stream *create_stream(virt::aspace &as) = 0;
     virtual gmacError_t destroy_stream(stream &stream) = 0;
+
+    void add_memory_connection(const memory_connection &connection);
+    void add_paspace(aspace &as);
 
     platform &get_platform();
     const platform &get_platform() const;
@@ -79,7 +84,7 @@ public:
     bool is_integrated() const;
     type get_type() const;
 
-    bool has_access(memory_ptr mem, memory_connection &connection);
+    bool has_access(const memory &mem, memory_connection &connection);
 
     virtual size_t get_total_memory() const = 0;
     virtual size_t get_free_memory() const = 0;

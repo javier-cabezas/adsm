@@ -19,7 +19,6 @@ namespace phys {
     class platform;
     class aspace;
     typedef hal::detail::phys::memory     memory;
-    typedef hal::detail::phys::memory_ptr memory_ptr;
 }
 
 namespace virt {

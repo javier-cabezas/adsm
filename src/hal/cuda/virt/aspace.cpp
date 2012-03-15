@@ -12,7 +12,7 @@ is_host_ptr(Ptr &&p)
 {
     detail::virt::object &o = p.get_view().get_object();
 
-    detail::phys::memory &m = *o.get_memory();
+    const detail::phys::memory &m = o.get_memory();
 
     return util::algo::has_predicate(m.get_attached_units(),
                                      [](detail::phys::processing_unit *pu) -> bool
@@ -27,7 +27,7 @@ is_device_ptr(Ptr &&p)
 {
     detail::virt::object &o = p.get_view().get_object();
 
-    detail::phys::memory &m = *o.get_memory();
+    const detail::phys::memory &m = o.get_memory();
 
     return util::algo::has_predicate(m.get_attached_units(),
                                      [](const detail::phys::processing_unit *pu) -> bool

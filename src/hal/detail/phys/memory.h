@@ -15,6 +15,13 @@ class GMAC_LOCAL memory :
     typedef std::set<processing_unit *> set_processing_unit;
     set_processing_unit attachedUnits_;
 
+    friend class processing_unit;
+
+    void add_attached_unit(processing_unit &pu)
+    {
+        attachedUnits_.insert(&pu);
+    }
+
 public:
     memory(size_t size) :
         size_(size)
@@ -25,11 +32,6 @@ public:
     ~memory()
     {
         TRACE(LOCAL, FMT_ID2" Destroy", get_print_id2());
-    }
-
-    void add_attached_unit(processing_unit &pu)
-    {
-        attachedUnits_.insert(&pu);
     }
 
     const set_processing_unit &get_attached_units() const
@@ -44,9 +46,6 @@ public:
 
     //bool is_host_memory() const;
 };
-
-typedef util::shared_ptr<memory>       memory_ptr;
-typedef util::shared_ptr<const memory> memory_const_ptr;
 
 }}}}
 

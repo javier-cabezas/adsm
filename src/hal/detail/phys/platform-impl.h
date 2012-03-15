@@ -24,11 +24,11 @@ platform::add_processing_unit(processing_unit &pUnit)
 
 inline
 void
-platform::add_paspace(aspace_ptr as)
+platform::add_paspace(aspace &as)
 {
-    aspaces_.insert(as);
-    memories_.insert(as->get_memories().begin(),
-                     as->get_memories().end());
+    aspaces_.insert(&as);
+    memories_.insert(as.get_memories().begin(),
+                     as.get_memories().end());
 }
 
 inline

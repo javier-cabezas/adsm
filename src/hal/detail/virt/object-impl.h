@@ -5,7 +5,7 @@ namespace __impl { namespace hal { namespace detail {
     
 namespace virt {
 
-object::object(phys::memory_ptr location, size_t size) :
+object::object(phys::memory &location, size_t size) :
     memory_(location),
     size_(size)
 {
@@ -20,13 +20,7 @@ object::add_view(object_view &view)
     views_.insert(map_view::value_type(&view.get_vaspace(), &view));
 }
 
-phys::memory_ptr
-object::get_memory()
-{
-    return memory_;
-}
-
-phys::memory_const_ptr
+const phys::memory &
 get_memory() const
 {
     return memory_;
