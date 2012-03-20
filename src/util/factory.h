@@ -54,6 +54,11 @@ protected:
         S s(std::move(p));
         return s;
     }
+
+    static void destroy(T &p)
+    {
+        delete &p;
+    }
 };
 
 template <typename T>
@@ -70,6 +75,11 @@ protected:
     static T *create(T &&p)
     {
         return new T(std::move(p));
+    }
+    
+    static void destroy(T &p)
+    {
+        delete &p;
     }
 };
 

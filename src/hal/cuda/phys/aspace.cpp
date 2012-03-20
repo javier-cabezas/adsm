@@ -6,10 +6,11 @@
 namespace __impl { namespace hal { namespace cuda { namespace phys {
 
 virt::hal_aspace *
-aspace::create_vaspace(hal_processing_unit &pu, gmacError_t &err)  
+aspace::create_vaspace(aspace::set_processing_unit &compatibleUnits, gmacError_t &err)  
 {
-    ASSERTION(get_processing_units().find(&pu) != get_processing_units().end());
-    return virt::aspace::create<virt::aspace>(pu, *this, err);
+    //ASSERTION(get_processing_units().find(&pu) != get_processing_units().end());
+
+    return virt::aspace::create<virt::aspace>(compatibleUnits, *this, err);
 }
 
 gmacError_t

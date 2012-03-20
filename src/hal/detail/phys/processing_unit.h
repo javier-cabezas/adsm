@@ -63,23 +63,23 @@ protected:
     platform &platform_;
     bool integrated_;
     type type_;
+    aspace &as_;
 
     set_memory_connection connections_;
-    set_aspace aspaces_;
+    // set_aspace aspaces_;
 
-    processing_unit(type t, platform &platform);
+    processing_unit(type t, platform &platform, aspace &as);
 public:
     virtual stream *create_stream(virt::aspace &as) = 0;
     virtual gmacError_t destroy_stream(stream &stream) = 0;
 
     void add_memory_connection(const memory_connection &connection);
-    void add_paspace(aspace &as);
 
     platform &get_platform();
     const platform &get_platform() const;
 
-    set_aspace &get_paspaces();
-    const set_aspace &get_paspaces() const;
+    aspace &get_paspace();
+    const aspace &get_paspace() const;
 
     bool is_integrated() const;
     type get_type() const;

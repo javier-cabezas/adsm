@@ -103,12 +103,13 @@ aspace::put_memory(void *ptr, size_t size)
 }
 
 inline
-aspace::aspace(phys::processing_unit &pu, phys::aspace &pas, gmacError_t &err) :
-    pu_(pu),
+aspace::aspace(set_processing_unit &compatibleUnits, phys::aspace &pas, gmacError_t &err) :
+    pUnits_(compatibleUnits),
     pas_(pas),
     nBuffersIn_(0),
     nBuffersOut_(0)
 {
+    ASSERTION(compatibleUnits.size() > 0);
     err = gmacSuccess;
 }
 
@@ -118,17 +119,10 @@ aspace::~aspace()
 }
 
 inline
-phys::processing_unit &
-aspace::get_processing_unit()
+const aspace::set_processing_unit &
+aspace::get_processing_units() const
 {
-    return pu_;
-}
-
-inline
-const phys::processing_unit &
-aspace::get_processing_unit() const
-{
-    return pu_;
+    return pUnits_;
 }
 
 inline

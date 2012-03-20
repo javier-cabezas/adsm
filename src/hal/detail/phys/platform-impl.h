@@ -8,11 +8,17 @@ namespace __impl { namespace hal { namespace detail { namespace phys {
 inline
 platform::~platform()
 {
+    for (auto mem : memories_) {
+        delete mem;
+    }
+
     for (auto pUnit : pUnits_) {
         delete pUnit;
     }
 
-    pUnits_.clear();
+    for (auto as : aspaces_) {
+        delete as;
+    }
 }
 
 inline

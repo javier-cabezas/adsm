@@ -15,6 +15,7 @@ namespace __impl { namespace hal {
 
 namespace phys {
     typedef hal::detail::phys::aspace aspace;
+    typedef hal::detail::phys::memory memory;
     typedef hal::detail::phys::platform platform;
     typedef hal::detail::phys::processing_unit processing_unit;
 

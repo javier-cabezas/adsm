@@ -40,7 +40,7 @@ protected:
     bool isInfoInitialized_;
 
 public:
-    processing_unit(CUdevice cudaDevice, platform &plat);
+    processing_unit(CUdevice cudaDevice, platform &plat, aspace &as);
 
     hal_stream *create_stream(virt::hal_aspace &as);
     gmacError_t destroy_stream(hal_stream &stream);

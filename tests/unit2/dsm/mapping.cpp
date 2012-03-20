@@ -8,10 +8,16 @@
 
 namespace I_HAL = __impl::hal;
 
-static I_HAL::phys::processing_unit *pUnit;
-static I_HAL::phys::platform::set_aspace::value_type pas1;
+static I_HAL::phys::list_platform platforms;
+static I_HAL::phys::platform *plat0;
+static I_HAL::phys::platform::set_memory memories;
+static I_HAL::phys::platform::set_processing_unit pUnits;
+static I_HAL::phys::processing_unit *pUnit0;
+static I_HAL::phys::aspace *pas0;
+static I_HAL::virt::aspace *as0;
 static I_HAL::virt::aspace *as1;
-static I_HAL::virt::aspace *as2;
+
+static I_HAL::virt::object *obj0;
 
 void
 mapping_test::SetUpTestCase()
@@ -20,27 +26,30 @@ mapping_test::SetUpTestCase()
     gmacError_t err = I_HAL::init();
     ASSERT_TRUE(err == gmacSuccess);
     // Get platforms
-    I_HAL::phys::list_platform platforms = I_HAL::phys::get_platforms();
+    platforms = I_HAL::phys::get_platforms();
     ASSERT_TRUE(platforms.size() > 0);
+    plat0 = platforms.front();
     // Get processing units
-    I_HAL::phys::platform::set_processing_unit pUnits = platforms.front()->get_processing_units(I_HAL::phys::processing_unit::PUNIT_TYPE_GPU);
+    pUnits = plat0->get_processing_units(I_HAL::phys::processing_unit::PUNIT_TYPE_GPU);
     ASSERT_TRUE(pUnits.size() > 0);
-    pUnit = *pUnits.begin();
-    I_HAL::phys::platform::set_aspace pAspaces = pUnit->get_paspaces();
-    pas1 = *pAspaces.begin();
+    pUnit0 = *pUnits.begin();
+    pas0 = &pUnit0->get_paspace();
+
     // Create address spaces
-    as1 = pas1->create_vaspace(err);
+    I_HAL::phys::aspace::set_processing_unit compatibleUnits({ pUnit0 });
+    as0 = pas0->create_vaspace(compatibleUnits, err);
     ASSERT_TRUE(err == gmacSuccess);
-    as2 = pas1->create_vaspace(err);
+    as1 = pas0->create_vaspace(compatibleUnits, err);
     ASSERT_TRUE(err == gmacSuccess);
 }
 
 void mapping_test::TearDownTestCase()
 {
     gmacError_t err;
-    err = pas1->destroy_vaspace(*as1);
+
+    err = pas0->destroy_vaspace(*as0);
     ASSERT_TRUE(err == gmacSuccess);
-    err = pas1->destroy_vaspace(*as2);
+    err = pas0->destroy_vaspace(*as1);
     ASSERT_TRUE(err == gmacSuccess);
 
     I_HAL::fini();
@@ -50,10 +59,16 @@ typedef __impl::util::bounds<ptr> alloc;
 
 TEST_F(mapping_test, prepend_block)
 {
-    static const unsigned BASE_ADDR = 0x100;
-    static const unsigned OFFSET    = 0x400;
+    static const unsigned OFFSET = 0x400;
 
-    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), as1);
+    gmacError_t errHal;
+
+    obj0 = plat0->create_object(**pas0->get_memories().begin(), OFFSET, errHal);
+
+    ptr ptrBase = as0->map(*obj0, errHal);
+    ASSERT_TRUE(errHal == gmacSuccess);
+
+    ptr p0 = ptrBase + OFFSET;
 
     mapping_ptr m0 = new mapping(p0 + OFFSET);
 
@@ -71,16 +86,27 @@ TEST_F(mapping_test, prepend_block)
     ASSERT_TRUE(m0->get_bounds().get_size() == (b0->get_size() + b1->get_size()));
 
     delete m0;
+
+    errHal = as0->unmap(ptrBase);
+    ASSERT_TRUE(errHal == gmacSuccess);
+    errHal = plat0->destroy_object(*obj0);
+    ASSERT_TRUE(errHal == gmacSuccess);
 }
 
 TEST_F(mapping_test, prepend_block2)
 {
-    static const unsigned BASE_ADDR = 0x100;
-    static const unsigned OFFSET    = 0x400;
+    static const unsigned OFFSET = 0x400;
 
-    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), as1);
+    gmacError_t errHal;
 
-    mapping_ptr m0 = new mapping(p0 + OFFSET);
+    obj0 = plat0->create_object(**pas0->get_memories().begin(), OFFSET, errHal);
+
+    ptr ptrBase = as0->map(*obj0, errHal);
+    ASSERT_TRUE(errHal == gmacSuccess);
+
+    ptr p0 = ptrBase + OFFSET;
+
+    mapping_ptr m0 = new mapping(p0);
 
     block_ptr b0 = mapping::helper_create_block(0x100);
     block_ptr b1 = mapping::helper_create_block(0x400);
@@ -97,20 +123,38 @@ TEST_F(mapping_test, prepend_block2)
     ASSERT_TRUE(m0->get_bounds().get_size() == b0->get_size());
 
     delete m0;
+
+    errHal = as0->unmap(ptrBase);
+    ASSERT_TRUE(errHal == gmacSuccess);
+    errHal = plat0->destroy_object(*obj0);
+    ASSERT_TRUE(errHal == gmacSuccess);
 }
 
 TEST_F(mapping_test, append_block)
 {
-    static const unsigned BASE_ADDR = 0x100;
+    static const unsigned BLOCK_0_SIZE = 0x100;
+    static const unsigned BLOCK_1_SIZE = 0x400;
+    static const unsigned BLOCK_2_SIZE = 0x400;
+    static const unsigned BLOCK_3_SIZE = 0x000;
 
-    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), as1);
+    gmacError_t errHal;
+
+    obj0 = plat0->create_object(**pas0->get_memories().begin(), BLOCK_0_SIZE +
+                                                                BLOCK_1_SIZE +
+                                                                BLOCK_2_SIZE +
+                                                                BLOCK_3_SIZE, errHal);
+
+    ptr ptrBase = as0->map(*obj0, errHal);
+    ASSERT_TRUE(errHal == gmacSuccess);
+
+    ptr p0 = ptrBase;
 
     mapping_ptr m0 = new mapping(p0);
 
-    block_ptr b0 = mapping::helper_create_block(0x100);
-    block_ptr b1 = mapping::helper_create_block(0x400);
-    block_ptr b2 = mapping::helper_create_block(0x400);
-    block_ptr b3 = mapping::helper_create_block(0x000);
+    block_ptr b0 = mapping::helper_create_block(BLOCK_0_SIZE);
+    block_ptr b1 = mapping::helper_create_block(BLOCK_1_SIZE);
+    block_ptr b2 = mapping::helper_create_block(BLOCK_2_SIZE);
+    block_ptr b3 = mapping::helper_create_block(BLOCK_3_SIZE);
 
     error_dsm err;
 
@@ -135,15 +179,27 @@ TEST_F(mapping_test, append_block)
                                                 b2->get_size()));
 
     delete m0;
+
+    errHal = as0->unmap(ptrBase);
+    ASSERT_TRUE(errHal == gmacSuccess);
+    errHal = plat0->destroy_object(*obj0);
+    ASSERT_TRUE(errHal == gmacSuccess);
 }
 
 TEST_F(mapping_test, append_mapping)
 {
-    static const unsigned BASE_ADDR  = 0x100;
     static const unsigned BLOCK_SIZE = 0x300;
     static const unsigned OFFSET     = BLOCK_SIZE + 0x100;
 
-    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), as1);
+    gmacError_t errHal;
+
+    obj0 = plat0->create_object(**pas0->get_memories().begin(), BLOCK_SIZE +
+                                                                BLOCK_SIZE, errHal);
+
+    ptr ptrBase = as0->map(*obj0, errHal);
+    ASSERT_TRUE(errHal == gmacSuccess);
+
+    ptr p0 = ptrBase;
     ptr p1 = p0 + OFFSET;
 
     mapping_ptr m0 = new mapping(p0);
@@ -166,15 +222,27 @@ TEST_F(mapping_test, append_mapping)
 
     delete m0;
     delete m1;
+
+    errHal = as0->unmap(ptrBase);
+    ASSERT_TRUE(errHal == gmacSuccess);
+    errHal = plat0->destroy_object(*obj0);
+    ASSERT_TRUE(errHal == gmacSuccess);
 }
 
 TEST_F(mapping_test, append_mapping2)
 {
-    static const unsigned BASE_ADDR  = 0x100;
     static const unsigned BLOCK_SIZE = 0x300;
     static const unsigned OFFSET     = BLOCK_SIZE - 0x100;
 
-    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), as1);
+    gmacError_t errHal;
+
+    obj0 = plat0->create_object(**pas0->get_memories().begin(), BLOCK_SIZE +
+                                                                BLOCK_SIZE, errHal);
+
+    ptr ptrBase = as0->map(*obj0, errHal);
+    ASSERT_TRUE(errHal == gmacSuccess);
+
+    ptr p0 = ptrBase;
     ptr p1 = p0 + OFFSET;
 
     mapping_ptr m0 = new mapping(p0);
@@ -194,15 +262,27 @@ TEST_F(mapping_test, append_mapping2)
 
     delete m0;
     delete m1;
+
+    errHal = as0->unmap(ptrBase);
+    ASSERT_TRUE(errHal == gmacSuccess);
+    errHal = plat0->destroy_object(*obj0);
+    ASSERT_TRUE(errHal == gmacSuccess);
 }
 
 TEST_F(mapping_test, append_mapping3)
 {
-    static const unsigned BASE_ADDR  = 0x100;
     static const unsigned BLOCK_SIZE = 0x300;
     static const unsigned OFFSET     = BLOCK_SIZE;
 
-    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), as1);
+    gmacError_t errHal;
+
+    obj0 = plat0->create_object(**pas0->get_memories().begin(), BLOCK_SIZE +
+                                                                BLOCK_SIZE, errHal);
+
+    ptr ptrBase = as0->map(*obj0, errHal);
+    ASSERT_TRUE(errHal == gmacSuccess);
+
+    ptr p0 = ptrBase;
     ptr p1 = p0 + OFFSET;
 
     mapping_ptr m0 = new mapping(p0);
@@ -224,16 +304,27 @@ TEST_F(mapping_test, append_mapping3)
 
     delete m0;
     delete m1;
+
+    errHal = as0->unmap(ptrBase);
+    ASSERT_TRUE(errHal == gmacSuccess);
+    errHal = plat0->destroy_object(*obj0);
+    ASSERT_TRUE(errHal == gmacSuccess);
 }
 
 TEST_F(mapping_test, append_mapping4)
 {
-    static const unsigned BASE_ADDR  = 0x100;
     static const unsigned BLOCK_SIZE = 0x300;
     static const unsigned OFFSET     = BLOCK_SIZE;
 
-    ptr p0 = ptr(ptr::backend_ptr(BASE_ADDR), as1);
-    ptr p1 = ptr(ptr::backend_ptr(BASE_ADDR), as2);
+    gmacError_t errHal;
+
+    obj0 = plat0->create_object(**pas0->get_memories().begin(), BLOCK_SIZE +
+                                                                BLOCK_SIZE, errHal);
+
+    ptr p0 = as0->map(*obj0, errHal);
+    ASSERT_TRUE(errHal == gmacSuccess);
+    ptr p1 = as1->map(*obj0, errHal);
+    ASSERT_TRUE(errHal == gmacSuccess);
 
     mapping_ptr m0 = new mapping(p0);
     mapping_ptr m1 = new mapping(p1 + OFFSET);
@@ -252,5 +343,12 @@ TEST_F(mapping_test, append_mapping4)
 
     delete m0;
     delete m1;
+
+    errHal = as0->unmap(p0);
+    ASSERT_TRUE(errHal == gmacSuccess);
+    errHal = as1->unmap(p1);
+    ASSERT_TRUE(errHal == gmacSuccess);
+    errHal = plat0->destroy_object(*obj0);
+    ASSERT_TRUE(errHal == gmacSuccess);
 }
 

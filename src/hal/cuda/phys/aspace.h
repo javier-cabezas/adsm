@@ -22,7 +22,7 @@ public:
     {
     }
 
-    virt::hal_aspace *create_vaspace(hal_processing_unit &pu, gmacError_t &err);
+    virt::hal_aspace *create_vaspace(aspace::set_processing_unit &compatibleUnits, gmacError_t &err);
     gmacError_t destroy_vaspace(virt::hal_aspace &as);
 };
 

@@ -1,9 +1,56 @@
+#include <algorithm>
+
+#include "util/misc.h"
+
+#include "hal/detail/virt/object.h"
+
 #include "platform.h"
 
 namespace __impl { namespace hal { namespace detail { namespace phys {
 
+platform::set_memory
+platform::get_memories(const set_processing_unit &pUnits) const
+{
+    set_memory ret;
+
+    if (pUnits.size() > 0) {
+        set_aspace aspaces;
+        for (processing_unit * pUnit : pUnits ) {
+            aspaces.insert(&pUnit->get_paspace());
+        }
+
+        ret = get_memories(aspaces);
+    }
+
+    return ret;
+}
+
+platform::set_memory
+platform::get_memories(const set_aspace &aspaces) const
+{
+    set_memory ret;
+
+    if (aspaces.size() > 0) {
+        const set_memory &memories = (*aspaces.begin())->get_memories();
+        ret.insert(memories.begin(), memories.end());
+
+        for (auto as : aspaces) {
+            const set_memory &memories2 = as->get_memories();
+            set_memory intersection;
+            std::set_intersection(ret.begin(), ret.end(),
+                                  memories2.begin(), memories2.end(),
+                                  std::inserter(intersection, intersection.begin()));
+            ret = intersection;
+
+            if (ret.size() == 0) break;
+        }
+    }
+
+    return ret;
+}
+
 platform::set_processing_unit
-platform::get_processing_units(processing_unit::type type)
+platform::get_processing_units(processing_unit::type type) const
 {
     set_processing_unit ret;
 
@@ -14,6 +61,42 @@ platform::get_processing_units(processing_unit::type type)
     }
 
     return ret;
+}
+
+platform::set_aspace
+platform::get_paspaces(memory &mem) const
+{
+    set_aspace ret;
+
+    for (auto as : aspaces_) {
+        const aspace::set_memory &mems = as->get_memories();
+        if (mems.find(&mem) != mems.end()) {
+            ret.insert(as);
+        }
+    }
+
+    return ret;
+}
+
+virt::object *
+platform::create_object(memory &mem, size_t size, gmacError_t &err)
+{
+    if (memories_.find(&mem) == memories_.end()) {
+        err = gmacErrorInvalidValue;
+        return NULL;
+    }
+
+    err = gmacSuccess;
+    //return new object(mem, size);
+    return create(mem, size);
+}
+
+gmacError_t
+platform::destroy_object(virt::object &obj)
+{
+    destroy(obj);
+    
+    return gmacSuccess;
 }
 
 }}}}

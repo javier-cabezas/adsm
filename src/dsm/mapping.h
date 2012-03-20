@@ -79,7 +79,7 @@ protected:
                     hal::ptr::offset_type off2, size_t count);
 #endif
 
-    error split(hal::ptr::offset_type off, size_t count);
+    error split(size_t off, size_t count);
 
     //typedef std::pair<list_block::iterator, size_t> pair_block_info;
     class cursor_block {

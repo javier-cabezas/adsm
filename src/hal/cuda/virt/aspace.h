@@ -55,9 +55,20 @@ public:
     hal_event_ptr copy_async(device_output &output, hal::const_ptr src, size_t count, hal_stream &s, list_event_detail *dependencies, gmacError_t &err);
     hal_event_ptr memset_async(hal::ptr dst, int c, size_t count, hal_stream &s, list_event_detail *dependencies, gmacError_t &err);
 
-    aspace(phys::hal_processing_unit &pu, phys::aspace &pas, gmacError_t &err);
+    aspace(hal_aspace::set_processing_unit &compatibleUnits, phys::aspace &pas, gmacError_t &err);
 
-    bool has_direct_copy(hal::const_ptr ptr1, hal::const_ptr ptr2);
+    bool has_direct_copy(hal::const_ptr ptr1, hal::const_ptr ptr2)
+    {
+        // TODO: refine the logic
+        if (&ptr1.get_view().get_vaspace() ==
+            &ptr2.get_view().get_vaspace()) {
+            // Copy within the same virtual address space
+            return true;
+        } else {
+            // Copy across different virtual address spaces
+            return false;
+        }
+    }
 
     // hal::ptr alloc(size_t size, gmacError_t &err);
 
@@ -66,12 +77,14 @@ public:
 #if 0
     hal::ptr alloc_host_pinned(size_t size, GmacProtection hint, gmacError_t &err);
 #endif
-    gmacError_t free(hal::ptr acc);
+    gmacError_t unmap(hal::ptr p);
+
 #if 0
+    gmacError_t free(hal::ptr acc);
     gmacError_t free_host_pinned(hal::ptr ptr);
 #endif
 
-    hal::ptr get_device_addr_from_pinned(host_ptr addr);
+    //hal::ptr get_device_addr_from_pinned(host_ptr addr);
 
     hal_code_repository &get_code_repository();
 
@@ -98,7 +111,7 @@ public:
     buffer_t(host_ptr addr, size_t size, aspace &as);
 
     host_ptr get_addr();
-    hal::ptr get_device_addr();
+    //hal::ptr get_device_addr();
 };
 
 }

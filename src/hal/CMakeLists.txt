@@ -7,6 +7,7 @@ set(hal_SRC
     detail/virt/aspace-impl.h
     detail/virt/object.h
     detail/virt/object-impl.h
+    detail/virt/object.cpp
     detail/virt/processing_unit.h
     detail/virt/processing_unit.cpp
     detail/virt/processing_unit-impl.h

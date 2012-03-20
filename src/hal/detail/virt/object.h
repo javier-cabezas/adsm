@@ -3,17 +3,27 @@
 
 #include <set>
 
+#include "util/factory.h"
 #include "util/unique.h"
+
+#include "hal/detail/ptr.h"
 
 namespace __impl { namespace hal { namespace detail {
     
+namespace phys {
+    class memory;
+}
+
 namespace virt {
 
 class aspace;
 class object_view;
 
 class GMAC_LOCAL object :
-    public util::unique<object> {
+    public util::unique<object>,
+    protected util::factory<object_view> {
+    friend class util::factory<object>;
+
 public:
     typedef std::map<aspace *, object_view *> map_view;
 private:
@@ -21,10 +31,13 @@ private:
     size_t size_;
     map_view views_;
 
-public:
     object(phys::memory &location, size_t size);
-
-    object_view *create_view(aspace &as, ptrdiff_t offset, gmacError_t err);
+    ~object()
+    {
+    }
+public:
+    object_view *create_view(aspace &as, ptr::offset_type offset, gmacError_t &err);
+    gmacError_t destroy_view(object_view &view);
 
     const phys::memory &get_memory() const;
 
@@ -39,20 +52,25 @@ public:
 typedef util::shared_ptr<object>       object_ptr;
 typedef util::shared_ptr<const object> object_const_ptr;
 
-class GMAC_LOCAL object_view {
+class GMAC_LOCAL object_view :
+    public util::unique<object_view> {
+    friend class util::factory<object_view>;
 private:
-    friend class object;
-
     object &parent_;
     aspace &aspace_;
-    ptrdiff_t &offset_;
+    ptr::offset_type offset_;
 
-    object_view(object &parent, aspace &as, ptrdiff_t offset) :
+    object_view(object &parent, aspace &as, ptr::offset_type offset) :
         parent_(parent),
         aspace_(as),
         offset_(offset)
     {
     }
+
+    ~object_view()
+    {
+    }
+
 public:
     object &get_object()
     {
@@ -74,7 +92,7 @@ public:
         return aspace_;
     }
 
-    ptrdiff_t get_offset() const
+    ptr::offset_type get_offset() const
     {
         return offset_;
     }

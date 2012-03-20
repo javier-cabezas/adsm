@@ -31,12 +31,14 @@ buffer_t::get_addr()
     return addr_;
 }
 
+#if 0
 inline
 hal::ptr
 buffer_t::get_device_addr()
 {
     return get_aspace().get_device_addr_from_pinned(addr_);
 }
+#endif
 
 inline
 void

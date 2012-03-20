@@ -9,12 +9,16 @@
 
 namespace I_HAL = __impl::hal;
 
-static I_HAL::phys::processing_unit *pUnit;
-static I_HAL::phys::platform::set_aspace::value_type pas1;
-static I_HAL::virt::aspace *as1;
-static manager *mgr = NULL;
+static I_HAL::phys::list_platform platforms;
+static I_HAL::phys::platform *plat0;
+static I_HAL::phys::platform::set_memory memories;
+static I_HAL::phys::memory *mem0;
+static I_HAL::phys::platform::set_processing_unit pUnits;
+static I_HAL::phys::processing_unit *pUnit0;
+static I_HAL::phys::aspace *pas0;
+static I_HAL::virt::aspace *as0;
 
-static ptr::backend_type BASE_ADDR = 0x0000;
+static manager *mgr = NULL;
 
 static const int MAP0_OFF =  100;
 static const int MAP1_OFF = 1000;
@@ -37,39 +41,58 @@ manager_mapping_test::SetUpTestCase()
     gmacError_t err = I_HAL::init();
     ASSERT_TRUE(err == gmacSuccess);
     // Get platforms
-    I_HAL::phys::list_platform platforms = I_HAL::phys::get_platforms();
+    platforms = I_HAL::phys::get_platforms();
     ASSERT_TRUE(platforms.size() > 0);
+    plat0 = platforms.front();
     // Get processing units
-    I_HAL::phys::platform::set_processing_unit pUnits = platforms.front()->get_processing_units(I_HAL::phys::processing_unit::PUNIT_TYPE_GPU);
+    pUnits = plat0->get_processing_units(I_HAL::phys::processing_unit::PUNIT_TYPE_GPU);
     ASSERT_TRUE(pUnits.size() > 0);
-    pUnit = *pUnits.begin();
-    I_HAL::phys::platform::set_aspace pAspaces = pUnit->get_paspaces();
-    pas1 = *pAspaces.begin();
+    pUnit0 = *pUnits.begin();
+    pas0 = &pUnit0->get_paspace();
     mgr = new manager();
     // Create address space
-    as1 = pas1->create_vaspace(err);
+    I_HAL::phys::aspace::set_processing_unit compatibleUnits({ pUnit0 });
+    as0 = pas0->create_vaspace(compatibleUnits, err);
     ASSERT_TRUE(err == gmacSuccess);
 }
 
 void manager_mapping_test::TearDownTestCase()
 {
     gmacError_t err;
-    err = pas1->destroy_vaspace(*as1);
+
+    err = pas0->destroy_vaspace(*as0);
     ASSERT_TRUE(err == gmacSuccess);
 
     delete mgr;
 
+    memories.clear();
+    pUnits.clear();
+
+    platforms.clear();
+
     I_HAL::fini();
 }
 
+static I_HAL::virt::object *obj0;
 static ptr         p0, p1, p2, p3, p4, p5;
 static mapping_ptr m0, m1, m2, m3, m4, m5;
 static block_ptr   b0, b1, b2, b3, b4, b5;
 
 static void range_init()
 {
+    gmacError_t errHal;
+
+    memories = plat0->get_memories();
+    mem0 = *memories.begin();
+
+    obj0 = plat0->create_object(*mem0, MAP5_OFF + MAP5_SIZE, errHal);
+    ASSERT_TRUE(errHal == gmacSuccess);
+
     // We use the same base allocation
-    p0 = ptr(ptr::backend_ptr(BASE_ADDR), as1) + MAP0_OFF;
+    ptr ptrBase = as0->map(*obj0, errHal);
+    ASSERT_TRUE(errHal == gmacSuccess);
+
+    p0 = ptrBase + MAP0_OFF;
     p1 = p0 + (MAP1_OFF - MAP0_OFF);
     p2 = p0 + (MAP2_OFF - MAP0_OFF);
     p3 = p0 + (MAP3_OFF - MAP0_OFF);
@@ -106,17 +129,17 @@ static void range_init()
     err = m5->append(b5);
     ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
 
-    berr = mgr->helper_insert(*as1, m0);
+    berr = mgr->helper_insert(*as0, m0);
     ASSERT_TRUE(berr);
-    berr = mgr->helper_insert(*as1, m1);
+    berr = mgr->helper_insert(*as0, m1);
     ASSERT_TRUE(berr);
-    berr = mgr->helper_insert(*as1, m2);
+    berr = mgr->helper_insert(*as0, m2);
     ASSERT_TRUE(berr);
-    berr = mgr->helper_insert(*as1, m3);
+    berr = mgr->helper_insert(*as0, m3);
     ASSERT_TRUE(berr);
-    berr = mgr->helper_insert(*as1, m4);
+    berr = mgr->helper_insert(*as0, m4);
     ASSERT_TRUE(berr);
-    berr = mgr->helper_insert(*as1, m5);
+    berr = mgr->helper_insert(*as0, m5);
     ASSERT_TRUE(berr);
 }
 
@@ -124,8 +147,14 @@ static void range_fini()
 {
     bool berr;
 
-    berr = mgr->helper_delete_mappings(*as1);
+    berr = mgr->helper_delete_mappings(*as0);
     ASSERT_TRUE(berr);
+
+    gmacError_t errHal;
+    errHal = as0->unmap(p0 - p0.get_offset());
+    ASSERT_TRUE(errHal == gmacSuccess);
+    errHal = plat0->destroy_object(*obj0);
+    ASSERT_TRUE(errHal == gmacSuccess);
 }
 
 template <typename T>
@@ -147,7 +176,7 @@ TEST_F(manager_mapping_test, mappings_in_range)
 {
     range_init();
 
-    manager::map_mapping_group &group = mgr->get_aspace_mappings(*as1);
+    manager::map_mapping_group &group = mgr->get_aspace_mappings(*as0);
 
     // CASE1
     // p0, p0 + (p5 - p0): [p0, p4]
@@ -219,7 +248,7 @@ TEST_F(manager_mapping_test, mappings_in_range_boundaries)
 {
     range_init();
 
-    manager::map_mapping_group &group = mgr->get_aspace_mappings(*as1);
+    manager::map_mapping_group &group = mgr->get_aspace_mappings(*as0);
 
     // CASE1
     // p0, p0 + (p5 - p0): [p0, p5]
@@ -368,29 +397,29 @@ TEST_F(manager_mapping_test, insert_mappings)
     ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
 
     bool berr;
-    berr = mgr->helper_insert(*as1, m_b0);
+    berr = mgr->helper_insert(*as0, m_b0);
     ASSERT_FALSE(berr);
     delete m_b0;
-    berr = mgr->helper_insert(*as1, m_b1);
+    berr = mgr->helper_insert(*as0, m_b1);
     ASSERT_FALSE(berr);
     delete m_b1;
-    berr = mgr->helper_insert(*as1, m_b2);
+    berr = mgr->helper_insert(*as0, m_b2);
     ASSERT_TRUE(berr);
-    berr = mgr->helper_insert(*as1, m_b3);
+    berr = mgr->helper_insert(*as0, m_b3);
     ASSERT_FALSE(berr);
     delete m_b3;
-    berr = mgr->helper_insert(*as1, m_b4);
+    berr = mgr->helper_insert(*as0, m_b4);
     ASSERT_FALSE(berr);
     delete m_b4;
-    berr = mgr->helper_insert(*as1, m_b5);
+    berr = mgr->helper_insert(*as0, m_b5);
     ASSERT_FALSE(berr);
     delete m_b5;
-    berr = mgr->helper_insert(*as1, m_b6);
+    berr = mgr->helper_insert(*as0, m_b6);
     ASSERT_FALSE(berr);
     delete m_b6;
-    berr = mgr->helper_insert(*as1, m_b7);
+    berr = mgr->helper_insert(*as0, m_b7);
     ASSERT_TRUE(berr);
-    berr = mgr->helper_insert(*as1, m_b8);
+    berr = mgr->helper_insert(*as0, m_b8);
     ASSERT_FALSE(berr);
     delete m_b8;
 
@@ -401,7 +430,7 @@ TEST_F(manager_mapping_test, merge_mappings)
 {
     range_init();
     
-    manager::map_mapping_group &group = mgr->get_aspace_mappings(*as1);
+    manager::map_mapping_group &group = mgr->get_aspace_mappings(*as0);
 
     manager::range_mapping range = mgr->get_mappings_in_range<true>(group, p0,
                                                                     MAP5_OFF -
@@ -438,11 +467,12 @@ TEST_F(manager_mapping_test, merge_mappings)
     range_fini();
 }
 
-static I_HAL::virt::aspace *as2 = NULL;
+static I_HAL::virt::aspace *as1;
+
+static ptr as0_p0,  as0_p1,  as0_p2;
+static ptr as0_p0b, as0_p1b, as0_p2b;
 static ptr as1_p0,  as1_p1,  as1_p2;
 static ptr as1_p0b, as1_p1b, as1_p2b;
-static ptr as2_p0,  as2_p1,  as2_p2;
-static ptr as2_p0b, as2_p1b, as2_p2b;
 
 static const size_t LINK0_SIZE = 0x1000;
 static const size_t LINK1_SIZE = 2 * 0x1000;
@@ -460,36 +490,75 @@ static void link_init()
 {
     gmacError_t err;
 
+        // Create address space
+    I_HAL::phys::aspace::set_processing_unit compatibleUnits({ pUnit0 });
+
     // Create additional address space
-    as2 = pas1->create_vaspace(err);
+    as1 = pas0->create_vaspace(compatibleUnits, err);
     ASSERT_TRUE(err == gmacSuccess);
 
+    memories = plat0->get_memories();
+    mem0 = *memories.begin();
+
+    obj0 = plat0->create_object(*mem0, LINK2_2_OFF + LINK2_SIZE, err);
+
     // We use the same base allocation
-    as1_p0  = ptr(ptr::backend_ptr(0x0), as1) + LINK1_0_OFF;
-    as1_p1  = ptr(ptr::backend_ptr(0x0), as1) + LINK1_1_OFF;
-    as1_p2  = ptr(ptr::backend_ptr(0x0), as1) + LINK1_2_OFF;
-    as1_p0b = ptr(ptr::backend_ptr(0x1), as1) + LINK1_0_OFF;
-    as1_p1b = ptr(ptr::backend_ptr(0x1), as1) + LINK1_1_OFF;
-    as1_p2b = ptr(ptr::backend_ptr(0x1), as1) + LINK1_2_OFF;
+    ptr ptrBase1 = as0->map(*obj0, err);
+    ASSERT_TRUE(err == gmacSuccess);
+
+    as0_p0  = ptrBase1 + LINK1_0_OFF;
+    as0_p1  = ptrBase1 + LINK1_1_OFF;
+    as0_p2  = ptrBase1 + LINK1_2_OFF;
+    // Same object in the same virtual address space NOT supported for now
+    ptr ptrBase2 = as0->map(*obj0, err);
+    ASSERT_TRUE(err == gmacErrorFeatureNotSupported);
+
+    as0_p0b = ptrBase2 + LINK1_0_OFF;
+    as0_p1b = ptrBase2 + LINK1_1_OFF;
+    as0_p2b = ptrBase2 + LINK1_2_OFF;
+
     // We use the same base allocation
-    as2_p0  = ptr(ptr::backend_ptr(0x10), as2) + LINK2_0_OFF;
-    as2_p1  = ptr(ptr::backend_ptr(0x10), as2) + LINK2_1_OFF;
-    as2_p2  = ptr(ptr::backend_ptr(0x10), as2) + LINK2_2_OFF;
-    as2_p0b = ptr(ptr::backend_ptr(0x11), as2) + LINK2_0_OFF;
-    as2_p1b = ptr(ptr::backend_ptr(0x11), as2) + LINK2_1_OFF;
-    as2_p2b = ptr(ptr::backend_ptr(0x11), as2) + LINK2_2_OFF;
+    ptr ptrBase3 = as1->map(*obj0, err);
+    ASSERT_TRUE(err == gmacSuccess);
+
+    as1_p0  = ptrBase3 + LINK2_0_OFF;
+    as1_p1  = ptrBase3 + LINK2_1_OFF;
+    as1_p2  = ptrBase3 + LINK2_2_OFF;
+    // Same object in the same virtual address space NOT supported for now
+    ptr ptrBase4 = as1->map(*obj0, err);
+    ASSERT_TRUE(err == gmacErrorFeatureNotSupported);
+
+    as1_p0b = ptrBase4 + LINK2_0_OFF;
+    as1_p1b = ptrBase4 + LINK2_1_OFF;
+    as1_p2b = ptrBase4 + LINK2_2_OFF;
 }
 
 static void link_fini()
 {
     bool berr;
-    berr = mgr->helper_delete_mappings(*as1);
+    berr = mgr->helper_delete_mappings(*as0);
     ASSERT_TRUE(berr);
-    berr = mgr->helper_delete_mappings(*as2);
+    berr = mgr->helper_delete_mappings(*as1);
     ASSERT_TRUE(berr);
 
     gmacError_t err;
-    err = pas1->destroy_vaspace(*as2);
+
+    err = as0->unmap(as0_p0 - as0_p0.get_offset());
+    ASSERT_TRUE(err == gmacSuccess);
+#if 0
+    err = as0->unmap(as0_p0b - as0_p0b.get_offset());
+    ASSERT_TRUE(err == gmacSuccess);
+#endif
+    err = as1->unmap(as1_p0 - as1_p0.get_offset());
+    ASSERT_TRUE(err == gmacSuccess);
+#if 0
+    err = as1->unmap(as1_p0b - as1_p0b.get_offset());
+    ASSERT_TRUE(err == gmacSuccess);
+#endif
+    err = plat0->destroy_object(*obj0);
+    ASSERT_TRUE(err == gmacSuccess);
+
+    err = pas0->destroy_vaspace(*as1);
     ASSERT_TRUE(err == gmacSuccess);
 }
 
@@ -497,19 +566,19 @@ TEST_F(manager_mapping_test, link)
 {
     link_init();
 
-    error_dsm err = mgr->link(as1_p0, as1_p0b, LINK0_SIZE, GMAC_PROT_READ);
+    error_dsm err = mgr->link(as0_p0, as0_p0b, LINK0_SIZE, GMAC_PROT_READ);
     ASSERT_FALSE(err == error_dsm::DSM_SUCCESS);
-    ASSERT_FALSE(mgr->helper_get_mapping(as1_p0));
-    ASSERT_FALSE(mgr->helper_get_mapping(as1_p0b));
+    ASSERT_FALSE(mgr->helper_get_mapping(as0_p0));
+    ASSERT_FALSE(mgr->helper_get_mapping(as0_p0b));
 
-    err = mgr->link(as1_p0, as2_p0, LINK0_SIZE, GMAC_PROT_READ);
+    err = mgr->link(as0_p0, as1_p0, LINK0_SIZE, GMAC_PROT_READ);
     ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
+    ASSERT_TRUE(mgr->helper_get_mapping(as0_p0));
+    ASSERT_TRUE(mgr->helper_get_mapping(as0_p0)->get_ptr() == as0_p0);
     ASSERT_TRUE(mgr->helper_get_mapping(as1_p0));
     ASSERT_TRUE(mgr->helper_get_mapping(as1_p0)->get_ptr() == as1_p0);
-    ASSERT_TRUE(mgr->helper_get_mapping(as2_p0));
-    ASSERT_TRUE(mgr->helper_get_mapping(as2_p0)->get_ptr() == as2_p0);
-    ASSERT_TRUE(mgr->helper_get_mappings(*as1_p0.get_aspace(), as1_p0.get_base()).size() == 1);
-    ASSERT_TRUE(mgr->helper_get_mappings(*as2_p0.get_aspace(), as2_p0.get_base()).size() == 1);
+    ASSERT_TRUE(mgr->helper_get_mappings(as0_p0.get_view().get_vaspace(), as0_p0.get_view()).size() == 1);
+    ASSERT_TRUE(mgr->helper_get_mappings(as1_p0.get_view().get_vaspace(), as1_p0.get_view()).size() == 1);
 
     link_fini();
 }
@@ -518,19 +587,19 @@ TEST_F(manager_mapping_test, link2)
 {
     link_init();
 
-    error_dsm err = mgr->link(as1_p1, as2_p1, LINK0_SIZE, GMAC_PROT_READ);
+    error_dsm err = mgr->link(as0_p1, as1_p1, LINK0_SIZE, GMAC_PROT_READ);
     ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
+    ASSERT_TRUE(mgr->helper_get_mapping(as0_p1));
+    ASSERT_TRUE(mgr->helper_get_mapping(as0_p1)->get_ptr() == as0_p1);
     ASSERT_TRUE(mgr->helper_get_mapping(as1_p1));
     ASSERT_TRUE(mgr->helper_get_mapping(as1_p1)->get_ptr() == as1_p1);
-    ASSERT_TRUE(mgr->helper_get_mapping(as2_p1));
-    ASSERT_TRUE(mgr->helper_get_mapping(as2_p1)->get_ptr() == as2_p1);
-    ASSERT_TRUE(mgr->helper_get_mappings(*as1_p1.get_aspace(), as1_p1.get_base()).size() == 1);
-    ASSERT_TRUE(mgr->helper_get_mappings(*as2_p1.get_aspace(), as2_p1.get_base()).size() == 1);
+    ASSERT_TRUE(mgr->helper_get_mappings(as0_p1.get_view().get_vaspace(), as0_p1.get_view()).size() == 1);
+    ASSERT_TRUE(mgr->helper_get_mappings(as1_p1.get_view().get_vaspace(), as1_p1.get_view()).size() == 1);
 
-    err = mgr->link(as1_p1, as2_p1, LINK2_2_OFF - LINK2_1_OFF +  LINK2_SIZE, GMAC_PROT_READ);
+    err = mgr->link(as0_p1, as1_p1, LINK2_2_OFF - LINK2_1_OFF +  LINK2_SIZE, GMAC_PROT_READ);
     ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
-    ASSERT_TRUE(mgr->helper_get_mappings(*as1_p1.get_aspace(), as1_p1.get_base()).size() == 1);
-    ASSERT_TRUE(mgr->helper_get_mappings(*as2_p1.get_aspace(), as2_p1.get_base()).size() == 1);
+    ASSERT_TRUE(mgr->helper_get_mappings(as0_p1.get_view().get_vaspace(), as0_p1.get_view()).size() == 1);
+    ASSERT_TRUE(mgr->helper_get_mappings(as1_p1.get_view().get_vaspace(), as1_p1.get_view()).size() == 1);
 
     link_fini();
 }

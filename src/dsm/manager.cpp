@@ -172,6 +172,8 @@ manager::link(hal::ptr dst, hal::ptr src, size_t count, int flags)
 {
     TRACE(LOCAL, FMT_ID2" Link "FMT_SIZE" bytes", get_print_id2(), count);
 
+    // Pointers must be valid
+    CHECK(bool(dst) && bool(src), DSM_ERROR_INVALID_PTR);
     // Pointers must belong to different address spaces
     CHECK(&dst.get_view().get_vaspace() != &src.get_view().get_vaspace(), DSM_ERROR_INVALID_PTR);
 
