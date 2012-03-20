@@ -32,12 +32,12 @@ public:
         TRACE(LOCAL, FMT_ID2" Create", get_print_id2());
     }
 
-    ~aspace()
+    virtual ~aspace()
     {
         TRACE(LOCAL, FMT_ID2" Destroy", get_print_id2());
     }
-
-    virtual virt::aspace *create_vaspace(processing_unit &pu, gmacError_t &err) = 0;
+    
+    virtual virt::aspace *create_vaspace(aspace::set_processing_unit &compatibleUnits, gmacError_t &err) = 0;
     virtual gmacError_t destroy_vaspace(virt::aspace &as) = 0;
 
     void add_processing_unit(processing_unit &pUnit)

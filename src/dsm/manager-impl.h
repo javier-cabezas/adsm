@@ -32,7 +32,7 @@ manager::get_mappings_in_range(map_mapping_group &mappings, hal::ptr addr, size_
 
     // If no mapping is affected, return empty range
     if (it == group.end() ||
-        (it->second->get_ptr().get_offset() >= addr.get_offset() + count)) {
+        (it->second->get_ptr().get_offset() >= addr.get_offset() + hal::ptr::offset_type(count))) {
         map_mapping::iterator it;
         return range_mapping(it, it);
     } else {
@@ -42,7 +42,7 @@ manager::get_mappings_in_range(map_mapping_group &mappings, hal::ptr addr, size_
     // Add all the mappings in the range
     do {
         ++it;
-    } while (it != group.end() && (it->second->get_ptr().get_offset() < addr.get_offset() + count));
+    } while (it != group.end() && (it->second->get_ptr().get_offset() < addr.get_offset() + hal::ptr::offset_type(count)));
 
     end = it;
 

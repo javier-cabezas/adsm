@@ -95,19 +95,18 @@ get_platforms()
             connections.insert(connection);
 
             cuda::phys::aspace *aspace = new cuda::phys::aspace(memories);
-            cuda::phys::processing_unit::set_aspace aspaces;
-            aspaces.insert(aspace);
+            p->add_paspace(*aspace);
 #if CUDA_VERSION >= 2020
             int attr = 0;
             if(cuDeviceGetAttribute(&attr, CU_DEVICE_ATTRIBUTE_COMPUTE_MODE, cuDev) != CUDA_SUCCESS)
                 FATAL("Unable to access CUDA device");
             if (attr != CU_COMPUTEMODE_PROHIBITED) {
-                cuda::phys::processing_unit *pUnit = new cuda::phys::processing_unit(cuDev, *p);
+                cuda::phys::processing_unit *pUnit = new cuda::phys::processing_unit(cuDev, *p, *aspace);
                 p->add_processing_unit(*pUnit);
                 devRealCount++;
             }
 #else
-            cuda::processing_unit *pUnit = new cuda::gpu(cuDev, *p);
+            cuda::processing_unit *pUnit = new cuda::gpu(cuDev, *p, *aspace);
             p->add_processing_unit(*pUnit);
             devRealCount++;
 #endif

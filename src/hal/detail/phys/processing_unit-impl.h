@@ -4,17 +4,17 @@
 namespace __impl { namespace hal { namespace detail { namespace phys {
 
 inline
-processing_unit::set_aspace &
-processing_unit::get_paspaces()
+aspace &
+processing_unit::get_paspace()
 {
-    return aspaces_;
+    return as_;
 }
 
 inline
-const processing_unit::set_aspace &
-processing_unit::get_paspaces() const
+const aspace &
+processing_unit::get_paspace() const
 {
-    return aspaces_;
+    return as_;
 }
 
 inline

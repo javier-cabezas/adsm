@@ -145,6 +145,8 @@ public:
     __impl::dsm::mapping_ptr
     helper_get_mapping(ptr p)
     {
+        if (!bool(p)) return NULL;
+
         parent::map_mapping_group &group = parent::get_aspace_mappings(p.get_view().get_vaspace());
 
         parent::range_mapping range = parent::get_mappings_in_range<false>(group, p, 1);

@@ -5,7 +5,7 @@
 namespace __impl { namespace dsm {
 
 mapping::range_block
-mapping::get_blocks_in_range(hal::ptr::offset_type offset, size_t count)
+mapping::get_blocks_in_range(size_t offset, size_t count)
 {
     ASSERTION(offset < size_);
     ASSERTION(offset + count <= size_);
@@ -130,7 +130,7 @@ mapping::prepend(coherence::block_ptr b)
 
     error ret = DSM_SUCCESS;
 
-    if (b->get_size() <= addr_.get_offset()) {
+    if (b->get_size() <= size_t(addr_.get_offset())) {
         shift_blocks(b->get_size());
 
         blocks_.push_front(b);

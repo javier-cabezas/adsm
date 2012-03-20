@@ -24,6 +24,7 @@ typedef util::shared_ptr<_event> event_ptr;
 namespace virt {
 
 class aspace;
+class object;
 
 template <typename T>
 class GMAC_LOCAL map_pool :
@@ -117,7 +118,7 @@ protected:
 
 public:
     virtual host_ptr get_addr() = 0;
-    virtual ptr get_device_addr() = 0;
+    //virtual ptr get_device_addr() = 0;
     aspace &get_aspace();
     const aspace &get_aspace() const;
     size_t get_size() const;
@@ -154,6 +155,9 @@ class GMAC_LOCAL aspace :
     public util::observable<aspace, util::event::destruct> {
     friend class util::observable<aspace, util::event::destruct>;
 
+public:
+    typedef std::set<phys::processing_unit *> set_processing_unit;
+
 private:
     typedef map_pool<void> map_memory;
     typedef map_pool<buffer> map_buffer;
@@ -161,7 +165,8 @@ private:
 protected:
     typedef util::locked_counter<unsigned, gmac::util::spinlock<aspace> > buffer_counter;
 
-    phys::processing_unit &pu_;
+    set_processing_unit pUnits_;
+
     phys::aspace &pas_;
 
     static const unsigned &MaxBuffersIn_;
@@ -192,12 +197,11 @@ protected:
     virtual buffer *alloc_buffer(size_t size, GmacProtection hint, stream &stream, gmacError_t &err) = 0;
     virtual gmacError_t free_buffer(buffer &buffer) = 0;
 
-    aspace(phys::processing_unit &pu, phys::aspace &pas, gmacError_t &err);
+    aspace(set_processing_unit &compatibleUnits, phys::aspace &pas, gmacError_t &err);
     virtual ~aspace();
 
 public:
-    phys::processing_unit &get_processing_unit();
-    const phys::processing_unit &get_processing_unit() const;
+    const set_processing_unit &get_processing_units() const;
 
     phys::aspace &get_paspace();
     const phys::aspace &get_paspace() const;
@@ -209,12 +213,27 @@ public:
     virtual ptr map(virt::object &obj, gmacError_t &err) = 0;
     virtual ptr map(virt::object &obj, ptrdiff_t offset, gmacError_t &err) = 0;
 
-    virtual gmacError_t free(ptr acc) = 0;
+    virtual gmacError_t unmap(ptr p) = 0;
+
 #if 0
+    virtual gmacError_t free(ptr acc) = 0;
     virtual gmacError_t free_host_pinned(ptr ptr) = 0;
 #endif
 
     virtual bool has_direct_copy(hal::const_ptr ptr1, hal::const_ptr ptr2) = 0;
+#if 0
+    {
+        // TODO: refine the logic
+        if (&ptr1.get_view().get_vaspace() ==
+            &ptr2.get_view().get_vaspace()) {
+            // Copy within the same virtual address space
+            return true;
+        } else {
+            // Copy across different virtual address spaces
+            return false;
+        }
+    }
+#endif
 
     virtual code_repository &get_code_repository() = 0;
 

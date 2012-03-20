@@ -89,6 +89,10 @@ class GMAC_LOCAL list_event :
 
     void set_barrier(hal_stream &stream);
 public:
+    list_event()
+    {
+    }
+
     gmacError_t sync();
     void set_synced();
 

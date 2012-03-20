@@ -128,7 +128,7 @@ public:
     virtual void *
     get() const = 0;
 
-    virtual size_t
+    virtual ptrdiff_t
     offset() const = 0;
 };
 
@@ -145,7 +145,7 @@ protected:
                                   >::type HPtr;
 #endif
     View *view_;
-    size_t offset_;
+    ptrdiff_t offset_;
 
     //HPtr ptrHost_;
     //Ptr ptrDev_;
@@ -155,7 +155,7 @@ public:
     static const char *offset_fmt;
 
     //typedef HPtr address_type;
-    typedef size_t offset_type;
+    typedef ptrdiff_t offset_type;
 
     //typedef Ptr backend_ptr;
     //typedef typename Ptr::backend_type backend_type;
@@ -172,11 +172,11 @@ public:
     }
 
     // TODO check if view has to be a reference
-    explicit _base_ptr_t(View *view, size_t offset = 0) :
-        view_(view),
+    explicit _base_ptr_t(View &view, ptrdiff_t offset = 0) :
+        view_(&view),
         offset_(offset)
     {
-        ASSERTION(view != NULL);
+        ASSERTION(view_ != NULL);
     }
 
 #if 0
@@ -226,7 +226,7 @@ public:
     bool
     operator==(const _base_ptr_t<Const2, View> &ptr) const
     {
-        ASSERTION(ptr.view_.get_vaspace() == this->view_.get_vaspace(), "Comparing pointers from different address spaces");
+        ASSERTION(ptr.view_ == view_, "Comparing pointers from different address spaces");
 
         return (ptr.view_ == view_) && (offset_ == offset_);
     }
@@ -278,7 +278,7 @@ public:
     _base_ptr_t &
     operator+=(const T &off)
     {
-        ASSERTION(offset_ + off < view_->get_object().get_size(), "Out of view boundaries");
+        //ASSERTION(offset_ + off < view_->get_object().get_size(), "Out of view boundaries");
         
         offset_ += off;
 
@@ -321,9 +321,9 @@ public:
     operator-=(const T &off)
     {
         if (off > 0) {
-            ASSERTION(offset_ >= size_t(off), "Out of view boundaries");
+            ASSERTION(offset_ >= ptrdiff_t(off), "Out of view boundaries");
         } else if (off < 0) {
-            ASSERTION(offset_ - off < view_->get_object().get_size(), "Out of view boundaries");
+            //ASSERTION(offset_ - off < view_->get_object().get_size(), "Out of view boundaries");
         }
 
         offset_ -= off;
@@ -422,7 +422,7 @@ public:
     }
 #endif
 
-    size_t
+    ptrdiff_t
     get_offset() const
     {
         return offset_;
@@ -513,7 +513,7 @@ public:
     {
     }
 
-    explicit _const_ptr_t(View *view, size_t offset = 0) :
+    explicit _const_ptr_t(View &view, ptrdiff_t offset = 0) :
         parent(view, offset)
     {
     }
@@ -540,7 +540,7 @@ public:
     {
     }
 
-    explicit _ptr_t(View *view, size_t offset = 0) :
+    explicit _ptr_t(View &view, ptrdiff_t offset = 0) :
         parent(view, offset)
     {
     }
@@ -571,9 +571,14 @@ _ptr_t<View> _ptr_t<View>::null = _ptr_t();
 #endif
 #endif
 
-#include "virt/object.h"
+//#include "virt/object.h"
 
 namespace __impl { namespace hal {
+
+namespace detail { namespace virt  {
+    class object_view;
+}}
+
 typedef __impl::hal::_ptr_t<
                                detail::virt::object_view
                            > ptr;

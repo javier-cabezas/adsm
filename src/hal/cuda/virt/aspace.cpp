@@ -126,12 +126,12 @@ aspace::dispose_event(_event_t &event)
     queueEvents_.push(event);
 }
 
-aspace::aspace(phys::hal_processing_unit &_pu, phys::aspace &pas, gmacError_t &err) :
-    parent(_pu, pas, err)
+aspace::aspace(hal_aspace::set_processing_unit &compatibleUnits, phys::aspace &pas, gmacError_t &err) :
+    parent(compatibleUnits, pas, err)
 {
     TRACE(LOCAL, FMT_ID2" Created", get_print_id2());
 
-    phys::processing_unit &pu = reinterpret_cast<phys::processing_unit &>(_pu);
+    phys::processing_unit &pu = reinterpret_cast<phys::processing_unit &>(**compatibleUnits.begin());
 
     CUcontext ctx, tmp;
     unsigned int flags = 0;
@@ -577,7 +577,9 @@ aspace::map(hal_object &obj, gmacError_t &err)
 
     if (err == gmacSuccess) {
         detail::virt::object_view *view = obj.create_view(*this, devPtr, err);
-        return hal::ptr(view);
+        if (err == gmacSuccess) {
+            return hal::ptr(*view);
+        }
     }
 
     return hal::ptr();
@@ -633,6 +635,23 @@ aspace::alloc_buffer(size_t size, GmacProtection hint, hal_stream &/*stream*/, g
 }
 
 gmacError_t
+aspace::unmap(hal::ptr p)
+{
+    set();
+    
+    CUdeviceptr ptr = CUdeviceptr(p.get_view().get_offset());
+    gmacError_t ret = p.get_view().get_object().destroy_view(p.get_view());
+
+    if (ret == gmacSuccess) {
+        CUresult err = cuMemFree(CUdeviceptr(ptr));
+        ret = cuda::error(err);
+    }
+
+    return ret;
+}
+
+#if 0
+gmacError_t
 aspace::free(hal::ptr acc)
 {
     set();
@@ -641,6 +660,7 @@ aspace::free(hal::ptr acc)
 
     return cuda::error(ret);
 }
+#endif
 
 gmacError_t
 aspace::free_buffer(hal_buffer &buffer)
