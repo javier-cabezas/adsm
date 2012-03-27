@@ -7,10 +7,13 @@
 
 namespace __impl { namespace hal { namespace detail { namespace phys {
 
+class platform;
 class processing_unit;
 
 class GMAC_LOCAL memory :
     public util::unique<memory> {
+    platform &platform_;
+
     size_t size_;
     typedef std::set<processing_unit *> set_processing_unit;
     set_processing_unit attachedUnits_;
@@ -23,7 +26,8 @@ class GMAC_LOCAL memory :
     }
 
 public:
-    memory(size_t size) :
+    memory(platform &plat, size_t size) :
+        platform_(plat),
         size_(size)
     {
         TRACE(LOCAL, FMT_ID2" Create", get_print_id2());
@@ -45,6 +49,8 @@ public:
     }
 
     //bool is_host_memory() const;
+
+    const platform &get_platform() const;
 };
 
 }}}}

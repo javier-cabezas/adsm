@@ -7,8 +7,8 @@
 
 namespace __impl { namespace hal { namespace cuda { namespace phys {
 
-processing_unit::processing_unit(CUdevice cudaDevice, platform &plat, aspace &as) :
-    parent(parent::PUNIT_TYPE_GPU, plat, as),
+processing_unit::processing_unit(platform &plat, aspace &as, CUdevice cudaDevice) :
+    parent(plat, parent::PUNIT_TYPE_GPU, as),
     lock("processing_unit"),
     cudaDevice_(cudaDevice),
     isInfoInitialized_(false)

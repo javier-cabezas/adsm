@@ -2,6 +2,7 @@
 
 #include "hal/cuda/types.h"
 
+#include "hal/cuda/phys/platform.h"
 #include "hal/cuda/phys/processing_unit.h"
 
 namespace __impl { namespace hal { namespace cuda { namespace virt {
@@ -568,17 +569,83 @@ aspace::alloc(size_t count, gmacError_t &err)
 hal::ptr
 aspace::map(hal_object &obj, gmacError_t &err)
 {
+    if (get_paspace().get_memories().find(&obj.get_memory()) == get_paspace().get_memories().end()) {
+        // The object resides in a memory not accessible by this aspace
+        err = gmacErrorInvalidValue;
+        return hal::ptr();
+    }
+
+    if (obj.get_view(*this) != NULL) {
+        // Mapping the same object more than once per address space is not supported
+        err = gmacErrorFeatureNotSupported;
+        return hal::ptr();
+    }
+
     set();
 
-    CUdeviceptr devPtr = 0;
-    CUresult res = cuMemAlloc(&devPtr, obj.get_size());
+    // Refine this logic
+    if (obj.get_views().size() > 0) {
+        // CASE 1: Mappings already exist for this object
+            
+        hal_object::set_view viewsCpu = obj.get_views(phys::hal_processing_unit::PUNIT_TYPE_CPU);
 
-    err = cuda::error(res);
+        if (viewsCpu.size() > 0) {
+            // CASE 1a: Use host-mapped memory (register)
+            void *ptr = (void *) (*viewsCpu.begin())->get_offset();
+            CUresult res = cuMemHostRegister(ptr, obj.get_size(), CU_MEMHOSTREGISTER_PORTABLE);
 
-    if (err == gmacSuccess) {
-        detail::virt::object_view *view = obj.create_view(*this, devPtr, err);
+            err = cuda::error(res);
+
+            if (err == gmacSuccess) {
+                detail::virt::object_view *view = obj.create_view(*this, hal::ptr::offset_type(ptr), err);
+                if (err == gmacSuccess) {
+                    return hal::ptr(*view);
+                }
+            }
+        } else {
+            hal_object::set_view viewsGpu = obj.get_views(phys::hal_processing_unit::PUNIT_TYPE_GPU);
+
+            if (viewsGpu.size() > 0) {
+                // CASE 1b: Use peer access
+                const cuda::virt::aspace &vas = reinterpret_cast<const cuda::virt::aspace &>((*viewsGpu.begin())->get_vaspace());
+                if ((vas.pUnits_.size() == 1 && pUnits_.size() == 1) &&
+                    (*vas.pUnits_.begin() != *pUnits_.begin())) {
+                    CUresult res = cuCtxEnablePeerAccess(vas.context_, 0);
+                    err = cuda::error(res);
+
+                    if (err != gmacSuccess) {
+                        return hal::ptr();
+                    }
+
+                    void *ptr = (void *) (*viewsGpu.begin())->get_offset();
+
+                    detail::virt::object_view *view = obj.create_view(*this, hal::ptr::offset_type(ptr), err);
+
+                    if (err == gmacSuccess) {
+                        return hal::ptr(*view);
+                    }
+                } else {
+                    // Mapping the same object on address spaces of the same device is not supported
+                    err = gmacErrorFeatureNotSupported;
+                    return hal::ptr();
+                }
+            } else {
+                FATAL("Unhandled case");
+            }
+        }
+    } else {
+        // CASE 2: Mappings do not exist for this object: create one
+        CUdeviceptr devPtr = 0;
+        CUresult res = cuMemAlloc(&devPtr, obj.get_size());
+
+        err = cuda::error(res);
+
         if (err == gmacSuccess) {
-            return hal::ptr(*view);
+            detail::virt::object_view *view = obj.create_view(*this, devPtr, err);
+
+            if (err == gmacSuccess) {
+                return hal::ptr(*view);
+            }
         }
     }
 
@@ -637,12 +704,15 @@ aspace::alloc_buffer(size_t size, GmacProtection hint, hal_stream &/*stream*/, g
 gmacError_t
 aspace::unmap(hal::ptr p)
 {
-    set();
-    
     CUdeviceptr ptr = CUdeviceptr(p.get_view().get_offset());
-    gmacError_t ret = p.get_view().get_object().destroy_view(p.get_view());
+    hal_object &obj = p.get_view().get_object();
+    gmacError_t ret = obj.destroy_view(p.get_view());
 
-    if (ret == gmacSuccess) {
+    if (ret == gmacSuccess && obj.get_views().size() == 0) {
+        // TODO: set the proper AS to destroy on the original device
+        // TODO: modify unit test in manager.cpp accordingly
+        set();
+    
         CUresult err = cuMemFree(CUdeviceptr(ptr));
         ret = cuda::error(err);
     }

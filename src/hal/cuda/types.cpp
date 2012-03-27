@@ -70,38 +70,169 @@ get_platforms()
         /////////////////////
         cuda::phys::platform *p = new cuda::phys::platform();
 
+        typedef std::set<CUdevice> set_device;
+        typedef std::map<CUdevice, set_device> map_peer;
+        map_peer peers;
+        typedef std::map<CUdevice, cuda::phys::processing_unit> map_processing_unit;
+        map_processing_unit pUnits;
+        typedef std::set<set_device> set_peers;
+        set_peers peerGroups;
+
+        typedef std::map<CUdevice, cuda::phys::aspace *> map_aspace;
+        map_aspace aspaces;
+        typedef std::map<CUdevice, cuda::phys::memory *> map_memory;
+        map_memory memories;
+
         int devCount = 0;
         int devRealCount = 0;
 
         CUresult err = cuDeviceGetCount(&devCount);
-        if(err != CUDA_SUCCESS)
+        if (err != CUDA_SUCCESS)
             FATAL("Error getting CUDA-enabled devices");
 
         TRACE(GLOBAL, "Found %d CUDA capable devices", devCount);
 
-        // Add accelerators to the system
+        // Dectect and register peer devices
         for (int i = 0; i < devCount; i++) {
             CUdevice cuDev;
             if (cuDeviceGet(&cuDev, i) != CUDA_SUCCESS)
                 FATAL("Unable to access CUDA device");
+
+            // Create compute device
+            int attr = 0;
+            if (cuDeviceGetAttribute(&attr, CU_DEVICE_ATTRIBUTE_COMPUTE_MODE, cuDev) != CUDA_SUCCESS)
+                FATAL("Unable to access CUDA device");
+            // Skip prohibited devices
+            if (attr == CU_COMPUTEMODE_PROHIBITED) continue;
+
+            set_device peerDevices;
+
+            for (int j = 0; j < devCount; j++) {
+                if (i != j) {
+                    CUdevice cuDev2;
+                    if (cuDeviceGet(&cuDev2, j) != CUDA_SUCCESS)
+                        FATAL("Unable to access CUDA device");
+
+                    // Create compute device
+                    attr = 0;
+                    if (cuDeviceGetAttribute(&attr, CU_DEVICE_ATTRIBUTE_COMPUTE_MODE, cuDev2) != CUDA_SUCCESS)
+                        FATAL("Unable to access CUDA device");
+                    // Skip prohibited devices
+                    if (attr == CU_COMPUTEMODE_PROHIBITED) continue;
+
+                    int canAccess;
+                    err = cuDeviceCanAccessPeer(&canAccess, cuDev, cuDev2);
+                    if (err != CUDA_SUCCESS)
+                        FATAL("Error getting CUDA-enabled devices");
+
+                    if (canAccess == 1) {
+                        peerDevices.insert(cuDev2);
+                    }
+                }
+            }
+
+            peers.insert(map_peer::value_type(cuDev, peerDevices));
+            devRealCount++;
+        }
+
+        // Dectect and register memories
+        for (auto device : peers) {
+            size_t bytes;
+            if (cuDeviceTotalMem(&bytes, device.first) != CUDA_SUCCESS)
+                FATAL("Unable to query CUDA device");
+
             // TODO: create a context to retrieve information about the memory
-            cuda::phys::memory *mem = new cuda::phys::memory(128 * 1024 * 1024);
+            cuda::phys::memory *mem = new cuda::phys::memory(*p, bytes);
 
-            cuda::phys::aspace::set_memory memories;
-            memories.insert(mem);
+            memories.insert(map_memory::value_type(device.first, mem));
+        }
 
+        // Dectect physical address spaces and memory connections for devices
+        for (auto device : peers) {
+            cuda::phys::aspace *pas;
+
+            // Device with no peers
+            if (device.second.size() == 0) {
+                cuda::phys::aspace::set_memory deviceMemories;
+                cuda::phys::memory *mem;
+
+                ASSERTION(memories.count(device.first) == 1);
+                mem = memories[device.first];
+
+                cuda::phys::processing_unit::set_memory_connection connections;
+                cuda::phys::processing_unit::memory_connection connection(*mem, true, 0);
+
+                deviceMemories.insert(mem);
+                connections.insert(connection);
+
+                pas = new cuda::phys::aspace(*p, deviceMemories);
+
+                cuda::phys::processing_unit *pUnit = new cuda::phys::processing_unit(*p, *pas, device.first);
+
+                p->add_paspace(*pas);
+                p->add_processing_unit(*pUnit);
+
+                // Register the aspace
+                aspaces.insert(map_aspace::value_type(device.first, pas));
+            } else {
+                // Not registered yet
+                cuda::phys::aspace::set_memory deviceMemories;
+                cuda::phys::memory *mem;
+
+                ASSERTION(memories.count(device.first) == 1);
+                mem = memories[device.first];
+
+                cuda::phys::processing_unit::set_memory_connection connections;
+                cuda::phys::processing_unit::memory_connection connection(*mem, true, 0);
+
+                deviceMemories.insert(mem);
+                connections.insert(connection);
+
+                for (CUdevice dev : device.second) {
+                    ASSERTION(memories.count(dev) == 1);
+
+                    deviceMemories.insert(memories[dev]);
+
+                    cuda::phys::processing_unit::memory_connection connection(*mem, true, 0);
+                    connections.insert(connection);
+                }
+
+                map_aspace::iterator it = aspaces.find(device.first);
+                if (it == aspaces.end()) {
+                    pas = new cuda::phys::aspace(*p, deviceMemories);
+
+                    // Register the aspace
+                    aspaces.insert(map_aspace::value_type(device.first, pas));
+
+                    // Register the aspace for the peers, too
+                    for (auto peer : device.second) {
+                        aspaces.insert(map_aspace::value_type(peer, pas));
+                    }
+
+                    p->add_paspace(*pas); 
+                } else {
+                    pas = it->second;
+                }
+
+                cuda::phys::processing_unit *pUnit = new cuda::phys::processing_unit(*p, *pas, device.first);
+
+                p->add_processing_unit(*pUnit);
+            }
+        }
+
+#if 0
+        // Add accelerators to the system
+        for (int i = 0; i < devCount; i++) {
             cuda::phys::processing_unit::set_memory_connection connections;
-            cuda::phys::processing_unit::memory_connection connection(*mem, 0);
+            cuda::phys::processing_unit::memory_connection connection(*mem, true, 0);
             connections.insert(connection);
 
-            cuda::phys::aspace *aspace = new cuda::phys::aspace(memories);
-            p->add_paspace(*aspace);
 #if CUDA_VERSION >= 2020
             int attr = 0;
             if(cuDeviceGetAttribute(&attr, CU_DEVICE_ATTRIBUTE_COMPUTE_MODE, cuDev) != CUDA_SUCCESS)
                 FATAL("Unable to access CUDA device");
             if (attr != CU_COMPUTEMODE_PROHIBITED) {
-                cuda::phys::processing_unit *pUnit = new cuda::phys::processing_unit(cuDev, *p, *aspace);
+                cuda::phys::processing_unit *pUnit = new cuda::phys::processing_unit(*p, *aspace, cuDev);
                 p->add_processing_unit(*pUnit);
                 devRealCount++;
             }
@@ -111,6 +242,7 @@ get_platforms()
             devRealCount++;
 #endif
         }
+#endif
 
         if (devRealCount == 0)
             MESSAGE("No CUDA-enabled devices found");

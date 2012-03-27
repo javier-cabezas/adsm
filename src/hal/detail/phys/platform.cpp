@@ -2,7 +2,7 @@
 
 #include "util/misc.h"
 
-#include "hal/detail/virt/object.h"
+#include "hal/detail/types.h"
 
 #include "platform.h"
 
@@ -78,8 +78,24 @@ platform::get_paspaces(memory &mem) const
     return ret;
 }
 
+platform::set_aspace
+platform::get_paspaces(processing_unit::type type) const
+{
+    set_aspace ret;
+
+    for (auto pu : pUnits_) {
+        if (pu->get_type() != type) {
+            ret.insert(&pu->get_paspace());
+        }
+    }
+
+    return ret;
+}
+
+
+
 virt::object *
-platform::create_object(memory &mem, size_t size, gmacError_t &err)
+platform::create_object(const memory &mem, size_t size, gmacError_t &err)
 {
     if (memories_.find(&mem) == memories_.end()) {
         err = gmacErrorInvalidValue;

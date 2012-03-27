@@ -6,7 +6,7 @@ namespace __impl { namespace hal { namespace detail {
     
 namespace virt {
 
-object::object(phys::memory &location, size_t size) :
+object::object(const phys::memory &location, size_t size) :
     memory_(&location),
     size_(size)
 {
