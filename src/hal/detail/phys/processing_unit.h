@@ -36,10 +36,12 @@ class GMAC_LOCAL processing_unit :
 public:
     struct memory_connection {
         memory *mem;
+        bool direct;
         unsigned long latency;
 
-        memory_connection(memory &_mem, unsigned long _latency) :
+        memory_connection(memory &_mem, bool _direct, unsigned long _latency) :
             mem(&_mem),
+            direct(_direct),
             latency(_latency)
         {
         }
@@ -68,14 +70,14 @@ protected:
     set_memory_connection connections_;
     // set_aspace aspaces_;
 
-    processing_unit(type t, platform &platform, aspace &as);
+    processing_unit(platform &platform, type t, aspace &as);
 public:
     virtual stream *create_stream(virt::aspace &as) = 0;
     virtual gmacError_t destroy_stream(stream &stream) = 0;
 
     void add_memory_connection(const memory_connection &connection);
 
-    platform &get_platform();
+    //platform &get_platform();
     const platform &get_platform() const;
 
     aspace &get_paspace();

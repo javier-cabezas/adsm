@@ -25,7 +25,7 @@ class GMAC_LOCAL platform :
     protected util::factory<virt::object>
 {
 public:
-    typedef std::set<memory *>          set_memory;
+    typedef std::set<const memory *>    set_memory;
     typedef std::set<processing_unit *> set_processing_unit;
     typedef std::set<aspace *>          set_aspace;
 
@@ -49,8 +49,9 @@ public:
 
     const set_aspace &get_paspaces() const;
     set_aspace get_paspaces(memory &mem) const;
+    set_aspace get_paspaces(processing_unit::type type) const;
 
-    virt::object *create_object(memory &mem, size_t size, gmacError_t &err);
+    virt::object *create_object(const memory &mem, size_t size, gmacError_t &err);
     gmacError_t destroy_object(virt::object &obj);
 };
 

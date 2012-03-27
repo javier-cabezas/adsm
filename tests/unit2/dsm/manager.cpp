@@ -12,9 +12,11 @@ namespace I_HAL = __impl::hal;
 static I_HAL::phys::list_platform platforms;
 static I_HAL::phys::platform *plat0;
 static I_HAL::phys::platform::set_memory memories;
-static I_HAL::phys::memory *mem0;
+static const
+       I_HAL::phys::memory *mem0;
 static I_HAL::phys::platform::set_processing_unit pUnits;
 static I_HAL::phys::processing_unit *pUnit0;
+static I_HAL::phys::processing_unit *pUnit1;
 static I_HAL::phys::aspace *pas0;
 static I_HAL::virt::aspace *as0;
 
@@ -48,7 +50,12 @@ manager_mapping_test::SetUpTestCase()
     pUnits = plat0->get_processing_units(I_HAL::phys::processing_unit::PUNIT_TYPE_GPU);
     ASSERT_TRUE(pUnits.size() > 0);
     pUnit0 = *pUnits.begin();
+    pUnit1 = nullptr;
     pas0 = &pUnit0->get_paspace();
+    if (pUnits.size() > 1 &&
+        plat0->get_paspaces().size() < pUnits.size()) {
+        pUnit1 = *(++pUnits.begin());
+    }
     mgr = new manager();
     // Create address space
     I_HAL::phys::aspace::set_processing_unit compatibleUnits({ pUnit0 });
@@ -490,8 +497,9 @@ static void link_init()
 {
     gmacError_t err;
 
-        // Create address space
-    I_HAL::phys::aspace::set_processing_unit compatibleUnits({ pUnit0 });
+    ASSERT_TRUE(pUnit1 != nullptr);
+    // Create address space
+    I_HAL::phys::aspace::set_processing_unit compatibleUnits({ pUnit1 });
 
     // Create additional address space
     as1 = pas0->create_vaspace(compatibleUnits, err);
@@ -543,14 +551,16 @@ static void link_fini()
 
     gmacError_t err;
 
+    // Unmap first from the secondary vaspace
+    err = as1->unmap(as1_p0 - as1_p0.get_offset());
+    ASSERT_TRUE(err == gmacSuccess);
+
     err = as0->unmap(as0_p0 - as0_p0.get_offset());
     ASSERT_TRUE(err == gmacSuccess);
 #if 0
     err = as0->unmap(as0_p0b - as0_p0b.get_offset());
     ASSERT_TRUE(err == gmacSuccess);
 #endif
-    err = as1->unmap(as1_p0 - as1_p0.get_offset());
-    ASSERT_TRUE(err == gmacSuccess);
 #if 0
     err = as1->unmap(as1_p0b - as1_p0b.get_offset());
     ASSERT_TRUE(err == gmacSuccess);

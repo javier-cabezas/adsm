@@ -12,13 +12,14 @@ typedef hal::detail::virt::aspace hal_aspace;
 namespace phys {
 
 typedef hal::detail::phys::aspace hal_aspace;
+typedef hal::detail::phys::platform hal_platform;
 typedef hal::detail::phys::processing_unit hal_processing_unit;
 
 class GMAC_LOCAL aspace :
     public hal_aspace {
 public:
-    aspace(const hal_aspace::set_memory &memories) :
-        hal_aspace(memories)
+    aspace(hal_platform &plat, const hal_aspace::set_memory &memories) :
+        hal_aspace(plat, memories)
     {
     }
 

@@ -13,20 +13,23 @@ class aspace;
 
 namespace phys {
 
+class platform;
 class processing_unit;
 
 class GMAC_LOCAL aspace :
     public util::unique<aspace> {
 public:
-    typedef std::set<memory *> set_memory;
+    typedef std::set<const memory *> set_memory;
     typedef std::set<processing_unit *> set_processing_unit;
 
 private:
+    platform &platform_;
     set_memory memories_;
     set_processing_unit pUnits_;
 
 public:
-    aspace(const set_memory &memories) :
+    aspace(platform &plat, const set_memory &memories) :
+        platform_(plat),
         memories_(memories)
     {
         TRACE(LOCAL, FMT_ID2" Create", get_print_id2());
@@ -54,6 +57,8 @@ public:
     {
         return pUnits_;
     }
+
+    const platform &get_platform() const;
 };
 
 }

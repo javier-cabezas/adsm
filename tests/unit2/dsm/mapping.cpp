@@ -13,11 +13,13 @@ static I_HAL::phys::platform *plat0;
 static I_HAL::phys::platform::set_memory memories;
 static I_HAL::phys::platform::set_processing_unit pUnits;
 static I_HAL::phys::processing_unit *pUnit0;
+static I_HAL::phys::processing_unit *pUnit1;
 static I_HAL::phys::aspace *pas0;
 static I_HAL::virt::aspace *as0;
 static I_HAL::virt::aspace *as1;
 
 static I_HAL::virt::object *obj0;
+static I_HAL::virt::object *obj1;
 
 void
 mapping_test::SetUpTestCase()
@@ -33,8 +35,8 @@ mapping_test::SetUpTestCase()
     pUnits = plat0->get_processing_units(I_HAL::phys::processing_unit::PUNIT_TYPE_GPU);
     ASSERT_TRUE(pUnits.size() > 0);
     pUnit0 = *pUnits.begin();
+    pUnit1 = nullptr;
     pas0 = &pUnit0->get_paspace();
-
     // Create address spaces
     I_HAL::phys::aspace::set_processing_unit compatibleUnits({ pUnit0 });
     as0 = pas0->create_vaspace(compatibleUnits, err);
@@ -318,12 +320,16 @@ TEST_F(mapping_test, append_mapping4)
 
     gmacError_t errHal;
 
+    // We create different objects, since mapping the same object on different address spaces
+    // can fail depending on the hardware configuration
     obj0 = plat0->create_object(**pas0->get_memories().begin(), BLOCK_SIZE +
+                                                                BLOCK_SIZE, errHal);
+    obj1 = plat0->create_object(**pas0->get_memories().begin(), BLOCK_SIZE +
                                                                 BLOCK_SIZE, errHal);
 
     ptr p0 = as0->map(*obj0, errHal);
     ASSERT_TRUE(errHal == gmacSuccess);
-    ptr p1 = as1->map(*obj0, errHal);
+    ptr p1 = as1->map(*obj1, errHal);
     ASSERT_TRUE(errHal == gmacSuccess);
 
     mapping_ptr m0 = new mapping(p0);
@@ -349,6 +355,8 @@ TEST_F(mapping_test, append_mapping4)
     errHal = as1->unmap(p1);
     ASSERT_TRUE(errHal == gmacSuccess);
     errHal = plat0->destroy_object(*obj0);
+    ASSERT_TRUE(errHal == gmacSuccess);
+    errHal = plat0->destroy_object(*obj1);
     ASSERT_TRUE(errHal == gmacSuccess);
 }
 

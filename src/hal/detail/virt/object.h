@@ -4,6 +4,7 @@
 #include <set>
 
 #include "util/factory.h"
+#include "util/misc.h"
 #include "util/unique.h"
 
 #include "hal/detail/ptr.h"
@@ -12,6 +13,7 @@ namespace __impl { namespace hal { namespace detail {
     
 namespace phys {
     class memory;
+    class processing_unit;
 }
 
 namespace virt {
@@ -26,12 +28,13 @@ class GMAC_LOCAL object :
 
 public:
     typedef std::map<aspace *, object_view *> map_view;
+    typedef std::set<const object_view *> set_view;
 private:
-    phys::memory *memory_;
+    const phys::memory *memory_;
     size_t size_;
     map_view views_;
 
-    object(phys::memory &location, size_t size);
+    object(const phys::memory &location, size_t size);
     ~object()
     {
     }
@@ -47,6 +50,18 @@ public:
     }
 
     gmacError_t migrate(phys::memory &newLocation);
+
+    const object_view *get_view(aspace &as) const
+    {
+        map_view::const_iterator it = views_.find(&as);
+
+        return it != views_.end()? it->second: NULL;
+    } 
+
+    set_view get_views() const;
+
+    set_view get_views(detail::phys::processing_unit::type type) const;
+    set_view get_views(detail::phys::aspace &as) const;
 };
 
 typedef util::shared_ptr<object>       object_ptr;

@@ -35,6 +35,7 @@ WITH THE SOFTWARE.  */
 #define GMAC_UTIL_MISC_H_
 
 #include <algorithm>
+#include <cstddef>
 #include <list>
 
 #include "config/common.h"
@@ -134,22 +135,46 @@ has_predicate(C &&c, F &&f)
 
 template <typename C, typename F>
 inline
-//decltype(std::find(typename C::iterator, typename C::iterator, F))
 typename C::iterator
-find(C &&c, F &&f)
+find(C &&c, typename C::value_type &&t)
+{
+    return std::find(c.begin(), c.end(), t);
+}
+
+template <typename C, typename F>
+inline
+typename C::iterator
+find_if(C &&c, F &&f)
 {
     return std::find_if(c.begin(), c.end(), f);
 }
 
-#if 0
+template <typename C>
+inline
+typename C::iterator
+find_value(C &&c, typename C::value_type &&t)
+{
+    return std::find_if(c.begin(), c.end(), [&](const typename C::value_type &val) -> bool
+                                            {
+                                                return val.second == t;
+                                            });
+}
+
+template <typename C, typename K>
+inline
+ptrdiff_t
+count(C &&c, K &&k)
+{
+    return ptrdiff_t(std::count(c.begin(), c.end(), k));
+}
+
 template <typename C, typename F>
 inline
-decltype(std::count_if(typename C::iterator, typename C::iterator, F))
+ptrdiff_t
 count_if(C &&c, F &&f)
 {
-    return std::count_if(c.begin(), c.end(), f);
+    return ptrdiff_t(std::count_if(c.begin(), c.end(), f));
 }
-#endif
 
 }
 
