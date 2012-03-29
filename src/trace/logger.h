@@ -129,7 +129,7 @@ void dummy_assertion(bool /*b*/, ...)
 #ifdef DEBUG
 #define MESSAGE(fmt, ...) do {                                        \
                             if (::config::params::Verbose) { \
-                                __impl::trace::Logger::__Message("<GMAC> "fmt"\n", ##__VA_ARGS__); \
+                                __impl::trace::Logger::__Message("<GMAC> " fmt"\n", ##__VA_ARGS__); \
                                 TRACE(GLOBAL, fmt, ##__VA_ARGS__);    \
                             }                                         \
                           } while (0)
@@ -137,7 +137,7 @@ void dummy_assertion(bool /*b*/, ...)
 #define MESSAGE(fmt, ...) { if (::config::params::Verbose) __impl::trace::Logger::__Message("<GMAC> "fmt"\n", ##__VA_ARGS__); }
 #endif
 
-#define WARNING(fmt, ...) __impl::trace::Logger::__Warning("("FMT_TID") " fmt, ::config::params::DebugUseRealTID? __impl::util::get_thread_id(): __impl::core::thread::get_debug_tid(), ##__VA_ARGS__)
+#define WARNING(fmt, ...) __impl::trace::Logger::__Warning("(" FMT_TID") " fmt, ::config::params::DebugUseRealTID? __impl::util::get_thread_id(): __impl::core::thread::get_debug_tid(), ##__VA_ARGS__)
 #define FATAL(fmt, ...) __impl::trace::Logger::__Fatal(fmt, ##__VA_ARGS__)
 #define CFATAL(c, ...) __impl::trace::Logger::__CFatal(c, "Condition '"#c"' failed", LOCATION_STRING)
 

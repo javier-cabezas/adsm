@@ -12,6 +12,8 @@
 
 #include "hal/detail/types.h"
 
+#include "hal/cuda/stream.h"
+
 namespace __impl { namespace hal { namespace cuda {
 
 namespace phys {
@@ -41,19 +43,24 @@ class GMAC_LOCAL aspace :
 
     CUcontext context_;
 
+    stream streamToHost_;
+    stream streamToDevice_;
+    stream streamDevice_;
+    stream streamCompute_;
+
     hal_buffer *alloc_buffer(size_t size, GmacProtection hint, hal_stream &stream, gmacError_t &err);
     gmacError_t free_buffer(hal_buffer &buffer);
 
 public:
-    hal_event_ptr copy(hal::ptr dst, hal::const_ptr src, size_t count, hal_stream &s, list_event_detail *dependencies, gmacError_t &err);
-    hal_event_ptr copy_async(hal::ptr dst, hal::const_ptr src, size_t count, hal_stream &s, list_event_detail *dependencies, gmacError_t &err);
+    hal_event_ptr copy(hal::ptr dst, hal::const_ptr src, size_t count, list_event_detail *dependencies, gmacError_t &err);
+    hal_event_ptr copy_async(hal::ptr dst, hal::const_ptr src, size_t count, list_event_detail *dependencies, gmacError_t &err);
 
-    hal_event_ptr copy(hal::ptr dst, device_input &input, size_t count, hal_stream &s, list_event_detail *dependencies, gmacError_t &err);
-    hal_event_ptr copy(device_output &output, hal::const_ptr src, size_t count, hal_stream &s, list_event_detail *dependencies, gmacError_t &err);
-    hal_event_ptr memset(hal::ptr dst, int c, size_t count, hal_stream &s, list_event_detail *dependencies, gmacError_t &err);
-    hal_event_ptr copy_async(hal::ptr dst, device_input &input, size_t count, hal_stream &s, list_event_detail *dependencies, gmacError_t &err);
-    hal_event_ptr copy_async(device_output &output, hal::const_ptr src, size_t count, hal_stream &s, list_event_detail *dependencies, gmacError_t &err);
-    hal_event_ptr memset_async(hal::ptr dst, int c, size_t count, hal_stream &s, list_event_detail *dependencies, gmacError_t &err);
+    hal_event_ptr copy(hal::ptr dst, device_input &input, size_t count, list_event_detail *dependencies, gmacError_t &err);
+    hal_event_ptr copy(device_output &output, hal::const_ptr src, size_t count, list_event_detail *dependencies, gmacError_t &err);
+    hal_event_ptr memset(hal::ptr dst, int c, size_t count, list_event_detail *dependencies, gmacError_t &err);
+    hal_event_ptr copy_async(hal::ptr dst, device_input &input, size_t count, list_event_detail *dependencies, gmacError_t &err);
+    hal_event_ptr copy_async(device_output &output, hal::const_ptr src, size_t count, list_event_detail *dependencies, gmacError_t &err);
+    hal_event_ptr memset_async(hal::ptr dst, int c, size_t count, list_event_detail *dependencies, gmacError_t &err);
 
     aspace(hal_aspace::set_processing_unit &compatibleUnits, phys::aspace &pas, gmacError_t &err);
 

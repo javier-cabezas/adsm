@@ -4,40 +4,140 @@
 namespace __impl { namespace hal { namespace cuda {
 
 inline
-_event_common_t::_event_common_t() :
-    stream_(NULL)
+operation::operation(stream &s) :
+    synced_(false),
+    stream_(s)
 {
-}
-
-inline
-void
-_event_common_t::begin(stream &stream)
-{
-    stream_ = &stream;
-
-    stream_->get_aspace().set(); 
-
     CUresult err;
     err = cuEventCreate(&eventStart_, CU_EVENT_DEFAULT);
     ASSERTION(err == CUDA_SUCCESS);
     err = cuEventCreate(&eventEnd_, CU_EVENT_DEFAULT);
     ASSERTION(err == CUDA_SUCCESS);
+}
 
-    timeBase_ = hal::get_timestamp();
-    err = cuEventRecord(eventStart_, stream());
+template <typename R>
+inline
+R
+operation::execute(std::function<R()> f)
+{
+    stream_.get_aspace().set(); 
+
+    CUresult err = cuEventRecord(eventStart_, stream_());
     ASSERTION(err == CUDA_SUCCESS);
+    R ret = f();
+    err = cuEventRecord(eventEnd_, stream_());
+    ASSERTION(err == CUDA_SUCCESS);
+
+    return ret;
 }
 
 inline
-void
-_event_common_t::end()
+gmacError_t
+operation::sync()
 {
-    ASSERTION(stream_ != NULL);
-    stream_->get_aspace().set(); 
+    gmacError_t ret = gmacSuccess;
+    if (synced_ == false) {
+        stream_.get_aspace().set();
 
-    cuEventRecord(eventEnd_, (*stream_)());
+        CUresult res = cuEventSynchronize(eventEnd_);
+        if (res == CUDA_SUCCESS) {
+#ifdef USE_TRACE
+            float mili;
+            res = cuEventElapsedTime(&mili, eventStart_, eventEnd_);
+            if (res == CUDA_SUCCESS) {
+                timeQueued_ = timeSubmit_ = timeStart_ = timeBase_;
+                timeEnd_ = timeQueued_ + time_t(mili * 1000.f);
+            }
+#endif
+            synced_ = true;
+        }
+        ret = error(res);
+    }
+    return ret;
 }
 
+inline
+_event_common_t::_event_common_t(bool async, parent::type t, virt::aspace &as) :
+    parent(async, t, as),
+    syncOpBegin_(operations_.end())
+{
+}
+
+template <typename R>
+inline
+R
+_event_common_t::add_operation(hal_event_ptr ptr, stream &stream, std::function<R()> f)
+{
+    // During operation execution, the event is not thread-safe
+    if (operations_.size() == 0) {
+#ifdef USE_TRACE
+        // Get the base time if this is the first operation of the event
+        timeBase_ = hal::get_timestamp();
+#endif
+    }
+    operation op(stream);
+
+    R r = op.execute(f);
+
+    operations_.push_back(op);
+
+    // Compute the first operation to be synchronized
+    if (operations_.size() == 1) {
+        syncOpBegin_ = operations_.begin();
+    } else if (syncOpBegin_ == operations_.end()) {
+        syncOpBegin_ = std::prev(operations_.end());
+    }
+
+    // Modify the state since there is a new operation
+    state_ = Queued;
+
+    stream.set_last_event(ptr);
+
+    return r;
+}
+
+inline
+gmacError_t
+_event_common_t::sync_no_exec()
+{
+    lock_write();
+
+    if (synced_ == false) {
+        TRACE(LOCAL, FMT_ID2" sync", get_print_id2());
+
+        while (syncOpBegin_ != operations_.end()) {
+            err_ = syncOpBegin_->sync();
+            if (err_ != gmacSuccess) {
+                unlock();
+                return err_;
+            }
+            ++syncOpBegin_;
+        }
+        synced_ = true;
+    }
+
+    unlock();
+
+    return err_;
+}
+
+inline
+gmacError_t
+_event_common_t::sync()
+{
+    sync_no_exec();
+
+    if (err_ == gmacSuccess) {
+        // Execute pending operations associated to the event
+        exec_triggers(true);
+    }
+
+    return err_;
+}
+
+
+
+#if 0
 inline
 stream &
 _event_common_t::get_stream()
@@ -46,6 +146,7 @@ _event_common_t::get_stream()
 
     return *stream_;
 }
+#endif
 
 inline
 _event_t::_event_t(bool async, type t, virt::aspace &as) :
@@ -58,41 +159,6 @@ virt::aspace &
 _event_t::get_vaspace()
 {
     return reinterpret_cast<virt::aspace &>(parent::get_vaspace());
-}
-
-inline
-gmacError_t
-_event_t::sync()
-{
-    gmacError_t ret;
-    lock_write();
-
-    if (synced_ == false) {
-        get_stream().get_aspace().set();
-
-        TRACE(LOCAL, FMT_ID2" waiting for event", get_print_id2());
-        CUresult res = cuEventSynchronize(eventEnd_);
-        if (res == CUDA_SUCCESS) {
-#ifdef USE_TRACE
-            float mili;
-            res = cuEventElapsedTime(&mili, eventStart_, eventEnd_);
-            if (res == CUDA_SUCCESS) {
-                timeQueued_ = timeSubmit_ = timeStart_ = timeBase_;
-                timeEnd_ = timeQueued_ + time_t(mili * 1000.f);
-            }
-#endif
-            // Execute pending operations associated to the event
-            exec_triggers(true);
-            synced_ = true;
-        }
-        err_ = error(res);
-    }
-
-    ret = err_;
-
-    unlock();
-
-    return ret;
 }
 
 inline

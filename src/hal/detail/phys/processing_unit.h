@@ -72,6 +72,9 @@ protected:
 
     processing_unit(platform &platform, type t, aspace &as);
 public:
+    virtual ~processing_unit()
+    {}
+
     virtual stream *create_stream(virt::aspace &as) = 0;
     virtual gmacError_t destroy_stream(stream &stream) = 0;
 

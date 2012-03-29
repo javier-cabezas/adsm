@@ -29,17 +29,13 @@ public:
     class GMAC_LOCAL launch {
     private:
         kernel &kernel_;
-        stream &stream_;
 
     protected:
         event_ptr event_;
 
-        launch(kernel &kernel, stream &stream);
+        launch(kernel &kernel);
 
     public:
-        stream &get_stream();
-        const stream &get_stream() const;
- 
         const kernel &get_kernel() const;
         
         virtual event_ptr execute(list_event &dependencies, gmacError_t &err) = 0;

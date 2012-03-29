@@ -237,15 +237,15 @@ public:
 
     virtual code_repository &get_code_repository() = 0;
 
-    virtual event_ptr copy(hal::ptr dst, hal::const_ptr src, size_t count, stream &stream, list_event *dependencies, gmacError_t &err) = 0;
-    virtual event_ptr copy_async(hal::ptr dst, hal::const_ptr src, size_t count, stream &stream, list_event *dependencies, gmacError_t &err) = 0;
+    virtual event_ptr copy(hal::ptr dst, hal::const_ptr src, size_t count, list_event *dependencies, gmacError_t &err) = 0;
+    virtual event_ptr copy_async(hal::ptr dst, hal::const_ptr src, size_t count, list_event *dependencies, gmacError_t &err) = 0;
 
-    virtual event_ptr copy(hal::ptr dst, device_input &input, size_t count, stream &stream, list_event *dependencies, gmacError_t &err) = 0;
-    virtual event_ptr copy(device_output &output, hal::const_ptr src, size_t count, stream &stream, list_event *dependencies, gmacError_t &err) = 0;
-    virtual event_ptr memset(hal::ptr dst, int c, size_t count, stream &stream, list_event *dependencies, gmacError_t &err) = 0;
-    virtual event_ptr copy_async(hal::ptr dst, device_input &input, size_t count, stream &stream, list_event *dependencies, gmacError_t &err) = 0;
-    virtual event_ptr copy_async(device_output &output, hal::const_ptr src, size_t count, stream &stream, list_event *dependencies, gmacError_t &err) = 0;
-    virtual event_ptr memset_async(hal::ptr dst, int c, size_t count, stream &stream, list_event *dependencies, gmacError_t &err) = 0;
+    virtual event_ptr copy(hal::ptr dst, device_input &input, size_t count, list_event *dependencies, gmacError_t &err) = 0;
+    virtual event_ptr copy(device_output &output, hal::const_ptr src, size_t count, list_event *dependencies, gmacError_t &err) = 0;
+    virtual event_ptr memset(hal::ptr dst, int c, size_t count, list_event *dependencies, gmacError_t &err) = 0;
+    virtual event_ptr copy_async(hal::ptr dst, device_input &input, size_t count, list_event *dependencies, gmacError_t &err) = 0;
+    virtual event_ptr copy_async(device_output &output, hal::const_ptr src, size_t count, list_event *dependencies, gmacError_t &err) = 0;
+    virtual event_ptr memset_async(hal::ptr dst, int c, size_t count, list_event *dependencies, gmacError_t &err) = 0;
 };
 
 }

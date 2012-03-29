@@ -27,7 +27,7 @@ object::create_view(aspace &as, ptr::offset_type offset, gmacError_t &err)
     object_view *ret = create(*this, as, offset);
     views_.insert(map_view::value_type(&as, ret));
 
-    TRACE(LOCAL, FMT_ID2" insert "FMT_ID2":"FMT_ID2, get_print_id2(), as.get_print_id2(), ret->get_print_id2());
+    TRACE(LOCAL, FMT_ID2" insert " FMT_ID2":" FMT_ID2, get_print_id2(), as.get_print_id2(), ret->get_print_id2());
 
     err = gmacSuccess;
 
@@ -37,7 +37,7 @@ object::create_view(aspace &as, ptr::offset_type offset, gmacError_t &err)
 gmacError_t
 object::destroy_view(object_view &view)
 {
-    TRACE(LOCAL, FMT_ID2" destroy "FMT_ID2":"FMT_ID2, get_print_id2(), view.get_vaspace().get_print_id2(), view.get_print_id2());
+    TRACE(LOCAL, FMT_ID2" destroy " FMT_ID2":" FMT_ID2, get_print_id2(), view.get_vaspace().get_print_id2(), view.get_print_id2());
 
     map_view::iterator it = views_.find(&view.get_vaspace());
     if (it == views_.end()) return gmacErrorInvalidValue;

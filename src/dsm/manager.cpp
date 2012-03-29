@@ -7,7 +7,7 @@ namespace __impl { namespace dsm {
 void
 manager::event_handler(hal::virt::aspace &aspace, util::event::construct)
 {
-    TRACE(LOCAL, FMT_ID2" Handle "FMT_ID2" creation", get_print_id2(), aspace.get_print_id2());
+    TRACE(LOCAL, FMT_ID2" Handle " FMT_ID2" creation", get_print_id2(), aspace.get_print_id2());
 
     map_mapping_group *ret = new map_mapping_group();
     aspace.set_attribute<map_mapping_group>(AttributeMappings_, ret);
@@ -16,7 +16,7 @@ manager::event_handler(hal::virt::aspace &aspace, util::event::construct)
 void
 manager::event_handler(hal::virt::aspace &aspace, util::event::destruct)
 {
-    TRACE(LOCAL, FMT_ID2" Handle "FMT_ID2" destruction", get_print_id2(), aspace.get_print_id2());
+    TRACE(LOCAL, FMT_ID2" Handle " FMT_ID2" destruction", get_print_id2(), aspace.get_print_id2());
 
     // Get the mappings from the address space, to avoid an extra map
     map_mapping_group &group = get_aspace_mappings(aspace);
@@ -43,7 +43,7 @@ mapping_fits(manager::map_mapping &map, mapping_ptr m)
 {
     manager::map_mapping::iterator it = map.upper_bound(m->get_ptr().get_offset());
 
-    return it == map.end() || it->second->get_ptr().get_offset() >= (m->get_ptr().get_offset() + m->get_bounds().get_size());
+    return it == map.end() || it->second->get_ptr().get_offset() >= ptrdiff_t(m->get_ptr().get_offset() + m->get_bounds().get_size());
 }
 
 error
@@ -55,19 +55,19 @@ manager::insert_mapping(map_mapping_group &mappings, mapping_ptr m)
         map_mapping map;
         map.insert(map_mapping::value_type(m->get_ptr().get_offset() + m->get_bounds().get_size(), m));
         mappings.insert(map_mapping_group::value_type(&m->get_ptr().get_view(), map));
-        TRACE(LOCAL, FMT_ID2" Inserting "FMT_ID2" in "FMT_ID2,
+        TRACE(LOCAL, FMT_ID2" Inserting " FMT_ID2" in " FMT_ID2,
                      get_print_id2(),
                      m->get_print_id2(),
                      m->get_ptr().get_view().get_vaspace().get_print_id2());
     } else {
         if (mapping_fits(it->second, m)) {
             it->second.insert(map_mapping::value_type(m->get_ptr().get_offset() + m->get_bounds().get_size(), m));
-            TRACE(LOCAL, FMT_ID2" Inserting "FMT_ID2" in "FMT_ID2,
+            TRACE(LOCAL, FMT_ID2" Inserting " FMT_ID2" in " FMT_ID2,
                          get_print_id2(),
                          m->get_print_id2(),
                          m->get_ptr().get_view().get_vaspace().get_print_id2());
         } else {
-            TRACE(LOCAL, FMT_ID2" NOT Inserting "FMT_ID2" in "FMT_ID2,
+            TRACE(LOCAL, FMT_ID2" NOT Inserting " FMT_ID2" in " FMT_ID2,
                          get_print_id2(),
                          m->get_print_id2(),
                          m->get_ptr().get_view().get_vaspace().get_print_id2());
@@ -118,7 +118,7 @@ manager::merge_mappings(range_mapping &range)
 error
 manager::replace_mappings(map_mapping_group &mappings, range_mapping &range, mapping_ptr mNew)
 {
-    TRACE(LOCAL, FMT_ID2" Replace range (%s) with "FMT_ID2,
+    TRACE(LOCAL, FMT_ID2" Replace range (%s) with " FMT_ID2,
                  get_print_id2(),
                  get_range_string(range).c_str(),
                  mNew->get_print_id2());
@@ -170,7 +170,7 @@ manager::~manager()
 error
 manager::link(hal::ptr dst, hal::ptr src, size_t count, int flags)
 {
-    TRACE(LOCAL, FMT_ID2" Link "FMT_SIZE" bytes", get_print_id2(), count);
+    TRACE(LOCAL, FMT_ID2" Link " FMT_SIZE" bytes", get_print_id2(), count);
 
     // Pointers must be valid
     CHECK(bool(dst) && bool(src), DSM_ERROR_INVALID_PTR);

@@ -12,6 +12,7 @@ namespace virt {
 
 class GMAC_LOCAL _event :
     public util::list_trigger<>,
+    public util::unique<_event>,
     public gmac::util::lock_rw<_event > {
 
 public:

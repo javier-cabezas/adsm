@@ -34,7 +34,7 @@ template <bool forward>
 void
 mapping::shift_blocks(size_t offset)
 {
-    TRACE(LOCAL, FMT_ID2" Shifting blocks by "FMT_SIZE" bytes", get_print_id2(), offset);
+    TRACE(LOCAL, FMT_ID2" Shifting blocks by " FMT_SIZE" bytes", get_print_id2(), offset);
 
     for (coherence::block_ptr b : blocks_) {
         b->shift(this, size_);
@@ -102,7 +102,7 @@ mapping::get_first_block(hal::ptr p)
 mapping::list_block::iterator
 mapping::split_block(list_block::iterator it, size_t offset)
 {
-    TRACE(LOCAL, FMT_ID2" Splitting block at offset "FMT_SIZE, get_print_id2(), offset);
+    TRACE(LOCAL, FMT_ID2" Splitting block at offset " FMT_SIZE, get_print_id2(), offset);
 
     coherence::block_ptr blockNew = (*it)->split(offset);
 
@@ -114,7 +114,7 @@ mapping::split_block(list_block::iterator it, size_t offset)
 mapping::cursor_block
 mapping::split_block(cursor_block cursor, size_t offset)
 {
-    TRACE(LOCAL, FMT_ID2" Splitting block at offset "FMT_SIZE, get_print_id2(), offset);
+    TRACE(LOCAL, FMT_ID2" Splitting block at offset " FMT_SIZE, get_print_id2(), offset);
 
     coherence::block_ptr blockNew = cursor.get_block()->split(offset);
 
@@ -126,7 +126,7 @@ mapping::split_block(cursor_block cursor, size_t offset)
 error
 mapping::prepend(coherence::block_ptr b)
 {
-    TRACE(LOCAL, FMT_ID2" Prepending "FMT_ID2, get_print_id2(), b->get_print_id2());
+    TRACE(LOCAL, FMT_ID2" Prepending " FMT_ID2, get_print_id2(), b->get_print_id2());
 
     error ret = DSM_SUCCESS;
 
@@ -147,7 +147,7 @@ mapping::prepend(coherence::block_ptr b)
 error
 mapping::append(coherence::block_ptr b)
 {
-    TRACE(LOCAL, FMT_ID2" Appending "FMT_ID2,
+    TRACE(LOCAL, FMT_ID2" Appending " FMT_ID2,
                  get_print_id2(), b->get_print_id2());
 
     error ret = DSM_SUCCESS;
@@ -167,7 +167,7 @@ mapping::append(coherence::block_ptr b)
 error
 mapping::swap(coherence::block_ptr b, coherence::block_ptr bNew)
 {
-    TRACE(LOCAL, FMT_ID2" Swapping "FMT_ID2" with "FMT_ID2,
+    TRACE(LOCAL, FMT_ID2" Swapping " FMT_ID2" with " FMT_ID2,
                  get_print_id2(), b->get_print_id2(), bNew->get_print_id2());
 
     ASSERTION(b != bNew);
@@ -187,10 +187,10 @@ mapping::swap(coherence::block_ptr b, coherence::block_ptr bNew)
 error
 mapping::append(mapping &&map)
 {
-    TRACE(LOCAL, FMT_ID2" Appending "FMT_ID2,
+    TRACE(LOCAL, FMT_ID2" Appending " FMT_ID2,
                  get_print_id2(), map.get_print_id2());
 
-    if ((map.addr_.get_offset()  <  (addr_.get_offset() + size_)) ||
+    if ((map.addr_.get_offset()  <  ptrdiff_t(addr_.get_offset() + size_)) ||
         (&map.addr_.get_view() !=  &addr_.get_view())) {
         return DSM_ERROR_INVALID_VALUE;
     }
@@ -228,7 +228,7 @@ mapping::resize(size_t pre, size_t post)
 {
     error ret = DSM_SUCCESS;
 
-    TRACE(LOCAL, FMT_ID2" Resizing ["FMT_SIZE", "FMT_SIZE"]", get_print_id2(), pre, post);
+    TRACE(LOCAL, FMT_ID2" Resizing [" FMT_SIZE", " FMT_SIZE"]", get_print_id2(), pre, post);
 
     if (pre > 0) {
         coherence::block_ptr b = factory_block::create(pre);
@@ -282,7 +282,7 @@ mapping::~mapping()
 error
 mapping::acquire(size_t offset, size_t count, int flags)
 {
-    TRACE(LOCAL, FMT_ID2" Acquire "FMT_SIZE":"FMT_SIZE,
+    TRACE(LOCAL, FMT_ID2" Acquire " FMT_SIZE":" FMT_SIZE,
                  get_print_id2(), offset, count);
 
     error err = DSM_SUCCESS;
@@ -300,7 +300,7 @@ mapping::acquire(size_t offset, size_t count, int flags)
 error
 mapping::release(size_t offset, size_t count)
 {
-    TRACE(LOCAL, FMT_ID2" Release "FMT_SIZE":"FMT_SIZE,
+    TRACE(LOCAL, FMT_ID2" Release " FMT_SIZE":" FMT_SIZE,
                  get_print_id2(), offset, count);
 
     error err = DSM_SUCCESS;
@@ -319,7 +319,7 @@ error
 mapping::link(hal::ptr ptrDst, mapping_ptr mDst,
               hal::ptr ptrSrc, mapping_ptr mSrc, size_t count, int flags)
 {
-    TRACE(STATIC(mapping), "dsm::mapping linking "FMT_ID2" and "FMT_ID2,
+    TRACE(STATIC(mapping), "dsm::mapping linking " FMT_ID2" and " FMT_ID2,
                            mDst->get_print_id2(),
                            mSrc->get_print_id2());
 

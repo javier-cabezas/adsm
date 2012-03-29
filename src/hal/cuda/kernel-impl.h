@@ -35,10 +35,11 @@ kernel::launch_config(parent::config &conf, parent::arg_list &args, stream &stre
 #endif
 
 inline
-kernel::launch::launch(kernel &parent, config &conf, arg_list &args, stream &stream) :
-    parent::launch(parent, stream),
+kernel::launch::launch(kernel &parent, config &conf, arg_list &args, stream &s) :
+    parent::launch(parent),
     config_(conf),
-    args_(args)
+    args_(args),
+    stream_(s)
 {
 }
 
@@ -67,14 +68,14 @@ inline
 stream &
 kernel::launch::get_stream()
 {
-    return reinterpret_cast<stream &>(parent::launch::get_stream());
+    return stream_;
 }
 
 inline
 const stream &
 kernel::launch::get_stream() const
 {
-    return reinterpret_cast<const stream &>(parent::launch::get_stream());
+    return stream_;
 }
 
 inline
@@ -134,18 +135,21 @@ kernel::launch::execute(gmacError_t &err)
     TRACE(LOCAL, "kernel launch on stream: %p", get_stream()());
     event_ptr ret = create_event(true, _event_t::Kernel, get_stream().get_aspace());
 
-    ret->begin(get_stream());
-    res = cuLaunchKernel(get_kernel()(), dimsGlobal.x,
-                                         dimsGlobal.y,
-                                         dimsGlobal.z,
-                                         dimsGroup.x,
-                                         dimsGroup.y,
-                                         dimsGroup.z,
-                                         get_config().memShared_,
-                                         get_stream()(),
-                                         (void **) get_arg_list().params_,
-                                         NULL);
-    ret->end();
+    auto op = [&]() -> CUresult
+              {
+                  return cuLaunchKernel(get_kernel()(), dimsGlobal.x,
+                                                        dimsGlobal.y,
+                                                        dimsGlobal.z,
+                                                        dimsGroup.x,
+                                                        dimsGroup.y,
+                                                        dimsGroup.z,
+                                                        get_config().memShared_,
+                                                        get_stream()(),
+                                                        (void **) get_arg_list().params_,
+                                                        NULL);
+              };
+
+    res = ret->add_operation(ret, get_stream(), std::function<CUresult()>(std::cref(op)));
     err = error(res);
 
     if (err != gmacSuccess) {

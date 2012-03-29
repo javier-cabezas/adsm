@@ -30,24 +30,9 @@ kernel::config::get_ndims() const
 }
 
 inline
-kernel::launch::launch(kernel &kernel, stream &stream) :
-    kernel_(kernel),
-    stream_(stream)
+kernel::launch::launch(kernel &kernel) :
+    kernel_(kernel)
 {
-}
-
-inline
-stream &
-kernel::launch::get_stream()
-{
-    return stream_;
-}
-
-inline
-const stream &
-kernel::launch::get_stream() const
-{
-    return stream_;
 }
 
 inline

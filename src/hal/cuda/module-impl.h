@@ -52,67 +52,6 @@ module_descriptor::add(texture_descriptor &t)
     textures_.push_back(t);
 }
 
-inline hal_kernel *
-code_repository::get_kernel(gmac_kernel_id_t key)
-{
-    map_kernel::const_iterator k;
-    k = kernels_.find(key);
-    if(k == kernels_.end()) return NULL;
-    return k->second;
-}
-
-inline hal_kernel *
-code_repository::get_kernel(const std::string &name)
-{
-    FATAL("Not implemented");
-    return NULL;
-}
-
-inline const variable_t *
-code_repository::constant(cuda_variable_t key) const
-{
-    map_variable::const_iterator v;
-    v = constants_.find(key);
-    if(v == constants_.end()) return NULL;
-    return &v->second;
-}
-
-inline const variable_t *
-code_repository::variable(cuda_variable_t key) const
-{
-    map_variable::const_iterator v;
-    v = variables_.find(key);
-    if(v == variables_.end()) return NULL;
-    return &v->second;
-}
-
-inline const variable_t *
-code_repository::constantByName(const std::string &name) const
-{
-    map_variable_name::const_iterator v;
-    v = constantsByName_.find(name);
-    if(v == constantsByName_.end()) return NULL;
-    return &v->second;
-}
-
-inline const variable_t *
-code_repository::variableByName(const std::string &name) const
-{
-    map_variable_name::const_iterator v;
-    v = variablesByName_.find(name);
-    if(v == variablesByName_.end()) return NULL;
-    return &v->second;
-}
-
-inline const texture_t *
-code_repository::texture(cuda_texture_t key) const
-{
-    map_texture::const_iterator t;
-    t = textures_.find(key);
-    if(t == textures_.end()) return NULL;
-    return &t->second;
-}
-
 #if 0
 template <typename T>
 void
