@@ -63,9 +63,10 @@ public:
 
         config &config_;
         arg_list &args_;
+        stream &stream_;
 
     public:
-        launch(kernel &parent, config &conf, arg_list &args, stream &stream);
+        launch(kernel &parent, config &conf, arg_list &args, stream &s);
 
         stream &get_stream();
         const stream &get_stream() const;

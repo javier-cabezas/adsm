@@ -16,10 +16,14 @@ class GMAC_LOCAL stream :
 
     typedef hal::detail::stream parent;
 
+    bool valid_;
     CUstream stream_;
 
 public:
+    stream(virt::aspace &as);
     stream(CUstream stream, virt::aspace &as);
+
+    void set_cuda_stream(CUstream s);
 
     virt::aspace &get_aspace();
 

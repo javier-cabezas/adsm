@@ -10,6 +10,11 @@
 #include "util/unique.h"
 
 namespace __impl { namespace hal {
+
+namespace detail {
+    class _event;
+    class stream;
+}
     
 namespace cuda {
 
@@ -17,40 +22,66 @@ namespace virt {
     class aspace;
 }
 
+typedef util::shared_ptr<hal::detail::_event> hal_event_ptr;
+typedef hal::detail::stream hal_stream;
+
 class stream;
 
-class GMAC_LOCAL _event_common_t {
+class GMAC_LOCAL operation {
+    friend class _event_common_t;
+
+    bool synced_;
+    CUevent eventStart_;
+    CUevent eventEnd_;
+
+    stream &stream_;
+    operation(stream &s);
+
+    template <typename R>
+    R execute(std::function<R()> f);
+    gmacError_t sync();
+public:
+};
+
+class GMAC_LOCAL _event_common_t :
+    public hal::detail::_event {
     friend class virt::aspace;
     friend class device;
     friend class kernel;
     friend class kernel_cpu;
     friend class list_event;
 
-    stream *stream_;
+    typedef hal::detail::_event parent;
 
-protected:
-    CUevent eventStart_;
-    CUevent eventEnd_;
-
+#ifdef USE_TRACE
     hal::time_t timeBase_;
+#endif
+protected:
+    typedef std::list<operation> list_operation;
+    list_operation operations_;
+    list_operation::iterator syncOpBegin_;
 
     // Not instantiable
-    _event_common_t();
+    _event_common_t(bool async, parent::type t, virt::aspace &context);
 
-    void begin(stream &stream);
-    void end();
+    template <typename R>
+    R add_operation(hal_event_ptr ptr, stream &stream, std::function<R()> f);
 
-    stream &get_stream();
+    //stream &get_stream();
+    gmacError_t sync_no_exec();
+    gmacError_t sync();
+
+    void set_barrier(hal_stream &stream);
+
+    state get_state();
 };
 
 class GMAC_LOCAL _event_t :
-    public hal::detail::_event,
-    public _event_common_t,
-    public util::unique<_event_t> {
+    public _event_common_t {
 
     friend class virt::aspace;
 
-    typedef hal::detail::_event parent;
+    typedef _event_common_t parent;
 
 protected:
     virtual void reset(bool async, type t);
@@ -59,11 +90,7 @@ protected:
 public:
     virt::aspace &get_vaspace();
 
-    gmacError_t sync();
-
     void set_synced();
-
-    state get_state();
 };
 
 class GMAC_LOCAL event_deleter {

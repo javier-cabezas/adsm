@@ -53,8 +53,6 @@ public:
     size_t get_total_memory() const;
     size_t get_free_memory() const;
 
-    bool has_direct_copy(const hal_processing_unit &pUnit) const;
-
     gmacError_t get_info(GmacDeviceInfo &info);
 };
 

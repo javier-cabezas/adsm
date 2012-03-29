@@ -24,12 +24,20 @@ template <typename T>
 class GMAC_LOCAL functor_iface {
 public:
     virtual void operator()(T &t) = 0;
+
+    virtual ~functor_iface()
+    {
+    }
 };
 
 template <>
 class GMAC_LOCAL functor_iface<void> {
 public:
     virtual void operator()() = 0;
+
+    virtual ~functor_iface()
+    {
+    }
 };
 
 template <typename F, typename T, typename R>

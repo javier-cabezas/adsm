@@ -126,14 +126,14 @@ class spinlocker {
 protected:
 	void lock(const spinlock<T> &l) const
 	{
-        printf("["FMT_TID"] "FMT_ID2" lock_pre\n", __impl::core::thread::get_debug_tid(), ((T &) l).get_print_id2());
+        printf("[" FMT_TID"] " FMT_ID2" lock_pre\n", __impl::core::thread::get_debug_tid(), ((T &) l).get_print_id2());
 		l.lock();
-        printf("["FMT_TID"] "FMT_ID2" lock_post\n", __impl::core::thread::get_debug_tid(), ((T &) l).get_print_id2());
+        printf("[" FMT_TID"] " FMT_ID2" lock_post\n", __impl::core::thread::get_debug_tid(), ((T &) l).get_print_id2());
 	}
 
 	void unlock(const spinlock<T> &l) const
 	{
-        printf("["FMT_TID"] "FMT_ID2" unlock\n", __impl::core::thread::get_debug_tid(), ((T &) l).get_print_id2());
+        printf("[" FMT_TID"] " FMT_ID2" unlock\n", __impl::core::thread::get_debug_tid(), ((T &) l).get_print_id2());
 		l.unlock();
 	}
 };

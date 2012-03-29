@@ -166,7 +166,7 @@ public:
     }
 
     _base_ptr_t() :
-        view_(nullptr),
+        view_(NULL),
         offset_(0)
     {
     }

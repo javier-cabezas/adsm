@@ -8,7 +8,7 @@ block::block(size_t size) :
     lock("block"),
     size_(size)
 {
-    TRACE(LOCAL, FMT_ID2" Creating "FMT_SIZE" bytes", get_print_id2(), size);
+    TRACE(LOCAL, FMT_ID2" Creating " FMT_SIZE" bytes", get_print_id2(), size);
 }
 
 inline
@@ -21,7 +21,7 @@ inline
 block_ptr
 block::split(size_t off)
 {
-    TRACE(LOCAL, FMT_ID2" Splitting "FMT_SIZE, get_print_id2(), off);
+    TRACE(LOCAL, FMT_ID2" Splitting " FMT_SIZE, get_print_id2(), off);
 
     // Create new block
     block *nBlock = new block(size_ - off);
@@ -40,7 +40,7 @@ inline
 void
 block::shift(mapping_ptr m, size_t off)
 {
-    TRACE(LOCAL, FMT_ID2" Shift "FMT_SIZE" bytes", get_print_id2(), off);
+    TRACE(LOCAL, FMT_ID2" Shift " FMT_SIZE" bytes", get_print_id2(), off);
 
     mappings::iterator it = mappings_.find(m);
     ASSERTION(it != mappings_.end());
@@ -52,7 +52,7 @@ inline
 error
 block::acquire(mapping_ptr m, int flags)
 {
-    TRACE(LOCAL, FMT_ID2" Acquire block for "FMT_ID2, get_print_id2(), m->get_print_id2());
+    TRACE(LOCAL, FMT_ID2" Acquire block for " FMT_ID2, get_print_id2(), m->get_print_id2());
 
     if (flags & GMAC_PROT_WRITE) {
         lock::lock_write();
@@ -70,7 +70,7 @@ inline
 error
 block::release(mapping_ptr m)
 {
-    TRACE(LOCAL, FMT_ID2" Release block from "FMT_ID2, get_print_id2(), m->get_print_id2());
+    TRACE(LOCAL, FMT_ID2" Release block from " FMT_ID2, get_print_id2(), m->get_print_id2());
 
     lock::unlock();
 
@@ -81,7 +81,7 @@ inline
 error
 block::register_mapping(mapping_ptr m, size_t off)
 {
-    TRACE(LOCAL, FMT_ID2" Register "FMT_ID2, get_print_id2(), m->get_print_id2());
+    TRACE(LOCAL, FMT_ID2" Register " FMT_ID2, get_print_id2(), m->get_print_id2());
 
     ASSERTION(mappings_.find(m) == mappings_.end(), "Mapping already registered");
     mapping_descriptor descr = {
@@ -96,7 +96,7 @@ inline
 error
 block::unregister_mapping(const mapping &m)
 {
-    TRACE(LOCAL, FMT_ID2" Unregister "FMT_ID2, get_print_id2(), m.get_print_id2());
+    TRACE(LOCAL, FMT_ID2" Unregister " FMT_ID2, get_print_id2(), m.get_print_id2());
 
     mappings::iterator it;
     it = mappings_.find(&m);
@@ -111,7 +111,7 @@ inline
 error
 block::transfer_mappings(block &&b)
 {
-    TRACE(LOCAL, FMT_ID2" Transferring mappings from "FMT_ID2, get_print_id2(), b.get_print_id2());
+    TRACE(LOCAL, FMT_ID2" Transferring mappings from " FMT_ID2, get_print_id2(), b.get_print_id2());
 
     CHECK(this != &b, DSM_ERROR_INVALID_VALUE);
     CHECK(size_ == b.size_, DSM_ERROR_INVALID_VALUE);

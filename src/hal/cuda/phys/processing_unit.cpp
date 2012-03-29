@@ -83,13 +83,6 @@ processing_unit::get_free_memory() const
     return free;
 }
 
-bool
-processing_unit::has_direct_copy(const hal_processing_unit &pUnit) const
-{
-    FATAL("Not implemented");
-    return true;
-}
-
 gmacError_t
 processing_unit::get_info(GmacDeviceInfo &info)
 {

@@ -73,8 +73,10 @@ get_platforms()
         typedef std::set<CUdevice> set_device;
         typedef std::map<CUdevice, set_device> map_peer;
         map_peer peers;
+
         typedef std::map<CUdevice, cuda::phys::processing_unit> map_processing_unit;
         map_processing_unit pUnits;
+
         typedef std::set<set_device> set_peers;
         set_peers peerGroups;
 
@@ -219,30 +221,6 @@ get_platforms()
                 p->add_processing_unit(*pUnit);
             }
         }
-
-#if 0
-        // Add accelerators to the system
-        for (int i = 0; i < devCount; i++) {
-            cuda::phys::processing_unit::set_memory_connection connections;
-            cuda::phys::processing_unit::memory_connection connection(*mem, true, 0);
-            connections.insert(connection);
-
-#if CUDA_VERSION >= 2020
-            int attr = 0;
-            if(cuDeviceGetAttribute(&attr, CU_DEVICE_ATTRIBUTE_COMPUTE_MODE, cuDev) != CUDA_SUCCESS)
-                FATAL("Unable to access CUDA device");
-            if (attr != CU_COMPUTEMODE_PROHIBITED) {
-                cuda::phys::processing_unit *pUnit = new cuda::phys::processing_unit(*p, *aspace, cuDev);
-                p->add_processing_unit(*pUnit);
-                devRealCount++;
-            }
-#else
-            cuda::processing_unit *pUnit = new cuda::gpu(cuDev, *p, *aspace);
-            p->add_processing_unit(*pUnit);
-            devRealCount++;
-#endif
-        }
-#endif
 
         if (devRealCount == 0)
             MESSAGE("No CUDA-enabled devices found");
