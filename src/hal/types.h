@@ -24,25 +24,23 @@ namespace phys {
 
 namespace virt {
     typedef hal::detail::virt::aspace aspace;
-    typedef hal::detail::virt::code_repository code_repository;
     typedef hal::detail::virt::buffer buffer_t;
     typedef hal::detail::virt::object object;
     typedef hal::detail::virt::object_view object_view;
 }
 
-    typedef hal::detail::kernel kernel_t;
-    typedef hal::cuda::kernel::config kernel_config;
-    typedef hal::cuda::kernel::launch kernel_launch;
-    //typedef hal::detail::stream stream;
-    typedef hal::detail::_event::type event_type;
-    typedef hal::detail::event_ptr event_ptr;
-    typedef hal::cuda::list_event list_event;
+typedef hal::detail::_event::type event_type;
+typedef hal::detail::event_ptr event_ptr;
+typedef hal::cuda::list_event list_event;
 
+namespace code {
+    typedef hal::detail::code::repository repository;
 
-    //typedef hal::cuda::ptr_t ptr;
-    //typedef hal::cuda::ptr_const_t const_ptr;
-    //typedef hal::detail::ptr ptr;
-    //typedef hal::detail::const_ptr const_ptr;
+    typedef hal::detail::code::kernel kernel_t;
+    typedef hal::cuda::code::kernel::config kernel_config;
+    typedef hal::cuda::code::kernel::launch kernel_launch;
+}
+
 }}
 
 #else

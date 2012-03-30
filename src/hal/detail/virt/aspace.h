@@ -14,9 +14,14 @@
 #include "hal/detail/ptr.h"
 
 namespace __impl { namespace hal { namespace detail {
+    
+namespace code {
+    class kernel;
+    class repository;
+    class repository_mapping;
+}
 
 class _event;
-class kernel;
 class stream;
 class list_event;
 typedef util::shared_ptr<_event> event_ptr;
@@ -128,12 +133,6 @@ public:
     gmacError_t wait();
 };
 
-class GMAC_LOCAL code_repository
-{
-public:
-    virtual kernel *get_kernel(gmac_kernel_id_t key) = 0;
-    virtual kernel *get_kernel(const std::string &name) = 0;
-};
 
 class GMAC_LOCAL queue_event :
     std::queue<_event *>,
@@ -235,7 +234,7 @@ public:
     }
 #endif
 
-    virtual code_repository &get_code_repository() = 0;
+    virtual code::repository_mapping &map_code_repository(const code::repository &repo) = 0;
 
     virtual event_ptr copy(hal::ptr dst, hal::const_ptr src, size_t count, list_event *dependencies, gmacError_t &err) = 0;
     virtual event_ptr copy_async(hal::ptr dst, hal::const_ptr src, size_t count, list_event *dependencies, gmacError_t &err) = 0;

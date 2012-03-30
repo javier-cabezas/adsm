@@ -1,4 +1,4 @@
-/* Copyright (c) 2009, 2010 University of Illinois
+/* Copyright (c) 2009-2012 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -52,7 +52,7 @@ WITH THE SOFTWARE.  */
 
 #include "types.h"
 
-namespace __impl { namespace hal { namespace cuda {
+namespace __impl { namespace hal { namespace cuda { namespace code {
 
 typedef const char *cuda_variable_t;
 typedef const struct textureReference *cuda_texture_t;
@@ -60,9 +60,9 @@ typedef const struct textureReference *cuda_texture_t;
 typedef util::descriptor<gmac_kernel_id_t> kernel_descriptor;
 typedef util::descriptor<cuda_texture_t> texture_descriptor;
 
-class code_repository;
+class repository;
 
-typedef util::stl::locked_map<virt::aspace *, code_repository *> map_context_repository;
+typedef util::stl::locked_map<virt::aspace *, repository *> map_context_repository;
 
 
 class GMAC_LOCAL variable_descriptor : public util::descriptor<cuda_variable_t> {
@@ -94,11 +94,9 @@ public:
 };
 
 class GMAC_LOCAL module_descriptor {
-	friend class code_repository;
+	friend class repository;
 
 protected:
-    typedef std::vector<module_descriptor *> vector_module_descriptor;
-    static vector_module_descriptor ModuleDescriptors_;
 	const void *fatBin_;
 
     typedef std::vector<kernel_descriptor>   vector_kernel;
@@ -111,23 +109,45 @@ protected:
 	vector_texture  textures_;
 
 public:
-    module_descriptor(const void * fatBin);
+    module_descriptor(const void *fatBin);
 
     void add(kernel_descriptor   &k);
     void add(variable_descriptor &v);
     void add(texture_descriptor  &t);
 
-    static code_repository *create_modules();
+#if 0
+    static repository *create_modules();
+#endif
 };
 
 typedef std::vector<module_descriptor *> vector_module_descriptor;
 
-typedef hal::detail::kernel hal_kernel;
+class GMAC_LOCAL repository :
+    public hal::detail::code::repository_mapping {
+private:
+    vector_module_descriptor descriptors_;
 
-class GMAC_LOCAL code_repository :
-    public hal::detail::virt::code_repository {
+public:
+    gmacError_t 
+    load_from_file(const std::string &path,
+                   const std::string &flags);
+
+    gmacError_t
+    load_from_mem(const char *ptr,
+                  size_t size,
+                  const std::string &flags);
+
+    gmacError_t
+    load_from_handle(const char *ptr,
+                     const std::string &flags);
+};
+
+
+typedef hal::detail::code::kernel hal_kernel;
+
+class GMAC_LOCAL repository_mapping :
+    public hal::detail::code::repository {
 protected:
-
 	std::vector<CUmodule> mods_;
 	const void *fatBin_;
 
@@ -146,8 +166,10 @@ protected:
 	map_variable_name constantsByName_;
 
 public:
-	code_repository(const vector_module_descriptor & dVector);
-	~code_repository();
+	repository(virt::aspace &as);
+	repository(virt::aspace &as, const repository &repo);
+
+	~repository();
 
 #if 0
     template <typename T>
@@ -164,7 +186,7 @@ public:
     const texture_t  *texture(cuda_texture_t key) const;
 };
 
-}}}
+}}}}
 
 #include "module-impl.h"
 

@@ -25,11 +25,14 @@ namespace virt {
     class aspace;
 }
 
-class stream;
+namespace code {
 class kernel;
+class repository;
+}
+
+class stream;
 class texture_t;
 class variable_t;
-class code_repository;
 class _event_t;
 typedef util::shared_ptr<_event_t> event_ptr;
 class event_list;

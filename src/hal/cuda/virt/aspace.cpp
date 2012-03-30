@@ -188,18 +188,18 @@ aspace::aspace(hal_aspace::set_processing_unit &compatibleUnits, phys::aspace &p
 }
 
 static
-cuda::map_context_repository Modules_("map_context_repository");
+code::map_context_repository Modules_("map_context_repository");
 
 hal_code_repository &
 aspace::get_code_repository()
 {
-    code_repository *repository;
-    map_context_repository::iterator it = Modules_.find(this);
+    code::repository *repository;
+    code::map_context_repository::iterator it = Modules_.find(this);
     if (it == Modules_.end()) {
         set();
 
-        repository = module_descriptor::create_modules();
-        Modules_.insert(map_context_repository::value_type(this, repository));
+        repository = code::module_descriptor::create_modules();
+        Modules_.insert(code::map_context_repository::value_type(this, repository));
     } else {
         repository = it->second;
     }

@@ -1,7 +1,7 @@
 #ifndef GMAC_HAL_CUDA_KERNEL_IMPL_H_
 #define GMAC_HAL_CUDA_KERNEL_IMPL_H_
 
-namespace __impl { namespace hal { namespace cuda {
+namespace __impl { namespace hal { namespace cuda { namespace code {
 
 inline
 kernel::kernel(CUfunction func, const std::string &name) :
@@ -161,7 +161,7 @@ kernel::launch::execute(gmacError_t &err)
 
 inline
 kernel::config::config(dim3 global, dim3 group, size_t shared, cudaStream_t tokens) :
-    hal::detail::kernel::config(3),
+    hal_kernel::config(3),
     dimsGlobal_(global),
     dimsGroup_(group),
     memShared_(shared)
@@ -182,7 +182,7 @@ kernel::config::get_dims_group() const
     return dimsGroup_;
 }
 
-}}}
+}}}}
 
 #endif /* TYPES_IMPL_H */
 

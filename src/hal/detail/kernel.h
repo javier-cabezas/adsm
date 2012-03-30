@@ -3,7 +3,7 @@
 
 namespace __impl { namespace hal {
 
-namespace detail {
+namespace detail { namespace code {
 
 class GMAC_LOCAL kernel {
 public:
@@ -56,7 +56,7 @@ public:
     //virtual launch &launch_config(config &config, arg_list &args, typename I::stream &stream) = 0;
 };
 
-}
+}}
 
 }}
 

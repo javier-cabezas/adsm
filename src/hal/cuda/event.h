@@ -45,10 +45,9 @@ public:
 
 class GMAC_LOCAL _event_common_t :
     public hal::detail::_event {
+    friend class code::kernel;
     friend class virt::aspace;
     friend class device;
-    friend class kernel;
-    friend class kernel_cpu;
     friend class list_event;
 
     typedef hal::detail::_event parent;
@@ -112,7 +111,7 @@ class GMAC_LOCAL list_event :
     typedef std::list<event_ptr> parent;
 
     friend class virt::aspace;
-    friend class kernel;
+    friend class code::kernel;
 
     void set_barrier(hal_stream &stream);
 public:
