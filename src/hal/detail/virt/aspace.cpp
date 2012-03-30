@@ -1,4 +1,4 @@
-#include "hal/types.h"
+#include "hal/detail/types.h"
 
 namespace __impl { namespace hal { namespace detail { namespace virt {
 

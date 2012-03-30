@@ -12,10 +12,10 @@
 
 namespace __impl { namespace hal {
     
-namespace cuda {
+namespace cuda { namespace code {
 
 typedef hal::detail::event_ptr hal_event_ptr;
-typedef hal::detail::kernel hal_kernel;
+typedef hal::detail::code::kernel hal_kernel;
 
 class GMAC_LOCAL kernel :
     public hal_kernel {
@@ -26,7 +26,7 @@ public:
     class launch;
 
     class GMAC_LOCAL config :
-        public hal::detail::kernel::config {
+        public hal_kernel::config {
         friend class launch;
 
         dim3 dimsGlobal_;
@@ -41,7 +41,7 @@ public:
     };
 
     class GMAC_LOCAL arg_list :
-        public hal::detail::kernel::arg_list {
+        public hal_kernel::arg_list {
         friend class launch;
 
         unsigned nArgs_;
@@ -90,7 +90,7 @@ public:
     //launch &launch_config(Parent::config &config, Parent::arg_list &args, stream &stream);
 };
 
-}}}
+}}}}
 
 #endif /* GMAC_HAL_CUDA_KERNEL_H_ */
 

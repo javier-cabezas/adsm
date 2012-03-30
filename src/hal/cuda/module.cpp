@@ -4,11 +4,9 @@
 
 namespace __impl { namespace hal {
         
-extern cuda::map_context_repository Modules_;
+extern cuda::code::map_context_repository Modules_;
 
-namespace cuda {
-
-module_descriptor::vector_module_descriptor module_descriptor::ModuleDescriptors_;
+namespace cuda { namespace code {
 
 variable_descriptor::variable_descriptor(const std::string &name, cuda_variable_t key, bool constant) :
     util::descriptor<cuda_variable_t>(name, key),
@@ -44,12 +42,13 @@ module_descriptor::module_descriptor(const void *fatBin) :
     ModuleDescriptors_.push_back(this);
 }
 
-code_repository *
+#if 0
+repository *
 module_descriptor::create_modules()
 {
     TRACE(GLOBAL, "Creating modules");
 
-    code_repository *ptr = new code_repository(ModuleDescriptors_);
+    repository *ptr = new repository(ModuleDescriptors_);
 #if 0
     vector_module_descriptor::const_iterator it;
     for (it = ModuleDescriptors_.begin(); it != ModuleDescriptors_.end(); it++) {
@@ -59,6 +58,7 @@ module_descriptor::create_modules()
 #endif
     return ptr;
 }
+#endif
 
 static const int CUDA_MAGIC = 0x466243b1;
 
@@ -66,12 +66,11 @@ struct GMAC_LOCAL FatBinDesc {
     int magic; int v; const unsigned long long* data; char* f;
 };
 
-code_repository::code_repository(const vector_module_descriptor & dVector)
+repository::repository(virt::aspace &as)
 {
     CUmodule mod;
     vector_module_descriptor::const_iterator it;
-    for (it = dVector.begin(); it != dVector.end(); ++it) {
-        module_descriptor &d = *(*it);
+    for (auto &d : descriptors_) {
         const void *fatBin_ = d.fatBin_;
         TRACE(LOCAL, "module image: %p", fatBin_);
         CUresult res;
@@ -125,7 +124,7 @@ code_repository::code_repository(const vector_module_descriptor & dVector)
     }
 }
 
-code_repository::~code_repository()
+repository::~repository()
 {
     map_kernel::iterator it;
     for (it = kernels_.begin(); it != kernels_.end(); ++it) {
@@ -149,7 +148,7 @@ code_repository::~code_repository()
 }
 
 hal_kernel *
-code_repository::get_kernel(gmac_kernel_id_t key)
+repository::get_kernel(gmac_kernel_id_t key)
 {
     map_kernel::const_iterator k;
     k = kernels_.find(key);
@@ -158,14 +157,14 @@ code_repository::get_kernel(gmac_kernel_id_t key)
 }
 
 hal_kernel *
-code_repository::get_kernel(const std::string &name)
+repository::get_kernel(const std::string &name)
 {
     FATAL("Not implemented");
     return NULL;
 }
 
 const variable_t *
-code_repository::constant(cuda_variable_t key) const
+repository::constant(cuda_variable_t key) const
 {
     map_variable::const_iterator v;
     v = constants_.find(key);
@@ -174,7 +173,7 @@ code_repository::constant(cuda_variable_t key) const
 }
 
 const variable_t *
-code_repository::variable(cuda_variable_t key) const
+repository::variable(cuda_variable_t key) const
 {
     map_variable::const_iterator v;
     v = variables_.find(key);
@@ -183,7 +182,7 @@ code_repository::variable(cuda_variable_t key) const
 }
 
 const variable_t *
-code_repository::constantByName(const std::string &name) const
+repository::constantByName(const std::string &name) const
 {
     map_variable_name::const_iterator v;
     v = constantsByName_.find(name);
@@ -192,7 +191,7 @@ code_repository::constantByName(const std::string &name) const
 }
 
 const variable_t *
-code_repository::variableByName(const std::string &name) const
+repository::variableByName(const std::string &name) const
 {
     map_variable_name::const_iterator v;
     v = variablesByName_.find(name);
@@ -201,7 +200,7 @@ code_repository::variableByName(const std::string &name) const
 }
 
 const texture_t *
-code_repository::texture(cuda_texture_t key) const
+repository::texture(cuda_texture_t key) const
 {
     map_texture::const_iterator t;
     t = textures_.find(key);
@@ -209,4 +208,4 @@ code_repository::texture(cuda_texture_t key) const
     return &t->second;
 }
 
-}}}
+}}}}

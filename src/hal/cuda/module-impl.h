@@ -1,7 +1,7 @@
 #ifndef GMAC_API_CUDA_HPE_MODULE_IMPL_H_
 #define GMAC_API_CUDA_HPE_MODULE_IMPL_H_
 
-namespace __impl { namespace hal { namespace cuda {
+namespace __impl { namespace hal { namespace cuda { namespace code {
 
 inline bool
 variable_descriptor::constant() const
@@ -55,7 +55,7 @@ module_descriptor::add(texture_descriptor &t)
 #if 0
 template <typename T>
 void
-code_repository::register_kernels(T &t) const
+repository::register_kernels(T &t) const
 {
     map_kernel::const_iterator k;
     for (k = kernels_.begin(); k != kernels_.end(); k++) {
@@ -64,6 +64,6 @@ code_repository::register_kernels(T &t) const
 }
 #endif
 
-}}}
+}}}}
 
 #endif

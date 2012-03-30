@@ -1,7 +1,7 @@
 #ifndef GMAC_HAL_KERNEL_IMPL_H_
 #define GMAC_HAL_KERNEL_IMPL_H_
 
-namespace __impl { namespace hal { namespace detail {
+namespace __impl { namespace hal { namespace detail { namespace code {
 
 inline
 kernel::kernel(const std::string &name) :
@@ -51,7 +51,7 @@ kernel::launch::get_event()
 
 } // namespace detail
 
-}}
+}}}
 
 #endif /* GMAC_HAL_KERNEL_IMPL_H_ */
 

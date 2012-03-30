@@ -22,9 +22,9 @@ typedef hal::detail::phys::processing_unit hal_processing_unit;
 
 namespace virt {
 
+typedef hal::detail::code::repository hal_code_repository;
 typedef hal::detail::virt::aspace hal_aspace;
 typedef hal::detail::virt::buffer hal_buffer;
-typedef hal::detail::virt::code_repository hal_code_repository;
 typedef hal::detail::virt::object hal_object;
 typedef hal::detail::_event hal_event;
 typedef hal::detail::event_ptr hal_event_ptr;
