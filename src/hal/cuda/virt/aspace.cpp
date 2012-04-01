@@ -190,6 +190,15 @@ aspace::aspace(hal_aspace::set_processing_unit &compatibleUnits, phys::aspace &p
 static
 code::map_context_repository Modules_("map_context_repository");
 
+hal_code_repository_view *
+aspace::map(const hal_code_repository &repo, gmacError_t &err)
+{
+    code::repository_view *ret = new code::repository_view(*this, repo, err);
+
+    return ret;
+}
+
+#if 0
 hal_code_repository &
 aspace::get_code_repository()
 {
@@ -206,6 +215,7 @@ aspace::get_code_repository()
 
     return *repository;
 }
+#endif
 
 hal_event_ptr 
 aspace::copy(hal::ptr dst, hal::const_ptr src, size_t count, list_event_detail *_dependencies, gmacError_t &err)
