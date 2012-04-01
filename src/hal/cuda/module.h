@@ -54,15 +54,14 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace hal { namespace cuda { namespace code {
 
+
+typedef hal::detail::code::repository hal_repository;
+
 typedef const char *cuda_variable_t;
 typedef const struct textureReference *cuda_texture_t;
 
 typedef util::descriptor<gmac_kernel_id_t> kernel_descriptor;
 typedef util::descriptor<cuda_texture_t> texture_descriptor;
-
-class repository;
-
-typedef util::stl::locked_map<virt::aspace *, repository *> map_context_repository;
 
 
 class GMAC_LOCAL variable_descriptor : public util::descriptor<cuda_variable_t> {
@@ -120,12 +119,13 @@ public:
 #endif
 };
 
+#if 0
 typedef std::vector<module_descriptor *> vector_module_descriptor;
 
 class GMAC_LOCAL repository :
     public hal::detail::code::repository {
 };
-
+#endif
 
 typedef hal::detail::code::kernel hal_kernel;
 
@@ -150,24 +150,30 @@ protected:
 	map_variable_name constantsByName_;
 
 public:
+#if 0
 	repository_view(virt::aspace &as, gmacError_t &err);
-	repository_view(virt::aspace &as, const repository &repo, gmacError_t &err);
+#endif
+	repository_view(virt::aspace &as, const hal_repository &repo, gmacError_t &err);
 
 	~repository_view();
 
 #if 0
     template <typename T>
     void register_kernels(T &t) const;
-#endif
 
     hal_kernel *get_kernel(gmac_kernel_id_t key);
+#endif
     hal_kernel *get_kernel(const std::string &name);
 
-    const variable_t *variable(cuda_variable_t key) const;
-	const variable_t *constant(cuda_variable_t key) const;
-    const variable_t *variableByName(const std::string &name) const;
-	const variable_t *constantByName(const std::string &name) const;
-    const texture_t  *texture(cuda_texture_t key) const;
+#if 0
+    const variable_t *get_variable(cuda_variable_t key) const;
+	const variable_t *get_constant(cuda_variable_t key) const;
+#endif
+    const variable_t *get_variable(const std::string &name) const;
+	const variable_t *get_constant(const std::string &name) const;
+#if 0
+    const texture_t  *get_texture(cuda_texture_t key) const;
+#endif
 };
 
 }}}}
