@@ -187,8 +187,10 @@ aspace::aspace(hal_aspace::set_processing_unit &compatibleUnits, phys::aspace &p
     context_ = ctx;
 }
 
+#if 0
 static
 code::map_context_repository Modules_("map_context_repository");
+#endif
 
 hal_code_repository_view *
 aspace::map(const hal_code_repository &repo, gmacError_t &err)

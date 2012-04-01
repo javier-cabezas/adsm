@@ -4,7 +4,9 @@
 
 namespace __impl { namespace hal {
         
+#if 0
 extern cuda::code::map_context_repository Modules_;
+#endif
 
 namespace cuda { namespace code {
 
@@ -35,6 +37,7 @@ texture_t::texture_t(const texture_descriptor & t, CUmodule mod) :
     ASSERTION(ret == CUDA_SUCCESS);
 }
 
+#if 0
 module_descriptor::module_descriptor(const void *fatBin) :
     fatBin_(fatBin)
 {
@@ -42,7 +45,6 @@ module_descriptor::module_descriptor(const void *fatBin) :
     ModuleDescriptors_.push_back(this);
 }
 
-#if 0
 repository *
 module_descriptor::create_modules()
 {
@@ -66,23 +68,55 @@ struct GMAC_LOCAL FatBinDesc {
     int magic; int v; const unsigned long long* data; char* f;
 };
 
-repository::repository(virt::aspace &as)
+repository_view::repository_view(virt::aspace &as, const hal_repository &repo, gmacError_t &err)
 {
-    CUmodule mod;
-    vector_module_descriptor::const_iterator it;
-    for (auto &d : descriptors_) {
-        const void *fatBin_ = d.fatBin_;
-        TRACE(LOCAL, "module image: %p", fatBin_);
-        CUresult res;
+    as.set();
 
-        FatBinDesc *desc = (FatBinDesc *)fatBin_;
+    for (auto &file : repo.get_files()) {
+        CUmodule mod;
+
+        // TODO: add support for flags
+        CUresult res = cuModuleLoadData(&mod, file.get_path().c_str());
+
+        err = error(res);
+        if (err != gmacSuccess) return;
+
+        mods_.push_back(mod);
+    }
+
+    for (auto &buffer : repo.get_buffers()) {
+        CUmodule mod;
+
+        // TODO: add support for flags
+        CUresult res = cuModuleLoadData(&mod, buffer.get_ptr());
+
+        err = error(res);
+        if (err != gmacSuccess) return;
+
+        mods_.push_back(mod);
+    }
+
+    for (auto &handle : repo.get_handles()) {
+        CUmodule mod;
+
+        const void *h = handle.get_handle();
+        FatBinDesc *desc = (FatBinDesc *)h;
+        // TODO: check when this is necessary
         if (desc->magic == CUDA_MAGIC) {
-            res = cuModuleLoadFatBinary(&mod, desc->data);
-        } else {
-            res = cuModuleLoadFatBinary(&mod, fatBin_);
+            h = desc->data;
         }
-        CFATAL(res == CUDA_SUCCESS, "Error loading module: %d", res);
 
+        // TODO: add support for flags
+        CUresult res = cuModuleLoadData(&mod, h);
+
+        err = error(res);
+        if (err != gmacSuccess) return;
+
+        mods_.push_back(mod);
+    }
+
+#if 0
+    for (auto mod : mods_) {
         module_descriptor::vector_kernel::const_iterator k;
         for (k = d.kernels_.begin(); k != d.kernels_.end(); ++k) {
             TRACE(LOCAL, "Registering kernel: %s", k->get_name().c_str());
@@ -122,9 +156,10 @@ repository::repository(virt::aspace &as)
 
         mods_.push_back(mod);
     }
+#endif
 }
 
-repository::~repository()
+repository_view::~repository_view()
 {
     map_kernel::iterator it;
     for (it = kernels_.begin(); it != kernels_.end(); ++it) {
@@ -148,23 +183,23 @@ repository::~repository()
 }
 
 hal_kernel *
-repository::get_kernel(gmac_kernel_id_t key)
+repository_view::get_kernel(gmac_kernel_id_t key)
 {
     map_kernel::const_iterator k;
     k = kernels_.find(key);
-    if(k == kernels_.end()) return NULL;
+    if (k == kernels_.end()) return NULL;
     return k->second;
 }
 
 hal_kernel *
-repository::get_kernel(const std::string &name)
+repository_view::get_kernel(const std::string &name)
 {
     FATAL("Not implemented");
     return NULL;
 }
 
 const variable_t *
-repository::constant(cuda_variable_t key) const
+repository_view::get_constant(cuda_variable_t key) const
 {
     map_variable::const_iterator v;
     v = constants_.find(key);
@@ -173,7 +208,7 @@ repository::constant(cuda_variable_t key) const
 }
 
 const variable_t *
-repository::variable(cuda_variable_t key) const
+repository_view::get_variable(cuda_variable_t key) const
 {
     map_variable::const_iterator v;
     v = variables_.find(key);
@@ -182,7 +217,7 @@ repository::variable(cuda_variable_t key) const
 }
 
 const variable_t *
-repository::constantByName(const std::string &name) const
+repository_view::get_constant(const std::string &name) const
 {
     map_variable_name::const_iterator v;
     v = constantsByName_.find(name);
@@ -191,7 +226,7 @@ repository::constantByName(const std::string &name) const
 }
 
 const variable_t *
-repository::variableByName(const std::string &name) const
+repository_view::get_variable(const std::string &name) const
 {
     map_variable_name::const_iterator v;
     v = variablesByName_.find(name);
@@ -200,7 +235,7 @@ repository::variableByName(const std::string &name) const
 }
 
 const texture_t *
-repository::texture(cuda_texture_t key) const
+repository_view::get_texture(cuda_texture_t key) const
 {
     map_texture::const_iterator t;
     t = textures_.find(key);

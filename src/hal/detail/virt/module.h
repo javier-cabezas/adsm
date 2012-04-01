@@ -46,10 +46,12 @@ protected:
     typedef module_descriptor<MODULE_BUFFER> descriptor_buffer;
     typedef module_descriptor<MODULE_HANDLE> descriptor_handle;
 
+public:
     typedef std::list<descriptor_file>   list_descriptor_file;
     typedef std::list<descriptor_buffer> list_descriptor_buffer;
     typedef std::list<descriptor_handle> list_descriptor_handle;
 
+protected:
     list_descriptor_file   descriptorsFile_;
     list_descriptor_buffer descriptorsBuffer_;
     list_descriptor_handle descriptorsHandle_;
@@ -64,6 +66,10 @@ public:
 
     gmacError_t load_from_handle(const void *handle,
                                  const std::string &flags);
+
+    const list_descriptor_file   &get_files() const;
+    const list_descriptor_buffer &get_buffers() const;
+    const list_descriptor_handle &get_handles() const;
 };
 
 template <>
