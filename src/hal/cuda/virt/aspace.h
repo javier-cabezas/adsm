@@ -23,6 +23,7 @@ typedef hal::detail::phys::processing_unit hal_processing_unit;
 namespace virt {
 
 typedef hal::detail::code::repository hal_code_repository;
+typedef hal::detail::code::repository_view hal_code_repository_view;
 typedef hal::detail::virt::aspace hal_aspace;
 typedef hal::detail::virt::buffer hal_buffer;
 typedef hal::detail::virt::object hal_object;
@@ -81,10 +82,14 @@ public:
 
     hal::ptr map(hal_object &obj, gmacError_t &err);
     hal::ptr map(hal_object &obj, ptrdiff_t offset, gmacError_t &err);
+
+    // Specialization for code mappings
+    hal_code_repository_view *map(const hal_code_repository &repo, gmacError_t &err);
 #if 0
     hal::ptr alloc_host_pinned(size_t size, GmacProtection hint, gmacError_t &err);
 #endif
     gmacError_t unmap(hal::ptr p);
+    gmacError_t unmap(hal_code_repository_view &view);
 
 #if 0
     gmacError_t free(hal::ptr acc);
@@ -93,7 +98,7 @@ public:
 
     //hal::ptr get_device_addr_from_pinned(host_ptr addr);
 
-    hal_code_repository &get_code_repository();
+    //hal_code_repository &get_code_repository();
 
     void set();
 

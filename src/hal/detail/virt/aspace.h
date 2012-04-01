@@ -212,7 +212,10 @@ public:
     virtual ptr map(virt::object &obj, gmacError_t &err) = 0;
     virtual ptr map(virt::object &obj, ptrdiff_t offset, gmacError_t &err) = 0;
 
+    virtual code::repository_view *map(const code::repository &repo, gmacError_t &err) = 0;
+
     virtual gmacError_t unmap(ptr p) = 0;
+    virtual gmacError_t unmap(code::repository_view &view) = 0;
 
 #if 0
     virtual gmacError_t free(ptr acc) = 0;
@@ -233,8 +236,6 @@ public:
         }
     }
 #endif
-
-    virtual code::repository_mapping &map_code_repository(const code::repository &repo) = 0;
 
     virtual event_ptr copy(hal::ptr dst, hal::const_ptr src, size_t count, list_event *dependencies, gmacError_t &err) = 0;
     virtual event_ptr copy_async(hal::ptr dst, hal::const_ptr src, size_t count, list_event *dependencies, gmacError_t &err) = 0;

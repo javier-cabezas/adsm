@@ -123,30 +123,14 @@ public:
 typedef std::vector<module_descriptor *> vector_module_descriptor;
 
 class GMAC_LOCAL repository :
-    public hal::detail::code::repository_mapping {
-private:
-    vector_module_descriptor descriptors_;
-
-public:
-    gmacError_t 
-    load_from_file(const std::string &path,
-                   const std::string &flags);
-
-    gmacError_t
-    load_from_mem(const char *ptr,
-                  size_t size,
-                  const std::string &flags);
-
-    gmacError_t
-    load_from_handle(const char *ptr,
-                     const std::string &flags);
+    public hal::detail::code::repository {
 };
 
 
 typedef hal::detail::code::kernel hal_kernel;
 
-class GMAC_LOCAL repository_mapping :
-    public hal::detail::code::repository {
+class GMAC_LOCAL repository_view :
+    public hal::detail::code::repository_view {
 protected:
 	std::vector<CUmodule> mods_;
 	const void *fatBin_;
@@ -166,10 +150,10 @@ protected:
 	map_variable_name constantsByName_;
 
 public:
-	repository(virt::aspace &as);
-	repository(virt::aspace &as, const repository &repo);
+	repository_view(virt::aspace &as, gmacError_t &err);
+	repository_view(virt::aspace &as, const repository &repo, gmacError_t &err);
 
-	~repository();
+	~repository_view();
 
 #if 0
     template <typename T>

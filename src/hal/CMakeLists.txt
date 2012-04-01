@@ -5,6 +5,8 @@ set(hal_SRC
     detail/virt/aspace.h
     detail/virt/aspace.cpp
     detail/virt/aspace-impl.h
+    detail/virt/module.h
+    detail/virt/module.cpp
     detail/virt/object.h
     detail/virt/object-impl.h
     detail/virt/object.cpp

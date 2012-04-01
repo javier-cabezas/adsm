@@ -28,6 +28,7 @@ namespace virt {
 namespace code {
 class kernel;
 class repository;
+class repository_view;
 }
 
 class stream;
