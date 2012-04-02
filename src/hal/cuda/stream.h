@@ -16,14 +16,10 @@ class GMAC_LOCAL stream :
 
     typedef hal::detail::stream parent;
 
-    bool valid_;
     CUstream stream_;
 
 public:
-    stream(virt::aspace &as);
-    stream(CUstream stream, virt::aspace &as);
-
-    void set_cuda_stream(CUstream s);
+    stream(virt::aspace &as, CUstream stream);
 
     virt::aspace &get_aspace();
 
@@ -32,6 +28,22 @@ public:
 
     CUstream &operator()();
     const CUstream &operator()() const;
+
+    gmacError_t set_barrier(event_ptr event)
+    {
+        event->set_barrier(get_aspace(), stream_);
+        return gmacSuccess;
+    }
+
+    gmacError_t set_barrier(list_event &events)
+    {
+        for (list_event::iterator it  = events.begin();
+                                  it != events.end();
+                                ++it) {
+            (**it).set_barrier(get_aspace(), stream_);
+        }
+        return gmacSuccess;
+    }
 };
 
 }}}

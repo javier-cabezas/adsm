@@ -3,11 +3,13 @@
 
 namespace __impl { namespace hal { namespace cuda { namespace code {
 
+#if 0
 inline bool
 variable_descriptor::constant() const
 {
     return constant_;
 }
+#endif
 
 inline size_t
 variable_t::size() const
@@ -21,12 +23,21 @@ variable_t::devPtr() const
     return ptr_;
 }
 
+inline const std::string &
+variable_t::get_name() const
+{
+    return name_;
+}
+
+
+
 inline CUtexref
 texture_t::texRef() const
 {
     return texRef_;
 }
 
+#if 0
 inline
 void
 module_descriptor::add(kernel_descriptor & k)
@@ -52,7 +63,6 @@ module_descriptor::add(texture_descriptor &t)
     textures_.push_back(t);
 }
 
-#if 0
 template <typename T>
 void
 repository::register_kernels(T &t) const

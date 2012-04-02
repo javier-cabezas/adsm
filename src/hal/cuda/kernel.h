@@ -8,8 +8,6 @@
 #include "util/ReusableObject.h"
 #include "util/unique.h"
 
-#include "types.h"
-
 namespace __impl { namespace hal {
     
 namespace cuda { namespace code {

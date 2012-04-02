@@ -1,6 +1,7 @@
 #include "hpe/init.h"
 
 #include "module.h"
+#include "hal/cuda/types.h"
 
 namespace __impl { namespace hal {
         
@@ -10,15 +11,12 @@ extern cuda::code::map_context_repository Modules_;
 
 namespace cuda { namespace code {
 
-variable_descriptor::variable_descriptor(const std::string &name, cuda_variable_t key, bool constant) :
-    util::descriptor<cuda_variable_t>(name, key),
-    constant_(constant)
+variable_t::variable_t(CUdeviceptr ptr, size_t size, const std::string &name) :
+    ptr_(ptr),
+    size_(size),
+    name_(name)
 {
-}
-
-variable_t::variable_t(const variable_descriptor & v, CUmodule mod) :
-    variable_descriptor(v.get_name(), v.get_key(), v.constant())
-{
+#if 0
 #if CUDA_VERSION > 3010
     size_t tmp;
 #else
@@ -28,13 +26,13 @@ variable_t::variable_t(const variable_descriptor & v, CUmodule mod) :
     CUresult ret = cuModuleGetGlobal(&ptr_, &tmp, mod, get_name().c_str());
     ASSERTION(ret == CUDA_SUCCESS);
     size_ = tmp;
+#endif
 }
 
-texture_t::texture_t(const texture_descriptor & t, CUmodule mod) :
-    texture_descriptor(t.get_name(), t.get_key())
+texture_t::texture_t(CUtexref tex, const std::string &name) :
+    texRef_(tex),
+    name_(name)
 {
-    CUresult ret = cuModuleGetTexRef(&texRef_, mod, get_name().c_str());
-    ASSERTION(ret == CUDA_SUCCESS);
 }
 
 #if 0
@@ -73,31 +71,33 @@ repository_view::repository_view(virt::aspace &as, const hal_repository &repo, g
     as.set();
 
     for (auto &file : repo.get_files()) {
-        CUmodule mod;
+        CUmodule cumod;
 
         // TODO: add support for flags
-        CUresult res = cuModuleLoadData(&mod, file.get_path().c_str());
+        CUresult res = cuModuleLoadData(&cumod, file.get_path().c_str());
 
         err = error(res);
         if (err != gmacSuccess) return;
 
-        mods_.push_back(mod);
+        module mod(cumod, file);
+        modules_.push_back(mod);
     }
 
     for (auto &buffer : repo.get_buffers()) {
-        CUmodule mod;
+        CUmodule cumod;
 
         // TODO: add support for flags
-        CUresult res = cuModuleLoadData(&mod, buffer.get_ptr());
+        CUresult res = cuModuleLoadData(&cumod, buffer.get_ptr());
 
         err = error(res);
         if (err != gmacSuccess) return;
 
-        mods_.push_back(mod);
+        module mod(cumod, buffer);
+        modules_.push_back(cumod);
     }
 
     for (auto &handle : repo.get_handles()) {
-        CUmodule mod;
+        CUmodule cumod;
 
         const void *h = handle.get_handle();
         FatBinDesc *desc = (FatBinDesc *)h;
@@ -107,16 +107,17 @@ repository_view::repository_view(virt::aspace &as, const hal_repository &repo, g
         }
 
         // TODO: add support for flags
-        CUresult res = cuModuleLoadData(&mod, h);
+        CUresult res = cuModuleLoadData(&cumod, h);
 
         err = error(res);
         if (err != gmacSuccess) return;
 
-        mods_.push_back(mod);
+        module mod(cumod, handle);
+        modules_.push_back(mod);
     }
 
 #if 0
-    for (auto mod : mods_) {
+    for (auto mod : modules_) {
         module_descriptor::vector_kernel::const_iterator k;
         for (k = d.kernels_.begin(); k != d.kernels_.end(); ++k) {
             TRACE(LOCAL, "Registering kernel: %s", k->get_name().c_str());
@@ -154,24 +155,28 @@ repository_view::repository_view(virt::aspace &as, const hal_repository &repo, g
             textures_.insert(map_texture::value_type(t->get_key(), texture_t(*t, mod)));
         }
 
-        mods_.push_back(mod);
+        modules_.push_back(mod);
     }
 #endif
 }
 
 repository_view::~repository_view()
 {
+    modules_.clear();
+
+#if 0
     map_kernel::iterator it;
     for (it = kernels_.begin(); it != kernels_.end(); ++it) {
         delete it->second;
     }
 #ifdef CALL_CUDA_ON_DESTRUCTION
     std::vector<CUmodule>::const_iterator m;
-    for(m = mods_.begin(); m != mods_.end(); ++m) {
+    for(m = modules_.begin(); m != modules_.end(); ++m) {
         CUresult ret = cuModuleUnload(*m);
         ASSERTION(ret == CUDA_SUCCESS);
     }
-    mods_.clear();
+    modules_.clear();
+#endif
 #endif
 
     // TODO: remove objects from maps
@@ -182,6 +187,7 @@ repository_view::~repository_view()
 #endif
 }
 
+#if 0
 hal_kernel *
 repository_view::get_kernel(gmac_kernel_id_t key)
 {
@@ -189,13 +195,6 @@ repository_view::get_kernel(gmac_kernel_id_t key)
     k = kernels_.find(key);
     if (k == kernels_.end()) return NULL;
     return k->second;
-}
-
-hal_kernel *
-repository_view::get_kernel(const std::string &name)
-{
-    FATAL("Not implemented");
-    return NULL;
 }
 
 const variable_t *
@@ -216,24 +215,6 @@ repository_view::get_variable(cuda_variable_t key) const
     return &v->second;
 }
 
-const variable_t *
-repository_view::get_constant(const std::string &name) const
-{
-    map_variable_name::const_iterator v;
-    v = constantsByName_.find(name);
-    if(v == constantsByName_.end()) return NULL;
-    return &v->second;
-}
-
-const variable_t *
-repository_view::get_variable(const std::string &name) const
-{
-    map_variable_name::const_iterator v;
-    v = variablesByName_.find(name);
-    if(v == variablesByName_.end()) return NULL;
-    return &v->second;
-}
-
 const texture_t *
 repository_view::get_texture(cuda_texture_t key) const
 {
@@ -241,6 +222,72 @@ repository_view::get_texture(cuda_texture_t key) const
     t = textures_.find(key);
     if(t == textures_.end()) return NULL;
     return &t->second;
+}
+
+#endif
+
+const hal_kernel *
+repository_view::get_kernel(const std::string &name,
+                            const util::taggeable<>::set_tag &tags)
+{
+    const hal_kernel *ret = NULL;
+    for (auto &mod : modules_) {
+        if (mod.has_tags(tags)) {
+            ret = mod.get_kernel(name);
+            if (ret != NULL) {
+                return ret;
+            }
+        }
+    }
+    return NULL;
+}
+
+const variable_t *
+repository_view::get_constant(const std::string &name,
+                              const util::taggeable<>::set_tag &tags)
+{
+    const variable_t *ret = NULL;
+    for (module &mod : modules_) {
+        if (mod.has_tags(tags)) {
+            ret = mod.get_constant(name);
+            if (ret != NULL) {
+                return ret;
+            }
+        }
+    }
+    return NULL;
+}
+
+const variable_t *
+repository_view::get_variable(const std::string &name,
+                              const util::taggeable<>::set_tag &tags)
+{
+    const variable_t *ret = NULL;
+    for (module &mod : modules_) {
+        if (mod.has_tags(tags)) {
+            ret = mod.get_variable(name);
+            if (ret != NULL) {
+                return ret;
+            }
+        }
+    }
+    return NULL;
+}
+
+const texture_t *
+repository_view::get_texture(const std::string &name,
+                              const util::taggeable<>::set_tag &tags)
+{
+    const texture_t *ret = NULL;
+    for (module &mod : modules_) {
+        if (mod.has_tags(tags)) {
+            ret = mod.get_texture(name);
+            if (ret != NULL) {
+                return ret;
+            }
+        }
+    }
+    return NULL;
 }
 
 }}}}

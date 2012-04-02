@@ -70,9 +70,10 @@ protected:
     gmacError_t sync_no_exec();
     gmacError_t sync();
 
-    void set_barrier(hal_stream &stream);
-
     state get_state();
+
+public:
+    void set_barrier(virt::aspace &as, CUstream stream);
 };
 
 class GMAC_LOCAL _event_t :
@@ -111,9 +112,10 @@ class GMAC_LOCAL list_event :
     typedef std::list<event_ptr> parent;
 
     friend class virt::aspace;
+    friend class stream;
     friend class code::kernel;
 
-    void set_barrier(hal_stream &stream);
+    //void set_barrier(hal_stream &stream);
 public:
     list_event()
     {
