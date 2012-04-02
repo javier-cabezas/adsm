@@ -4,7 +4,8 @@ namespace __impl { namespace hal { namespace detail { namespace code {
 
 gmacError_t
 repository::load_from_file(const std::string &path,
-                           const std::string &flags)
+                           const std::string &flags,
+                           const util::taggeable<>::set_tag &tags)
 {
     for (auto desc : descriptorsFile_) {
         if (desc.get_path() == path) {
@@ -13,14 +14,18 @@ repository::load_from_file(const std::string &path,
         }
     }
 
-    descriptorsFile_.push_back(descriptor_file(path, flags));
+    descriptor_file desc(path, flags);
+    desc.add_tags(tags);
+
+    descriptorsFile_.push_back(desc);
     return gmacSuccess;
 }
 
 gmacError_t
 repository::load_from_mem(const char *ptr,
                           size_t size,
-                          const std::string &flags)
+                          const std::string &flags,
+                          const util::taggeable<>::set_tag &tags)
 {
     for (auto desc : descriptorsBuffer_) {
         if (desc.get_ptr() == ptr) {
@@ -29,13 +34,17 @@ repository::load_from_mem(const char *ptr,
         }
     }
 
-    descriptorsBuffer_.push_back(descriptor_buffer(ptr, size, flags));
+    descriptor_buffer desc(ptr, size, flags);
+    desc.add_tags(tags);
+
+    descriptorsBuffer_.push_back(desc);
     return gmacSuccess;
 }
 
 gmacError_t
 repository::load_from_handle(const void *handle,
-                             const std::string &flags)
+                             const std::string &flags,
+                             const util::taggeable<>::set_tag &tags)
 {
     for (auto desc : descriptorsHandle_) {
         if (desc.get_handle() == handle) {
@@ -44,7 +53,10 @@ repository::load_from_handle(const void *handle,
         }
     }
 
-    descriptorsHandle_.push_back(descriptor_handle(handle, flags));
+    descriptor_handle desc(handle, flags);
+    desc.add_tags(tags);
+
+    descriptorsHandle_.push_back(desc);
     return gmacSuccess;
 }
 

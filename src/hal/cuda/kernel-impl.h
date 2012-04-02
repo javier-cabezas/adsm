@@ -102,7 +102,7 @@ kernel::launch::execute(list_event_detail &_dependencies, gmacError_t &err)
 {
     hal_event_ptr ret;
     list_event &dependencies = reinterpret_cast<list_event &>(_dependencies);
-    dependencies.set_barrier(get_stream());
+    get_stream().set_barrier(dependencies);
 
     if (err == gmacSuccess) {
         ret = execute(err);

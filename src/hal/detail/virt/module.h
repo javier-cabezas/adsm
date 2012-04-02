@@ -3,20 +3,23 @@
 
 #include <string>
 
+#include "util/tags.h"
+
 namespace __impl { namespace hal { namespace detail { namespace code {
 
 class kernel;
 
 class GMAC_LOCAL repository
 {
-protected:
+public:
     enum module_type {
         MODULE_FILE,
         MODULE_BUFFER,
         MODULE_HANDLE
     };
 
-    class module_descriptor_base {
+    class GMAC_LOCAL module_descriptor_base :
+        public util::taggeable<> {
         const module_type type_;
         const std::string flags_;
 
@@ -46,7 +49,6 @@ protected:
     typedef module_descriptor<MODULE_BUFFER> descriptor_buffer;
     typedef module_descriptor<MODULE_HANDLE> descriptor_handle;
 
-public:
     typedef std::list<descriptor_file>   list_descriptor_file;
     typedef std::list<descriptor_buffer> list_descriptor_buffer;
     typedef std::list<descriptor_handle> list_descriptor_handle;
@@ -58,22 +60,36 @@ protected:
 
 public:
     gmacError_t load_from_file(const std::string &path,
-                               const std::string &flags);
+                               const std::string &flags,
+                               const util::taggeable<>::set_tag &tags = util::taggeable<>::empty);
 
     gmacError_t load_from_mem(const char *ptr,
                               size_t size,
-                              const std::string &flags);
+                              const std::string &flags,
+                              const util::taggeable<>::set_tag &tags = util::taggeable<>::empty);
 
     gmacError_t load_from_handle(const void *handle,
-                                 const std::string &flags);
+                                 const std::string &flags,
+                                 const util::taggeable<>::set_tag &tags = util::taggeable<>::empty);
 
-    const list_descriptor_file   &get_files() const;
-    const list_descriptor_buffer &get_buffers() const;
-    const list_descriptor_handle &get_handles() const;
+    const list_descriptor_file &get_files() const
+    {
+        return descriptorsFile_;
+    }
+
+    const list_descriptor_buffer &get_buffers() const
+    {
+        return descriptorsBuffer_;
+    }
+
+    const list_descriptor_handle &get_handles() const
+    {
+        return descriptorsHandle_;
+    }
 };
 
 template <>
-class repository::module_descriptor<repository::MODULE_FILE> :
+class GMAC_LOCAL repository::module_descriptor<repository::MODULE_FILE> :
     public module_descriptor_base
 {
     const std::string path_;
@@ -92,8 +108,8 @@ public:
 };
 
 template <>
-class repository::module_descriptor<repository::MODULE_BUFFER> :
-    module_descriptor_base
+class GMAC_LOCAL repository::module_descriptor<repository::MODULE_BUFFER> :
+    public module_descriptor_base
 {
     const char *const ptr_;
     const size_t size_;
@@ -113,8 +129,8 @@ public:
 };
 
 template <>
-class repository::module_descriptor<repository::MODULE_HANDLE> :
-    module_descriptor_base
+class GMAC_LOCAL repository::module_descriptor<repository::MODULE_HANDLE> :
+    public module_descriptor_base
 {
     const void * const handle_;
 public:
@@ -134,8 +150,11 @@ public:
 class GMAC_LOCAL repository_view
 {
 public:
+#if 0
     virtual kernel *get_kernel(gmac_kernel_id_t key) = 0;
-    virtual kernel *get_kernel(const std::string &name) = 0;
+#endif
+    virtual const kernel *get_kernel(const std::string &name,
+                                     const util::taggeable<>::set_tag &filter = util::taggeable<>::empty) = 0;
 };
     
 }}}}

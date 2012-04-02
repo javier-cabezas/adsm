@@ -34,7 +34,7 @@ processing_unit::create_stream(virt::hal_aspace &_as)
     CUresult ret = cuStreamCreate(&s, 0);
     CFATAL(ret == CUDA_SUCCESS, "Unable to create CUDA stream");
 
-    return new stream(s, as);
+    return new stream(as, s);
 }
 
 gmacError_t

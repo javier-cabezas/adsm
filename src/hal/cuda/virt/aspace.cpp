@@ -130,11 +130,7 @@ aspace::dispose_event(_event_t &event)
 }
 
 aspace::aspace(hal_aspace::set_processing_unit &compatibleUnits, phys::aspace &pas, gmacError_t &err) :
-    parent(compatibleUnits, pas, err),
-    streamToHost_(*this),
-    streamToDevice_(*this),
-    streamDevice_(*this),
-    streamCompute_(*this)
+    parent(compatibleUnits, pas, err)
 {
     TRACE(LOCAL, FMT_ID2" Created", get_print_id2());
 
@@ -172,11 +168,11 @@ aspace::aspace(hal_aspace::set_processing_unit &compatibleUnits, phys::aspace &p
         return;
     }
 
-    streamToHost_.set_cuda_stream(streamToHost);
-    streamToDevice_.set_cuda_stream(streamToDevice);
-    streamCompute_.set_cuda_stream(streamCompute);
+    streamToHost_    = new stream(*this, streamToHost);
+    streamToDevice_  = new stream(*this, streamToDevice);
+    streamCompute_   = new stream(*this, streamCompute);
     // Use the same stream for intra-device copies and compute
-    streamDevice_.set_cuda_stream(streamCompute);
+    streamDevice_    = streamCompute_;
 
     res = cuCtxPopCurrent(&tmp);
     if (res != CUDA_SUCCESS) {
@@ -185,6 +181,14 @@ aspace::aspace(hal_aspace::set_processing_unit &compatibleUnits, phys::aspace &p
     }
 
     context_ = ctx;
+}
+
+aspace::~aspace()
+{
+    delete streamToHost_;
+    delete streamToDevice_;
+    delete streamCompute_;
+    // Use the same stream for intra-device copies and compute
 }
 
 #if 0
@@ -198,6 +202,14 @@ aspace::map(const hal_code_repository &repo, gmacError_t &err)
     code::repository_view *ret = new code::repository_view(*this, repo, err);
 
     return ret;
+}
+
+gmacError_t
+aspace::unmap(hal_code_repository_view &view)
+{
+    delete &view;
+
+    return gmacSuccess;
 }
 
 #if 0
@@ -226,7 +238,7 @@ aspace::copy(hal::ptr dst, hal::const_ptr src, size_t count, list_event_detail *
 
 #if 0
     if (dependencies != NULL) {
-        dependencies->set_barrier(s);
+        s->set_barrier(*dependencies);
     }
 #endif
 
@@ -242,46 +254,46 @@ aspace::copy(hal::ptr dst, hal::const_ptr src, size_t count, list_event_detail *
 
         if (has_direct_copy(src, dst)) {
             TRACE(LOCAL, "D (%p) -> D (%p) copy (" FMT_SIZE" bytes) on " FMT_ID2, get_cuda_ptr(src),
-                                                                                get_cuda_ptr(dst), count,
-                                                                                streamDevice_.get_print_id2());
+                                                                                  get_cuda_ptr(dst), count,
+                                                                                  streamDevice_->get_print_id2());
 
             // Wait for dependencies
-            if (dependencies != NULL) dependencies->set_barrier(streamDevice_);
+            if (dependencies != NULL) streamDevice_->set_barrier(*dependencies);
 
             auto op = [&]() -> CUresult
                       {
                           return cuMemcpyDtoDAsync(get_cuda_ptr(dst),
-                                                   get_cuda_ptr(src), count, streamDevice_());
+                                                   get_cuda_ptr(src), count, (*streamDevice_)());
                       };
 
-            res = ret->add_operation(ret, streamDevice_, op_functor(std::cref(op)));
+            res = ret->add_operation(ret, *streamDevice_, op_functor(std::cref(op)));
         } else {
             TRACE(LOCAL, "D (%p) -> H -> D (%p) copy (" FMT_SIZE" bytes) on " FMT_ID2" + " FMT_ID2,
                                                                            get_cuda_ptr(src),
                                                                            get_cuda_ptr(dst), count,
-                                                                           streamToHost_.get_print_id2(),
-                                                                           streamToDevice_.get_print_id2());
+                                                                           streamToHost_->get_print_id2(),
+                                                                           streamToDevice_->get_print_id2());
 
             // TODO: deprecate this path?
             // Wait for dependencies
-            if (dependencies != NULL) dependencies->set_barrier(streamToHost_);
+            if (dependencies != NULL) streamToHost_->set_barrier(*dependencies);
 
             host_ptr host = get_memory(count);
 
             auto op1 = [&]() -> CUresult
                        {
-                           return cuMemcpyDtoHAsync(host, get_cuda_ptr(src), count, streamToHost_());
+                           return cuMemcpyDtoHAsync(host, get_cuda_ptr(src), count, (*streamToHost_)());
                        };
 
             auto op2 = [&]() -> CUresult
                        {
-                           return cuMemcpyHtoDAsync(get_cuda_ptr(dst), host, count, streamToDevice_());
+                           return cuMemcpyHtoDAsync(get_cuda_ptr(dst), host, count, (*streamToDevice_)());
                        };
 
-            res = ret->add_operation(ret, streamToHost_, op_functor(std::cref(op1)));
+            res = ret->add_operation(ret, *streamToHost_, op_functor(std::cref(op1)));
             // Wait for the first copy
             if (res == CUDA_SUCCESS && ret->sync_no_exec() == gmacSuccess) {
-                res = ret->add_operation(ret, streamToDevice_, op_functor(std::cref(op2)));
+                res = ret->add_operation(ret, *streamToDevice_, op_functor(std::cref(op2)));
             }
 
             put_memory(host, count);
@@ -290,28 +302,28 @@ aspace::copy(hal::ptr dst, hal::const_ptr src, size_t count, list_event_detail *
                is_host_ptr(src)) {
         TRACE(LOCAL, "H (%p) -> D (%p) copy (" FMT_SIZE" bytes) on " FMT_ID2, get_host_ptr(src),
                                                                             get_cuda_ptr(dst),
-                                                                            count, streamToDevice_.get_print_id2());
+                                                                            count, streamToDevice_->get_print_id2());
         // Wait for dependencies
-        if (dependencies != NULL) dependencies->set_barrier(streamToDevice_);
+        if (dependencies != NULL) streamToDevice_->set_barrier(*dependencies);
 
         auto op = [&]() -> CUresult
                   {
-                      return cuMemcpyHtoDAsync(get_cuda_ptr(dst), get_host_ptr(src), count, streamToDevice_());
+                      return cuMemcpyHtoDAsync(get_cuda_ptr(dst), get_host_ptr(src), count, (*streamToDevice_)());
                   };
-        res = ret->add_operation(ret, streamToDevice_, op_functor(std::cref(op)));
+        res = ret->add_operation(ret, *streamToDevice_, op_functor(std::cref(op)));
     } else if (is_host_ptr(dst) &&
                is_device_ptr(src)) {
         TRACE(LOCAL, "D -> H (%p) copy (" FMT_SIZE" bytes) on " FMT_ID2, get_cuda_ptr(src),
                                                                        get_host_ptr(dst),
-                                                                       count, streamToHost_.get_print_id2());
+                                                                       count, streamToHost_->get_print_id2());
         // Wait for dependencies
-        if (dependencies != NULL) dependencies->set_barrier(streamToHost_);
+        if (dependencies != NULL) streamToHost_->set_barrier(*dependencies);
 
         auto op = [&]() -> CUresult
                   {
-                      return cuMemcpyDtoHAsync(get_host_ptr(dst), get_cuda_ptr(src), count, streamToHost_());
+                      return cuMemcpyDtoHAsync(get_host_ptr(dst), get_cuda_ptr(src), count, (*streamToHost_)());
                   };
-        res = ret->add_operation(ret, streamToHost_, op_functor(std::cref(op)));
+        res = ret->add_operation(ret, *streamToHost_, op_functor(std::cref(op)));
     } else if (is_host_ptr(dst) &&
                is_host_ptr(src)) {
         TRACE(LOCAL, "H (%p) -> H (%p) copy (" FMT_SIZE" bytes)", get_host_ptr(src), get_host_ptr(dst), count);
@@ -335,7 +347,7 @@ aspace::copy(hal::ptr dst, device_input &input, size_t count, list_event_detail 
 {
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
 
-    TRACE(LOCAL, "IO -> D copy (" FMT_SIZE" bytes) on " FMT_ID2, count, streamToDevice_.get_print_id2());
+    TRACE(LOCAL, "IO -> D copy (" FMT_SIZE" bytes) on " FMT_ID2, count, streamToDevice_->get_print_id2());
     event_ptr ret = create_event(false, get_event_type(dst, input), *this);
 
     host_ptr host = get_memory(count);
@@ -348,14 +360,14 @@ aspace::copy(hal::ptr dst, device_input &input, size_t count, list_event_detail 
         set();
 
         // Wait for dependencies
-        if (dependencies != NULL) dependencies->set_barrier(streamToDevice_);
+        if (dependencies != NULL) streamToDevice_->set_barrier(*dependencies);
 
         auto op = [&]() -> CUresult
                   {
-                      return cuMemcpyHtoDAsync(get_cuda_ptr(dst), host, count, streamToDevice_());
+                      return cuMemcpyHtoDAsync(get_cuda_ptr(dst), host, count, (*streamToDevice_)());
                   };
 
-        res = ret->add_operation(ret, streamToDevice_, op_functor(std::cref(op)));
+        res = ret->add_operation(ret, *streamToDevice_, op_functor(std::cref(op)));
 
         err = error(res);
         // Wait for the copy to complete, before return
@@ -374,13 +386,13 @@ aspace::copy(device_output &output, hal::const_ptr src, size_t count, list_event
 {
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
 
-    TRACE(LOCAL, "D -> IO copy (" FMT_SIZE" bytes) on " FMT_ID2, count, streamToHost_.get_print_id2());
+    TRACE(LOCAL, "D -> IO copy (" FMT_SIZE" bytes) on " FMT_ID2, count, streamToHost_->get_print_id2());
     event_ptr ret = create_event(false, get_event_type(output, src), *this);
 
     host_ptr host = get_memory(count);
 
     // Wait for dependencies
-    if (dependencies != NULL) dependencies->set_barrier(streamToDevice_);
+    if (dependencies != NULL) streamToDevice_->set_barrier(*dependencies);
 
     CUresult res;
 
@@ -388,10 +400,10 @@ aspace::copy(device_output &output, hal::const_ptr src, size_t count, list_event
 
     auto op = [&]() -> CUresult
               {
-                  return cuMemcpyDtoHAsync(host, get_cuda_ptr(src), count, streamToHost_());
+                  return cuMemcpyDtoHAsync(host, get_cuda_ptr(src), count, (*streamToHost_)());
               };
 
-    res = ret->add_operation(ret, streamToHost_, op_functor(std::cref(op)));
+    res = ret->add_operation(ret, *streamToHost_, op_functor(std::cref(op)));
     err = error(res);
 
     if (err == gmacSuccess) {
@@ -432,86 +444,86 @@ aspace::copy_async(hal::ptr dst, hal::const_ptr src, size_t count, list_event_de
         if (has_direct_copy(src, dst)) {
             TRACE(LOCAL, "D -> D copy (" FMT_SIZE" bytes) on " FMT_ID2, get_cuda_ptr(src),
                                                                       get_cuda_ptr(dst), count,
-                                                                      streamDevice_.get_print_id2());
+                                                                      streamDevice_->get_print_id2());
 
             // Wait for dependencies
-            if (dependencies != NULL) dependencies->set_barrier(streamDevice_);
+            if (dependencies != NULL) streamDevice_->set_barrier(*dependencies);
 
             auto op = [&]() -> CUresult
                       {
                           return cuMemcpyDtoDAsync(get_cuda_ptr(dst),
-                                                   get_cuda_ptr(src), count, streamDevice_());
+                                                   get_cuda_ptr(src), count, (*streamDevice_)());
                       };
 
-            res = ret->add_operation(ret, streamDevice_, op_functor(std::cref(op)));
+            res = ret->add_operation(ret, *streamDevice_, op_functor(std::cref(op)));
         } else {
             TRACE(LOCAL, "D (%p) -> H -> D (%p) copy (" FMT_SIZE" bytes) on " FMT_ID2" + " FMT_ID2,
                                                                            get_cuda_ptr(src),
                                                                            get_cuda_ptr(dst), count,
-                                                                           streamToHost_.get_print_id2(),
-                                                                           streamToDevice_.get_print_id2());
+                                                                           streamToHost_->get_print_id2(),
+                                                                           streamToDevice_->get_print_id2());
 
             // TODO: deprecate this path?
-            if (dependencies != NULL) dependencies->set_barrier(streamToHost_);
+            if (dependencies != NULL) streamToHost_->set_barrier(*dependencies);
 
             // TODO: remove stream parameter
-            hal_buffer *buffer = get_input_buffer(count, streamToHost_, ret);
+            hal_buffer *buffer = get_input_buffer(count, *streamToHost_, ret);
 
             auto op1 = [&]() -> CUresult
                        {
-                           return cuMemcpyDtoHAsync(buffer->get_addr(), get_cuda_ptr(src), count, streamToHost_());
+                           return cuMemcpyDtoHAsync(buffer->get_addr(), get_cuda_ptr(src), count, (*streamToHost_)());
                        };
 
             auto op2 = [&]() -> CUresult
                        {
-                           return cuMemcpyHtoDAsync(get_cuda_ptr(dst), buffer->get_addr(), count, streamToDevice_());
+                           return cuMemcpyHtoDAsync(get_cuda_ptr(dst), buffer->get_addr(), count, (*streamToDevice_)());
                        };
 
 
-            res = ret->add_operation(ret, streamToHost_, op_functor(std::cref(op1)));
+            res = ret->add_operation(ret, *streamToHost_, op_functor(std::cref(op1)));
             // Add barrier to avoid data races
-            ret->set_barrier(streamToDevice_);
+            streamToDevice_->set_barrier(ret);
             if (res == CUDA_SUCCESS) {
-                res = ret->add_operation(ret, streamToDevice_, op_functor(std::cref(op2)));
+                res = ret->add_operation(ret, *streamToDevice_, op_functor(std::cref(op2)));
             }
         }
     } else if (is_device_ptr(dst) &&
                is_host_ptr(src)) {
         TRACE(LOCAL, "H (%p) -> D (%p) async copy (" FMT_SIZE" bytes) on " FMT_ID2, get_host_ptr(src),
                                                                          get_cuda_ptr(dst),
-                                                                         count, streamToDevice_.get_print_id2());
+                                                                         count, streamToDevice_->get_print_id2());
         // Wait for dependencies
-        if (dependencies != NULL) dependencies->set_barrier(streamToDevice_);
+        if (dependencies != NULL) streamToDevice_->set_barrier(*dependencies);
 
-        hal_buffer *buffer = get_output_buffer(count, streamToDevice_, ret);
+        hal_buffer *buffer = get_output_buffer(count, *streamToDevice_, ret);
 
         ::memcpy(buffer->get_addr(), get_host_ptr(src), count);
 
         auto op = [&]() -> CUresult
                   {
-                      return cuMemcpyHtoDAsync(get_cuda_ptr(dst), buffer->get_addr(), count, streamToDevice_());
+                      return cuMemcpyHtoDAsync(get_cuda_ptr(dst), buffer->get_addr(), count, (*streamToDevice_)());
                   };
-        res = ret->add_operation(ret, streamToDevice_, op_functor(std::cref(op)));
+        res = ret->add_operation(ret, *streamToDevice_, op_functor(std::cref(op)));
     } else if (is_host_ptr(dst) &&
                is_device_ptr(src)) {
         TRACE(LOCAL, "D (%p) -> H (%p) async copy (" FMT_SIZE" bytes) on " FMT_ID2,
                      get_cuda_ptr(src),
                      get_host_ptr(dst),
-                     count, streamToHost_.get_print_id2());
+                     count, streamToHost_->get_print_id2());
         // Wait for dependencies
-        if (dependencies != NULL) dependencies->set_barrier(streamToHost_);
+        if (dependencies != NULL) streamToHost_->set_barrier(*dependencies);
 
-        hal_buffer *buffer = get_input_buffer(count, streamToHost_, ret);
+        hal_buffer *buffer = get_input_buffer(count, *streamToHost_, ret);
 
         auto op = [&]() -> CUresult
                   {
-                      return cuMemcpyDtoHAsync(buffer->get_addr(), get_cuda_ptr(src), count, streamToHost_());
+                      return cuMemcpyDtoHAsync(buffer->get_addr(), get_cuda_ptr(src), count, (*streamToHost_)());
                   };
 
         // Perform memcpy after asynchronous copy
         ret->add_trigger(do_func(::memcpy, buffer->get_addr(), get_host_ptr(src), count));
 
-        res = ret->add_operation(ret, streamToHost_, op_functor(std::cref(op)));
+        res = ret->add_operation(ret, *streamToHost_, op_functor(std::cref(op)));
     } else if (is_host_ptr(dst) &&
                is_host_ptr(src)) {
         TRACE(LOCAL, "H (%p) -> H (%p) copy (" FMT_SIZE" bytes)",
@@ -535,11 +547,11 @@ aspace::copy_async(hal::ptr dst, device_input &input, size_t count, list_event_d
 {
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
 
-    TRACE(LOCAL, "IO -> D async copy (" FMT_SIZE" bytes) on " FMT_ID2, count, streamToDevice_.get_print_id2());
+    TRACE(LOCAL, "IO -> D async copy (" FMT_SIZE" bytes) on " FMT_ID2, count, streamToDevice_->get_print_id2());
     event_ptr ret = create_event(true, get_event_type(dst, input), *this);
 
     //buffer_t &buffer = stream.get_buffer(count);
-    hal_buffer *buffer = get_output_buffer(count, streamToDevice_, ret);
+    hal_buffer *buffer = get_output_buffer(count, *streamToDevice_, ret);
 
     bool ok = input.read(buffer->get_addr(), count);
 
@@ -549,14 +561,14 @@ aspace::copy_async(hal::ptr dst, device_input &input, size_t count, list_event_d
         set();
 
         // Wait for dependencies
-        if (dependencies != NULL) dependencies->set_barrier(streamToDevice_);
+        if (dependencies != NULL) streamToDevice_->set_barrier(*dependencies);
 
         auto op = [&]() -> CUresult
                   {
-                      return cuMemcpyHtoDAsync(get_cuda_ptr(dst), buffer->get_addr(), count, streamToDevice_());
+                      return cuMemcpyHtoDAsync(get_cuda_ptr(dst), buffer->get_addr(), count, (*streamToDevice_)());
                   };
 
-        res = ret->add_operation(ret, streamToDevice_, op_functor(std::cref(op)));
+        res = ret->add_operation(ret, *streamToDevice_, op_functor(std::cref(op)));
 
         err = error(res);
         if (err != gmacSuccess) {
@@ -572,13 +584,13 @@ aspace::copy_async(device_output &output, hal::const_ptr src, size_t count, list
 {
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
 
-    TRACE(LOCAL, "D -> IO async copy (" FMT_SIZE" bytes) on " FMT_ID2, count, streamToHost_.get_print_id2());
+    TRACE(LOCAL, "D -> IO async copy (" FMT_SIZE" bytes) on " FMT_ID2, count, streamToHost_->get_print_id2());
     event_ptr ret = create_event(true, get_event_type(output, src), *this);
 
-    hal_buffer *buffer = get_input_buffer(count, streamToHost_, ret);
+    hal_buffer *buffer = get_input_buffer(count, *streamToHost_, ret);
 
     // Wait for dependencies
-    if (dependencies != NULL) dependencies->set_barrier(streamToDevice_);
+    if (dependencies != NULL) streamToDevice_->set_barrier(*dependencies);
 
     CUresult res;
 
@@ -586,10 +598,10 @@ aspace::copy_async(device_output &output, hal::const_ptr src, size_t count, list
 
     auto op = [&]() -> CUresult
               {
-                  return cuMemcpyDtoHAsync(buffer->get_addr(), get_cuda_ptr(src), count, streamToHost_());
+                  return cuMemcpyDtoHAsync(buffer->get_addr(), get_cuda_ptr(src), count, (*streamToHost_)());
               };
 
-    res = ret->add_operation(ret, streamToHost_, op_functor(std::cref(op)));
+    res = ret->add_operation(ret, *streamToHost_, op_functor(std::cref(op)));
     err = error(res);
 
     if (err == gmacSuccess) {
@@ -617,20 +629,20 @@ aspace::memset(hal::ptr dst, int c, size_t count, list_event_detail *_dependenci
 {
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
 
-    TRACE(LOCAL, "memset (" FMT_SIZE" bytes) on stream: %p", count, streamDevice_.get_print_id2());
+    TRACE(LOCAL, "memset (" FMT_SIZE" bytes) on stream: %p", count, streamDevice_->get_print_id2());
     event_ptr ret = create_event(false, hal_event::type::TransferToDevice, *this);
 
     // Wait for dependencies
-    if (dependencies != NULL) dependencies->set_barrier(streamDevice_);
+    if (dependencies != NULL) streamDevice_->set_barrier(*dependencies);
 
     set();
 
     auto op = [&]() -> CUresult
               {
-                  return cuMemsetD8Async(get_cuda_ptr(dst), (unsigned char)c, count, streamDevice_());
+                  return cuMemsetD8Async(get_cuda_ptr(dst), (unsigned char)c, count, (*streamDevice_)());
               };
 
-    CUresult res = ret->add_operation(ret, streamDevice_, op_functor(std::cref(op)));
+    CUresult res = ret->add_operation(ret, *streamDevice_, op_functor(std::cref(op)));
 
     err = error(res);
 
@@ -647,20 +659,20 @@ aspace::memset_async(hal::ptr dst, int c, size_t count, list_event_detail *_depe
 {
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
 
-    TRACE(LOCAL, "memset (" FMT_SIZE" bytes) on stream: %p", count, streamDevice_.get_print_id2());
+    TRACE(LOCAL, "memset (" FMT_SIZE" bytes) on stream: %p", count, streamDevice_->get_print_id2());
     event_ptr ret = create_event(false, hal_event::type::TransferToDevice, *this);
 
     // Wait for dependencies
-    if (dependencies != NULL) dependencies->set_barrier(streamDevice_);
+    if (dependencies != NULL) streamDevice_->set_barrier(*dependencies);
 
     set();
 
     auto op = [&]() -> CUresult
               {
-                  return cuMemsetD8Async(get_cuda_ptr(dst), (unsigned char)c, count, streamDevice_());
+                  return cuMemsetD8Async(get_cuda_ptr(dst), (unsigned char)c, count, (*streamDevice_)());
               };
 
-    CUresult res = ret->add_operation(ret, streamDevice_, op_functor(std::cref(op)));
+    CUresult res = ret->add_operation(ret, *streamDevice_, op_functor(std::cref(op)));
 
     err = error(res);
 

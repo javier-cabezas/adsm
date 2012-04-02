@@ -3,13 +3,13 @@
 namespace __impl { namespace hal { namespace cuda {
 
 void
-_event_common_t::set_barrier(hal_stream &_stream)
+_event_common_t::set_barrier(virt::aspace &as, CUstream s)
 {
-    stream &s = reinterpret_cast<stream &>(_stream);
-    s.get_aspace().set();
+    //stream &s = reinterpret_cast<stream &>(_stream);
+    as.set();
 
     for (auto &op : operations_) {
-        CUresult res = cuStreamWaitEvent(s(), op.eventEnd_, 0);
+        CUresult res = cuStreamWaitEvent(s, op.eventEnd_, 0);
         ASSERTION(res == CUDA_SUCCESS, "Error adding barrier");
     }
 }
@@ -80,6 +80,7 @@ list_event::sync()
     return ret;
 }
 
+#if 0
 void
 list_event::set_barrier(hal_stream &_stream)
 {
@@ -92,6 +93,7 @@ list_event::set_barrier(hal_stream &_stream)
         (**it).set_synced();
     }
 }
+#endif
 
 void
 list_event::set_synced()
