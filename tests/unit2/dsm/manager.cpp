@@ -96,7 +96,7 @@ static void range_init()
     ASSERT_TRUE(errHal == gmacSuccess);
 
     // We use the same base allocation
-    ptr ptrBase = as0->map(*obj0, errHal);
+    ptr ptrBase = as0->map(*obj0, GMAC_PROT_READWRITE, errHal);
     ASSERT_TRUE(errHal == gmacSuccess);
 
     p0 = ptrBase + MAP0_OFF;
@@ -511,14 +511,14 @@ static void link_init()
     obj0 = plat0->create_object(*mem0, LINK2_2_OFF + LINK2_SIZE, err);
 
     // We use the same base allocation
-    ptr ptrBase1 = as0->map(*obj0, err);
+    ptr ptrBase1 = as0->map(*obj0, GMAC_PROT_READWRITE, err);
     ASSERT_TRUE(err == gmacSuccess);
 
     as0_p0  = ptrBase1 + LINK1_0_OFF;
     as0_p1  = ptrBase1 + LINK1_1_OFF;
     as0_p2  = ptrBase1 + LINK1_2_OFF;
     // Same object in the same virtual address space NOT supported for now
-    ptr ptrBase2 = as0->map(*obj0, err);
+    ptr ptrBase2 = as0->map(*obj0, GMAC_PROT_READWRITE, err);
     ASSERT_TRUE(err == gmacErrorFeatureNotSupported);
 
     as0_p0b = ptrBase2 + LINK1_0_OFF;
@@ -526,14 +526,14 @@ static void link_init()
     as0_p2b = ptrBase2 + LINK1_2_OFF;
 
     // We use the same base allocation
-    ptr ptrBase3 = as1->map(*obj0, err);
+    ptr ptrBase3 = as1->map(*obj0, GMAC_PROT_READWRITE, err);
     ASSERT_TRUE(err == gmacSuccess);
 
     as1_p0  = ptrBase3 + LINK2_0_OFF;
     as1_p1  = ptrBase3 + LINK2_1_OFF;
     as1_p2  = ptrBase3 + LINK2_2_OFF;
     // Same object in the same virtual address space NOT supported for now
-    ptr ptrBase4 = as1->map(*obj0, err);
+    ptr ptrBase4 = as1->map(*obj0, GMAC_PROT_READWRITE, err);
     ASSERT_TRUE(err == gmacErrorFeatureNotSupported);
 
     as1_p0b = ptrBase4 + LINK2_0_OFF;

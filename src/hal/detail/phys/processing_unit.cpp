@@ -20,4 +20,5 @@ processing_unit::add_memory_connection(const memory_connection &connection)
 }
 
 }}}}
+
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

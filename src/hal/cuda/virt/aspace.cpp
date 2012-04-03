@@ -7,7 +7,69 @@
 
 namespace __impl { namespace hal { namespace cuda { namespace virt {
 
+const unsigned &aspace::MaxBuffersIn_  = config::params::HALInputBuffersPerContext;
+const unsigned &aspace::MaxBuffersOut_ = config::params::HALOutputBuffersPerContext;
+
 typedef std::function<CUresult()> op_functor;
+
+buffer *
+aspace::get_input_buffer(size_t size, stream &stream, event_ptr event)
+{
+    buffer *buf = mapFreeBuffersIn_.pop(size);
+
+    if (buf == NULL) {
+        nBuffersIn_.lock();
+        if (nBuffersIn_ < MaxBuffersIn_) {
+            nBuffersIn_++;
+            nBuffersIn_.unlock();
+
+            gmacError_t err;
+            buf = alloc_buffer(size, GMAC_PROT_READ, stream, err);
+            ASSERTION(err == gmacSuccess);
+        } else {
+            nBuffersIn_.unlock();
+            buf = mapUsedBuffersIn_.pop(size);
+            buf->wait();
+        }
+    } else {
+        TRACE(LOCAL, "Reusing input buffer");
+    }
+
+    buf->set_event(event);
+
+    mapUsedBuffersIn_.push(buf, buf->get_size());
+
+    return buf;
+}
+
+buffer *
+aspace::get_output_buffer(size_t size, stream &stream, event_ptr event)
+{
+    buffer *buf = mapFreeBuffersOut_.pop(size);
+
+    if (buf == NULL) {
+        if (nBuffersOut_ < MaxBuffersOut_) {
+            gmacError_t err;
+
+            buf = alloc_buffer(size, GMAC_PROT_WRITE, stream, err);
+            ASSERTION(err == gmacSuccess);
+            nBuffersOut_++;
+        } else {
+            buf = mapUsedBuffersOut_.pop(size);
+            buf->wait();
+        }
+    } else {
+        TRACE(LOCAL, "Reusing output buffer");
+    }
+
+    buf->set_event(event);
+
+    mapUsedBuffersOut_.push(buf, buf->get_size());
+
+    return buf;
+}
+
+
 
 template <typename Ptr>
 static bool
@@ -130,7 +192,9 @@ aspace::dispose_event(_event_t &event)
 }
 
 aspace::aspace(hal_aspace::set_processing_unit &compatibleUnits, phys::aspace &pas, gmacError_t &err) :
-    parent(compatibleUnits, pas, err)
+    parent(compatibleUnits, pas, err),
+    nBuffersIn_(0),
+    nBuffersOut_(0)
 {
     TRACE(LOCAL, FMT_ID2" Created", get_print_id2());
 
@@ -150,6 +214,8 @@ aspace::aspace(hal_aspace::set_processing_unit &compatibleUnits, phys::aspace &p
         err = error(res);
         return;
     }
+
+    context_ = ctx;
     
     CUstream streamToHost, streamToDevice, streamCompute;
     res = cuStreamCreate(&streamToHost, 0);
@@ -179,8 +245,6 @@ aspace::aspace(hal_aspace::set_processing_unit &compatibleUnits, phys::aspace &p
         err = error(res);
         return;
     }
-
-    context_ = ctx;
 }
 
 aspace::~aspace()
@@ -189,6 +253,9 @@ aspace::~aspace()
     delete streamToDevice_;
     delete streamCompute_;
     // Use the same stream for intra-device copies and compute
+    
+    CUresult ret = cuCtxDestroy(context_);
+    ASSERTION(ret == CUDA_SUCCESS);
 }
 
 #if 0
@@ -235,12 +302,6 @@ hal_event_ptr
 aspace::copy(hal::ptr dst, hal::const_ptr src, size_t count, list_event_detail *_dependencies, gmacError_t &err)
 {
     list_event *dependencies = reinterpret_cast<list_event *>(_dependencies);
-
-#if 0
-    if (dependencies != NULL) {
-        s->set_barrier(*dependencies);
-    }
-#endif
 
     set();
 
@@ -467,16 +528,16 @@ aspace::copy_async(hal::ptr dst, hal::const_ptr src, size_t count, list_event_de
             if (dependencies != NULL) streamToHost_->set_barrier(*dependencies);
 
             // TODO: remove stream parameter
-            hal_buffer *buffer = get_input_buffer(count, *streamToHost_, ret);
+            buffer *buf = get_input_buffer(count, *streamToHost_, ret);
 
             auto op1 = [&]() -> CUresult
                        {
-                           return cuMemcpyDtoHAsync(buffer->get_addr(), get_cuda_ptr(src), count, (*streamToHost_)());
+                           return cuMemcpyDtoHAsync(buf->get_addr(), get_cuda_ptr(src), count, (*streamToHost_)());
                        };
 
             auto op2 = [&]() -> CUresult
                        {
-                           return cuMemcpyHtoDAsync(get_cuda_ptr(dst), buffer->get_addr(), count, (*streamToDevice_)());
+                           return cuMemcpyHtoDAsync(get_cuda_ptr(dst), buf->get_addr(), count, (*streamToDevice_)());
                        };
 
 
@@ -495,13 +556,13 @@ aspace::copy_async(hal::ptr dst, hal::const_ptr src, size_t count, list_event_de
         // Wait for dependencies
         if (dependencies != NULL) streamToDevice_->set_barrier(*dependencies);
 
-        hal_buffer *buffer = get_output_buffer(count, *streamToDevice_, ret);
+        buffer *buf = get_output_buffer(count, *streamToDevice_, ret);
 
-        ::memcpy(buffer->get_addr(), get_host_ptr(src), count);
+        ::memcpy(buf->get_addr(), get_host_ptr(src), count);
 
         auto op = [&]() -> CUresult
                   {
-                      return cuMemcpyHtoDAsync(get_cuda_ptr(dst), buffer->get_addr(), count, (*streamToDevice_)());
+                      return cuMemcpyHtoDAsync(get_cuda_ptr(dst), buf->get_addr(), count, (*streamToDevice_)());
                   };
         res = ret->add_operation(ret, *streamToDevice_, op_functor(std::cref(op)));
     } else if (is_host_ptr(dst) &&
@@ -513,15 +574,15 @@ aspace::copy_async(hal::ptr dst, hal::const_ptr src, size_t count, list_event_de
         // Wait for dependencies
         if (dependencies != NULL) streamToHost_->set_barrier(*dependencies);
 
-        hal_buffer *buffer = get_input_buffer(count, *streamToHost_, ret);
+        buffer *buf = get_input_buffer(count, *streamToHost_, ret);
 
         auto op = [&]() -> CUresult
                   {
-                      return cuMemcpyDtoHAsync(buffer->get_addr(), get_cuda_ptr(src), count, (*streamToHost_)());
+                      return cuMemcpyDtoHAsync(buf->get_addr(), get_cuda_ptr(src), count, (*streamToHost_)());
                   };
 
         // Perform memcpy after asynchronous copy
-        ret->add_trigger(do_func(::memcpy, buffer->get_addr(), get_host_ptr(src), count));
+        ret->add_trigger(do_func(::memcpy, buf->get_addr(), get_host_ptr(src), count));
 
         res = ret->add_operation(ret, *streamToHost_, op_functor(std::cref(op)));
     } else if (is_host_ptr(dst) &&
@@ -551,9 +612,9 @@ aspace::copy_async(hal::ptr dst, device_input &input, size_t count, list_event_d
     event_ptr ret = create_event(true, get_event_type(dst, input), *this);
 
     //buffer_t &buffer = stream.get_buffer(count);
-    hal_buffer *buffer = get_output_buffer(count, *streamToDevice_, ret);
+    buffer *buf = get_output_buffer(count, *streamToDevice_, ret);
 
-    bool ok = input.read(buffer->get_addr(), count);
+    bool ok = input.read(buf->get_addr(), count);
 
     if (ok) {
         CUresult res;
@@ -565,7 +626,7 @@ aspace::copy_async(hal::ptr dst, device_input &input, size_t count, list_event_d
 
         auto op = [&]() -> CUresult
                   {
-                      return cuMemcpyHtoDAsync(get_cuda_ptr(dst), buffer->get_addr(), count, (*streamToDevice_)());
+                      return cuMemcpyHtoDAsync(get_cuda_ptr(dst), buf->get_addr(), count, (*streamToDevice_)());
                   };
 
         res = ret->add_operation(ret, *streamToDevice_, op_functor(std::cref(op)));
@@ -587,7 +648,7 @@ aspace::copy_async(device_output &output, hal::const_ptr src, size_t count, list
     TRACE(LOCAL, "D -> IO async copy (" FMT_SIZE" bytes) on " FMT_ID2, count, streamToHost_->get_print_id2());
     event_ptr ret = create_event(true, get_event_type(output, src), *this);
 
-    hal_buffer *buffer = get_input_buffer(count, *streamToHost_, ret);
+    buffer *buf = get_input_buffer(count, *streamToHost_, ret);
 
     // Wait for dependencies
     if (dependencies != NULL) streamToDevice_->set_barrier(*dependencies);
@@ -598,7 +659,7 @@ aspace::copy_async(device_output &output, hal::const_ptr src, size_t count, list
 
     auto op = [&]() -> CUresult
               {
-                  return cuMemcpyDtoHAsync(buffer->get_addr(), get_cuda_ptr(src), count, (*streamToHost_)());
+                  return cuMemcpyDtoHAsync(buf->get_addr(), get_cuda_ptr(src), count, (*streamToHost_)());
               };
 
     res = ret->add_operation(ret, *streamToHost_, op_functor(std::cref(op)));
@@ -609,7 +670,7 @@ aspace::copy_async(device_output &output, hal::const_ptr src, size_t count, list
 
         if (err == gmacSuccess) {
             // TODO: use real async I/O
-            bool ok = output.write(buffer->get_addr(), count);
+            bool ok = output.write(buf->get_addr(), count);
 
             if (!ok) {
                 err = gmacErrorIO;
@@ -699,15 +760,17 @@ aspace::alloc(size_t count, gmacError_t &err)
 #endif
 
 hal::ptr
-aspace::map(hal_object &obj, gmacError_t &err)
+aspace::map(hal_object &obj, GmacProtection prot, gmacError_t &err)
 {
+    WARNING("Using protection flags in CUDA is not supported");
+
     if (get_paspace().get_memories().find(&obj.get_memory()) == get_paspace().get_memories().end()) {
         // The object resides in a memory not accessible by this aspace
         err = gmacErrorInvalidValue;
         return hal::ptr();
     }
 
-    if (obj.get_view(*this) != NULL) {
+    if (obj.get_views(*this).size() != 0) {
         // Mapping the same object more than once per address space is not supported
         err = gmacErrorFeatureNotSupported;
         return hal::ptr();
@@ -785,7 +848,7 @@ aspace::map(hal_object &obj, gmacError_t &err)
 }
 
 hal::ptr
-aspace::map(hal_object &obj, ptrdiff_t offset, gmacError_t &err)
+aspace::map(hal_object &obj, GmacProtection prot, ptrdiff_t offset, gmacError_t &err)
 {
     FATAL("Not implementable without driver support");
     return hal::ptr();
@@ -810,8 +873,8 @@ aspace::alloc_host_pinned(size_t size, GmacProtection hint, gmacError_t &err)
 }
 #endif
 
-hal_buffer *
-aspace::alloc_buffer(size_t size, GmacProtection hint, hal_stream &/*stream*/, gmacError_t &err)
+buffer *
+aspace::alloc_buffer(size_t size, GmacProtection hint, stream &/*stream*/, gmacError_t &err)
 {
     set();
 
@@ -825,9 +888,9 @@ aspace::alloc_buffer(size_t size, GmacProtection hint, hal_stream &/*stream*/, g
     err = cuda::error(res);
 
     TRACE(LOCAL, "Created buffer: %p (" FMT_SIZE")", addr, size);
-    buffer_t *ret = NULL;
+    buffer *ret = NULL;
     if (res == CUDA_SUCCESS) {
-        ret = new buffer_t(host_ptr(addr), size, *this);
+        ret = factory_buffer::create(host_ptr(addr), size, *this);
     }
 
     return ret;
@@ -865,11 +928,11 @@ aspace::free(hal::ptr acc)
 #endif
 
 gmacError_t
-aspace::free_buffer(hal_buffer &buffer)
+aspace::free_buffer(buffer &buf)
 {
     set();
 
-    CUresult ret = cuMemFreeHost(buffer.get_addr());
+    CUresult ret = cuMemFreeHost(buf.get_addr());
 
     return cuda::error(ret);
 }

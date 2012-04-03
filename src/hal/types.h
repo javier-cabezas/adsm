@@ -5,6 +5,8 @@
 
 #include "include/gmac/types.h"
 
+#include "cpu/types.h"
+
 #ifdef USE_CUDA
 #include "cuda/types.h"
 #include "cuda/phys/processing_unit.h"
@@ -24,7 +26,6 @@ namespace phys {
 
 namespace virt {
     typedef hal::detail::virt::aspace aspace;
-    typedef hal::detail::virt::buffer buffer_t;
     typedef hal::detail::virt::object object;
     typedef hal::detail::virt::object_view object_view;
 }

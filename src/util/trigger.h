@@ -9,6 +9,8 @@
 #include <tr1/type_traits>
 #endif
 
+#include "factory.h"
+
 namespace __impl { namespace util {
 
 #ifdef USE_CXX0X
@@ -196,6 +198,8 @@ public:
     template <typename F>
     bool remove_trigger(F fun)
     {
+        // TODO: implement
+        FATAL("%s: Not implemented", __func__);
 #if 0
         auto it = std::find(triggers_.begin(), triggers_.end(), fun);
         if (it != triggers_.end()) {
@@ -279,30 +283,6 @@ public:
             return false;
         }
     }
-
-#if 0
-    template <typename S>
-    static void
-    add_observer_class()
-    {
-        observersClass_.push_back(S::event_handler);
-    }
-
-    template <typename S>
-    static bool
-    remove_observer_class()
-    {
-        typename list_observer_class::iterator it = std::find(observersClass_.begin(),
-                                                              observersClass_.end(),
-                                                              S::event_handler);
-        if (it != observersClass_.end()) {
-            observersClass_.erase(it);
-            return true;
-        } else {
-            return false;
-        }
-    }
-#endif
 };
 
 template <typename T, typename Evt, bool Auto = true>
@@ -345,11 +325,16 @@ class GMAC_LOCAL observable<T, event::construct> :
     public observable_base<T, event::construct> {
 
     typedef observable_base<T, event::construct> parent;
+    typedef factory<T> parent_factory;
+
 public:
     template <typename S, typename... Args>
     static S *
-    create(Args &... args)
+    create(Args &&... args)
     {
+        static_assert(std::is_class<S>::value, "S must be a class");
+        static_assert(std::is_base_of<T, S>::value, "S must be a subclass of T");
+
         S *ret = new S(args...);
 
         parent::update(*ret);
@@ -373,121 +358,6 @@ public:
         delete &obj;
     }
 };
-
-namespace event {
-
-#if 0
-template <typename T, typename Evt, typename S>
-static void
-add_observer()
-{
-    observable<T, Evt>::template add_observer_class<S>();
-}
-
-template <typename T, typename Evt, typename S>
-static void
-remove_observer()
-{
-    observable<T, Evt>::template remove_observer_class<S>();
-}
-
-template <typename T, typename Evt>
-static void
-add_observer(observer_base<T, Evt> &obs)
-{
-    observable<T, Evt>::add_observer(obs);
-}
-
-template <typename T, typename Evt>
-static bool
-remove_observer(observer_base<T, Evt> &obs)
-{
-    return observable<T, Evt>::remove_observer(obs);
-}
-#endif
-
-}
-
-#if 0
-
-template <typename T>
-class GMAC_LOCAL on_construction {
-    static list_trigger<T> constructors_;
-
-public:
-    on_construction()
-    {
-        on_construction<T>::constructors_.exec_triggers(false, *reinterpret_cast<T *>(this));
-    }
-
-    template <typename S>
-    on_construction(S &obj)
-    {
-        on_construction<T>::constructors_.exec_triggers(false, *reinterpret_cast<T *>(this));
-    }
-
-
-    template <typename F>
-    static void add_constructor(F fun)
-    {
-        constructors_.add_trigger(fun);
-    }
-
-    template <typename F>
-    static bool remove_constructor(F fun)
-    {
-        return constructors_.remove_trigger(fun);
-    }
-
-    static void fini()
-    {
-        constructors_.remove_triggers();
-    }
-};
-
-template <typename T>
-list_trigger<T> on_construction<T>::constructors_;
-
-template <typename T>
-class GMAC_LOCAL on_destruction {
-    static list_trigger<T> destructors_;
-
-protected:
-    virtual ~on_destruction()
-    {
-    }
-public:
-    static void
-    destroy(on_destruction &obj)
-    {
-        on_destruction<T>::destructors_.exec_triggers(false, *reinterpret_cast<T *>(&obj));
-
-        delete &obj;
-    }
-
-    template <typename F>
-    static void add_destructor(F fun)
-    {
-        destructors_.add_trigger(fun);
-    }
-
-    template <typename F>
-    static bool remove_destructor(F fun)
-    {
-        return destructors_.remove_trigger(fun);
-    }
-
-    static void fini()
-    {
-        destructors_.remove_triggers();
-    }
-};
-
-template <typename T>
-list_trigger<T> on_destruction<T>::destructors_;
-#endif
-
-
 }}
 
 #endif // GMAC_UTIL_TRIGGER_H_

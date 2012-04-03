@@ -7,15 +7,14 @@ set(hal_cuda_SRC
     virt/aspace.h
     virt/aspace-impl.h
     virt/aspace.cpp
+    code/module.h
+    code/module-impl.h
+    code/module.cpp
     event.h
     event-impl.h
     event.cpp
     kernel.h
     kernel-impl.h
-    module.h
-    module-impl.h
-    module.cpp
-    ptr.h
     stream.h
     stream-impl.h
     types.h

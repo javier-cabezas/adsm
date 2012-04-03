@@ -25,7 +25,16 @@ object::create_view(aspace &as, ptr::offset_type offset, gmacError_t &err)
     }
 
     object_view *ret = create(*this, as, offset);
-    views_.insert(map_view::value_type(&as, ret));
+
+    map_view::iterator it = views_.find(&as);
+    if (it != views_.end()) {
+        it->second.insert(ret);
+    } else {
+        set_view viewsAspace;
+        viewsAspace.insert(ret);
+
+        views_.insert(map_view::value_type(&as, viewsAspace));
+    }
 
     TRACE(LOCAL, FMT_ID2" insert " FMT_ID2":" FMT_ID2, get_print_id2(), as.get_print_id2(), ret->get_print_id2());
 
@@ -42,8 +51,10 @@ object::destroy_view(object_view &view)
     map_view::iterator it = views_.find(&view.get_vaspace());
     if (it == views_.end()) return gmacErrorInvalidValue;
 
-    destroy(*it->second);
-    views_.erase(it);
+    // Remove from the mapping list
+    it->second.erase(&view);
+    // Destroy object
+    destroy(view);
 
     return gmacSuccess;
 }

@@ -5,7 +5,7 @@
 #include "phys/aspace.h"
 #include "phys/processing_unit.h"
 #include "phys/platform.h"
-#include "module.h"
+#include "code/module.h"
 
 #define __GMAC_ERROR(r, err) case r: error = err; if(r == CUDA_ERROR_INVALID_HANDLE) abort(); break
 
@@ -84,6 +84,7 @@ get_platforms()
         map_aspace aspaces;
         typedef std::map<CUdevice, cuda::phys::memory *> map_memory;
         map_memory memories;
+        detail::phys::memory *memoryHost;
 
         int devCount = 0;
         int devRealCount = 0;
@@ -144,10 +145,14 @@ get_platforms()
                 FATAL("Unable to query CUDA device");
 
             // TODO: create a context to retrieve information about the memory
-            cuda::phys::memory *mem = new cuda::phys::memory(*p, bytes);
+            detail::phys::memory *mem = new detail::phys::memory(*p, bytes);
 
             memories.insert(map_memory::value_type(device.first, mem));
         }
+
+        // Add host memory
+        // TODO: detect host memory size
+        memoryHost = new detail::phys::memory(*p, size_t(16) * 1024 * 1024 * 1024);
 
         // Dectect physical address spaces and memory connections for devices
         for (auto device : peers) {
@@ -155,18 +160,26 @@ get_platforms()
 
             // Device with no peers
             if (device.second.size() == 0) {
-                cuda::phys::aspace::set_memory deviceMemories;
-                cuda::phys::memory *mem;
+                detail::phys::aspace::set_memory deviceMemories;
+                detail::phys::memory *mem;
 
                 ASSERTION(memories.count(device.first) == 1);
                 mem = memories[device.first];
 
-                cuda::phys::processing_unit::set_memory_connection connections;
-                cuda::phys::processing_unit::memory_connection connection(*mem, true, 0);
+                detail::phys::processing_unit::set_memory_connection connections;
+                detail::phys::processing_unit::memory_connection connection(*mem, true, 0);
+
+                // TODO: Detect integrated devices/memories
+                // TODO: Compute access latency
+                detail::phys::processing_unit::memory_connection connectionHost(*memoryHost, false, 500);
 
                 deviceMemories.insert(mem);
-                connections.insert(connection);
+                deviceMemories.insert(memoryHost);
 
+                connections.insert(connection);
+                connections.insert(connectionHost);
+
+                // Create physical address space
                 pas = new cuda::phys::aspace(*p, deviceMemories);
 
                 cuda::phys::processing_unit *pUnit = new cuda::phys::processing_unit(*p, *pas, device.first);
@@ -184,11 +197,18 @@ get_platforms()
                 ASSERTION(memories.count(device.first) == 1);
                 mem = memories[device.first];
 
-                cuda::phys::processing_unit::set_memory_connection connections;
-                cuda::phys::processing_unit::memory_connection connection(*mem, true, 0);
+                detail::phys::processing_unit::set_memory_connection connections;
+                detail::phys::processing_unit::memory_connection connection(*mem, true, 0);
+
+                // TODO: Detect integrated devices/memories
+                // TODO: Compute access latency
+                detail::phys::processing_unit::memory_connection connectionHost(*memoryHost, false, 500);
 
                 deviceMemories.insert(mem);
+                deviceMemories.insert(memoryHost);
+
                 connections.insert(connection);
+                connections.insert(connectionHost);
 
                 for (CUdevice dev : device.second) {
                     ASSERTION(memories.count(dev) == 1);
@@ -201,6 +221,7 @@ get_platforms()
 
                 map_aspace::iterator it = aspaces.find(device.first);
                 if (it == aspaces.end()) {
+                    // Create new physical address space
                     pas = new cuda::phys::aspace(*p, deviceMemories);
 
                     // Register the aspace
@@ -213,6 +234,7 @@ get_platforms()
 
                     p->add_paspace(*pas); 
                 } else {
+                    // Use already created physical address space
                     pas = it->second;
                 }
 
@@ -222,19 +244,21 @@ get_platforms()
             }
         }
 
-        if (devRealCount == 0)
-            MESSAGE("No CUDA-enabled devices found");
-
-        /////////////////////
-        // Backend devices //
-        /////////////////////
-#if 0
+        // Create host physical address space
+        detail::phys::aspace::set_memory hostMemories;
+        hostMemories.insert(memoryHost);
+        cpu::phys::aspace *pas = new cpu::phys::aspace(*p, hostMemories);
+        // Create host CPUs
         {
             for (int i = 0; i < get_nprocs(); ++i) {
-                p->add_device(*new cuda::cpu(*p, *cpuDomain));
+                //p->add_device(*new cuda::cpu(*p, *cpuDomain));
+                cpu::phys::processing_unit *pUnit = new cpu::phys::processing_unit(*p, *pas);
+                p->add_processing_unit(*pUnit);
             }
         }
-#endif
+
+        if (devRealCount == 0)
+            MESSAGE("No CUDA-enabled devices found");
 
         platforms.push_back(p);
     }
