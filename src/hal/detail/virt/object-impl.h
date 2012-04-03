@@ -21,7 +21,7 @@ object::get_views() const
     set_view ret;
 
     for (auto v : views_) {
-        ret.insert(v.second);
+        ret.insert(v.second.begin(), v.second.end());
     }
 
     return ret;
@@ -41,7 +41,7 @@ object::get_views(detail::phys::processing_unit::type type) const
                                                return pu->get_type() == type;
                                            })) 
         {
-            ret.insert(v.second);
+            ret.insert(v.second.begin(), v.second.end());
         }
     }
 
@@ -57,7 +57,7 @@ object::get_views(detail::phys::aspace &as) const
     for (auto v : views_) {
         if (&v.first->get_paspace() == &as)
         {
-            ret.insert(v.second);
+            ret.insert(v.second.begin(), v.second.end());
         }
     }
 

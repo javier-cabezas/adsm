@@ -10,18 +10,16 @@ aspace::create_vaspace(aspace::set_processing_unit &compatibleUnits, gmacError_t
 {
     //ASSERTION(get_processing_units().find(&pu) != get_processing_units().end());
 
-    return virt::aspace::create<virt::aspace>(compatibleUnits, *this, err);
+    return virt::aspace::observe_construct::create<virt::aspace>(compatibleUnits, *this, err);
 }
 
 gmacError_t
 aspace::destroy_vaspace(virt::hal_aspace &_as)
 {
     virt::aspace &as = reinterpret_cast<virt::aspace &>(_as);
-    CUresult ret = cuCtxDestroy(as());
+    virt::aspace::observe_destruct::destroy(as);
 
-    virt::aspace::destroy(as);
-
-    return error(ret);
+    return gmacSuccess;
 }
 
 }}}}

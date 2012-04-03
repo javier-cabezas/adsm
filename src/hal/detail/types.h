@@ -61,7 +61,7 @@ public:
 #include "phys/aspace.h"
 #include "phys/processing_unit.h"
 #include "stream.h"
-#include "virt/module.h"
+#include "code/module.h"
 #include "virt/aspace.h"
 #include "virt/object.h"
 #include "kernel.h"

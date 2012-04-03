@@ -68,19 +68,14 @@ protected:
     aspace &as_;
 
     set_memory_connection connections_;
-    // set_aspace aspaces_;
 
     processing_unit(platform &platform, type t, aspace &as);
 public:
     virtual ~processing_unit()
     {}
 
-    virtual stream *create_stream(virt::aspace &as) = 0;
-    virtual gmacError_t destroy_stream(stream &stream) = 0;
-
     void add_memory_connection(const memory_connection &connection);
 
-    //platform &get_platform();
     const platform &get_platform() const;
 
     aspace &get_paspace();
@@ -90,9 +85,6 @@ public:
     type get_type() const;
 
     bool has_access(const memory &mem, memory_connection &connection);
-
-    virtual size_t get_total_memory() const = 0;
-    virtual size_t get_free_memory() const = 0;
 
     virtual gmacError_t get_info(GmacDeviceInfo &info) = 0;
 };

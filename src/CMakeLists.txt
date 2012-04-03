@@ -19,7 +19,7 @@ add_subdirectory(libs)
 
 # add_subdirectory(hpe)
 
-group_gmac_sources(gmac-common gmac-config gmac-util gmac-dbc gmac-hal gmac-hal-api)
+group_gmac_sources(gmac-common gmac-config gmac-util gmac-dbc gmac-hal gmac-hal-api gmac-hal-cpu)
 group_gmac_sources(gmac-trace gmac-trace)
 group_gmac_sources(gmac-memory gmac-memory)
 group_gmac_sources(gmac-dsm gmac-dsm)

@@ -5,28 +5,122 @@
 
 namespace __impl { namespace hal { namespace cuda { namespace virt {
 
-inline aspace &
-buffer_t::get_aspace()
+inline
+buffer::buffer(host_ptr addr, size_t size, aspace &as) :
+    aspace_(as),
+    addr_(addr),
+    size_(size)
 {
-    return reinterpret_cast<aspace &>(parent::get_aspace());
-}
-
-inline const aspace &
-buffer_t::get_aspace() const
-{
-    return reinterpret_cast<const aspace &>(parent::get_aspace());
 }
 
 inline
-buffer_t::buffer_t(host_ptr addr, size_t size, aspace &as) :
-    parent(size, as),
-    addr_(addr)
+aspace &
+buffer::get_aspace()
 {
+    return aspace_;
+}
+
+inline
+const aspace &
+buffer::get_aspace() const
+{
+    return aspace_;
+}
+
+inline void
+buffer::set_event(event_ptr event)
+{
+    event_ = event;
+}
+
+inline
+gmacError_t
+buffer::wait()
+{
+    gmacError_t ret = gmacSuccess;
+    if (event_) {
+        ret = event_->sync();
+    }
+
+    return ret;
+}
+
+inline
+size_t
+buffer::get_size() const
+{
+    return size_;
+}
+
+inline
+queue_event::queue_event() :
+    Lock("queue_event")
+{
+}
+
+inline
+_event_t *
+queue_event::pop()
+{
+    _event_t *ret = NULL;
+
+    Lock::lock();
+    if (Parent::size() > 0) {
+        ret = Parent::front();
+        Parent::pop();
+    }
+    Lock::unlock();
+
+    return ret;
+}
+
+inline
+void
+queue_event::push(_event_t &event)
+{
+	Lock::lock();
+    Parent::push(&event);
+    Lock::unlock();
+}
+
+inline
+void
+aspace::put_input_buffer(buffer &buffer)
+{
+    mapUsedBuffersIn_.remove(&buffer, buffer.get_size());
+    mapFreeBuffersIn_.push(&buffer, buffer.get_size());
+}
+
+inline
+void
+aspace::put_output_buffer(buffer &buffer)
+{
+    mapUsedBuffersOut_.remove(&buffer, buffer.get_size());
+    mapFreeBuffersOut_.push(&buffer, buffer.get_size());
 }
 
 inline
 host_ptr
-buffer_t::get_addr()
+aspace::get_memory(size_t size)
+{
+    host_ptr mem = (host_ptr) mapMemory_.pop(size);
+
+    if (mem == NULL) {
+        mem = (host_ptr) malloc(size);
+    }
+
+    return mem;
+}
+
+inline void
+aspace::put_memory(void *ptr, size_t size)
+{
+    mapMemory_.push(ptr, size);
+}
+
+inline
+host_ptr
+buffer::get_addr()
 {
     return addr_;
 }

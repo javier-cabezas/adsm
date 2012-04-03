@@ -67,7 +67,7 @@ TEST_F(mapping_test, prepend_block)
 
     obj0 = plat0->create_object(**pas0->get_memories().begin(), OFFSET, errHal);
 
-    ptr ptrBase = as0->map(*obj0, errHal);
+    ptr ptrBase = as0->map(*obj0, GMAC_PROT_READWRITE, errHal);
     ASSERT_TRUE(errHal == gmacSuccess);
 
     ptr p0 = ptrBase + OFFSET;
@@ -103,7 +103,7 @@ TEST_F(mapping_test, prepend_block2)
 
     obj0 = plat0->create_object(**pas0->get_memories().begin(), OFFSET, errHal);
 
-    ptr ptrBase = as0->map(*obj0, errHal);
+    ptr ptrBase = as0->map(*obj0, GMAC_PROT_READWRITE, errHal);
     ASSERT_TRUE(errHal == gmacSuccess);
 
     ptr p0 = ptrBase + OFFSET;
@@ -146,7 +146,7 @@ TEST_F(mapping_test, append_block)
                                                                 BLOCK_2_SIZE +
                                                                 BLOCK_3_SIZE, errHal);
 
-    ptr ptrBase = as0->map(*obj0, errHal);
+    ptr ptrBase = as0->map(*obj0, GMAC_PROT_READWRITE, errHal);
     ASSERT_TRUE(errHal == gmacSuccess);
 
     ptr p0 = ptrBase;
@@ -198,7 +198,7 @@ TEST_F(mapping_test, append_mapping)
     obj0 = plat0->create_object(**pas0->get_memories().begin(), BLOCK_SIZE +
                                                                 BLOCK_SIZE, errHal);
 
-    ptr ptrBase = as0->map(*obj0, errHal);
+    ptr ptrBase = as0->map(*obj0, GMAC_PROT_READWRITE, errHal);
     ASSERT_TRUE(errHal == gmacSuccess);
 
     ptr p0 = ptrBase;
@@ -241,7 +241,7 @@ TEST_F(mapping_test, append_mapping2)
     obj0 = plat0->create_object(**pas0->get_memories().begin(), BLOCK_SIZE +
                                                                 BLOCK_SIZE, errHal);
 
-    ptr ptrBase = as0->map(*obj0, errHal);
+    ptr ptrBase = as0->map(*obj0, GMAC_PROT_READWRITE, errHal);
     ASSERT_TRUE(errHal == gmacSuccess);
 
     ptr p0 = ptrBase;
@@ -281,7 +281,7 @@ TEST_F(mapping_test, append_mapping3)
     obj0 = plat0->create_object(**pas0->get_memories().begin(), BLOCK_SIZE +
                                                                 BLOCK_SIZE, errHal);
 
-    ptr ptrBase = as0->map(*obj0, errHal);
+    ptr ptrBase = as0->map(*obj0, GMAC_PROT_READWRITE, errHal);
     ASSERT_TRUE(errHal == gmacSuccess);
 
     ptr p0 = ptrBase;
@@ -327,9 +327,9 @@ TEST_F(mapping_test, append_mapping4)
     obj1 = plat0->create_object(**pas0->get_memories().begin(), BLOCK_SIZE +
                                                                 BLOCK_SIZE, errHal);
 
-    ptr p0 = as0->map(*obj0, errHal);
+    ptr p0 = as0->map(*obj0, GMAC_PROT_READWRITE, errHal);
     ASSERT_TRUE(errHal == gmacSuccess);
-    ptr p1 = as1->map(*obj1, errHal);
+    ptr p1 = as1->map(*obj1, GMAC_PROT_READWRITE, errHal);
     ASSERT_TRUE(errHal == gmacSuccess);
 
     mapping_ptr m0 = new mapping(p0);

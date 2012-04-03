@@ -5,8 +5,8 @@ set(hal_SRC
     detail/virt/aspace.h
     detail/virt/aspace.cpp
     detail/virt/aspace-impl.h
-    detail/virt/module.h
-    detail/virt/module.cpp
+    detail/code/module.h
+    detail/code/module.cpp
     detail/virt/object.h
     detail/virt/object-impl.h
     detail/virt/object.cpp
@@ -32,9 +32,16 @@ set(hal_SRC
     detail/stream.h
     detail/stream-impl.h
     detail/types.h
+    cpu/phys/aspace.h
+    cpu/phys/aspace.cpp
+    cpu/phys/processing_unit.h
+    cpu/phys/processing_unit.cpp
+    cpu/virt/aspace.h
+    cpu/virt/aspace.cpp
     copy.cpp
     types.h
 )
 
 add_gmac_sources(gmac-hal ${hal_SRC})
+add_gmac_sources(gmac-hal-cpu)
 add_gmac_sources(gmac-hal-api)

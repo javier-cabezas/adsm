@@ -20,6 +20,7 @@ namespace cuda {
 
 namespace virt {
     class aspace;
+    class buffer;
 }
 
 typedef util::shared_ptr<hal::detail::_event> hal_event_ptr;
@@ -47,6 +48,7 @@ class GMAC_LOCAL _event_common_t :
     public hal::detail::_event {
     friend class code::kernel;
     friend class virt::aspace;
+    friend class virt::buffer;
     friend class device;
     friend class list_event;
 

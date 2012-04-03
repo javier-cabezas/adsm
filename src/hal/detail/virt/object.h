@@ -27,8 +27,9 @@ class GMAC_LOCAL object :
     friend class util::factory<object>;
 
 public:
-    typedef std::map<aspace *, object_view *> map_view;
     typedef std::set<const object_view *> set_view;
+    typedef std::map<aspace *, set_view> map_view;
+
 private:
     const phys::memory *memory_;
     size_t size_;
@@ -51,11 +52,11 @@ public:
 
     gmacError_t migrate(phys::memory &newLocation);
 
-    const object_view *get_view(aspace &as) const
+    set_view get_views(aspace &as) const
     {
         map_view::const_iterator it = views_.find(&as);
 
-        return it != views_.end()? it->second: NULL;
+        return it != views_.end()? it->second: set_view();
     } 
 
     set_view get_views() const;

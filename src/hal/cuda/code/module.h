@@ -50,7 +50,7 @@ WITH THE SOFTWARE.  */
 #include "util/smart_ptr.h"
 #include "util/stl/locked_map.h"
 
-#include "types.h"
+#include "hal/cuda/types.h"
 
 namespace __impl { namespace hal { namespace cuda { namespace code {
 
