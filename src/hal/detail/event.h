@@ -10,11 +10,11 @@ namespace virt {
     class aspace;
 }
 
-class GMAC_LOCAL _event :
-    public util::list_trigger<>,
-    public util::unique<_event>,
-    public gmac::util::lock_rw<_event > {
+class stream;
+class _event;
+typedef util::shared_ptr<_event> event_ptr;
 
+class GMAC_LOCAL operation {
 public:
     enum type {
         TransferToHost,
@@ -33,8 +33,55 @@ public:
         None
     };
 
-private:
-    virt::aspace &aspace_;
+protected:
+#ifdef USE_TRACE
+    hal::time_t timeQueued_;
+    hal::time_t timeSubmit_;
+    hal::time_t timeStart_;
+    hal::time_t timeEnd_;
+#endif
+
+    type type_;
+    bool async_;
+    bool synced_;
+    state state_;
+    gmacError_t err_;
+
+    operation(type t, bool async) :
+        type_(t),
+        async_(async),
+        state_(None)
+    {
+    }
+
+public:
+    type get_type() const;
+    virtual state get_state() = 0;
+
+#ifdef USE_TRACE
+    hal::time_t get_time_queued() const;
+    hal::time_t get_time_submit() const;
+    hal::time_t get_time_start() const;
+    hal::time_t get_time_end() const;
+#endif
+
+    virtual void set_barrier(stream &s);
+};
+
+class GMAC_LOCAL _event :
+    public util::list_trigger<>,
+    public util::unique<_event>,
+    public gmac::util::lock_rw<_event > {
+
+public:
+    enum type {
+        Memory,
+        Kernel,
+        IO,
+        Invalid
+    };
+
+    typedef operation::state state;
 
 protected:
     bool async_;
@@ -43,43 +90,69 @@ protected:
     state state_;
     gmacError_t err_;
 
-    hal::time_t timeQueued_;
-    hal::time_t timeSubmit_;
-    hal::time_t timeStart_;
-    hal::time_t timeEnd_;
-
-    _event(bool async, type t, virt::aspace &as);
+#ifdef USE_TRACE
+    hal::time_t timeBase_;
+#endif
+    _event(bool async, type t);
 
 public:
-    virt::aspace &get_vaspace();
+    typedef std::list<operation *> list_operation;
+    list_operation operations_;
+    list_operation::iterator syncOpBegin_;
 
     type get_type() const;
     virtual state get_state() = 0;
 
+#if 0
     hal::time_t get_time_queued() const;
     hal::time_t get_time_submit() const;
     hal::time_t get_time_start() const;
     hal::time_t get_time_end() const;
-
-    virtual gmacError_t sync() = 0;
-    virtual void set_synced() = 0;
+#endif
 
     bool is_synced() const;
-};
-
-typedef util::shared_ptr<_event> event_ptr;
-
-class GMAC_LOCAL list_event {
-public:
-    virtual void add_event(event_ptr event) = 0;
 
     virtual gmacError_t sync() = 0;
+
     virtual void set_synced() = 0;
+
+    operation *get_last_operation()
+    {
+        if (operations_.size() == 0) {
+            return NULL;
+        } else {
+            return *std::prev(operations_.end());
+        }
+    }
 };
 
-}
+class GMAC_LOCAL list_event :
+    protected std::list<event_ptr> {
+    typedef std::list<event_ptr> parent;
+public:
+    typedef parent::const_iterator const_iterator;
 
-}}
+    void add_event(event_ptr event)
+    {
+        parent::push_back(event);
+    }
+
+    const_iterator begin() const
+    {
+        return parent::begin();
+    }
+
+    const_iterator end() const
+    {
+        return parent::end();
+    }
+
+    virtual gmacError_t sync() = 0;
+
+    size_t size() const;
+};
+
+}}}
 
 #endif /* EVENT_H */
 

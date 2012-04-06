@@ -135,7 +135,7 @@ kernel::launch::execute(gmacError_t &err)
     TRACE(LOCAL, "kernel launch on stream: %p", get_stream()());
     event_ptr ret = create_event(true, _event_t::Kernel, get_stream().get_aspace());
 
-    auto op = [&]() -> CUresult
+    auto op = [&](CUstream s) -> CUresult
               {
                   return cuLaunchKernel(get_kernel()(), dimsGlobal.x,
                                                         dimsGlobal.y,
@@ -144,12 +144,12 @@ kernel::launch::execute(gmacError_t &err)
                                                         dimsGroup.y,
                                                         dimsGroup.z,
                                                         get_config().memShared_,
-                                                        get_stream()(),
+                                                        s,
                                                         (void **) get_arg_list().params_,
                                                         NULL);
               };
 
-    res = ret->add_operation(ret, get_stream(), std::function<CUresult()>(std::cref(op)));
+    res = ret->add_operation(ret, get_stream(), cuda::operation::func_op(std::cref(op)), cuda::operation::Kernel, true);
     err = error(res);
 
     if (err != gmacSuccess) {

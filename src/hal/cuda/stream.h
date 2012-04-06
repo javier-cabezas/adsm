@@ -11,6 +11,8 @@ namespace __impl { namespace hal {
     
 namespace cuda {
 
+typedef hal::detail::_event hal_event;
+
 class GMAC_LOCAL stream :
     public hal::detail::stream {
 
@@ -29,18 +31,25 @@ public:
     CUstream &operator()();
     const CUstream &operator()() const;
 
-    gmacError_t set_barrier(event_ptr event)
+    gmacError_t set_barrier(hal_event &event)
     {
-        event->set_barrier(get_aspace(), stream_);
+        hal::detail::operation *op = event.get_last_operation();
+        op->set_barrier(*this);
+    
         return gmacSuccess;
     }
 
-    gmacError_t set_barrier(list_event &events)
+    gmacError_t set_barrier(list_event_detail &events)
     {
-        for (list_event::iterator it  = events.begin();
-                                  it != events.end();
-                                ++it) {
+        for (list_event::const_iterator it  = events.begin();
+                                        it != events.end();
+                                      ++it) {
+#if 0
             (**it).set_barrier(get_aspace(), stream_);
+#endif
+            hal::detail::operation *op = (*it)->get_last_operation();
+            op->set_barrier(*this);
+            
         }
         return gmacSuccess;
     }

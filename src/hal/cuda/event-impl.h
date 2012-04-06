@@ -4,8 +4,8 @@
 namespace __impl { namespace hal { namespace cuda {
 
 inline
-operation::operation(stream &s) :
-    synced_(false),
+operation::operation(parent::type t, bool async, stream &s) :
+    parent(t, async),
     stream_(s)
 {
     CUresult err;
@@ -15,18 +15,20 @@ operation::operation(stream &s) :
     ASSERTION(err == CUDA_SUCCESS);
 }
 
-template <typename R>
 inline
-R
-operation::execute(std::function<R()> f)
+operation::func_op::result_type
+operation::execute(func_op f)
 {
     stream_.get_aspace().set(); 
 
     CUresult err = cuEventRecord(eventStart_, stream_());
     ASSERTION(err == CUDA_SUCCESS);
-    R ret = f();
+    func_op::result_type ret = f(stream_());
     err = cuEventRecord(eventEnd_, stream_());
     ASSERTION(err == CUDA_SUCCESS);
+
+    // Modify the state since there is a new operation
+    state_ = Queued;
 
     return ret;
 }
@@ -56,6 +58,7 @@ operation::sync()
     return ret;
 }
 
+#if 0
 inline
 _event_common_t::_event_common_t(bool async, parent::type t, virt::aspace &as) :
     parent(async, t, as),
@@ -134,6 +137,7 @@ _event_common_t::sync()
 
     return err_;
 }
+#endif
 
 
 
@@ -149,8 +153,40 @@ _event_common_t::get_stream()
 #endif
 
 inline
+typename operation::func_op::result_type
+_event_t::add_operation(hal_event_ptr ptr, stream &stream, operation::func_op f, operation::type t, bool async)
+{
+    // During operation execution, the event is not thread-safe
+    if (operations_.size() == 0) {
+#ifdef USE_TRACE
+        // Get the base time if this is the first operation of the event
+        timeBase_ = hal::get_timestamp();
+#endif
+    }
+    operation *op = new operation(t, async, stream);
+
+    operation::func_op::result_type r = op->execute(f);
+
+    operations_.push_back(op);
+
+    // Compute the first operation to be synchronized
+    if (operations_.size() == 1) {
+        syncOpBegin_ = operations_.begin();
+    } else if (syncOpBegin_ == operations_.end()) {
+        syncOpBegin_ = std::prev(operations_.end());
+    }
+
+    stream.set_last_event(ptr);
+
+    return r;
+}
+
+
+
+inline
 _event_t::_event_t(bool async, type t, virt::aspace &as) :
-    parent(async, t, as)
+    parent(async, t),
+    as_(as)
 {
 }
 
@@ -158,7 +194,7 @@ inline
 virt::aspace &
 _event_t::get_vaspace()
 {
-    return reinterpret_cast<virt::aspace &>(parent::get_vaspace());
+    return as_;
 }
 
 inline
