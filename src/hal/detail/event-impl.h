@@ -3,23 +3,47 @@
 
 namespace __impl { namespace hal { namespace detail {
 
+#ifdef USE_TRACE
+
 inline
-_event::_event(bool async, type t, virt::aspace &as) :
-    gmac::util::lock_rw<_event>("_event"),
-    aspace_(as),
-    async_(async),
-    synced_(async? false: true),
-    type_(t),
-    state_(None),
-    err_(gmacSuccess)
+hal::time_t
+operation::get_time_queued() const
 {
+    return timeQueued_;
 }
 
 inline
-virt::aspace &
-_event::get_vaspace()
+hal::time_t
+operation::get_time_submit() const
 {
-    return aspace_;
+    return timeSubmit_;
+}
+
+inline
+hal::time_t
+operation::get_time_start() const
+{
+    return timeStart_;
+}
+
+inline
+hal::time_t
+operation::get_time_end() const
+{
+    return timeEnd_;
+}
+
+#endif
+
+inline
+_event::_event(bool async, type t) :
+    gmac::util::lock_rw<_event>("_event"),
+    async_(async),
+    synced_(async? false: true),
+    type_(t),
+    state_(state::None),
+    err_(gmacSuccess)
+{
 }
 
 inline
@@ -37,7 +61,6 @@ _event::get_state()
 {
     return state_;
 }
-#endif
 
 inline
 hal::time_t
@@ -45,7 +68,6 @@ _event::get_time_queued() const
 {
     return timeQueued_;
 }
-
 
 inline
 hal::time_t
@@ -68,7 +90,6 @@ _event::get_time_end() const
     return timeEnd_;
 }
 
-#if 0
 template <typename I>
 inline
 void
@@ -93,9 +114,7 @@ _event::is_synced() const
     return synced_;
 }
 
-} // namespace detail
-
-}}
+}}} // namespace detail
 
 #endif /* GMAC_HAL_TYPES_IMPL_H_ */
 

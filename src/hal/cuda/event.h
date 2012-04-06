@@ -28,22 +28,38 @@ typedef hal::detail::stream hal_stream;
 
 class stream;
 
-class GMAC_LOCAL operation {
-    friend class _event_common_t;
+#if 0
+typedef std::function<CUresult(void *, const void *, size_t, CUstream)> memcpy_op;
+typedef std::function<CUresult(void *, int, size_t, CUstream)>          memset_op;
+#endif
 
+class GMAC_LOCAL operation :
+    public hal::detail::operation {
+    friend class _event_t;
+
+    typedef hal::detail::operation parent;
+
+public:
+    typedef std::function<CUresult(CUstream)> func_op;
+
+private:
     bool synced_;
     CUevent eventStart_;
     CUevent eventEnd_;
 
     stream &stream_;
-    operation(stream &s);
+    operation(parent::type t, bool async, stream &s);
 
-    template <typename R>
-    R execute(std::function<R()> f);
+    func_op::result_type execute(func_op f);
     gmacError_t sync();
+
+    void set_barrier(hal::detail::_event &evt);
+
 public:
+    state get_state();
 };
 
+#if 0
 class GMAC_LOCAL _event_common_t :
     public hal::detail::_event {
     friend class code::kernel;
@@ -54,19 +70,17 @@ class GMAC_LOCAL _event_common_t :
 
     typedef hal::detail::_event parent;
 
-#ifdef USE_TRACE
-    hal::time_t timeBase_;
-#endif
 protected:
-    typedef std::list<operation> list_operation;
-    list_operation operations_;
-    list_operation::iterator syncOpBegin_;
 
     // Not instantiable
     _event_common_t(bool async, parent::type t, virt::aspace &context);
 
     template <typename R>
     R add_operation(hal_event_ptr ptr, stream &stream, std::function<R()> f);
+
+#if 0
+    typename memcpy_op::result_type add_operation(hal_event_ptr ptr, stream &stream, memcpy_op op, void *dst, const void *src, size_t count);
+#endif
 
     //stream &get_stream();
     gmacError_t sync_no_exec();
@@ -77,22 +91,33 @@ protected:
 public:
     void set_barrier(virt::aspace &as, CUstream stream);
 };
+#endif
 
 class GMAC_LOCAL _event_t :
-    public _event_common_t {
+    public hal::detail::_event {
 
     friend class virt::aspace;
+    friend class code::kernel;
 
-    typedef _event_common_t parent;
+    typedef hal::detail::_event parent;
+
+    virt::aspace &as_;
 
 protected:
     virtual void reset(bool async, type t);
 
-    _event_t(bool async, parent::type t, virt::aspace &context);
-public:
-    virt::aspace &get_vaspace();
+    _event_t(bool async, parent::type t, virt::aspace &as);
 
+    typename operation::func_op::result_type
+    add_operation(hal_event_ptr ptr, stream &stream, operation::func_op f, operation::type t, bool async);
+public:
     void set_synced();
+    gmacError_t sync();
+
+    state get_state();
+    void set_barrier();
+
+    virt::aspace &get_vaspace();
 };
 
 class GMAC_LOCAL event_deleter {
@@ -109,9 +134,8 @@ typedef hal::detail::list_event list_event_detail;
 typedef hal::detail::stream hal_stream;
 
 class GMAC_LOCAL list_event :
-    public list_event_detail,
-    protected std::list<event_ptr> {
-    typedef std::list<event_ptr> parent;
+    public list_event_detail {
+    typedef list_event_detail parent;
 
     friend class virt::aspace;
     friend class stream;
@@ -119,16 +143,8 @@ class GMAC_LOCAL list_event :
 
     //void set_barrier(hal_stream &stream);
 public:
-    list_event()
-    {
-    }
-
     gmacError_t sync();
     void set_synced();
-
-    void add_event(hal_event_ptr event); 
-
-    size_t size() const;
 };
 
 }}}

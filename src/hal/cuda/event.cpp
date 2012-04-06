@@ -2,6 +2,7 @@
 
 namespace __impl { namespace hal { namespace cuda {
 
+#if 0
 void
 _event_common_t::set_barrier(virt::aspace &as, CUstream s)
 {
@@ -52,6 +53,7 @@ _event_common_t::get_state()
 
     return state_;
 }
+#endif
 
 
 void
@@ -61,7 +63,6 @@ _event_t::reset(bool async, type t)
     type_ = t;
     err_ = gmacSuccess;
     synced_ = false;
-    state_ = None;
 
     remove_triggers();
 }
@@ -70,9 +71,9 @@ gmacError_t
 list_event::sync()
 {
     gmacError_t ret = gmacSuccess;
-    for (parent::iterator it  = parent::begin();
-                          it != parent::end();
-                        ++it) {
+    for (parent::const_iterator it  = parent::begin();
+                                it != parent::end();
+                              ++it) {
         ret = (*it)->sync();
         if (ret != gmacSuccess) break;
     }
@@ -98,18 +99,13 @@ list_event::set_barrier(hal_stream &_stream)
 void
 list_event::set_synced()
 {
-    for (parent::iterator it  = parent::begin();
-                          it != parent::end();
-                        ++it) {
+    for (parent::const_iterator it  = parent::begin();
+                                it != parent::end();
+                              ++it) {
         (**it).set_synced();
     }
 }
 
-void
-list_event::add_event(hal_event_ptr event) 
-{
-    parent::push_back(util::reinterpret_ptr<_event_t, virt::hal_event>(event));
-}
 
 }}}
 
