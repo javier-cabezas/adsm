@@ -2,6 +2,50 @@
 
 namespace __impl { namespace hal { namespace cuda {
 
+operation::state
+operation::get_state()
+{
+    stream_.get_aspace().set();
+
+    CUresult res = cuEventQuery(eventEnd_);
+
+    // Advance untile we find a not ready event
+    if (res == CUDA_ERROR_NOT_READY) {
+        return End;
+    } else {
+        return Start;
+    }
+}
+
+_event_t::state
+_event_t::get_state()
+{
+    if (state_ != state::End) {
+        if (operations_.size() == 0) {
+            // No operations enqueued, we are done
+            state_ = state::End;
+        } else {
+            if (syncOpBegin_ == operations_.end()) {
+                // No operations to sync, we are done
+                state_ = state::End;
+            } else {
+                while (syncOpBegin_ != operations_.end()) {
+                    state_ = (*syncOpBegin_)->get_state();
+
+                    // Advance untile we find a not ready event
+                    if (state_ != state::End) {
+                        break;
+                    } else {
+                        ++syncOpBegin_;
+                    }
+                }
+            }
+        }
+    }
+
+    return state_;
+}
+
 #if 0
 void
 _event_common_t::set_barrier(virt::aspace &as, CUstream s)

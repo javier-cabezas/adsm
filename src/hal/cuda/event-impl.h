@@ -58,6 +58,46 @@ operation::sync()
     return ret;
 }
 
+inline
+void
+operation::set_barrier(hal::detail::stream &_s)
+{
+    stream &s = reinterpret_cast<stream &>(_s);
+    CUresult res = cuStreamWaitEvent(s(), eventEnd_, 0);
+    ASSERTION(res == CUDA_SUCCESS, "Error adding barrier");
+}
+
+inline
+gmacError_t
+_event_t::sync()
+{
+    lock_write();
+
+    if (synced_ == false) {
+        TRACE(LOCAL, FMT_ID2" sync", get_print_id2());
+
+        while (syncOpBegin_ != operations_.end()) {
+            err_ = (*syncOpBegin_)->sync();
+            if (err_ != gmacSuccess) {
+                unlock();
+                return err_;
+            }
+            ++syncOpBegin_;
+        }
+        synced_ = true;
+    }
+
+    unlock();
+
+    if (err_ == gmacSuccess) {
+        // Execute pending operations associated to the event
+        exec_triggers(true);
+    }
+
+    return err_;
+
+}
+
 #if 0
 inline
 _event_common_t::_event_common_t(bool async, parent::type t, virt::aspace &as) :

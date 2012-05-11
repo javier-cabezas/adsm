@@ -55,7 +55,12 @@ protected:
     }
 
 public:
-    type get_type() const;
+    type get_type() const
+    {
+        return type_;
+    }
+
+    virtual gmacError_t sync() = 0;
     virtual state get_state() = 0;
 
 #ifdef USE_TRACE
@@ -65,7 +70,7 @@ public:
     hal::time_t get_time_end() const;
 #endif
 
-    virtual void set_barrier(stream &s);
+    virtual void set_barrier(stream &s) = 0;
 };
 
 class GMAC_LOCAL _event :

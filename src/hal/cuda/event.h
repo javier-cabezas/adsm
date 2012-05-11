@@ -53,7 +53,7 @@ private:
     func_op::result_type execute(func_op f);
     gmacError_t sync();
 
-    void set_barrier(hal::detail::_event &evt);
+    void set_barrier(hal::detail::stream &_s);
 
 public:
     state get_state();

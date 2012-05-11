@@ -52,14 +52,14 @@ stream::get_aspace()
 }
 
 inline
-CUstream &
+CUstream
 stream::operator()()
 {
     return stream_;
 }
 
 inline
-const CUstream &
+const CUstream
 stream::operator()() const
 {
     return stream_;
