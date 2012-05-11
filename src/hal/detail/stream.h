@@ -31,10 +31,10 @@ public:
         Running
     };
 
-    virt::aspace &get_aspace();
-
     event_ptr get_last_event();
     void set_last_event(event_ptr event);
+
+    virt::aspace &get_aspace();
 
     virtual state query() = 0;
     virtual gmacError_t sync() = 0;

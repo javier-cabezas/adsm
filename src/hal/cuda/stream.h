@@ -28,8 +28,8 @@ public:
     parent::state query();
     gmacError_t sync();
 
-    CUstream &operator()();
-    const CUstream &operator()() const;
+    CUstream operator()();
+    const CUstream operator()() const;
 
     gmacError_t set_barrier(hal_event &event)
     {
