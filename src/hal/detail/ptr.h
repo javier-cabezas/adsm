@@ -90,6 +90,8 @@ protected:
     }
 
 public:
+    typedef ptrdiff_t offset_type;
+
     typedef Base backend_type;
 
     virtual backend_ptr_t &
@@ -114,10 +116,10 @@ public:
     operator>=(const backend_ptr_t &ptr) const = 0;
 
     virtual backend_ptr_t &
-    operator+=(const ptrdiff_t &off) = 0;
+    operator+=(const offset_type &off) = 0;
 
     virtual backend_ptr_t &
-    operator-=(const ptrdiff_t &off) = 0;
+    operator-=(const offset_type &off) = 0;
 
     backend_type
     get_base() const
@@ -128,7 +130,7 @@ public:
     virtual void *
     get() const = 0;
 
-    virtual ptrdiff_t
+    virtual offset_type
     offset() const = 0;
 };
 
@@ -172,7 +174,7 @@ public:
     }
 
     // TODO check if view has to be a reference
-    explicit _base_ptr_t(View &view, ptrdiff_t offset = 0) :
+    explicit _base_ptr_t(View &view, offset_type offset = 0) :
         view_(&view),
         offset_(offset)
     {
@@ -321,7 +323,7 @@ public:
     operator-=(const T &off)
     {
         if (off > 0) {
-            ASSERTION(offset_ >= ptrdiff_t(off), "Out of view boundaries");
+            ASSERTION(offset_ >= offset_type(off), "Out of view boundaries");
         } else if (off < 0) {
             //ASSERTION(offset_ - off < view_->get_object().get_size(), "Out of view boundaries");
         }
@@ -343,7 +345,7 @@ public:
     }
 
     template <typename T>
-    ptrdiff_t
+    offset_type
     operator-(const _base_ptr_t &ptr) const
     {
         ASSERTION(ptr.view_ == this->view_, "Subtracting pointers from different views");
@@ -422,7 +424,7 @@ public:
     }
 #endif
 
-    ptrdiff_t
+    offset_type
     get_offset() const
     {
         return offset_;
@@ -508,12 +510,14 @@ class GMAC_LOCAL _const_ptr_t :
     typedef _base_ptr_t<false, View> parent_noconst;
 
 public:
+    typedef typename parent::offset_type offset_type;
+
     _const_ptr_t() :
         parent()
     {
     }
 
-    explicit _const_ptr_t(View &view, ptrdiff_t offset = 0) :
+    explicit _const_ptr_t(View &view, offset_type offset = 0) :
         parent(view, offset)
     {
     }
@@ -535,12 +539,14 @@ class GMAC_LOCAL _ptr_t :
     typedef _base_ptr_t<false, View> parent;
 
 public:
+    typedef typename parent::offset_type offset_type;
+
     _ptr_t() :
         parent()
     {
     }
 
-    explicit _ptr_t(View &view, ptrdiff_t offset = 0) :
+    explicit _ptr_t(View &view, offset_type offset = 0) :
         parent(view, offset)
     {
     }

@@ -38,9 +38,9 @@ public:
     public:
         const kernel &get_kernel() const;
         
-        virtual event_ptr execute(list_event &dependencies, gmacError_t &err) = 0;
-        virtual event_ptr execute(event_ptr event, gmacError_t &err) = 0;
-        virtual event_ptr execute(gmacError_t &err) = 0;
+        virtual event_ptr execute(list_event &dependencies, hal::error &err) = 0;
+        virtual event_ptr execute(event_ptr event, hal::error &err) = 0;
+        virtual event_ptr execute(hal::error &err) = 0;
 
         event_ptr get_event();
     };

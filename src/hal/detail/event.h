@@ -1,6 +1,8 @@
 #ifndef GMAC_HAL_TYPES_EVENT_H_
 #define GMAC_HAL_TYPES_EVENT_H_
 
+#include "hal/error.h"
+
 #include "util/trigger.h"
 #include "util/smart_ptr.h"
 
@@ -45,7 +47,7 @@ protected:
     bool async_;
     bool synced_;
     state state_;
-    gmacError_t err_;
+    hal::error err_;
 
     operation(type t, bool async) :
         type_(t),
@@ -60,7 +62,7 @@ public:
         return type_;
     }
 
-    virtual gmacError_t sync() = 0;
+    virtual hal::error sync() = 0;
     virtual state get_state() = 0;
 
 #ifdef USE_TRACE
@@ -93,7 +95,7 @@ protected:
     bool synced_;
     type type_;
     state state_;
-    gmacError_t err_;
+    hal::error err_;
 
 #ifdef USE_TRACE
     hal::time_t timeBase_;
@@ -117,7 +119,7 @@ public:
 
     bool is_synced() const;
 
-    virtual gmacError_t sync() = 0;
+    virtual hal::error sync() = 0;
 
     virtual void set_synced() = 0;
 
@@ -152,7 +154,7 @@ public:
         return parent::end();
     }
 
-    virtual gmacError_t sync() = 0;
+    virtual hal::error sync() = 0;
 
     size_t size() const;
 };

@@ -51,8 +51,8 @@ public:
     set_aspace get_paspaces(memory &mem) const;
     set_aspace get_paspaces(processing_unit::type type) const;
 
-    virt::object *create_object(const memory &mem, size_t size, gmacError_t &err);
-    gmacError_t destroy_object(virt::object &obj);
+    virt::object *create_object(const memory &mem, size_t size, hal::error &err);
+    hal::error destroy_object(virt::object &obj);
 };
 
 }

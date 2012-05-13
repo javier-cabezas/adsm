@@ -51,7 +51,7 @@ private:
     operation(parent::type t, bool async, stream &s);
 
     func_op::result_type execute(func_op f);
-    gmacError_t sync();
+    hal::error sync();
 
     void set_barrier(hal::detail::stream &_s);
 
@@ -83,8 +83,8 @@ protected:
 #endif
 
     //stream &get_stream();
-    gmacError_t sync_no_exec();
-    gmacError_t sync();
+    hal::error sync_no_exec();
+    hal::error sync();
 
     state get_state();
 
@@ -112,7 +112,7 @@ protected:
     add_operation(hal_event_ptr ptr, stream &stream, operation::func_op f, operation::type t, bool async);
 public:
     void set_synced();
-    gmacError_t sync();
+    hal::error sync();
 
     state get_state();
     void set_barrier();
@@ -143,7 +143,7 @@ class GMAC_LOCAL list_event :
 
     //void set_barrier(hal_stream &stream);
 public:
-    gmacError_t sync();
+    hal::error sync();
     void set_synced();
 };
 

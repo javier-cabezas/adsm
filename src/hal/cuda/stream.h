@@ -26,20 +26,20 @@ public:
     virt::aspace &get_aspace();
 
     parent::state query();
-    gmacError_t sync();
+    hal::error sync();
 
     CUstream operator()();
     const CUstream operator()() const;
 
-    gmacError_t set_barrier(hal_event &event)
+    hal::error set_barrier(hal_event &event)
     {
         hal::detail::operation *op = event.get_last_operation();
         op->set_barrier(*this);
     
-        return gmacSuccess;
+        return HAL_SUCCESS;
     }
 
-    gmacError_t set_barrier(list_event_detail &events)
+    hal::error set_barrier(list_event_detail &events)
     {
         for (list_event::const_iterator it  = events.begin();
                                         it != events.end();
@@ -51,7 +51,7 @@ public:
             op->set_barrier(*this);
             
         }
-        return gmacSuccess;
+        return HAL_SUCCESS;
     }
 };
 

@@ -131,7 +131,7 @@ public:
 
     void set_event(event_ptr event);
 
-    gmacError_t wait();
+    hal::error wait();
 };
 
 
@@ -195,24 +195,24 @@ class GMAC_LOCAL aspace :
     buffer *get_output_buffer(size_t size, stream &stream, event_ptr event);
     void put_output_buffer(buffer &buffer);
 
-    buffer *alloc_buffer(size_t size, GmacProtection hint, stream &stream, gmacError_t &err);
-    gmacError_t free_buffer(buffer &buffer);
+    buffer *alloc_buffer(size_t size, GmacProtection hint, stream &stream, hal::error &err);
+    hal::error free_buffer(buffer &buffer);
 
     host_ptr get_memory(size_t size);
     void put_memory(void *ptr, size_t size);
 
 public:
-    hal_event_ptr copy(hal::ptr dst, hal::const_ptr src, size_t count, list_event_detail *dependencies, gmacError_t &err);
-    hal_event_ptr copy_async(hal::ptr dst, hal::const_ptr src, size_t count, list_event_detail *dependencies, gmacError_t &err);
+    hal_event_ptr copy(hal::ptr dst, hal::const_ptr src, size_t count, list_event_detail *dependencies, hal::error &err);
+    hal_event_ptr copy_async(hal::ptr dst, hal::const_ptr src, size_t count, list_event_detail *dependencies, hal::error &err);
 
-    hal_event_ptr copy(hal::ptr dst, device_input &input, size_t count, list_event_detail *dependencies, gmacError_t &err);
-    hal_event_ptr copy(device_output &output, hal::const_ptr src, size_t count, list_event_detail *dependencies, gmacError_t &err);
-    hal_event_ptr memset(hal::ptr dst, int c, size_t count, list_event_detail *dependencies, gmacError_t &err);
-    hal_event_ptr copy_async(hal::ptr dst, device_input &input, size_t count, list_event_detail *dependencies, gmacError_t &err);
-    hal_event_ptr copy_async(device_output &output, hal::const_ptr src, size_t count, list_event_detail *dependencies, gmacError_t &err);
-    hal_event_ptr memset_async(hal::ptr dst, int c, size_t count, list_event_detail *dependencies, gmacError_t &err);
+    hal_event_ptr copy(hal::ptr dst, device_input &input, size_t count, list_event_detail *dependencies, hal::error &err);
+    hal_event_ptr copy(device_output &output, hal::const_ptr src, size_t count, list_event_detail *dependencies, hal::error &err);
+    hal_event_ptr memset(hal::ptr dst, int c, size_t count, list_event_detail *dependencies, hal::error &err);
+    hal_event_ptr copy_async(hal::ptr dst, device_input &input, size_t count, list_event_detail *dependencies, hal::error &err);
+    hal_event_ptr copy_async(device_output &output, hal::const_ptr src, size_t count, list_event_detail *dependencies, hal::error &err);
+    hal_event_ptr memset_async(hal::ptr dst, int c, size_t count, list_event_detail *dependencies, hal::error &err);
 
-    aspace(hal_aspace::set_processing_unit &compatibleUnits, phys::aspace &pas, gmacError_t &err);
+    aspace(hal_aspace::set_processing_unit &compatibleUnits, phys::aspace &pas, hal::error &err);
     virtual ~aspace();
 
     bool has_direct_copy(hal::const_ptr ptr1, hal::const_ptr ptr2)
@@ -228,22 +228,22 @@ public:
         }
     }
 
-    // hal::ptr alloc(size_t size, gmacError_t &err);
+    // hal::ptr alloc(size_t size, hal::error &err);
 
-    hal::ptr map(hal_object &obj, GmacProtection prot, gmacError_t &err);
-    hal::ptr map(hal_object &obj, GmacProtection prot, ptrdiff_t offset, gmacError_t &err);
+    hal::ptr map(hal_object &obj, GmacProtection prot, hal::error &err);
+    hal::ptr map(hal_object &obj, GmacProtection prot, ptrdiff_t offset, hal::error &err);
 
     // Specialization for code mappings
-    hal_code_repository_view *map(const hal_code_repository &repo, gmacError_t &err);
+    hal_code_repository_view *map(const hal_code_repository &repo, hal::error &err);
 #if 0
-    hal::ptr alloc_host_pinned(size_t size, GmacProtection hint, gmacError_t &err);
+    hal::ptr alloc_host_pinned(size_t size, GmacProtection hint, hal::error &err);
 #endif
-    gmacError_t unmap(hal::ptr p);
-    gmacError_t unmap(hal_code_repository_view &view);
+    hal::error unmap(hal::ptr p);
+    hal::error unmap(hal_code_repository_view &view);
 
 #if 0
-    gmacError_t free(hal::ptr acc);
-    gmacError_t free_host_pinned(hal::ptr ptr);
+    hal::error free(hal::ptr acc);
+    hal::error free_host_pinned(hal::ptr ptr);
 #endif
 
     //hal::ptr get_device_addr_from_pinned(host_ptr addr);

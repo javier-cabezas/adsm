@@ -12,7 +12,7 @@ stream::stream(virt::aspace &as, CUstream stream) :
 }
 
 inline
-gmacError_t
+hal::error
 stream::sync()
 {
     get_aspace().set(); 
@@ -20,7 +20,7 @@ stream::sync()
     TRACE(LOCAL, "Waiting for stream: %p", (*this)());
     CUresult ret = cuStreamSynchronize((*this)());
 
-    return cuda::error(ret);
+    return cuda::error_to_hal(ret);
 }
 
 inline

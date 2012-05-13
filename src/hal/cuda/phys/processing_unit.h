@@ -43,7 +43,7 @@ public:
     processing_unit(platform &plat, aspace &as, CUdevice cudaDevice);
 
     hal_stream *create_stream(virt::hal_aspace &as);
-    gmacError_t destroy_stream(hal_stream &stream);
+    hal::error destroy_stream(hal_stream &stream);
 
     CUdevice get_cuda_id() const;
 
@@ -53,7 +53,7 @@ public:
     size_t get_total_memory() const;
     size_t get_free_memory() const;
 
-    gmacError_t get_info(GmacDeviceInfo &info);
+    hal::error get_info(GmacDeviceInfo &info);
 };
 
 }}}}

@@ -23,8 +23,8 @@ public:
     {
     }
 
-    virt::hal_aspace *create_vaspace(aspace::set_processing_unit &compatibleUnits, gmacError_t &err);
-    gmacError_t destroy_vaspace(virt::hal_aspace &as);
+    virt::hal_aspace *create_vaspace(aspace::set_processing_unit &compatibleUnits, hal::error &err);
+    hal::error destroy_vaspace(virt::hal_aspace &as);
 };
 
 typedef util::shared_ptr<aspace>       aspace_ptr;

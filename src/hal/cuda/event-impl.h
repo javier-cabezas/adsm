@@ -34,10 +34,10 @@ operation::execute(func_op f)
 }
 
 inline
-gmacError_t
+hal::error
 operation::sync()
 {
-    gmacError_t ret = gmacSuccess;
+    hal::error ret = HAL_SUCCESS;
     if (synced_ == false) {
         stream_.get_aspace().set();
 
@@ -53,7 +53,7 @@ operation::sync()
 #endif
             synced_ = true;
         }
-        ret = error(res);
+        ret = error_to_hal(res);
     }
     return ret;
 }
@@ -68,7 +68,7 @@ operation::set_barrier(hal::detail::stream &_s)
 }
 
 inline
-gmacError_t
+hal::error
 _event_t::sync()
 {
     lock_write();
@@ -78,7 +78,7 @@ _event_t::sync()
 
         while (syncOpBegin_ != operations_.end()) {
             err_ = (*syncOpBegin_)->sync();
-            if (err_ != gmacSuccess) {
+            if (err_ != HAL_SUCCESS) {
                 unlock();
                 return err_;
             }
@@ -89,7 +89,7 @@ _event_t::sync()
 
     unlock();
 
-    if (err_ == gmacSuccess) {
+    if (err_ == HAL_SUCCESS) {
         // Execute pending operations associated to the event
         exec_triggers(true);
     }
@@ -140,7 +140,7 @@ _event_common_t::add_operation(hal_event_ptr ptr, stream &stream, std::function<
 }
 
 inline
-gmacError_t
+hal::error
 _event_common_t::sync_no_exec()
 {
     lock_write();
@@ -150,7 +150,7 @@ _event_common_t::sync_no_exec()
 
         while (syncOpBegin_ != operations_.end()) {
             err_ = syncOpBegin_->sync();
-            if (err_ != gmacSuccess) {
+            if (err_ != HAL_SUCCESS) {
                 unlock();
                 return err_;
             }
@@ -165,12 +165,12 @@ _event_common_t::sync_no_exec()
 }
 
 inline
-gmacError_t
+hal::error
 _event_common_t::sync()
 {
     sync_no_exec();
 
-    if (err_ == gmacSuccess) {
+    if (err_ == HAL_SUCCESS) {
         // Execute pending operations associated to the event
         exec_triggers(true);
     }

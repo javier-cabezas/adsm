@@ -10,10 +10,10 @@ processing_unit::processing_unit(detail::phys::platform &platform, detail::phys:
 processing_unit::~processing_unit()
 {}
 
-gmacError_t
+hal::error
 processing_unit::get_info(GmacDeviceInfo &info)
 {
-    return gmacSuccess;
+    return HAL_SUCCESS;
 }
 
 }}}}

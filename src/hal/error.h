@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2011 University of Illinois
+/* Copyright (c) 2009-2012 University of Illinois
                            Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -31,27 +31,28 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 WITH THE SOFTWARE.  */
 
-#ifndef GMAC_DSM_COHERENCE_TYPES_H_
-#define GMAC_DSM_COHERENCE_TYPES_H_
+#ifndef GMAC_HAL_ERROR_H_
+#define GMAC_HAL_ERROR_H_
 
-#include "util/Parameter.h"
-#include "util/smart_ptr.h"
+namespace __impl { namespace hal {
 
-namespace __impl { namespace dsm { namespace coherence {
-
-static const size_t &BlockSize = config::params::BlockSize;
-
-enum state {
-    STATE_DIRTY   = 1,
-    STATE_SHARED  = 2,
-    STATE_INVALID = 3
+enum error {
+    HAL_SUCCESS                 = 1000,
+    HAL_ERROR_INVALID_PTR             ,
+    HAL_ERROR_INVALID_VALUE           ,
+    HAL_ERROR_INVALID_PROT            ,
+    HAL_ERROR_OUT_OF_RESOURCES        ,
+    HAL_ERROR_INVALID_DEVICE          ,
+    HAL_ERROR_INVALID_FUNCTION        ,
+    HAL_ERROR_FUNCTION                ,
+    HAL_ERROR_FEATURE_NOT_SUPPORTED   ,
+    HAL_ERROR_FILE_NOT_FOUND          ,
+    HAL_ERROR_IO                      ,
+    HAL_ERROR_BACKEND
 };
 
-class block;
-typedef util::shared_ptr<block> block_ptr;
+}}
 
-}}}
 
-#endif // GMAC_DSM_MAPPING_H_
+#endif
 
-/* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

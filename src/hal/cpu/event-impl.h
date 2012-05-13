@@ -11,7 +11,7 @@ _event::_event(bool async, type t, virt::aspace &as) :
     synced_(async? false: true),
     type_(t),
     state_(None),
-    err_(gmacSuccess)
+    err_(HAL_SUCCESS)
 {
 }
 

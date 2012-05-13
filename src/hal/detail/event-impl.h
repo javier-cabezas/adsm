@@ -42,7 +42,7 @@ _event::_event(bool async, type t) :
     synced_(async? false: true),
     type_(t),
     state_(state::None),
-    err_(gmacSuccess)
+    err_(HAL_SUCCESS)
 {
 }
 

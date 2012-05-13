@@ -3,6 +3,8 @@
 
 #include <string>
 
+#include "hal/error.h"
+
 #include "util/tags.h"
 
 namespace __impl { namespace hal { namespace detail { namespace code {
@@ -59,16 +61,16 @@ protected:
     list_descriptor_handle descriptorsHandle_;
 
 public:
-    gmacError_t load_from_file(const std::string &path,
+    hal::error load_from_file(const std::string &path,
                                const std::string &flags,
                                const util::taggeable<>::set_tag &tags = util::taggeable<>::empty);
 
-    gmacError_t load_from_mem(const char *ptr,
+    hal::error load_from_mem(const char *ptr,
                               size_t size,
                               const std::string &flags,
                               const util::taggeable<>::set_tag &tags = util::taggeable<>::empty);
 
-    gmacError_t load_from_handle(const void *handle,
+    hal::error load_from_handle(const void *handle,
                                  const std::string &flags,
                                  const util::taggeable<>::set_tag &tags = util::taggeable<>::empty);
 

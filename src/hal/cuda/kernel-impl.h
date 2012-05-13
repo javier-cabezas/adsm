@@ -86,10 +86,10 @@ kernel::arg_list::get_nargs() const
 }
 
 inline
-gmacError_t
+hal::error
 kernel::arg_list::push_arg(const void *arg, size_t size)
 {
-    gmacError_t ret = gmacSuccess;
+    hal::error ret = HAL_SUCCESS;
 
     params_[nArgs_++] = arg;
 
@@ -98,13 +98,13 @@ kernel::arg_list::push_arg(const void *arg, size_t size)
 
 inline
 hal_event_ptr
-kernel::launch::execute(list_event_detail &_dependencies, gmacError_t &err)
+kernel::launch::execute(list_event_detail &_dependencies, hal::error &err)
 {
     hal_event_ptr ret;
     list_event &dependencies = reinterpret_cast<list_event &>(_dependencies);
     get_stream().set_barrier(dependencies);
 
-    if (err == gmacSuccess) {
+    if (err == HAL_SUCCESS) {
         ret = execute(err);
     }
 
@@ -113,7 +113,7 @@ kernel::launch::execute(list_event_detail &_dependencies, gmacError_t &err)
 
 inline
 hal_event_ptr
-kernel::launch::execute(hal_event_ptr event, gmacError_t &err)
+kernel::launch::execute(hal_event_ptr event, hal::error &err)
 {
     list_event dependencies;
     dependencies.add_event(event);
@@ -123,7 +123,7 @@ kernel::launch::execute(hal_event_ptr event, gmacError_t &err)
 
 inline
 hal_event_ptr
-kernel::launch::execute(gmacError_t &err)
+kernel::launch::execute(hal::error &err)
 {
     get_stream().get_aspace().set();
 
@@ -150,9 +150,9 @@ kernel::launch::execute(gmacError_t &err)
               };
 
     res = ret->add_operation(ret, get_stream(), cuda::operation::func_op(std::cref(op)), cuda::operation::Kernel, true);
-    err = error(res);
+    err = error_to_hal(res);
 
-    if (err != gmacSuccess) {
+    if (err != HAL_SUCCESS) {
         ret.reset();
     }
 

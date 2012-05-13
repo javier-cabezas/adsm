@@ -263,9 +263,9 @@ protected:
 
 public:
 #if 0
-	repository_view(virt::aspace &as, gmacError_t &err);
+	repository_view(virt::aspace &as, hal::error &err);
 #endif
-	repository_view(virt::aspace &as, const hal_repository &repo, gmacError_t &err);
+	repository_view(virt::aspace &as, const hal_repository &repo, hal::error &err);
 
 	~repository_view();
 

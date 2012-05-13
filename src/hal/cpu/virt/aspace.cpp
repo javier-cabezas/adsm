@@ -11,7 +11,7 @@ namespace __impl { namespace hal { namespace cpu { namespace virt {
 
 static map_file Files;
 
-aspace::aspace(hal_aspace::set_processing_unit &compatibleUnits, phys::aspace &pas, gmacError_t &err) :
+aspace::aspace(hal_aspace::set_processing_unit &compatibleUnits, phys::aspace &pas, hal::error &err) :
     parent(compatibleUnits, pas, err)
 {
 }
@@ -31,18 +31,18 @@ int get_prot_flags(GmacProtection prot)
 }
 
 ptr
-aspace::map(hal_object &obj, GmacProtection _prot, gmacError_t &err)
+aspace::map(hal_object &obj, GmacProtection _prot, hal::error &err)
 {
     return map(obj, _prot, 0, err);
 }
 
 ptr
-aspace::map(hal_object &obj, GmacProtection _prot, ptrdiff_t offset, gmacError_t &err)
+aspace::map(hal_object &obj, GmacProtection _prot, ptrdiff_t offset, hal::error &err)
 {
     hal_object::set_view viewsGpu = obj.get_views(phys::hal_processing_unit::PUNIT_TYPE_GPU);
     if (viewsGpu.size() != 0) {
         // Map objects allocated in GPU memory is not supported
-        err = gmacErrorFeatureNotSupported;
+        err = HAL_ERROR_FEATURE_NOT_SUPPORTED;
         return ptr();
     }
 
@@ -51,7 +51,7 @@ aspace::map(hal_object &obj, GmacProtection _prot, ptrdiff_t offset, gmacError_t
 
     if (viewsCpu.size() != viewsAspace.size()) {
         // Mappings across different address spaces is not supported yet
-        err = gmacErrorFeatureNotSupported;
+        err = HAL_ERROR_FEATURE_NOT_SUPPORTED;
         return ptr();
     }
 
@@ -98,7 +98,7 @@ aspace::map(hal_object &obj, GmacProtection _prot, ptrdiff_t offset, gmacError_t
 
         detail::virt::object_view *view = obj.create_view(*this, hal::ptr::offset_type(cpuAddr), err);
 
-        if (err == gmacSuccess) {
+        if (err == HAL_SUCCESS) {
             return ptr(*view);
         } else {
             return ptr();
@@ -110,7 +110,7 @@ aspace::map(hal_object &obj, GmacProtection _prot, ptrdiff_t offset, gmacError_t
 
         if (viewsAspace.size() > 1) {
             // Supporting up to two mappings for now
-            err = gmacErrorFeatureNotSupported;
+            err = HAL_ERROR_FEATURE_NOT_SUPPORTED;
             return ptr();
         }
         const detail::virt::object_view *old = *viewsAspace.begin();
@@ -118,7 +118,7 @@ aspace::map(hal_object &obj, GmacProtection _prot, ptrdiff_t offset, gmacError_t
         TRACE(GLOBAL, "Getting shadow mapping for %p (%zd bytes)", old->get_offset(), obj.get_size());
         map_file_entry entry = Files.find(host_ptr(old->get_offset()));
         if (entry.fd() == -1) {
-            err = gmacErrorInvalidValue;
+            err = HAL_ERROR_INVALID_VALUE;
             return ptr();
         }
         off_t off = off_t(host_ptr(old->get_offset()) - entry.address());
@@ -133,10 +133,10 @@ aspace::map(hal_object &obj, GmacProtection _prot, ptrdiff_t offset, gmacError_t
         if (ret != MAP_FAILED) {
             view = obj.create_view(*this, hal::ptr::offset_type(ret), err);
         } else {
-            err = gmacErrorInvalidValue;
+            err = HAL_ERROR_INVALID_VALUE;
         }
 
-        if (err == gmacSuccess) {
+        if (err == HAL_SUCCESS) {
             return ptr(*view);
         } else {
             return ptr();
@@ -145,31 +145,31 @@ aspace::map(hal_object &obj, GmacProtection _prot, ptrdiff_t offset, gmacError_t
 }
 
 detail::code::repository_view *
-aspace::map(const detail::code::repository &repo, gmacError_t &err)
+aspace::map(const detail::code::repository &repo, hal::error &err)
 {
     NOT_IMPLEMENTED();
     return NULL;
 }
 
-gmacError_t
+hal::error
 aspace::unmap(ptr p)
 {
     host_ptr ptr = host_ptr(p.get_view().get_offset());
     map_file_entry entry = Files.find(host_ptr(ptr));
     if (Files.remove(ptr) == false) {
-        return gmacErrorInvalidValue;
+        return HAL_ERROR_INVALID_VALUE;
     }
     munmap(ptr, p.get_view().get_object().get_size());
     close(entry.fd());
 
-    return gmacSuccess;
+    return HAL_SUCCESS;
 }
 
-gmacError_t
+hal::error
 aspace::unmap(detail::code::repository_view &view)
 {
     NOT_IMPLEMENTED();
-    return gmacSuccess;
+    return HAL_SUCCESS;
 }
 
 bool
@@ -180,7 +180,7 @@ aspace::has_direct_copy(hal::const_ptr ptr1, hal::const_ptr ptr2)
 }
 
 hal_event_ptr
-aspace::copy(hal::ptr dst, hal::const_ptr src, size_t count, list_event_detail *dependencies, gmacError_t &err)
+aspace::copy(hal::ptr dst, hal::const_ptr src, size_t count, list_event_detail *dependencies, hal::error &err)
 {
     NOT_IMPLEMENTED();
 
@@ -188,7 +188,7 @@ aspace::copy(hal::ptr dst, hal::const_ptr src, size_t count, list_event_detail *
 }
 
 hal_event_ptr
-aspace::copy_async(hal::ptr dst, hal::const_ptr src, size_t count, list_event_detail *dependencies, gmacError_t &err)
+aspace::copy_async(hal::ptr dst, hal::const_ptr src, size_t count, list_event_detail *dependencies, hal::error &err)
 {
     NOT_IMPLEMENTED();
 
@@ -196,7 +196,7 @@ aspace::copy_async(hal::ptr dst, hal::const_ptr src, size_t count, list_event_de
 }
 
 hal_event_ptr
-aspace::copy(hal::ptr dst, device_input &input, size_t count, list_event_detail *dependencies, gmacError_t &err)
+aspace::copy(hal::ptr dst, device_input &input, size_t count, list_event_detail *dependencies, hal::error &err)
 {
     NOT_IMPLEMENTED();
 
@@ -204,7 +204,7 @@ aspace::copy(hal::ptr dst, device_input &input, size_t count, list_event_detail 
 }
 
 hal_event_ptr
-aspace::copy(device_output &output, hal::const_ptr src, size_t count, list_event_detail *dependencies, gmacError_t &err)
+aspace::copy(device_output &output, hal::const_ptr src, size_t count, list_event_detail *dependencies, hal::error &err)
 {
     NOT_IMPLEMENTED();
 
@@ -212,7 +212,7 @@ aspace::copy(device_output &output, hal::const_ptr src, size_t count, list_event
 }
 
 hal_event_ptr
-aspace::memset(hal::ptr dst, int c, size_t count, list_event_detail *dependencies, gmacError_t &err)
+aspace::memset(hal::ptr dst, int c, size_t count, list_event_detail *dependencies, hal::error &err)
 {
     NOT_IMPLEMENTED();
 
@@ -220,7 +220,7 @@ aspace::memset(hal::ptr dst, int c, size_t count, list_event_detail *dependencie
 }
 
 hal_event_ptr
-aspace::copy_async(hal::ptr dst, device_input &input, size_t count, list_event_detail *dependencies, gmacError_t &err)
+aspace::copy_async(hal::ptr dst, device_input &input, size_t count, list_event_detail *dependencies, hal::error &err)
 {
     NOT_IMPLEMENTED();
 
@@ -228,7 +228,7 @@ aspace::copy_async(hal::ptr dst, device_input &input, size_t count, list_event_d
 }
 
 hal_event_ptr
-aspace::copy_async(device_output &output, hal::const_ptr src, size_t count, list_event_detail *dependencies, gmacError_t &err)
+aspace::copy_async(device_output &output, hal::const_ptr src, size_t count, list_event_detail *dependencies, hal::error &err)
 {
     NOT_IMPLEMENTED();
 
@@ -236,7 +236,7 @@ aspace::copy_async(device_output &output, hal::const_ptr src, size_t count, list
 }
 
 hal_event_ptr
-aspace::memset_async(hal::ptr dst, int c, size_t count, list_event_detail *dependencies, gmacError_t &err)
+aspace::memset_async(hal::ptr dst, int c, size_t count, list_event_detail *dependencies, hal::error &err)
 {
     NOT_IMPLEMENTED();
 

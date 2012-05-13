@@ -7,7 +7,7 @@
 #include "phys/platform.h"
 #include "code/module.h"
 
-#define __GMAC_ERROR(r, err) case r: error = err; if(r == CUDA_ERROR_INVALID_HANDLE) abort(); break
+#define __GMAC_ERROR(r, err) case r: ret = err; break
 
 namespace __impl { namespace hal {
 
@@ -17,10 +17,10 @@ hal_initialized = false;
 static
 cuda::phys::list_platform platforms;
 
-gmacError_t
+hal::error
 init()
 {
-    gmacError_t ret = gmacSuccess;
+    hal::error ret = HAL_SUCCESS;
 
     if (hal_initialized == false) {
         TRACE(GLOBAL, "Initializing CUDA Driver API");
@@ -35,14 +35,14 @@ init()
     return ret;
 }
 
-gmacError_t
+hal::error
 fini()
 {
     if (hal_initialized == false) {
         FATAL("HAL not initialized");
     }
 
-    gmacError_t ret = gmacSuccess;
+    hal::error ret = HAL_SUCCESS;
 
     hal_initialized = false;
 
@@ -272,35 +272,35 @@ get_platforms()
 
 namespace __impl { namespace hal { namespace cuda { 
 
-gmacError_t error(CUresult err)
+hal::error error_to_hal(CUresult err)
 {
-    gmacError_t error = gmacSuccess;
+    hal::error ret = HAL_SUCCESS;
     switch(err) {
-        __GMAC_ERROR(CUDA_SUCCESS, gmacSuccess);
-        __GMAC_ERROR(CUDA_ERROR_INVALID_VALUE, gmacErrorInvalidValue);
-        __GMAC_ERROR(CUDA_ERROR_OUT_OF_MEMORY, gmacErrorMemoryAllocation);
-        __GMAC_ERROR(CUDA_ERROR_NOT_INITIALIZED, gmacErrorNotReady);
-        __GMAC_ERROR(CUDA_ERROR_DEINITIALIZED, gmacErrorNotReady);
-        __GMAC_ERROR(CUDA_ERROR_NO_DEVICE, gmacErrorNoDevice);
-        __GMAC_ERROR(CUDA_ERROR_INVALID_DEVICE, gmacErrorInvalidDevice);
-        __GMAC_ERROR(CUDA_ERROR_INVALID_IMAGE, gmacErrorInvalidDeviceFunction);
-        __GMAC_ERROR(CUDA_ERROR_INVALID_CONTEXT, gmacErrorApiFailureBase);
-        __GMAC_ERROR(CUDA_ERROR_CONTEXT_ALREADY_CURRENT, gmacErrorApiFailureBase);
-        __GMAC_ERROR(CUDA_ERROR_ALREADY_MAPPED, gmacErrorMemoryAllocation);
-        __GMAC_ERROR(CUDA_ERROR_NO_BINARY_FOR_GPU, gmacErrorInvalidDeviceFunction);
-        __GMAC_ERROR(CUDA_ERROR_ALREADY_ACQUIRED, gmacErrorApiFailureBase);
-        __GMAC_ERROR(CUDA_ERROR_FILE_NOT_FOUND, gmacErrorApiFailureBase);
-        __GMAC_ERROR(CUDA_ERROR_INVALID_HANDLE, gmacErrorApiFailureBase);
-        __GMAC_ERROR(CUDA_ERROR_NOT_FOUND, gmacErrorApiFailureBase);
-        __GMAC_ERROR(CUDA_ERROR_NOT_READY, gmacErrorNotReady);
-        __GMAC_ERROR(CUDA_ERROR_LAUNCH_FAILED, gmacErrorLaunchFailure);
-        __GMAC_ERROR(CUDA_ERROR_LAUNCH_OUT_OF_RESOURCES, gmacErrorLaunchFailure);
-        __GMAC_ERROR(CUDA_ERROR_LAUNCH_TIMEOUT, gmacErrorLaunchFailure);
-        __GMAC_ERROR(CUDA_ERROR_LAUNCH_INCOMPATIBLE_TEXTURING, gmacErrorLaunchFailure);
-        __GMAC_ERROR(CUDA_ERROR_UNKNOWN, gmacErrorUnknown);
-        default: error = gmacErrorUnknown;
+        __GMAC_ERROR(CUDA_SUCCESS, HAL_SUCCESS);
+        __GMAC_ERROR(CUDA_ERROR_INVALID_VALUE, HAL_ERROR_INVALID_VALUE);
+        __GMAC_ERROR(CUDA_ERROR_OUT_OF_MEMORY, HAL_ERROR_OUT_OF_RESOURCES);
+        __GMAC_ERROR(CUDA_ERROR_NOT_INITIALIZED, HAL_ERROR_BACKEND);
+        __GMAC_ERROR(CUDA_ERROR_DEINITIALIZED, HAL_ERROR_BACKEND);
+        __GMAC_ERROR(CUDA_ERROR_NO_DEVICE, HAL_ERROR_BACKEND);
+        __GMAC_ERROR(CUDA_ERROR_INVALID_DEVICE, HAL_ERROR_INVALID_DEVICE);
+        __GMAC_ERROR(CUDA_ERROR_INVALID_IMAGE, HAL_ERROR_INVALID_FUNCTION);
+        __GMAC_ERROR(CUDA_ERROR_INVALID_CONTEXT, HAL_ERROR_BACKEND);
+        __GMAC_ERROR(CUDA_ERROR_INVALID_HANDLE, HAL_ERROR_BACKEND);
+        __GMAC_ERROR(CUDA_ERROR_CONTEXT_ALREADY_CURRENT, HAL_ERROR_BACKEND);
+        __GMAC_ERROR(CUDA_ERROR_ALREADY_MAPPED, HAL_ERROR_BACKEND);
+        __GMAC_ERROR(CUDA_ERROR_NO_BINARY_FOR_GPU, HAL_ERROR_BACKEND);
+        __GMAC_ERROR(CUDA_ERROR_ALREADY_ACQUIRED, HAL_ERROR_BACKEND);
+        __GMAC_ERROR(CUDA_ERROR_FILE_NOT_FOUND, HAL_ERROR_FILE_NOT_FOUND);
+        __GMAC_ERROR(CUDA_ERROR_NOT_FOUND, HAL_ERROR_BACKEND);
+        __GMAC_ERROR(CUDA_ERROR_NOT_READY, HAL_ERROR_BACKEND);
+        __GMAC_ERROR(CUDA_ERROR_LAUNCH_OUT_OF_RESOURCES, HAL_ERROR_OUT_OF_RESOURCES);
+        __GMAC_ERROR(CUDA_ERROR_LAUNCH_FAILED, HAL_ERROR_FUNCTION);
+        __GMAC_ERROR(CUDA_ERROR_LAUNCH_TIMEOUT, HAL_ERROR_FUNCTION);
+        __GMAC_ERROR(CUDA_ERROR_LAUNCH_INCOMPATIBLE_TEXTURING, HAL_ERROR_FUNCTION);
+        __GMAC_ERROR(CUDA_ERROR_UNKNOWN, HAL_ERROR_BACKEND);
+        default: ret = HAL_ERROR_BACKEND;
     }
-    return error;
+    return ret;
 }
 
 }}}

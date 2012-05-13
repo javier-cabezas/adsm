@@ -34,12 +34,18 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_DSM_MAPPING_H_
 #define GMAC_DSM_MAPPING_H_
 
+#ifndef UNIT_TEST
 #include "hal/types.h"
+#else
+#include "unit2/dsm/mock/hal/types.h"
+#endif
 
 #include "util/factory.h"
 #include "util/misc.h"
+#include "util/unique.h"
 
 #include "coherence.h"
+
 #include "error.h"
 #include "types.h"
 

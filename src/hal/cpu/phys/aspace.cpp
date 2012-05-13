@@ -12,17 +12,17 @@ aspace::~aspace()
 }
 
 detail::virt::aspace *
-aspace::create_vaspace(detail::virt::aspace::set_processing_unit &compatibleUnits, gmacError_t &err)
+aspace::create_vaspace(detail::virt::aspace::set_processing_unit &compatibleUnits, hal::error &err)
 {
     return virt::aspace::create<virt::aspace>(compatibleUnits, *this, err);
 }
 
-gmacError_t
+hal::error
 aspace::destroy_vaspace(detail::virt::aspace &as)
 {
     virt::aspace::destroy(as);
 
-    return gmacSuccess;
+    return HAL_SUCCESS;
 }
 
 }}}}

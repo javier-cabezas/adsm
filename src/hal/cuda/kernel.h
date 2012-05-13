@@ -53,7 +53,7 @@ public:
 
     public:
         unsigned get_nargs() const;
-        gmacError_t push_arg(const void *arg, size_t size);
+        hal::error push_arg(const void *arg, size_t size);
     };
 
     class GMAC_LOCAL launch :
@@ -74,9 +74,9 @@ public:
         const config &get_config() const;
         const arg_list &get_arg_list() const;
 
-        hal_event_ptr execute(list_event_detail &dependencies, gmacError_t &err);
-        hal_event_ptr execute(hal_event_ptr event, gmacError_t &err);
-        hal_event_ptr execute(gmacError_t &err);
+        hal_event_ptr execute(list_event_detail &dependencies, hal::error &err);
+        hal_event_ptr execute(hal_event_ptr event, hal::error &err);
+        hal_event_ptr execute(hal::error &err);
     };
 
     CUfunction kernel_;
