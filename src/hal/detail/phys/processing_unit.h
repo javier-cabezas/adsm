@@ -89,6 +89,9 @@ public:
     bool has_access(const memory &mem, memory_connection &connection);
 
     virtual hal::error get_info(GmacDeviceInfo &info) = 0;
+
+    memory &get_preferred_memory();
+    const memory &get_preferred_memory() const;
 };
 
 }}}}

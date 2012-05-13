@@ -49,9 +49,7 @@ processing_unit::has_access(const memory &mem, memory_connection &connection)
     return false;
 }
 
-}
-
-}}}
+}}}}
 
 #endif
 

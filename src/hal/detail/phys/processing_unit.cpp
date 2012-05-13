@@ -19,6 +19,42 @@ processing_unit::add_memory_connection(const memory_connection &connection)
     connection.mem->add_attached_unit(*this);
 }
 
+memory &
+processing_unit::get_preferred_memory()
+{
+    memory_connection ret = *connections_.begin();
+    for (auto &c : connections_) {
+        if (!ret.direct && c.direct) {
+            ret = c;
+        } else if (c.direct) {
+            if (c.latency < ret.latency) {
+                ret = c;
+            }
+        }
+    }
+
+    return *ret.mem;
+}
+
+const memory &
+processing_unit::get_preferred_memory() const
+{
+    memory_connection ret = *connections_.begin();
+    for (auto &c : connections_) {
+        if (!ret.direct && c.direct) {
+            ret = c;
+        } else if (c.direct) {
+            if (c.latency < ret.latency) {
+                ret = c;
+            }
+        }
+    }
+
+    return *ret.mem;
+}
+
+
+
 }}}}
 
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */
