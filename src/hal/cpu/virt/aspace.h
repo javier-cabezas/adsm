@@ -25,7 +25,7 @@ class GMAC_LOCAL aspace :
     typedef hal_aspace parent;
 
 public:
-    aspace(hal_aspace::set_processing_unit &compatibleUnits, phys::aspace &pas, gmacError_t &err);
+    aspace(hal_aspace::set_processing_unit &compatibleUnits, phys::aspace &pas, hal::error &err);
 
 public:
     const set_processing_unit &get_processing_units() const;
@@ -33,25 +33,25 @@ public:
     phys::aspace &get_paspace();
     const phys::aspace &get_paspace() const;
 
-    ptr map(hal_object &obj, GmacProtection prot, gmacError_t &err);
-    ptr map(hal_object &obj, GmacProtection prot, ptrdiff_t offset, gmacError_t &err);
+    ptr map(hal_object &obj, GmacProtection prot, hal::error &err);
+    ptr map(hal_object &obj, GmacProtection prot, ptrdiff_t offset, hal::error &err);
 
-    detail::code::repository_view *map(const detail::code::repository &repo, gmacError_t &err);
+    detail::code::repository_view *map(const detail::code::repository &repo, hal::error &err);
 
-    gmacError_t unmap(ptr p);
-    gmacError_t unmap(detail::code::repository_view &view);
+    hal::error unmap(ptr p);
+    hal::error unmap(detail::code::repository_view &view);
 
     bool has_direct_copy(hal::const_ptr ptr1, hal::const_ptr ptr2);
 
-    hal_event_ptr copy(hal::ptr dst, hal::const_ptr src, size_t count, list_event_detail *dependencies, gmacError_t &err);
-    hal_event_ptr copy_async(hal::ptr dst, hal::const_ptr src, size_t count, list_event_detail *dependencies, gmacError_t &err);
+    hal_event_ptr copy(hal::ptr dst, hal::const_ptr src, size_t count, list_event_detail *dependencies, hal::error &err);
+    hal_event_ptr copy_async(hal::ptr dst, hal::const_ptr src, size_t count, list_event_detail *dependencies, hal::error &err);
 
-    hal_event_ptr copy(hal::ptr dst, device_input &input, size_t count, list_event_detail *dependencies, gmacError_t &err);
-    hal_event_ptr copy(device_output &output, hal::const_ptr src, size_t count, list_event_detail *dependencies, gmacError_t &err);
-    hal_event_ptr memset(hal::ptr dst, int c, size_t count, list_event_detail *dependencies, gmacError_t &err);
-    hal_event_ptr copy_async(hal::ptr dst, device_input &input, size_t count, list_event_detail *dependencies, gmacError_t &err);
-    hal_event_ptr copy_async(device_output &output, hal::const_ptr src, size_t count, list_event_detail *dependencies, gmacError_t &err);
-    hal_event_ptr memset_async(hal::ptr dst, int c, size_t count, list_event_detail *dependencies, gmacError_t &err);
+    hal_event_ptr copy(hal::ptr dst, device_input &input, size_t count, list_event_detail *dependencies, hal::error &err);
+    hal_event_ptr copy(device_output &output, hal::const_ptr src, size_t count, list_event_detail *dependencies, hal::error &err);
+    hal_event_ptr memset(hal::ptr dst, int c, size_t count, list_event_detail *dependencies, hal::error &err);
+    hal_event_ptr copy_async(hal::ptr dst, device_input &input, size_t count, list_event_detail *dependencies, hal::error &err);
+    hal_event_ptr copy_async(device_output &output, hal::const_ptr src, size_t count, list_event_detail *dependencies, hal::error &err);
+    hal_event_ptr memset_async(hal::ptr dst, int c, size_t count, list_event_detail *dependencies, hal::error &err);
 };
 
 }}}}

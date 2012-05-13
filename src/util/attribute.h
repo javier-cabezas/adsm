@@ -1,6 +1,8 @@
 #ifndef GMAC_UTIL_ATTRIBUTE_H_
 #define GMAC_UTIL_ATTRIBUTE_H_
 
+#include <vector>
+
 #include "atomics.h"
 
 namespace __impl { namespace util {
@@ -22,7 +24,7 @@ public:
     }
 
     attributes() :
-        attributes_(id_, NULL)
+        attributes_(id_, nullptr)
     {
     }
 

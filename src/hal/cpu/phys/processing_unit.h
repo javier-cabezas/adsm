@@ -35,7 +35,7 @@ public:
     processing_unit(detail::phys::platform &platform, detail::phys::aspace &as);
     virtual ~processing_unit();
 
-    gmacError_t get_info(GmacDeviceInfo &info);
+    hal::error get_info(GmacDeviceInfo &info);
 };
 
 }}}}

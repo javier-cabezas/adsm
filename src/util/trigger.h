@@ -9,6 +9,11 @@
 #include <tr1/type_traits>
 #endif
 
+#include <algorithm>
+#include <list>
+
+#include "trace/logger.h"
+
 #include "factory.h"
 
 namespace __impl { namespace util {
@@ -293,12 +298,14 @@ protected:
     inline
     observer()
     {
+        TRACE(LOCAL, "Adding observer");
         observable_base<T, Evt>::add_observer(*this);
     }
 
     inline
     virtual ~observer()
     {
+        TRACE(LOCAL, "Removing observer");
         parent::observing::remove_observer(*this);
     }
 };

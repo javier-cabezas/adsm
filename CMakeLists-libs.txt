@@ -4,6 +4,9 @@ target_link_libraries(gmac-trace)
 add_gmac_library(gmac-common STATIC ${gmac-common_SRC})
 target_link_libraries(gmac-common gmac-trace)
 
+add_gmac_library(gmac-hal STATIC ${gmac-hal_SRC})
+target_link_libraries(gmac-hal)
+
 add_gmac_library(gmac-memory STATIC ${gmac-memory_SRC})
 target_link_libraries(gmac-memory gmac-common gmac-trace)
 

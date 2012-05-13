@@ -37,14 +37,14 @@ processing_unit::create_stream(virt::hal_aspace &_as)
     return new stream(as, s);
 }
 
-gmacError_t
+hal::error
 processing_unit::destroy_stream(hal_stream &_s)
 {
     stream &s = reinterpret_cast<stream &>(_s);
     CUresult ret = cuStreamDestroy(s());
     delete &s;
 
-    return error(ret);
+    return error_to_hal(ret);
 }
 
 CUdevice
@@ -83,7 +83,7 @@ processing_unit::get_free_memory() const
     return free;
 }
 
-gmacError_t
+hal::error
 processing_unit::get_info(GmacDeviceInfo &info)
 {
     lock::lock();
@@ -133,7 +133,7 @@ processing_unit::get_info(GmacDeviceInfo &info)
     lock::unlock();
 
     info = info_;
-    return gmacSuccess;
+    return HAL_SUCCESS;
 }
 
 #if 0
@@ -143,18 +143,18 @@ cpu::cpu(platform &plat, coherence_domain &coherenceDomain) :
 }
 
 aspace *
-cpu::create_context(const set_siblings &siblings, gmacError_t &err)
+cpu::create_context(const set_siblings &siblings, hal::error &err)
 {
     //return new context_cpu(siblings);
     return NULL;
 }
 
-gmacError_t
+hal::error
 cpu::destroy_context(aspace &context)
 {
     delete &context;
 
-    return gmacSuccess;
+    return HAL_SUCCESS;
 }
 
 stream_t *
@@ -163,10 +163,10 @@ cpu::create_stream(aspace &context)
     return NULL;
 }
 
-gmacError_t
+hal::error
 cpu::destroy_stream(stream_t &stream)
 {
-    return gmacSuccess;
+    return HAL_SUCCESS;
 }
 
 size_t
@@ -189,10 +189,10 @@ cpu::has_direct_copy(const device &dev) const
     return true;
 }
 
-gmacError_t
+hal::error
 cpu::get_info(GmacDeviceInfo &info)
 {
-    return gmacSuccess;
+    return HAL_SUCCESS;
 }
 #endif
 

@@ -1,16 +1,15 @@
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUNIT_TEST")
+
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/..
     ${gmac_test_INCLUDE}
     ${CMAKE_SOURCE_DIR}/src
     ${CMAKE_BINARY_DIR}/src)
 
-add_subdirectory(dsm)
+set(UNIT_TESTS_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-set(all_SRC
-    ${CMAKE_CURRENT_SOURCE_DIR}/UnitTests.cpp
-    ${unit_SRC})
-add_gmac_groups(${all_SRC})
-add_executable(UnitTests ${all_SRC})
-target_link_libraries(UnitTests gmac-common gmac-core gmac-dsm ${gmac_test_LIB} ${gmac_LIBS})
-set_target_properties(UnitTests PROPERTIES
-    COMPILE_DEFINITIONS_DEBUG USE_DBC)
+add_subdirectory(dsm)
+add_subdirectory(hal)
+
+add_custom_target(UnitTests
+                  DEPENDS UnitTests_dsm UnitTests_hal)

@@ -11,6 +11,7 @@
 #include "util/locked_counter.h"
 #include "util/trigger.h"
 
+#include "hal/error.h"
 #include "hal/detail/ptr.h"
 
 namespace __impl { namespace hal { namespace detail {
@@ -48,7 +49,7 @@ protected:
 
     phys::aspace &pas_;
 
-    aspace(set_processing_unit &compatibleUnits, phys::aspace &pas, gmacError_t &err);
+    aspace(set_processing_unit &compatibleUnits, phys::aspace &pas, hal::error &err);
     virtual ~aspace();
 
 public:
@@ -57,25 +58,25 @@ public:
     phys::aspace &get_paspace();
     const phys::aspace &get_paspace() const;
 
-    virtual ptr map(virt::object &obj, GmacProtection prot, gmacError_t &err) = 0;
-    virtual ptr map(virt::object &obj, GmacProtection prot, ptrdiff_t offset, gmacError_t &err) = 0;
+    virtual ptr map(virt::object &obj, GmacProtection prot, hal::error &err) = 0;
+    virtual ptr map(virt::object &obj, GmacProtection prot, ptrdiff_t offset, hal::error &err) = 0;
 
-    virtual code::repository_view *map(const code::repository &repo, gmacError_t &err) = 0;
+    virtual code::repository_view *map(const code::repository &repo, hal::error &err) = 0;
 
-    virtual gmacError_t unmap(ptr p) = 0;
-    virtual gmacError_t unmap(code::repository_view &view) = 0;
+    virtual hal::error unmap(ptr p) = 0;
+    virtual hal::error unmap(code::repository_view &view) = 0;
 
     virtual bool has_direct_copy(hal::const_ptr ptr1, hal::const_ptr ptr2) = 0;
 
-    virtual event_ptr copy(hal::ptr dst, hal::const_ptr src, size_t count, list_event *dependencies, gmacError_t &err) = 0;
-    virtual event_ptr copy_async(hal::ptr dst, hal::const_ptr src, size_t count, list_event *dependencies, gmacError_t &err) = 0;
+    virtual event_ptr copy(hal::ptr dst, hal::const_ptr src, size_t count, list_event *dependencies, hal::error &err) = 0;
+    virtual event_ptr copy_async(hal::ptr dst, hal::const_ptr src, size_t count, list_event *dependencies, hal::error &err) = 0;
 
-    virtual event_ptr copy(hal::ptr dst, device_input &input, size_t count, list_event *dependencies, gmacError_t &err) = 0;
-    virtual event_ptr copy(device_output &output, hal::const_ptr src, size_t count, list_event *dependencies, gmacError_t &err) = 0;
-    virtual event_ptr memset(hal::ptr dst, int c, size_t count, list_event *dependencies, gmacError_t &err) = 0;
-    virtual event_ptr copy_async(hal::ptr dst, device_input &input, size_t count, list_event *dependencies, gmacError_t &err) = 0;
-    virtual event_ptr copy_async(device_output &output, hal::const_ptr src, size_t count, list_event *dependencies, gmacError_t &err) = 0;
-    virtual event_ptr memset_async(hal::ptr dst, int c, size_t count, list_event *dependencies, gmacError_t &err) = 0;
+    virtual event_ptr copy(hal::ptr dst, device_input &input, size_t count, list_event *dependencies, hal::error &err) = 0;
+    virtual event_ptr copy(device_output &output, hal::const_ptr src, size_t count, list_event *dependencies, hal::error &err) = 0;
+    virtual event_ptr memset(hal::ptr dst, int c, size_t count, list_event *dependencies, hal::error &err) = 0;
+    virtual event_ptr copy_async(hal::ptr dst, device_input &input, size_t count, list_event *dependencies, hal::error &err) = 0;
+    virtual event_ptr copy_async(device_output &output, hal::const_ptr src, size_t count, list_event *dependencies, hal::error &err) = 0;
+    virtual event_ptr memset_async(hal::ptr dst, int c, size_t count, list_event *dependencies, hal::error &err) = 0;
 };
 
 }

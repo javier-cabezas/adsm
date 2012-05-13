@@ -6,12 +6,12 @@ namespace __impl { namespace hal { namespace detail {
 namespace virt {
 
 inline
-aspace::aspace(set_processing_unit &compatibleUnits, phys::aspace &pas, gmacError_t &err) :
+aspace::aspace(set_processing_unit &compatibleUnits, phys::aspace &pas, hal::error &err) :
     pUnits_(compatibleUnits),
     pas_(pas)
 {
     ASSERTION(compatibleUnits.size() > 0);
-    err = gmacSuccess;
+    err = HAL_SUCCESS;
 }
 
 inline

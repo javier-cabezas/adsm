@@ -39,6 +39,7 @@ WITH THE SOFTWARE.  */
 #include <list>
 
 #include "config/common.h"
+#include "trace/logger.h"
 
 namespace __impl { namespace util {
 

@@ -1,23 +1,11 @@
 #include "unit2/dsm/manager.h"
 
-#include "dsm/types.h"
-#include "hal/types.h"
-
 #include "util/misc.h"
 
 #include "gtest/gtest.h"
 
-namespace I_HAL = __impl::hal;
+#include "hal/error.h"
 
-static I_HAL::phys::list_platform platforms;
-static I_HAL::phys::platform *plat0;
-static I_HAL::phys::platform::set_memory memories;
-static const
-       I_HAL::phys::memory *mem0;
-static I_HAL::phys::platform::set_processing_unit pUnits;
-static I_HAL::phys::processing_unit *pUnit0;
-static I_HAL::phys::processing_unit *pUnit1;
-static I_HAL::phys::aspace *pas0;
 static I_HAL::virt::aspace *as0;
 
 static manager *mgr = NULL;
@@ -39,65 +27,25 @@ static const size_t MAP5_SIZE =  800;
 void
 manager_mapping_test::SetUpTestCase()
 {
-    // Inititalize platform
-    gmacError_t err = I_HAL::init();
-    ASSERT_TRUE(err == gmacSuccess);
-    // Get platforms
-    platforms = I_HAL::phys::get_platforms();
-    ASSERT_TRUE(platforms.size() > 0);
-    plat0 = platforms.front();
-    // Get processing units
-    pUnits = plat0->get_processing_units(I_HAL::phys::processing_unit::PUNIT_TYPE_GPU);
-    ASSERT_TRUE(pUnits.size() > 0);
-    pUnit0 = *pUnits.begin();
-    pUnit1 = nullptr;
-    pas0 = &pUnit0->get_paspace();
-    if (pUnits.size() > 1 &&
-        plat0->get_paspaces().size() < pUnits.size()) {
-        pUnit1 = *(++pUnits.begin());
-    }
     mgr = new manager();
-    // Create address space
-    I_HAL::phys::aspace::set_processing_unit compatibleUnits({ pUnit0 });
-    as0 = pas0->create_vaspace(compatibleUnits, err);
-    ASSERT_TRUE(err == gmacSuccess);
+    as0 = I_HAL::virt::aspace::create();
 }
 
 void manager_mapping_test::TearDownTestCase()
 {
-    gmacError_t err;
-
-    err = pas0->destroy_vaspace(*as0);
-    ASSERT_TRUE(err == gmacSuccess);
-
-    delete mgr;
-
-    memories.clear();
-    pUnits.clear();
-
-    platforms.clear();
-
-    I_HAL::fini();
+    I_HAL::virt::aspace::destroy(*as0);
 }
 
-static I_HAL::virt::object *obj0;
+static I_HAL::virt::object_view *view0;
+
 static ptr         p0, p1, p2, p3, p4, p5;
 static mapping_ptr m0, m1, m2, m3, m4, m5;
 static block_ptr   b0, b1, b2, b3, b4, b5;
 
 static void range_init()
 {
-    gmacError_t errHal;
-
-    memories = plat0->get_memories();
-    mem0 = *memories.begin();
-
-    obj0 = plat0->create_object(*mem0, MAP5_OFF + MAP5_SIZE, errHal);
-    ASSERT_TRUE(errHal == gmacSuccess);
-
-    // We use the same base allocation
-    ptr ptrBase = as0->map(*obj0, GMAC_PROT_READWRITE, errHal);
-    ASSERT_TRUE(errHal == gmacSuccess);
+    view0 = new I_HAL::virt::object_view(*as0, 0);
+    ptr ptrBase(*view0, 0);
 
     p0 = ptrBase + MAP0_OFF;
     p1 = p0 + (MAP1_OFF - MAP0_OFF);
@@ -120,21 +68,21 @@ static void range_init()
     b4 = mapping::helper_create_block(MAP4_SIZE);
     b5 = mapping::helper_create_block(MAP5_SIZE);
 
-    error_dsm err;
+    I_DSM::error err;
     bool berr;
 
     err = m0->append(b0);
-    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
+    ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
     err = m1->append(b1);
-    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
+    ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
     err = m2->append(b2);
-    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
+    ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
     err = m3->append(b3);
-    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
+    ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
     err = m4->append(b4);
-    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
+    ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
     err = m5->append(b5);
-    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
+    ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
 
     berr = mgr->helper_insert(*as0, m0);
     ASSERT_TRUE(berr);
@@ -157,11 +105,7 @@ static void range_fini()
     berr = mgr->helper_delete_mappings(*as0);
     ASSERT_TRUE(berr);
 
-    gmacError_t errHal;
-    errHal = as0->unmap(p0 - p0.get_offset());
-    ASSERT_TRUE(errHal == gmacSuccess);
-    errHal = plat0->destroy_object(*obj0);
-    ASSERT_TRUE(errHal == gmacSuccess);
+    delete view0;
 }
 
 template <typename T>
@@ -383,25 +327,25 @@ TEST_F(manager_mapping_test, insert_mappings)
     b_b7 = mapping::helper_create_block(MAP_B7_SIZE);
     b_b8 = mapping::helper_create_block(MAP_B8_SIZE);
 
-    error_dsm err;
+    I_DSM::error err;
     err = m_b0->append(b_b0);
-    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
+    ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
     err = m_b1->append(b_b1);
-    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
+    ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
     err = m_b2->append(b_b2);
-    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
+    ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
     err = m_b3->append(b_b3);
-    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
+    ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
     err = m_b4->append(b_b4);
-    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
+    ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
     err = m_b5->append(b_b5);
-    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
+    ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
     err = m_b6->append(b_b6);
-    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
+    ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
     err = m_b7->append(b_b7);
-    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
+    ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
     err = m_b8->append(b_b8);
-    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
+    ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
 
     bool berr;
     berr = mgr->helper_insert(*as0, m_b0);
@@ -447,7 +391,7 @@ TEST_F(manager_mapping_test, merge_mappings)
     ASSERT_TRUE((*range.begin())->get_ptr() == p0);
     ASSERT_TRUE((*get_last_in_range(range))->get_ptr() == p5);
 
-    __impl::dsm::mapping_ptr merged = mgr->merge_mappings(range);
+    I_DSM::mapping_ptr merged = mgr->merge_mappings(range);
     ASSERT_TRUE(merged->get_bounds().get_size() == (MAP5_OFF - MAP0_OFF + MAP5_SIZE));
     ASSERT_TRUE(merged->get_nblocks() == 6 + 4);
 
@@ -465,7 +409,7 @@ TEST_F(manager_mapping_test, merge_mappings)
     ASSERT_TRUE((*range2.begin())->get_ptr() == p0);
     ASSERT_TRUE((*get_last_in_range(range2))->get_ptr() == p4);
 
-    __impl::dsm::mapping_ptr merged2 = mgr->merge_mappings(range2);
+    I_DSM::mapping_ptr merged2 = mgr->merge_mappings(range2);
     ASSERT_TRUE(merged2->get_bounds().get_size() == (MAP4_OFF - MAP0_OFF + MAP4_SIZE));
     ASSERT_TRUE(merged2->get_nblocks() == 5 + 3);
 
@@ -475,6 +419,11 @@ TEST_F(manager_mapping_test, merge_mappings)
 }
 
 static I_HAL::virt::aspace *as1;
+
+static I_HAL::virt::object_view *view1;
+static I_HAL::virt::object_view *view2;
+static I_HAL::virt::object_view *view3;
+static I_HAL::virt::object_view *view4;
 
 static ptr as0_p0,  as0_p1,  as0_p2;
 static ptr as0_p0b, as0_p1b, as0_p2b;
@@ -495,46 +444,32 @@ static const size_t LINK2_2_OFF = 9 * 0x1000;
 
 static void link_init()
 {
-    gmacError_t err;
+    as1 = I_HAL::virt::aspace::create();
 
-    ASSERT_TRUE(pUnit1 != nullptr);
-    // Create address space
-    I_HAL::phys::aspace::set_processing_unit compatibleUnits({ pUnit1 });
-
-    // Create additional address space
-    as1 = pas0->create_vaspace(compatibleUnits, err);
-    ASSERT_TRUE(err == gmacSuccess);
-
-    memories = plat0->get_memories();
-    mem0 = *memories.begin();
-
-    obj0 = plat0->create_object(*mem0, LINK2_2_OFF + LINK2_SIZE, err);
-
-    // We use the same base allocation
-    ptr ptrBase1 = as0->map(*obj0, GMAC_PROT_READWRITE, err);
-    ASSERT_TRUE(err == gmacSuccess);
+    I_HAL::virt::object_view *view1 = new I_HAL::virt::object_view(*as0, 0);
+    ptr ptrBase1(*view1, 0);
 
     as0_p0  = ptrBase1 + LINK1_0_OFF;
     as0_p1  = ptrBase1 + LINK1_1_OFF;
     as0_p2  = ptrBase1 + LINK1_2_OFF;
-    // Same object in the same virtual address space NOT supported for now
-    ptr ptrBase2 = as0->map(*obj0, GMAC_PROT_READWRITE, err);
-    ASSERT_TRUE(err == gmacErrorFeatureNotSupported);
+
+    I_HAL::virt::object_view *view2 = new I_HAL::virt::object_view(*as0, 0x1000000);
+    ptr ptrBase2(*view2, 0);
 
     as0_p0b = ptrBase2 + LINK1_0_OFF;
     as0_p1b = ptrBase2 + LINK1_1_OFF;
     as0_p2b = ptrBase2 + LINK1_2_OFF;
 
     // We use the same base allocation
-    ptr ptrBase3 = as1->map(*obj0, GMAC_PROT_READWRITE, err);
-    ASSERT_TRUE(err == gmacSuccess);
+    I_HAL::virt::object_view *view3 = new I_HAL::virt::object_view(*as1, 0);
+    ptr ptrBase3(*view3, 0);
 
     as1_p0  = ptrBase3 + LINK2_0_OFF;
     as1_p1  = ptrBase3 + LINK2_1_OFF;
     as1_p2  = ptrBase3 + LINK2_2_OFF;
-    // Same object in the same virtual address space NOT supported for now
-    ptr ptrBase4 = as1->map(*obj0, GMAC_PROT_READWRITE, err);
-    ASSERT_TRUE(err == gmacErrorFeatureNotSupported);
+
+    I_HAL::virt::object_view *view4 = new I_HAL::virt::object_view(*as1, 0x1000000);
+    ptr ptrBase4(*view4, 0);
 
     as1_p0b = ptrBase4 + LINK2_0_OFF;
     as1_p1b = ptrBase4 + LINK2_1_OFF;
@@ -549,40 +484,25 @@ static void link_fini()
     berr = mgr->helper_delete_mappings(*as1);
     ASSERT_TRUE(berr);
 
-    gmacError_t err;
+    delete view1;
+    delete view2;
+    delete view3;
+    delete view4;
 
-    // Unmap first from the secondary vaspace
-    err = as1->unmap(as1_p0 - as1_p0.get_offset());
-    ASSERT_TRUE(err == gmacSuccess);
-
-    err = as0->unmap(as0_p0 - as0_p0.get_offset());
-    ASSERT_TRUE(err == gmacSuccess);
-#if 0
-    err = as0->unmap(as0_p0b - as0_p0b.get_offset());
-    ASSERT_TRUE(err == gmacSuccess);
-#endif
-#if 0
-    err = as1->unmap(as1_p0b - as1_p0b.get_offset());
-    ASSERT_TRUE(err == gmacSuccess);
-#endif
-    err = plat0->destroy_object(*obj0);
-    ASSERT_TRUE(err == gmacSuccess);
-
-    err = pas0->destroy_vaspace(*as1);
-    ASSERT_TRUE(err == gmacSuccess);
+    I_HAL::virt::aspace::destroy(*as1);
 }
 
 TEST_F(manager_mapping_test, link)
 {
     link_init();
 
-    error_dsm err = mgr->link(as0_p0, as0_p0b, LINK0_SIZE, GMAC_PROT_READ);
-    ASSERT_FALSE(err == error_dsm::DSM_SUCCESS);
+    I_DSM::error err = mgr->link(as0_p0, as0_p0b, LINK0_SIZE, GMAC_PROT_READ);
+    ASSERT_FALSE(err == I_DSM::error::DSM_SUCCESS);
     ASSERT_FALSE(mgr->helper_get_mapping(as0_p0));
     ASSERT_FALSE(mgr->helper_get_mapping(as0_p0b));
 
     err = mgr->link(as0_p0, as1_p0, LINK0_SIZE, GMAC_PROT_READ);
-    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
+    ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
     ASSERT_TRUE(mgr->helper_get_mapping(as0_p0));
     ASSERT_TRUE(mgr->helper_get_mapping(as0_p0)->get_ptr() == as0_p0);
     ASSERT_TRUE(mgr->helper_get_mapping(as1_p0));
@@ -597,8 +517,8 @@ TEST_F(manager_mapping_test, link2)
 {
     link_init();
 
-    error_dsm err = mgr->link(as0_p1, as1_p1, LINK0_SIZE, GMAC_PROT_READ);
-    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
+    I_DSM::error err = mgr->link(as0_p1, as1_p1, LINK0_SIZE, GMAC_PROT_READ);
+    ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
     ASSERT_TRUE(mgr->helper_get_mapping(as0_p1));
     ASSERT_TRUE(mgr->helper_get_mapping(as0_p1)->get_ptr() == as0_p1);
     ASSERT_TRUE(mgr->helper_get_mapping(as1_p1));
@@ -607,7 +527,7 @@ TEST_F(manager_mapping_test, link2)
     ASSERT_TRUE(mgr->helper_get_mappings(as1_p1.get_view().get_vaspace(), as1_p1.get_view()).size() == 1);
 
     err = mgr->link(as0_p1, as1_p1, LINK2_2_OFF - LINK2_1_OFF +  LINK2_SIZE, GMAC_PROT_READ);
-    ASSERT_TRUE(err == error_dsm::DSM_SUCCESS);
+    ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
     ASSERT_TRUE(mgr->helper_get_mappings(as0_p1.get_view().get_vaspace(), as0_p1.get_view()).size() == 1);
     ASSERT_TRUE(mgr->helper_get_mappings(as1_p1.get_view().get_vaspace(), as1_p1.get_view()).size() == 1);
 

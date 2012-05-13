@@ -66,7 +66,7 @@ struct GMAC_LOCAL FatBinDesc {
     int magic; int v; const unsigned long long* data; char* f;
 };
 
-repository_view::repository_view(virt::aspace &as, const hal_repository &repo, gmacError_t &err)
+repository_view::repository_view(virt::aspace &as, const hal_repository &repo, hal::error &err)
 {
     as.set();
 
@@ -76,8 +76,8 @@ repository_view::repository_view(virt::aspace &as, const hal_repository &repo, g
         // TODO: add support for flags
         CUresult res = cuModuleLoadData(&cumod, file.get_path().c_str());
 
-        err = error(res);
-        if (err != gmacSuccess) return;
+        err = error_to_hal(res);
+        if (err != HAL_SUCCESS) return;
 
         module mod(cumod, file);
         modules_.push_back(mod);
@@ -89,8 +89,8 @@ repository_view::repository_view(virt::aspace &as, const hal_repository &repo, g
         // TODO: add support for flags
         CUresult res = cuModuleLoadData(&cumod, buffer.get_ptr());
 
-        err = error(res);
-        if (err != gmacSuccess) return;
+        err = error_to_hal(res);
+        if (err != HAL_SUCCESS) return;
 
         module mod(cumod, buffer);
         modules_.push_back(cumod);
@@ -109,8 +109,8 @@ repository_view::repository_view(virt::aspace &as, const hal_repository &repo, g
         // TODO: add support for flags
         CUresult res = cuModuleLoadData(&cumod, h);
 
-        err = error(res);
-        if (err != gmacSuccess) return;
+        err = error_to_hal(res);
+        if (err != HAL_SUCCESS) return;
 
         module mod(cumod, handle);
         modules_.push_back(mod);

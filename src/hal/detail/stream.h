@@ -37,11 +37,11 @@ public:
     virt::aspace &get_aspace();
 
     virtual state query() = 0;
-    virtual gmacError_t sync() = 0;
+    virtual hal::error sync() = 0;
 
 #if 0
-    virtual gmacError_t set_barrier(event_ptr event) = 0;
-    virtual gmacError_t set_barrier(list_event &events) = 0;
+    virtual hal::error set_barrier(event_ptr event) = 0;
+    virtual hal::error set_barrier(list_event &events) = 0;
 #endif
 };
 

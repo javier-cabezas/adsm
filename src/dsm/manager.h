@@ -34,11 +34,18 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_DSM_MANAGER_H_
 #define GMAC_DSM_MANAGER_H_
 
+#ifndef UNIT_TEST
+#include "hal/types.h"
+#else
+#include "unit2/dsm/mock/hal/types.h"
+#endif
+
 #include "config/common.h"
 #include "include/gmac/types.h"
 #include "util/iterator.h"
 #include "util/singleton.h"
 #include "util/stl/locked_map.h"
+#include "util/trigger.h"
 
 #include "mapping.h"
 

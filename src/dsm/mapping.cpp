@@ -87,7 +87,7 @@ mapping::get_first_block(hal::ptr p)
         size_t blockSize = (*it)->get_size();
 
         if ((p >= addr_ + off) &&
-            (p <  addr_ + off +  blockSize)) {
+            (p <  addr_ + off + blockSize)) {
             size_t offLocal = p.get_offset() - (addr_ + off).get_offset();
             return cursor_block(it, off, offLocal);
         }

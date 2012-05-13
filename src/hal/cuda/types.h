@@ -37,7 +37,7 @@ typedef util::shared_ptr<_event_t> event_ptr;
 class event_list;
 class buffer_t;
 
-gmacError_t error(CUresult err);
+hal::error error_to_hal(CUresult err);
 
 namespace phys {
     typedef std::list<platform *> list_platform;

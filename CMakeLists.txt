@@ -242,7 +242,7 @@ if(MAKE_STATIC)
 else(MAKE_STATIC)
     add_gmac_library(${GMAC_TARGET_NAME} SHARED ${gmac-hpe_SRC} ${gmac-include_SRC})
 endif(MAKE_STATIC)
-target_link_libraries(${GMAC_TARGET_NAME} gmac-common gmac-trace gmac-core gmac-memory gmac-dsm gmac-libs ${gmac_LIBS})
+target_link_libraries(${GMAC_TARGET_NAME} gmac-common gmac-hal gmac-trace gmac-core gmac-memory gmac-dsm gmac-libs ${gmac_LIBS})
 
 set_target_properties(${GMAC_TARGET_NAME} PROPERTIES
     VERSION ${GMAC_VERSION} SOVERSION 1

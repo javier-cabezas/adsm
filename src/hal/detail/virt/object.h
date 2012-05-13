@@ -40,8 +40,8 @@ private:
     {
     }
 public:
-    object_view *create_view(aspace &as, ptr::offset_type offset, gmacError_t &err);
-    gmacError_t destroy_view(object_view &view);
+    object_view *create_view(aspace &as, ptr::offset_type offset, hal::error &err);
+    hal::error destroy_view(object_view &view);
 
     const phys::memory &get_memory() const;
 
@@ -50,7 +50,7 @@ public:
         return size_;
     }
 
-    gmacError_t migrate(phys::memory &newLocation);
+    hal::error migrate(phys::memory &newLocation);
 
     set_view get_views(aspace &as) const
     {

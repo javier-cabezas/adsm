@@ -19,9 +19,9 @@ public:
     virtual ~aspace();
     
     detail::virt::aspace *
-    create_vaspace(detail::virt::aspace::set_processing_unit &compatibleUnits, gmacError_t &err);
+    create_vaspace(detail::virt::aspace::set_processing_unit &compatibleUnits, hal::error &err);
 
-    gmacError_t destroy_vaspace(detail::virt::aspace &as);
+    hal::error destroy_vaspace(detail::virt::aspace &as);
 };
 
 }

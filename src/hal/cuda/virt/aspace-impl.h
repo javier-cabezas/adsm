@@ -34,10 +34,10 @@ buffer::set_event(event_ptr event)
 }
 
 inline
-gmacError_t
+hal::error
 buffer::wait()
 {
-    gmacError_t ret = gmacSuccess;
+    hal::error ret = HAL_SUCCESS;
     if (event_) {
         ret = event_->sync();
     }

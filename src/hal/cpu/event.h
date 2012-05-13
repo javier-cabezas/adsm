@@ -18,7 +18,7 @@ class GMAC_LOCAL _event_t :
 public:
     state get_state();
 
-    gmacError_t sync();
+    hal::error sync();
     void set_synced();
 };
 
@@ -27,7 +27,7 @@ class GMAC_LOCAL list_event :
 public:
     void add_event(event_ptr event);
 
-    gmacError_t sync();
+    hal::error sync();
     void set_synced();
 };
 

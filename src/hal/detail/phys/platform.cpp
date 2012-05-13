@@ -95,24 +95,24 @@ platform::get_paspaces(processing_unit::type type) const
 
 
 virt::object *
-platform::create_object(const memory &mem, size_t size, gmacError_t &err)
+platform::create_object(const memory &mem, size_t size, hal::error &err)
 {
     if (memories_.find(&mem) == memories_.end()) {
-        err = gmacErrorInvalidValue;
+        err = HAL_ERROR_INVALID_VALUE;
         return NULL;
     }
 
-    err = gmacSuccess;
+    err = HAL_SUCCESS;
     //return new object(mem, size);
     return create(mem, size);
 }
 
-gmacError_t
+hal::error
 platform::destroy_object(virt::object &obj)
 {
     destroy(obj);
     
-    return gmacSuccess;
+    return HAL_SUCCESS;
 }
 
 }}}}

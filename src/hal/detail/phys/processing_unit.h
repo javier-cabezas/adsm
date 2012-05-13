@@ -6,6 +6,8 @@
 #include "config/common.h"
 #include "util/unique.h"
 
+#include "hal/error.h"
+
 #include "memory.h"
 
 namespace __impl { namespace hal {
@@ -86,7 +88,7 @@ public:
 
     bool has_access(const memory &mem, memory_connection &connection);
 
-    virtual gmacError_t get_info(GmacDeviceInfo &info) = 0;
+    virtual hal::error get_info(GmacDeviceInfo &info) = 0;
 };
 
 }}}}

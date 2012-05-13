@@ -3,6 +3,8 @@
 
 #include <set>
 
+#include "hal/error.h"
+
 #include "util/unique.h"
 
 namespace __impl { namespace hal { namespace detail {
@@ -40,8 +42,8 @@ public:
         TRACE(LOCAL, FMT_ID2" Destroy", get_print_id2());
     }
     
-    virtual virt::aspace *create_vaspace(aspace::set_processing_unit &compatibleUnits, gmacError_t &err) = 0;
-    virtual gmacError_t destroy_vaspace(virt::aspace &as) = 0;
+    virtual virt::aspace *create_vaspace(aspace::set_processing_unit &compatibleUnits, hal::error &err) = 0;
+    virtual hal::error destroy_vaspace(virt::aspace &as) = 0;
 
     void add_processing_unit(processing_unit &pUnit)
     {
