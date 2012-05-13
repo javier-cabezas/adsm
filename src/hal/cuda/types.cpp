@@ -254,6 +254,9 @@ get_platforms()
                 //p->add_device(*new cuda::cpu(*p, *cpuDomain));
                 cpu::phys::processing_unit *pUnit = new cpu::phys::processing_unit(*p, *pas);
                 p->add_processing_unit(*pUnit);
+
+                cpu::phys::processing_unit::memory_connection connection(*memoryHost, true, 0);
+                pUnit->add_memory_connection(connection);
             }
         }
 

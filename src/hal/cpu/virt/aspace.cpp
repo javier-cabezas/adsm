@@ -154,13 +154,20 @@ aspace::map(const detail::code::repository &repo, hal::error &err)
 hal::error
 aspace::unmap(ptr p)
 {
-    host_ptr ptr = host_ptr(p.get_view().get_offset());
-    map_file_entry entry = Files.find(host_ptr(ptr));
-    if (Files.remove(ptr) == false) {
-        return HAL_ERROR_INVALID_VALUE;
+    detail::virt::object_view &view = p.get_view();
+    detail::virt::object &obj = view.get_object();
+
+    host_ptr ptr = host_ptr(view.get_offset()) + p.get_offset();
+
+    obj.destroy_view(view);
+    if (obj.get_views().size() == 0) {
+        map_file_entry entry = Files.find(host_ptr(ptr));
+        if (Files.remove(ptr) == false) {
+            return HAL_ERROR_INVALID_VALUE;
+        }
+        close(entry.fd());
     }
-    munmap(ptr, p.get_view().get_object().get_size());
-    close(entry.fd());
+    ::munmap(ptr, obj.get_size());
 
     return HAL_SUCCESS;
 }

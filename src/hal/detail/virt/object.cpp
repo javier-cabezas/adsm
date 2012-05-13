@@ -17,12 +17,14 @@ object::create_view(aspace &as, ptr::offset_type offset, hal::error &err)
 {
     ASSERTION(as.get_paspace().get_memories().find(memory_) !=
               as.get_paspace().get_memories().end());
-
+    // TODO: check if this is already working
+#if 0
     // TODO: add support for multiple views of the same object in an Address Space
     if (views_.find(&as) != views_.end()) {
         err = HAL_ERROR_FEATURE_NOT_SUPPORTED;
         return NULL;
     }
+#endif
 
     object_view *ret = create(*this, as, offset);
 
