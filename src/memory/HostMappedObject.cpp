@@ -69,9 +69,7 @@ accptr_t HostMappedObject::acceleratorAddr(core::Mode &current, const hostptr_t 
     accptr_t ret = accptr_t(0);
     if(addr_ != NULL) {
         unsigned offset = unsigned(addr - addr_);
-        printf("Offset3: %u\n", offset);
         accptr_t acceleratorAddr = getAccPtr(current);
-        printf("Offset4: %u\n", offset);
         ret = acceleratorAddr + offset;
     }
     return ret;

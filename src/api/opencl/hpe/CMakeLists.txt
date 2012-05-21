@@ -26,6 +26,8 @@ set(arch_hpe_SRC
     Mode.cpp
     ModeFactory.h
     ModeFactory.cpp
+    cpu/Accelerator.h
+    cpu/Accelerator.cpp
 )
 
 set(arch_hpe_DBC

@@ -55,6 +55,18 @@ isDeviceAMDFusion(cl_device_id id)
     return str != end;
 }
 
+inline bool
+isDeviceGPU(cl_device_id id)
+{
+    return getDeviceType(id) == CL_DEVICE_TYPE_GPU;
+}
+
+inline bool
+isDeviceCPU(cl_device_id id)
+{
+    return getDeviceType(id) == CL_DEVICE_TYPE_CPU;
+}
+
 }}}
 
 #endif

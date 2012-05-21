@@ -1,6 +1,7 @@
 #include "config/order.h"
 
 #include "core/hpe/Process.h"
+#include "cpu/Accelerator.h"
 #include "gpu/amd/Accelerator.h"
 #include "gpu/amd/FusionAccelerator.h"
 #include "gpu/nvidia/Accelerator.h"
@@ -25,12 +26,14 @@ void OpenCL(gmac::core::hpe::Process &proc)
     for (unsigned i = 0; i < platformSize; i++) {
         MESSAGE("Platform [%u/%u]: %s", i + 1, platformSize, __impl::opencl::util::getPlatformName(platforms[i]).c_str());
         cl_uint deviceSize = 0;
-        ret = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_GPU,
+        cl_device_type types = CL_DEVICE_TYPE_GPU | CL_DEVICE_TYPE_CPU;
+        //cl_device_type types = CL_DEVICE_TYPE_CPU;
+        ret = clGetDeviceIDs(platforms[i], types,
                              0, NULL, &deviceSize);
         ASSERTION(ret == CL_SUCCESS);
 	    if(deviceSize == 0) continue;
         cl_device_id *devices = new cl_device_id[deviceSize];
-        ret = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_GPU,
+        ret = clGetDeviceIDs(platforms[i], types,
                              deviceSize, devices, NULL);
         ASSERTION(ret == CL_SUCCESS);
         MESSAGE("... found %u OpenCL devices", deviceSize, i);
@@ -64,9 +67,14 @@ void OpenCL(gmac::core::hpe::Process &proc)
                         acc = new __impl::opencl::hpe::gpu::amd::Accelerator(n++, ctx, devices[j],
                                 clVersion.first, clVersion.second);
 #endif
-                    } else {
+                    } else if (__impl::opencl::util::isDeviceGPU(devices[j])) {
                         acc = new __impl::opencl::hpe::gpu::amd::Accelerator(n++, ctx, devices[j],
                                 clVersion.first, clVersion.second);
+                    } else if (__impl::opencl::util::isDeviceCPU(devices[j])) {
+                        acc = new __impl::opencl::hpe::cpu::Accelerator(n++, ctx, devices[j],
+                                clVersion.first, clVersion.second);
+                    } else {
+                        FATAL("Not supported device");
                     }
                     break;
                 case __impl::opencl::util::PLATFORM_APPLE:
@@ -76,7 +84,7 @@ void OpenCL(gmac::core::hpe::Process &proc)
                     break;
                 case __impl::opencl::util::PLATFORM_INTEL:
                 case __impl::opencl::util::PLATFORM_UNKNOWN:
-                    FATAL("Platform not supported\n");
+                    FATAL("Platform not supported");
             }
             proc.addAccelerator(*acc);
             // Nedded for OpenCL code compilation
