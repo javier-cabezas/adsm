@@ -41,6 +41,16 @@ getDeviceString(int string, cl_device_id id)
     return ret;
 }
 
+cl_device_type
+getDeviceType(cl_device_id id)
+{
+    cl_device_type ret;
+    cl_int err = clGetDeviceInfo(id, CL_DEVICE_TYPE, sizeof(ret), &ret, NULL);
+    CFATAL(err == CL_SUCCESS);
+
+    return ret;
+}
+
 OpenCLPlatform
 getPlatform(cl_platform_id id)
 {

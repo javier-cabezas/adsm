@@ -32,6 +32,7 @@ oclCreateFromGLBuffer(cl_mem_flags flags, cl_GLuint bufobj, cl_int *errcode_ret)
     return ret;
 }
 
+#ifdef USE_DEPRECATED_OPENCL_1_1
 GMAC_API cl_mem APICALL
 oclCreateFromGLTexture2D(cl_mem_flags flags, cl_GLenum texture_target, cl_GLint miplevel, cl_GLuint texture, cl_int *errcode_ret)
 {
@@ -43,7 +44,9 @@ oclCreateFromGLTexture2D(cl_mem_flags flags, cl_GLenum texture_target, cl_GLint 
 
     return ret;
 }
+#endif
 
+#ifdef USE_DEPRECATED_OPENCL_1_1
 GMAC_API cl_mem APICALL
 oclCreateFromGLTexture3D(cl_mem_flags flags, cl_GLenum texture_target, cl_GLint miplevel, cl_GLuint texture, cl_int *errcode_ret)
 {
@@ -55,6 +58,7 @@ oclCreateFromGLTexture3D(cl_mem_flags flags, cl_GLenum texture_target, cl_GLint 
 
     return ret;
 }
+#endif
 
 GMAC_API cl_mem APICALL
 oclCreateFromGLRenderbuffer(cl_mem_flags flags, cl_GLuint renderbuffer, cl_int *errcode_ret) 

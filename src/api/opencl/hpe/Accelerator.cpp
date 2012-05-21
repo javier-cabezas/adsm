@@ -405,7 +405,9 @@ gmacError_t Accelerator::prepareCLCode(const char *code, const char *flags)
             break;
         }
     }
+#ifdef USE_DEPRECATED_OPENCL_1_1
     clUnloadCompiler();
+#endif
     trace::ExitCurrentFunction();
     return error(ret);
 }

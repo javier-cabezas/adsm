@@ -38,6 +38,9 @@ OpenCLVersion GMAC_LOCAL
 getOpenCLVersion(cl_platform_id id);
 
 // Device functions
+cl_device_type GMAC_LOCAL
+getDeviceType(cl_device_id id);
+
 std::string GMAC_LOCAL
 getDeviceName(cl_device_id id);
 
@@ -46,6 +49,12 @@ getDeviceVendor(cl_device_id id);
 
 bool GMAC_LOCAL
 isDeviceAMDFusion(cl_device_id id);
+
+bool GMAC_LOCAL
+isDeviceGPU(cl_device_id id);
+
+bool GMAC_LOCAL
+isDeviceCPU(cl_device_id id);
 
 // Context functions
 cl_device_id GMAC_LOCAL

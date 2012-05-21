@@ -39,7 +39,6 @@ KernelLaunch::getKernelId() const
 }
 #endif
 
-
 inline
 void
 KernelLaunch::addObject(hostptr_t ptr, unsigned index, GmacProtection prot)
