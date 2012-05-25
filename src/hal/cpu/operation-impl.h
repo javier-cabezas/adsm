@@ -1,8 +1,9 @@
-#ifndef GMAC_HAL_EVENT_IMPL_H_
-#define GMAC_HAL_EVENT_IMPL_H_
+#ifndef GMAC_HAL_CPU_OPERATION_IMPL_H_
+#define GMAC_HAL_CPU_OPERATION_IMPL_H_
 
 namespace __impl { namespace hal { namespace detail {
 
+#if 0
 inline
 _event::_event(bool async, type t, virt::aspace &as) :
     gmac::util::lock_rw<_event>("_event"),
@@ -92,6 +93,8 @@ _event::is_synced() const
 {
     return synced_;
 }
+
+#endif
 
 } // namespace detail
 

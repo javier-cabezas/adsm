@@ -17,6 +17,7 @@ stream::get_aspace()
     return aspace_;
 }
 
+#if 0
 inline
 void
 stream::set_last_event(event_ptr event)
@@ -36,6 +37,7 @@ stream::get_last_event()
     this->unlock();
     return ret;
 }
+#endif
 
 } // namespace detail
 

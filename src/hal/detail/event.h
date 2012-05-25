@@ -3,82 +3,33 @@
 
 #include "hal/error.h"
 
+#include "util/lock.h"
 #include "util/trigger.h"
 #include "util/smart_ptr.h"
+#include "util/unique.h"
 
-namespace __impl { namespace hal { namespace detail {
+#include "operation.h"
+
+namespace __impl { namespace hal {
+    
+namespace cpu {
+    class operation;
+}
+
+namespace detail {
 
 namespace virt {
     class aspace;
 }
 
 class stream;
-class _event;
-typedef util::shared_ptr<_event> event_ptr;
+class event;
+typedef util::shared_ptr<event> event_ptr;
 
-class GMAC_LOCAL operation {
-public:
-    enum type {
-        TransferToHost,
-        TransferToDevice,
-        TransferHost,
-        TransferDevice,
-        Kernel,
-        Invalid
-    };
-
-    enum state {
-        Queued,
-        Submit,
-        Start,
-        End,
-        None
-    };
-
-protected:
-#ifdef USE_TRACE
-    hal::time_t timeQueued_;
-    hal::time_t timeSubmit_;
-    hal::time_t timeStart_;
-    hal::time_t timeEnd_;
-#endif
-
-    type type_;
-    bool async_;
-    bool synced_;
-    state state_;
-    hal::error err_;
-
-    operation(type t, bool async) :
-        type_(t),
-        async_(async),
-        state_(None)
-    {
-    }
-
-public:
-    type get_type() const
-    {
-        return type_;
-    }
-
-    virtual hal::error sync() = 0;
-    virtual state get_state() = 0;
-
-#ifdef USE_TRACE
-    hal::time_t get_time_queued() const;
-    hal::time_t get_time_submit() const;
-    hal::time_t get_time_start() const;
-    hal::time_t get_time_end() const;
-#endif
-
-    virtual void set_barrier(stream &s) = 0;
-};
-
-class GMAC_LOCAL _event :
+class GMAC_LOCAL event :
     public util::list_trigger<>,
-    public util::unique<_event>,
-    public gmac::util::lock_rw<_event > {
+    public util::unique<event>,
+    public gmac::util::lock_rw<event > {
 
 public:
     enum type {
@@ -91,7 +42,6 @@ public:
     typedef operation::state state;
 
 protected:
-    bool async_;
     bool synced_;
     type type_;
     state state_;
@@ -100,15 +50,27 @@ protected:
 #ifdef USE_TRACE
     hal::time_t timeBase_;
 #endif
-    _event(bool async, type t);
 
-public:
     typedef std::list<operation *> list_operation;
     list_operation operations_;
     list_operation::iterator syncOpBegin_;
 
+    event(type t);
+public:
+    ~event()
+    {
+        for (auto op : operations_) {
+            delete op;
+        }
+    }
+
+    static event_ptr create(type t)
+    {
+        return event_ptr(new event(t));
+    }
+
     type get_type() const;
-    virtual state get_state() = 0;
+    state get_state();
 
 #if 0
     hal::time_t get_time_queued() const;
@@ -119,9 +81,8 @@ public:
 
     bool is_synced() const;
 
-    virtual hal::error sync() = 0;
-
-    virtual void set_synced() = 0;
+    hal::error sync();
+    void set_synced();
 
     operation *get_last_operation()
     {
@@ -131,6 +92,14 @@ public:
             return *std::prev(operations_.end());
         }
     }
+
+    template <typename Func, typename Op, typename... Args>
+    auto
+    queue(const Func &f, Op &op, Args... args) -> decltype(f(args...));
+
+    template <typename Func, typename... Args>
+    auto
+    queue(const Func &f, cpu::operation &op, Args... args) -> decltype(f(args...));
 };
 
 class GMAC_LOCAL list_event :

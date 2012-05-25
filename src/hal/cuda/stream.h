@@ -11,7 +11,7 @@ namespace __impl { namespace hal {
     
 namespace cuda {
 
-typedef hal::detail::_event hal_event;
+typedef hal::detail::event hal_event;
 
 class GMAC_LOCAL stream :
     public hal::detail::stream {

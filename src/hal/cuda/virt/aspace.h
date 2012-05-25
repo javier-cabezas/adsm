@@ -26,7 +26,7 @@ typedef hal::detail::code::repository hal_code_repository;
 typedef hal::detail::code::repository_view hal_code_repository_view;
 typedef hal::detail::virt::aspace hal_aspace;
 typedef hal::detail::virt::object hal_object;
-typedef hal::detail::_event hal_event;
+typedef hal::detail::event hal_event;
 typedef hal::detail::event_ptr hal_event_ptr;
 typedef hal::detail::stream hal_stream;
 
@@ -135,30 +135,32 @@ public:
 };
 
 
-class GMAC_LOCAL queue_event :
-    std::queue<_event_t *>,
-    gmac::util::spinlock<queue_event> {
+class GMAC_LOCAL queue_op :
+    std::queue<operation *>,
+    gmac::util::spinlock<queue_op> {
 
-    typedef std::queue<_event_t *> Parent;
-    typedef gmac::util::spinlock<queue_event> Lock;
+    typedef std::queue<operation *> Parent;
+    typedef gmac::util::spinlock<queue_op> Lock;
 
 public:
-    queue_event();
-    _event_t *pop();
-    void push(_event_t &event);
+    queue_op();
+    operation *pop();
+    void push(operation &op);
 };
 
 class GMAC_LOCAL aspace :
     public hal_aspace,
-    public util::factory<buffer> {
+    public util::factory<buffer>,
+    public util::factory<operation> {
 
     typedef hal_aspace parent;
-    typedef util::factory<buffer> factory_buffer;
+    typedef util::factory<buffer>    factory_buffer;
+    typedef util::factory<operation> factory_operation;
+
+    friend operation *cuda::create_op(operation::type t, bool async, virt::aspace &as, stream &s);
 
     friend class buffer_t;
-    friend class _event_common_t;
     friend class event_deleter;
-    //friend class detail::stream<implementation_traits>;
     friend class stream;
 
     CUcontext context_;
@@ -179,7 +181,7 @@ class GMAC_LOCAL aspace :
     buffer_counter nBuffersIn_;
     buffer_counter nBuffersOut_;
 
-    queue_event queueEvents_;
+    queue_op queueOps_;
 
     map_memory mapMemory_;
 
@@ -255,8 +257,8 @@ public:
     CUcontext &operator()();
     const CUcontext &operator()() const;
 
-    _event_t *get_new_event(bool async, _event_t::type t);
-    void dispose_event(_event_t &event);
+    operation *get_new_op(operation::type t, bool async, stream &s);
+    void dispose_op(operation &op);
 
 };
 

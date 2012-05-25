@@ -27,8 +27,6 @@ namespace code {
 class stream;
 class texture_t;
 class variable_t;
-class _event_t;
-typedef util::shared_ptr<_event_t> event_ptr;
 class event_list;
 class buffer_t;
 
@@ -36,12 +34,12 @@ class buffer_t;
 
 }}
 
-#include "event.h"
+#include "operation.h"
 #include "phys/aspace.h"
 #include "phys/processing_unit.h"
 #include "virt/aspace.h"
 
-#include "event-impl.h"
+#include "operation-impl.h"
 
 #endif /* GMAC_HAL_CPU_TYPES_H_ */
 

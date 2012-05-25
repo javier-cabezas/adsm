@@ -14,6 +14,7 @@ set(hal_SRC
     detail/virt/processing_unit.cpp
     detail/virt/processing_unit-impl.h
     detail/event.h
+    detail/event.cpp
     detail/event-impl.h
     detail/kernel.h
     detail/kernel-impl.h

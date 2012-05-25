@@ -66,6 +66,7 @@ public:
 #include "virt/object.h"
 #include "kernel.h"
 #include "event.h"
+#include "hal/cpu/operation.h"
 
 #include "phys/memory-impl.h"
 #include "phys/processing_unit-impl.h"
@@ -74,6 +75,54 @@ public:
 #include "stream-impl.h"
 #include "kernel-impl.h"
 #include "event-impl.h"
+
+namespace __impl { namespace hal {
+
+template <typename Ptr>
+static bool
+is_host_ptr(Ptr &&p)
+{
+    detail::virt::object &o = p.get_view().get_object();
+
+    const detail::phys::memory &m = o.get_memory();
+
+    return util::algo::has_predicate(m.get_attached_units(),
+                                     [](const detail::phys::processing_unit *pu) -> bool
+                                     {
+                                         return pu->get_type() == detail::phys::processing_unit::PUNIT_TYPE_CPU;
+                                     });
+}
+
+template <typename Ptr>
+static bool
+is_device_ptr(Ptr &&p)
+{
+    detail::virt::object &o = p.get_view().get_object();
+
+    const detail::phys::memory &m = o.get_memory();
+
+    return util::algo::has_predicate(m.get_attached_units(),
+                                     [](const detail::phys::processing_unit *pu) -> bool
+                                     {
+                                         return pu->get_type() == detail::phys::processing_unit::PUNIT_TYPE_GPU;
+                                     });
+}
+
+inline
+static void *
+get_host_ptr(hal::ptr p)
+{
+    return (void *)(p.get_view().get_offset() + p.get_offset());
+}
+
+inline
+static const void *
+get_host_ptr(hal::const_ptr p)
+{
+    return (const void *)(p.get_view().get_offset() + p.get_offset());
+}
+
+}}
 
 #endif /* TYPES_H */
 

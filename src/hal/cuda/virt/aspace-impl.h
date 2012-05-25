@@ -53,16 +53,16 @@ buffer::get_size() const
 }
 
 inline
-queue_event::queue_event() :
-    Lock("queue_event")
+queue_op::queue_op() :
+    Lock("queue_op")
 {
 }
 
 inline
-_event_t *
-queue_event::pop()
+operation *
+queue_op::pop()
 {
-    _event_t *ret = NULL;
+    operation *ret = NULL;
 
     Lock::lock();
     if (Parent::size() > 0) {
@@ -76,10 +76,10 @@ queue_event::pop()
 
 inline
 void
-queue_event::push(_event_t &event)
+queue_op::push(operation &op)
 {
 	Lock::lock();
-    Parent::push(&event);
+    Parent::push(&op);
     Lock::unlock();
 }
 
