@@ -133,7 +133,7 @@ kernel::launch::execute(hal::error &err)
     dim3 dimsGroup = get_config().get_dims_group();
 
     TRACE(LOCAL, "kernel launch on stream: %p", get_stream()());
-    event_ptr ret = create_event(true, _event_t::Kernel, get_stream().get_aspace());
+    event_ptr ret = event::create(event::Kernel);
 
     auto op = [&](CUstream s) -> CUresult
               {
@@ -149,7 +149,9 @@ kernel::launch::execute(hal::error &err)
                                                         NULL);
               };
 
-    res = ret->add_operation(ret, get_stream(), cuda::operation::func_op(std::cref(op)), cuda::operation::Kernel, true);
+    res = ret->queue(op,
+                     *create_op(cuda::operation::Kernel, true, get_stream().get_aspace(), get_stream()),
+                     get_stream()()); // Param for the function
     err = error_to_hal(res);
 
     if (err != HAL_SUCCESS) {

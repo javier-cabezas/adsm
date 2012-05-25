@@ -22,10 +22,10 @@ namespace code {
     class repository_mapping;
 }
 
-class _event;
+class event;
 class stream;
 class list_event;
-typedef util::shared_ptr<_event> event_ptr;
+typedef util::shared_ptr<event> event_ptr;
 
 namespace virt {
 

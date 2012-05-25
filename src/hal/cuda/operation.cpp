@@ -5,7 +5,7 @@ namespace __impl { namespace hal { namespace cuda {
 operation::state
 operation::get_state()
 {
-    stream_.get_aspace().set();
+    stream_->get_aspace().set();
 
     CUresult res = cuEventQuery(eventEnd_);
 
@@ -17,8 +17,9 @@ operation::get_state()
     }
 }
 
-_event_t::state
-_event_t::get_state()
+#if 0
+event::state
+event::get_state()
 {
     if (state_ != state::End) {
         if (operations_.size() == 0) {
@@ -46,7 +47,6 @@ _event_t::get_state()
     return state_;
 }
 
-#if 0
 void
 _event_common_t::set_barrier(virt::aspace &as, CUstream s)
 {
@@ -59,7 +59,7 @@ _event_common_t::set_barrier(virt::aspace &as, CUstream s)
     }
 }
 
-_event_t::state
+event::state
 _event_common_t::get_state()
 {
     if (state_ != End) {
@@ -101,14 +101,13 @@ _event_common_t::get_state()
 
 
 void
-_event_t::reset(bool async, type t)
+operation::reset(type t, bool async, stream &s)
 {
     async_ = async;
     type_ = t;
     err_ = HAL_SUCCESS;
     synced_ = false;
-
-    remove_triggers();
+    stream_ = &s;
 }
 
 hal::error

@@ -21,7 +21,9 @@ class GMAC_LOCAL stream :
 protected:
     virt::aspace &aspace_;
 
+#if 0
     event_ptr lastEvent_;
+#endif
 
     stream(virt::aspace &as);
 
@@ -31,8 +33,10 @@ public:
         Running
     };
 
+#if 0
     event_ptr get_last_event();
     void set_last_event(event_ptr event);
+#endif
 
     virt::aspace &get_aspace();
 

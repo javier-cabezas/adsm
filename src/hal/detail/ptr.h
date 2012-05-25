@@ -582,6 +582,7 @@ _ptr_t<View> _ptr_t<View>::null = _ptr_t();
 namespace __impl { namespace hal {
 
 namespace detail { namespace virt  {
+    class object;
     class object_view;
 }}
 
@@ -592,6 +593,7 @@ typedef __impl::hal::_ptr_t<
 typedef __impl::hal::_const_ptr_t<
                                      detail::virt::object_view
                                  > const_ptr;
+
 }}
 
 #endif /* PTR_H */

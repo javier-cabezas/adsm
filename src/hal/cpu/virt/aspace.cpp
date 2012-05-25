@@ -189,7 +189,12 @@ aspace::has_direct_copy(hal::const_ptr ptr1, hal::const_ptr ptr2)
 hal_event_ptr
 aspace::copy(hal::ptr dst, hal::const_ptr src, size_t count, list_event_detail *dependencies, hal::error &err)
 {
-    NOT_IMPLEMENTED();
+    if (is_host_ptr(dst) &&
+        is_host_ptr(src)) {
+        ::memcpy(get_host_ptr(dst), get_host_ptr(src), count);
+    } else {
+        FATAL("Unhandled case");
+    }
 
     return hal_event_ptr();
 }

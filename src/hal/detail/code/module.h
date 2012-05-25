@@ -152,6 +152,8 @@ public:
 class GMAC_LOCAL repository_view
 {
 public:
+    virtual ~repository_view()
+    {}
 #if 0
     virtual kernel *get_kernel(gmac_kernel_id_t key) = 0;
 #endif

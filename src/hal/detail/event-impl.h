@@ -36,10 +36,9 @@ operation::get_time_end() const
 #endif
 
 inline
-_event::_event(bool async, type t) :
-    gmac::util::lock_rw<_event>("_event"),
-    async_(async),
-    synced_(async? false: true),
+event::event(type t) :
+    gmac::util::lock_rw<event>("event"),
+    synced_(true),
     type_(t),
     state_(state::None),
     err_(HAL_SUCCESS)
@@ -47,8 +46,8 @@ _event::_event(bool async, type t) :
 }
 
 inline
-_event::type
-_event::get_type() const
+event::type
+event::get_type() const
 {
     return type_;
 }
@@ -56,36 +55,36 @@ _event::get_type() const
 #if 0
 template <typename I>
 inline
-typename _event::state
-_event::get_state()
+typename event::state
+event::get_state()
 {
     return state_;
 }
 
 inline
 hal::time_t
-_event::get_time_queued() const
+event::get_time_queued() const
 {
     return timeQueued_;
 }
 
 inline
 hal::time_t
-_event::get_time_submit() const
+event::get_time_submit() const
 {
     return timeSubmit_;
 }
 
 inline
 hal::time_t
-_event::get_time_start() const
+event::get_time_start() const
 {
     return timeStart_;
 }
 
 inline
 hal::time_t
-_event::get_time_end() const
+event::get_time_end() const
 {
     return timeEnd_;
 }
@@ -93,7 +92,7 @@ _event::get_time_end() const
 template <typename I>
 inline
 void
-_event::set_state(state s)
+event::set_state(state s)
 {
     state_ = s;
 }
@@ -101,7 +100,7 @@ _event::set_state(state s)
 template <typename I>
 inline
 void
-_event::set_synced(bool synced)
+event::set_synced(bool synced)
 {
     synced_ = synced;
 }
@@ -109,9 +108,77 @@ _event::set_synced(bool synced)
 
 inline
 bool
-_event::is_synced() const
+event::is_synced() const
 {
     return synced_;
+}
+
+template <typename Func, typename Op, typename... Args>
+auto
+event::queue(const Func &f, Op &op, Args... args) -> decltype(f(args...))
+{
+    lock_write();
+
+#ifdef USE_TRACE
+    if (operations_.size() == 0) {
+        // Get the base time if this is the first operation of the event
+        timeBase_ = hal::get_timestamp();
+    }
+#endif
+    // Wait for previous operations if the new operation is not asynchronous
+    if (op.is_async() == false) {
+        if (syncOpBegin_ != operations_.end()) {
+            (*syncOpBegin_)->sync();
+        }
+    }
+    auto r = op.execute(f, args...);
+
+    operations_.push_back(&op);
+
+    // Compute the first operation to be synchronized
+    if (operations_.size() == 1) {
+        syncOpBegin_ = operations_.begin();
+    } else if (syncOpBegin_ == operations_.end()) {
+        syncOpBegin_ = std::prev(operations_.end());
+    }
+
+    unlock();
+
+    return r;
+}
+
+template <typename Func, typename... Args>
+auto
+event::queue(const Func &f, cpu::operation &op, Args... args) -> decltype(f(args...))
+{
+    lock_write();
+
+#ifdef USE_TRACE
+    if (operations_.size() == 0) {
+        // Get the base time if this is the first operation of the event
+        timeBase_ = hal::get_timestamp();
+    }
+#endif
+    // Wait for previous operations if the new operation is not asynchronous
+    if (op.is_async() == false) {
+        if (syncOpBegin_ != operations_.end()) {
+            (*syncOpBegin_)->sync();
+        }
+    }
+    auto r = op.execute(f, args...);
+
+    operations_.push_back(&op);
+
+    // Compute the first operation to be synchronized
+    if (operations_.size() == 1) {
+        syncOpBegin_ = operations_.begin();
+    } else if (syncOpBegin_ == operations_.end()) {
+        syncOpBegin_ = std::prev(operations_.end());
+    }
+
+    unlock();
+
+    return r;
 }
 
 }}} // namespace detail

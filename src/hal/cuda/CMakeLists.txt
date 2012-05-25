@@ -10,11 +10,11 @@ set(hal_cuda_SRC
     code/module.h
     code/module-impl.h
     code/module.cpp
-    event.h
-    event-impl.h
-    event.cpp
     kernel.h
     kernel-impl.h
+    operation.h
+    operation-impl.h
+    operation.cpp
     stream.h
     stream-impl.h
     types.h

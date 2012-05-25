@@ -32,7 +32,7 @@ namespace virt {
     typedef hal::detail::virt::object_view object_view;
 }
 
-typedef hal::detail::_event::type event_type;
+typedef hal::detail::event::type event_type;
 typedef hal::detail::event_ptr event_ptr;
 typedef hal::cuda::list_event list_event;
 
