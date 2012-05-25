@@ -52,60 +52,6 @@ event::get_type() const
     return type_;
 }
 
-#if 0
-template <typename I>
-inline
-typename event::state
-event::get_state()
-{
-    return state_;
-}
-
-inline
-hal::time_t
-event::get_time_queued() const
-{
-    return timeQueued_;
-}
-
-inline
-hal::time_t
-event::get_time_submit() const
-{
-    return timeSubmit_;
-}
-
-inline
-hal::time_t
-event::get_time_start() const
-{
-    return timeStart_;
-}
-
-inline
-hal::time_t
-event::get_time_end() const
-{
-    return timeEnd_;
-}
-
-template <typename I>
-inline
-void
-event::set_state(state s)
-{
-    state_ = s;
-}
-
-template <typename I>
-inline
-void
-event::set_synced(bool synced)
-{
-    synced_ = synced;
-}
-#endif
-
 inline
 bool
 event::is_synced() const
@@ -115,41 +61,7 @@ event::is_synced() const
 
 template <typename Func, typename Op, typename... Args>
 auto
-event::queue(const Func &f, Op &op, Args... args) -> decltype(f(args...))
-{
-    lock_write();
-
-#ifdef USE_TRACE
-    if (operations_.size() == 0) {
-        // Get the base time if this is the first operation of the event
-        timeBase_ = hal::get_timestamp();
-    }
-#endif
-    // Wait for previous operations if the new operation is not asynchronous
-    if (op.is_async() == false) {
-        if (syncOpBegin_ != operations_.end()) {
-            (*syncOpBegin_)->sync();
-        }
-    }
-    auto r = op.execute(f, args...);
-
-    operations_.push_back(&op);
-
-    // Compute the first operation to be synchronized
-    if (operations_.size() == 1) {
-        syncOpBegin_ = operations_.begin();
-    } else if (syncOpBegin_ == operations_.end()) {
-        syncOpBegin_ = std::prev(operations_.end());
-    }
-
-    unlock();
-
-    return r;
-}
-
-template <typename Func, typename... Args>
-auto
-event::queue(const Func &f, cpu::operation &op, Args... args) -> decltype(f(args...))
+event::queue(const Func &f, Op &op, Args... args) -> decltype(op.execute(f, args...))
 {
     lock_write();
 

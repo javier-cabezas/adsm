@@ -41,7 +41,7 @@ private:
 
     virt::aspace &as_;
     stream *stream_;
-    operation(virt::aspace &as, parent::type t, bool async, stream &s);
+    operation(parent::type t, bool async, virt::aspace &as, stream &s);
     virtual ~operation();
     
     hal::error sync();
@@ -54,7 +54,7 @@ public:
 
     state get_state();
     template <typename Func, typename... Args>
-    auto execute(Func f, Args... args) -> decltype(f(args...));
+    auto execute(Func f, Args... args) -> decltype(f(CUstream(), args...));
 
     stream &get_stream()
     {
