@@ -95,11 +95,7 @@ public:
 
     template <typename Func, typename Op, typename... Args>
     auto
-    queue(const Func &f, Op &op, Args... args) -> decltype(f(args...));
-
-    template <typename Func, typename... Args>
-    auto
-    queue(const Func &f, cpu::operation &op, Args... args) -> decltype(f(args...));
+    queue(const Func &f, Op &op, Args... args) -> decltype(op.execute(f, args...));
 };
 
 class GMAC_LOCAL list_event :

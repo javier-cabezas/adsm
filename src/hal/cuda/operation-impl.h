@@ -4,7 +4,7 @@
 namespace __impl { namespace hal { namespace cuda {
 
 inline
-operation::operation(virt::aspace &as, parent::type t, bool async, stream &s) :
+operation::operation(parent::type t, bool async, virt::aspace &as, stream &s) :
     parent(t, async),
     as_(as),
     stream_(&s)
@@ -31,13 +31,13 @@ operation::~operation()
 template <typename Func, typename... Args>
 inline
 auto
-operation::execute(Func f, Args... args) -> decltype(f(args...))
+operation::execute(Func f, Args... args) -> decltype(f(CUstream(), args...))
 {
     as_.set();
 
     CUresult err = cuEventRecord(eventStart_, (*stream_)());
     ASSERTION(err == CUDA_SUCCESS);
-    auto ret = f(args...);
+    auto ret = f((*stream_)(), args...);
     err = cuEventRecord(eventEnd_, (*stream_)());
     ASSERTION(err == CUDA_SUCCESS);
 
@@ -95,6 +95,13 @@ create_op(operation::type t, bool async, virt::aspace &as, stream &s)
 {
     return as.get_new_op(t, async, s);
 }
+
+inline hal::cpu::operation *
+create_cpu_op(operation::type t, bool async)
+{
+    return new hal::cpu::operation(t, async);
+}
+
 
 }}}
 

@@ -15,11 +15,25 @@ public:
     {}
 
     template <typename Func, typename... Args>
-    auto execute(Func f, Args... args) -> decltype(f(args...));
-    
-    hal::error sync();
-    parent::state get_state();
-    void set_barrier(hal::detail::stream &);
+    auto execute(Func f, Args... args) -> decltype(f(args...))
+    {
+        return f(args...);
+    }
+
+    hal::error sync()
+    {
+        FATAL("CPU operations should not be synced");
+        return HAL_SUCCESS;
+    }
+
+    parent::state get_state()
+    {
+        return parent::state::End;
+    }
+
+    void set_barrier(hal::detail::stream &)
+    {
+    }
 };
 
 }}}
