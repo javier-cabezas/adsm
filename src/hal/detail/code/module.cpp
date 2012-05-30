@@ -10,7 +10,7 @@ repository::load_from_file(const std::string &path,
     for (auto desc : descriptorsFile_) {
         if (desc.get_path() == path) {
             // TODO: update error code
-            return HAL_ERROR_INVALID_VALUE;
+            return hal::error::HAL_ERROR_INVALID_VALUE;
         }
     }
 
@@ -18,7 +18,7 @@ repository::load_from_file(const std::string &path,
     desc.add_tags(tags);
 
     descriptorsFile_.push_back(desc);
-    return HAL_SUCCESS;
+    return hal::error::HAL_SUCCESS;
 }
 
 hal::error
@@ -30,7 +30,7 @@ repository::load_from_mem(const char *ptr,
     for (auto desc : descriptorsBuffer_) {
         if (desc.get_ptr() == ptr) {
             // TODO: update error code
-            return HAL_ERROR_INVALID_VALUE;
+            return hal::error::HAL_ERROR_INVALID_VALUE;
         }
     }
 
@@ -38,7 +38,7 @@ repository::load_from_mem(const char *ptr,
     desc.add_tags(tags);
 
     descriptorsBuffer_.push_back(desc);
-    return HAL_SUCCESS;
+    return hal::error::HAL_SUCCESS;
 }
 
 hal::error
@@ -49,7 +49,7 @@ repository::load_from_handle(const void *handle,
     for (auto desc : descriptorsHandle_) {
         if (desc.get_handle() == handle) {
             // TODO: update error code
-            return HAL_ERROR_INVALID_VALUE;
+            return hal::error::HAL_ERROR_INVALID_VALUE;
         }
     }
 
@@ -57,7 +57,7 @@ repository::load_from_handle(const void *handle,
     desc.add_tags(tags);
 
     descriptorsHandle_.push_back(desc);
-    return HAL_SUCCESS;
+    return hal::error::HAL_SUCCESS;
 }
 
 }}}}

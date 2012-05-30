@@ -89,7 +89,7 @@ inline
 hal::error
 kernel::arg_list::push_arg(const void *arg, size_t size)
 {
-    hal::error ret = HAL_SUCCESS;
+    hal::error ret = hal::error::HAL_SUCCESS;
 
     params_[nArgs_++] = arg;
 
@@ -104,7 +104,7 @@ kernel::launch::execute(list_event_detail &_dependencies, hal::error &err)
     list_event &dependencies = reinterpret_cast<list_event &>(_dependencies);
     get_stream().set_barrier(dependencies);
 
-    if (err == HAL_SUCCESS) {
+    if (err == hal::error::HAL_SUCCESS) {
         ret = execute(err);
     }
 
@@ -153,7 +153,7 @@ kernel::launch::execute(hal::error &err)
                      *create_op(cuda::operation::Kernel, true, get_stream().get_aspace(), get_stream()));
     err = error_to_hal(res);
 
-    if (err != HAL_SUCCESS) {
+    if (err != hal::error::HAL_SUCCESS) {
         ret.reset();
     }
 

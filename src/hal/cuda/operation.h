@@ -46,8 +46,6 @@ private:
     
     hal::error sync();
 
-    void set_barrier(hal::detail::stream &_s);
-
 public:
     void
     reset(parent::type t, bool async, stream &s);
@@ -55,6 +53,8 @@ public:
     state get_state();
     template <typename Func, typename... Args>
     auto execute(Func f, Args... args) -> decltype(f(CUstream(), args...));
+
+    void set_barrier(hal::detail::stream &_s);
 
     stream &get_stream()
     {

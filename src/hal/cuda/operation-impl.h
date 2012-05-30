@@ -51,7 +51,7 @@ inline
 hal::error
 operation::sync()
 {
-    hal::error ret = HAL_SUCCESS;
+    hal::error ret = hal::error::HAL_SUCCESS;
     if (synced_ == false) {
         stream_->get_aspace().set();
 

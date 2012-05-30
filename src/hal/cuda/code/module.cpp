@@ -77,7 +77,7 @@ repository_view::repository_view(virt::aspace &as, const hal_repository &repo, h
         CUresult res = cuModuleLoadData(&cumod, file.get_path().c_str());
 
         err = error_to_hal(res);
-        if (err != HAL_SUCCESS) return;
+        if (err != hal::error::HAL_SUCCESS) return;
 
         module mod(cumod, file);
         modules_.push_back(mod);
@@ -90,7 +90,7 @@ repository_view::repository_view(virt::aspace &as, const hal_repository &repo, h
         CUresult res = cuModuleLoadData(&cumod, buffer.get_ptr());
 
         err = error_to_hal(res);
-        if (err != HAL_SUCCESS) return;
+        if (err != hal::error::HAL_SUCCESS) return;
 
         module mod(cumod, buffer);
         modules_.push_back(cumod);
@@ -110,7 +110,7 @@ repository_view::repository_view(virt::aspace &as, const hal_repository &repo, h
         CUresult res = cuModuleLoadData(&cumod, h);
 
         err = error_to_hal(res);
-        if (err != HAL_SUCCESS) return;
+        if (err != hal::error::HAL_SUCCESS) return;
 
         module mod(cumod, handle);
         modules_.push_back(mod);

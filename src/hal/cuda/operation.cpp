@@ -105,7 +105,7 @@ operation::reset(type t, bool async, stream &s)
 {
     async_ = async;
     type_ = t;
-    err_ = HAL_SUCCESS;
+    err_ = hal::error::HAL_SUCCESS;
     synced_ = false;
     stream_ = &s;
 }
@@ -113,12 +113,12 @@ operation::reset(type t, bool async, stream &s)
 hal::error
 list_event::sync()
 {
-    hal::error ret = HAL_SUCCESS;
+    hal::error ret = hal::error::HAL_SUCCESS;
     for (parent::const_iterator it  = parent::begin();
                                 it != parent::end();
                               ++it) {
         ret = (*it)->sync();
-        if (ret != HAL_SUCCESS) break;
+        if (ret != hal::error::HAL_SUCCESS) break;
     }
 
     return ret;

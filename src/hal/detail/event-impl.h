@@ -41,7 +41,7 @@ event::event(type t) :
     synced_(true),
     type_(t),
     state_(state::None),
-    err_(HAL_SUCCESS)
+    err_(hal::error::HAL_SUCCESS)
 {
 }
 
@@ -72,7 +72,7 @@ event::queue(const Func &f, Op &op, Args... args) -> decltype(op.execute(f, args
     }
 #endif
     // Wait for previous operations if the new operation is not asynchronous
-    if (op.is_async() == false) {
+    if ((operations_.size() > 0) && (op.is_async() == false)) {
         if (syncOpBegin_ != operations_.end()) {
             (*syncOpBegin_)->sync();
         }

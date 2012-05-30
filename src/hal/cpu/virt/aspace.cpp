@@ -42,7 +42,7 @@ aspace::map(hal_object &obj, GmacProtection _prot, ptrdiff_t offset, hal::error 
     hal_object::set_view viewsGpu = obj.get_views(phys::hal_processing_unit::PUNIT_TYPE_GPU);
     if (viewsGpu.size() != 0) {
         // Map objects allocated in GPU memory is not supported
-        err = HAL_ERROR_FEATURE_NOT_SUPPORTED;
+        err = hal::error::HAL_ERROR_FEATURE_NOT_SUPPORTED;
         return ptr();
     }
 
@@ -51,7 +51,7 @@ aspace::map(hal_object &obj, GmacProtection _prot, ptrdiff_t offset, hal::error 
 
     if (viewsCpu.size() != viewsAspace.size()) {
         // Mappings across different address spaces is not supported yet
-        err = HAL_ERROR_FEATURE_NOT_SUPPORTED;
+        err = hal::error::HAL_ERROR_FEATURE_NOT_SUPPORTED;
         return ptr();
     }
 
@@ -98,7 +98,7 @@ aspace::map(hal_object &obj, GmacProtection _prot, ptrdiff_t offset, hal::error 
 
         detail::virt::object_view *view = obj.create_view(*this, hal::ptr::offset_type(cpuAddr), err);
 
-        if (err == HAL_SUCCESS) {
+        if (err == hal::error::HAL_SUCCESS) {
             return ptr(*view);
         } else {
             return ptr();
@@ -110,7 +110,7 @@ aspace::map(hal_object &obj, GmacProtection _prot, ptrdiff_t offset, hal::error 
 
         if (viewsAspace.size() > 1) {
             // Supporting up to two mappings for now
-            err = HAL_ERROR_FEATURE_NOT_SUPPORTED;
+            err = hal::error::HAL_ERROR_FEATURE_NOT_SUPPORTED;
             return ptr();
         }
         const detail::virt::object_view *old = *viewsAspace.begin();
@@ -118,7 +118,7 @@ aspace::map(hal_object &obj, GmacProtection _prot, ptrdiff_t offset, hal::error 
         TRACE(GLOBAL, "Getting shadow mapping for %p (%zd bytes)", old->get_offset(), obj.get_size());
         map_file_entry entry = Files.find(host_ptr(old->get_offset()));
         if (entry.fd() == -1) {
-            err = HAL_ERROR_INVALID_VALUE;
+            err = hal::error::HAL_ERROR_INVALID_VALUE;
             return ptr();
         }
         off_t off = off_t(host_ptr(old->get_offset()) - entry.address());
@@ -133,10 +133,10 @@ aspace::map(hal_object &obj, GmacProtection _prot, ptrdiff_t offset, hal::error 
         if (ret != MAP_FAILED) {
             view = obj.create_view(*this, hal::ptr::offset_type(ret), err);
         } else {
-            err = HAL_ERROR_INVALID_VALUE;
+            err = hal::error::HAL_ERROR_INVALID_VALUE;
         }
 
-        if (err == HAL_SUCCESS) {
+        if (err == hal::error::HAL_SUCCESS) {
             return ptr(*view);
         } else {
             return ptr();
@@ -163,20 +163,20 @@ aspace::unmap(ptr p)
     if (obj.get_views().size() == 0) {
         map_file_entry entry = Files.find(host_ptr(ptr));
         if (Files.remove(ptr) == false) {
-            return HAL_ERROR_INVALID_VALUE;
+            return hal::error::HAL_ERROR_INVALID_VALUE;
         }
         close(entry.fd());
     }
     ::munmap(ptr, obj.get_size());
 
-    return HAL_SUCCESS;
+    return hal::error::HAL_SUCCESS;
 }
 
 hal::error
 aspace::unmap(detail::code::repository_view &view)
 {
     NOT_IMPLEMENTED();
-    return HAL_SUCCESS;
+    return hal::error::HAL_SUCCESS;
 }
 
 bool
