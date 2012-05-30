@@ -23,7 +23,7 @@ aspace::get_input_buffer(size_t size, stream &stream, event_ptr event)
 
             hal::error err;
             buf = alloc_buffer(size, GMAC_PROT_READ, stream, err);
-            ASSERTION(err == HAL_SUCCESS);
+            ASSERTION(err == hal::error::HAL_SUCCESS);
         } else {
             nBuffersIn_.unlock();
             buf = mapUsedBuffersIn_.pop(size);
@@ -50,7 +50,7 @@ aspace::get_output_buffer(size_t size, stream &stream, event_ptr event)
             hal::error err;
 
             buf = alloc_buffer(size, GMAC_PROT_WRITE, stream, err);
-            ASSERTION(err == HAL_SUCCESS);
+            ASSERTION(err == hal::error::HAL_SUCCESS);
             nBuffersOut_++;
         } else {
             buf = mapUsedBuffersOut_.pop(size);
@@ -168,7 +168,7 @@ aspace::aspace(hal_aspace::set_processing_unit &compatibleUnits, phys::aspace &p
 #endif
     CUresult res = cuCtxCreate(&ctx, flags, pu.get_cuda_id());
     if (res != CUDA_SUCCESS) {
-        err = error(res);
+        err = error_to_hal(res);
         return;
     }
 
@@ -177,17 +177,17 @@ aspace::aspace(hal_aspace::set_processing_unit &compatibleUnits, phys::aspace &p
     CUstream streamToHost, streamToDevice, streamCompute;
     res = cuStreamCreate(&streamToHost, 0);
     if (res != CUDA_SUCCESS) {
-        err = error(res);
+        err = error_to_hal(res);
         return;
     }
     res = cuStreamCreate(&streamToDevice, 0);
     if (res != CUDA_SUCCESS) {
-        err = error(res);
+        err = error_to_hal(res);
         return;
     }
     res = cuStreamCreate(&streamCompute, 0);
     if (res != CUDA_SUCCESS) {
-        err = error(res);
+        err = error_to_hal(res);
         return;
     }
 
@@ -199,7 +199,7 @@ aspace::aspace(hal_aspace::set_processing_unit &compatibleUnits, phys::aspace &p
 
     res = cuCtxPopCurrent(&tmp);
     if (res != CUDA_SUCCESS) {
-        err = error(res);
+        err = error_to_hal(res);
         return;
     }
 }
@@ -233,7 +233,7 @@ aspace::unmap(hal_code_repository_view &view)
 {
     delete &view;
 
-    return HAL_SUCCESS;
+    return hal::error::HAL_SUCCESS;
 }
 
 #if 0
@@ -299,22 +299,25 @@ aspace::copy(hal::ptr dst, hal::const_ptr src, size_t count, list_event_detail *
 
             host_ptr host = get_memory(count);
 
-            auto op1 = [&](CUstream s) -> CUresult
-                       {
-                           return cuMemcpyDtoHAsync(host, get_cuda_ptr(src), count, s);
-                       };
+            auto f1 = [&](CUstream s) -> CUresult
+                      {
+                          return cuMemcpyDtoHAsync(host, get_cuda_ptr(src), count, s);
+                      };
 
-            auto op2 = [&](CUstream s) -> CUresult
-                       {
-                           return cuMemcpyHtoDAsync(get_cuda_ptr(dst), host, count, s);
-                       };
+            auto f2 = [&](CUstream s) -> CUresult
+                      {
+                          return cuMemcpyHtoDAsync(get_cuda_ptr(dst), host, count, s);
+                      };
 
-            res = ret->queue(op1,
-                             *create_op(operation::TransferToHost, false, *this, *streamToHost_));
-            // Wait for the first copy
+            auto *op1 = create_op(operation::TransferToHost, false, *this, *streamToHost_);
+            res = ret->queue(f1, *op1);
+
             if (res == CUDA_SUCCESS) {
-                res = ret->queue(op2,
-                                 *create_op(operation::TransferToDevice, false, *this, *streamToDevice_));
+                // Add barrier to avoid data races
+                op1->set_barrier(*streamToDevice_);
+
+                auto *op2 = create_op(operation::TransferToDevice, false, *this, *streamToDevice_);
+                res = ret->queue(f2, *op2);
             }
 
             put_memory(host, count);
@@ -365,9 +368,9 @@ aspace::copy(hal::ptr dst, hal::const_ptr src, size_t count, list_event_detail *
         FATAL("Unhandled case");
     }
 
-    err = error(res);
+    err = error_to_hal(res);
     // Wait for the copy to complete, before return
-    if (err != HAL_SUCCESS || ((err = ret->sync()) != HAL_SUCCESS)) {
+    if (err != hal::error::HAL_SUCCESS || ((err = ret->sync()) != hal::error::HAL_SUCCESS)) {
         ret.reset();
     }
     return ret;
@@ -401,9 +404,9 @@ aspace::copy(hal::ptr dst, device_input &input, size_t count, list_event_detail 
         res = ret->queue(op,
                          *create_op(operation::TransferToDevice, true, *this, *streamToDevice_));
 
-        err = error(res);
+        err = error_to_hal(res);
         // Wait for the copy to complete, before return
-        if (err != HAL_SUCCESS || ((err = ret->sync()) != HAL_SUCCESS)) {
+        if (err != hal::error::HAL_SUCCESS || ((err = ret->sync()) != hal::error::HAL_SUCCESS)) {
             ret.reset();
         }
     }
@@ -437,21 +440,21 @@ aspace::copy(device_output &output, hal::const_ptr src, size_t count, list_event
 
     res = ret->queue(op,
                      *create_op(operation::TransferToHost, true, *this, *streamToHost_));
-    err = error(res);
+    err = error_to_hal(res);
 
-    if (err == HAL_SUCCESS) {
+    if (err == hal::error::HAL_SUCCESS) {
         err = ret->sync();
 
-        if (err == HAL_SUCCESS) {
+        if (err == hal::error::HAL_SUCCESS) {
             bool ok = output.write(host, count);
 
             if (!ok) {
-                err = HAL_ERROR_IO;
+                err = hal::error::HAL_ERROR_IO;
             }
         }
     }
 
-    if (err != HAL_SUCCESS) {
+    if (err != hal::error::HAL_SUCCESS) {
         ret.reset();
     }
 
@@ -503,24 +506,26 @@ aspace::copy_async(hal::ptr dst, hal::const_ptr src, size_t count, list_event_de
             // TODO: remove stream parameter
             buffer *buf = get_input_buffer(count, *streamToHost_, ret);
 
-            auto op1 = [&](CUstream s) -> CUresult
-                       {
-                           return cuMemcpyDtoHAsync(buf->get_addr(), get_cuda_ptr(src), count, s);
-                       };
+            auto f1 = [&](CUstream s) -> CUresult
+                      {
+                          return cuMemcpyDtoHAsync(buf->get_addr(), get_cuda_ptr(src), count, s);
+                      };
 
-            auto op2 = [&](CUstream s) -> CUresult
-                       {
-                           return cuMemcpyHtoDAsync(get_cuda_ptr(dst), buf->get_addr(), count, s);
-                       };
+            auto f2 = [&](CUstream s) -> CUresult
+                      {
+                          return cuMemcpyHtoDAsync(get_cuda_ptr(dst), buf->get_addr(), count, s);
+                      };
 
+            auto *op1 = create_op(operation::TransferToHost, true, *this, *streamToHost_);
 
-            res = ret->queue(op1,
-                             *create_op(operation::TransferToHost, true, *this, *streamToHost_));
-            // Add barrier to avoid data races
-            streamToDevice_->set_barrier(*ret);
+            res = ret->queue(f1, *op1);
+
             if (res == CUDA_SUCCESS) {
-                res = ret->queue(op2,
-                                 *create_op(operation::TransferToDevice, true, *this, *streamToDevice_));
+                // Add barrier to avoid data races
+                op1->set_barrier(*streamToDevice_);
+
+                auto *op2 = create_op(operation::TransferToDevice, true, *this, *streamToDevice_);
+                res = ret->queue(f2, *op2);
             }
         }
     } else if (is_device_ptr(dst) &&
@@ -535,20 +540,20 @@ aspace::copy_async(hal::ptr dst, hal::const_ptr src, size_t count, list_event_de
         buffer *buf = get_output_buffer(count, *streamToDevice_, ret);
 
 
-        auto op1 = [&]() -> CUresult
+        auto f1 = [&]() -> CUresult
                    {
                        ::memcpy(buf->get_addr(), get_host_ptr(src), count);
                        return CUDA_SUCCESS;
                    };
 
-        auto op2 = [&](CUstream s) -> CUresult
+        auto f2 = [&](CUstream s) -> CUresult
                    {
                        return cuMemcpyHtoDAsync(get_cuda_ptr(dst), buf->get_addr(), count, s);
                    };
-        res = ret->queue(op1,
+        res = ret->queue(f1,
                          *create_cpu_op(operation::TransferToDevice, false));
         if (res == CUDA_SUCCESS) { 
-            res = ret->queue(op2,
+            res = ret->queue(f2,
                              *create_op(operation::TransferToDevice, true, *this, *streamToDevice_));
         }
     } else if (is_host_ptr(dst) &&
@@ -562,25 +567,25 @@ aspace::copy_async(hal::ptr dst, hal::const_ptr src, size_t count, list_event_de
 
         buffer *buf = get_input_buffer(count, *streamToHost_, ret);
 
-        auto op1 = [&](CUstream s) -> CUresult
-                   {
-                       return cuMemcpyDtoHAsync(buf->get_addr(), get_cuda_ptr(src), count, s);
-                   };
+        auto f1 = [&](CUstream s) -> CUresult
+                  {
+                      return cuMemcpyDtoHAsync(buf->get_addr(), get_cuda_ptr(src), count, s);
+                  };
 
-        auto op2 = [=]() -> CUresult
-                   {
-                       ::memcpy(buf->get_addr(), get_host_ptr(src), count);
-                       return CUDA_SUCCESS;
-                   };
+        auto f2 = [=]() -> CUresult
+                  {
+                      ::memcpy(buf->get_addr(), get_host_ptr(src), count);
+                      return CUDA_SUCCESS;
+                  };
 
 #if 0
         // Perform memcpy after asynchronous copy
         ret->add_trigger(do_func(::memcpy, buf->get_addr(), get_host_ptr(src), count));
 #endif
-        res = ret->queue(op1,
+        res = ret->queue(f1,
                          *create_op(operation::TransferToHost, true, *this, *streamToHost_));
         if (res == CUDA_SUCCESS) {
-            res = ret->queue(op2,
+            res = ret->queue(f2,
                              *create_cpu_op(operation::TransferHost, false));
         }
     } else if (is_host_ptr(dst) &&
@@ -599,8 +604,8 @@ aspace::copy_async(hal::ptr dst, hal::const_ptr src, size_t count, list_event_de
                          *create_cpu_op(operation::TransferHost, false));
     }
 
-    err = error(res);
-    if (err != HAL_SUCCESS) {
+    err = error_to_hal(res);
+    if (err != hal::error::HAL_SUCCESS) {
         ret.reset();
     }
 
@@ -638,8 +643,8 @@ aspace::copy_async(hal::ptr dst, device_input &input, size_t count, list_event_d
         res = ret->queue(op,
                          *create_op(operation::TransferToDevice, true, *this, *streamToDevice_));
 
-        err = error(res);
-        if (err != HAL_SUCCESS) {
+        err = error_to_hal(res);
+        if (err != hal::error::HAL_SUCCESS) {
             ret.reset();
         }
     }
@@ -673,22 +678,22 @@ aspace::copy_async(device_output &output, hal::const_ptr src, size_t count, list
 
     res = ret->queue(op,
                      *create_op(operation::TransferToHost, true, *this, *streamToHost_));
-    err = error(res);
+    err = error_to_hal(res);
 
-    if (err == HAL_SUCCESS) {
+    if (err == hal::error::HAL_SUCCESS) {
         err = ret->sync();
 
-        if (err == HAL_SUCCESS) {
+        if (err == hal::error::HAL_SUCCESS) {
             // TODO: use real async I/O
             bool ok = output.write(buf->get_addr(), count);
 
             if (!ok) {
-                err = HAL_ERROR_IO;
+                err = hal::error::HAL_ERROR_IO;
             }
         }
     }
 
-    if (err != HAL_SUCCESS) {
+    if (err != hal::error::HAL_SUCCESS) {
         ret.reset();
     }
 
@@ -718,10 +723,10 @@ aspace::memset(hal::ptr dst, int c, size_t count, list_event_detail *_dependenci
     CUresult res = ret->queue(op,
                               *create_op(operation::TransferDevice, true, *this, *streamDevice_));
 
-    err = error(res);
+    err = error_to_hal(res);
 
     // Wait for memset to complete, before return
-    if (err != HAL_SUCCESS || ((err = ret->sync()) != HAL_SUCCESS)) {
+    if (err != hal::error::HAL_SUCCESS || ((err = ret->sync()) != hal::error::HAL_SUCCESS)) {
         ret.reset();
     }
 
@@ -751,9 +756,9 @@ aspace::memset_async(hal::ptr dst, int c, size_t count, list_event_detail *_depe
     CUresult res = ret->queue(op,
                               *create_op(operation::TransferDevice, true, *this, *streamDevice_));
 
-    err = error(res);
+    err = error_to_hal(res);
 
-    if (err != HAL_SUCCESS) {
+    if (err != hal::error::HAL_SUCCESS) {
         ret.reset();
     }
 
@@ -767,13 +772,13 @@ aspace::map(hal_object &obj, GmacProtection prot, hal::error &err)
 
     if (get_paspace().get_memories().find(&obj.get_memory()) == get_paspace().get_memories().end()) {
         // The object resides in a memory not accessible by this aspace
-        err = HAL_ERROR_INVALID_VALUE;
+        err = hal::error::HAL_ERROR_INVALID_VALUE;
         return hal::ptr();
     }
 
     if (obj.get_views(*this).size() != 0) {
         // Mapping the same object more than once per address space is not supported
-        err = HAL_ERROR_FEATURE_NOT_SUPPORTED;
+        err = hal::error::HAL_ERROR_FEATURE_NOT_SUPPORTED;
         return hal::ptr();
     }
 
@@ -792,9 +797,9 @@ aspace::map(hal_object &obj, GmacProtection prot, hal::error &err)
 
             err = cuda::error_to_hal(res);
 
-            if (err == HAL_SUCCESS) {
+            if (err == hal::error::HAL_SUCCESS) {
                 detail::virt::object_view *view = obj.create_view(*this, hal::ptr::offset_type(ptr), err);
-                if (err == HAL_SUCCESS) {
+                if (err == hal::error::HAL_SUCCESS) {
                     return hal::ptr(*view);
                 }
             }
@@ -809,7 +814,7 @@ aspace::map(hal_object &obj, GmacProtection prot, hal::error &err)
                     CUresult res = cuCtxEnablePeerAccess(vas.context_, 0);
                     err = cuda::error_to_hal(res);
 
-                    if (err != HAL_SUCCESS) {
+                    if (err != hal::error::HAL_SUCCESS) {
                         return hal::ptr();
                     }
 
@@ -817,12 +822,12 @@ aspace::map(hal_object &obj, GmacProtection prot, hal::error &err)
 
                     detail::virt::object_view *view = obj.create_view(*this, hal::ptr::offset_type(ptr), err);
 
-                    if (err == HAL_SUCCESS) {
+                    if (err == hal::error::HAL_SUCCESS) {
                         return hal::ptr(*view);
                     }
                 } else {
                     // Mapping the same object on address spaces of the same device is not supported
-                    err = HAL_ERROR_FEATURE_NOT_SUPPORTED;
+                    err = hal::error::HAL_ERROR_FEATURE_NOT_SUPPORTED;
                     return hal::ptr();
                 }
             } else {
@@ -836,10 +841,10 @@ aspace::map(hal_object &obj, GmacProtection prot, hal::error &err)
 
         err = cuda::error_to_hal(res);
 
-        if (err == HAL_SUCCESS) {
+        if (err == hal::error::HAL_SUCCESS) {
             detail::virt::object_view *view = obj.create_view(*this, devPtr, err);
 
-            if (err == HAL_SUCCESS) {
+            if (err == hal::error::HAL_SUCCESS) {
                 return hal::ptr(*view);
             }
         }
@@ -904,7 +909,7 @@ aspace::unmap(hal::ptr p)
     hal_object &obj = p.get_view().get_object();
     hal::error ret = obj.destroy_view(p.get_view());
 
-    if (ret == HAL_SUCCESS && obj.get_views().size() == 0) {
+    if (ret == hal::error::HAL_SUCCESS && obj.get_views().size() == 0) {
         // TODO: set the proper AS to destroy on the original device
         // TODO: modify unit test in manager.cpp accordingly
         set();

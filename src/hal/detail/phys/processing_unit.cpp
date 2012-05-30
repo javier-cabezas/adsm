@@ -16,7 +16,9 @@ void
 processing_unit::add_memory_connection(const memory_connection &connection)
 {
     connections_.insert(connection);
-    connection.mem->add_attached_unit(*this);
+    if (connection.direct) {
+        connection.mem->add_attached_unit(*this);
+    }
 }
 
 memory &

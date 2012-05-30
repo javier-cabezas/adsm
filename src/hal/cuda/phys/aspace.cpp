@@ -19,7 +19,7 @@ aspace::destroy_vaspace(virt::hal_aspace &_as)
     virt::aspace &as = reinterpret_cast<virt::aspace &>(_as);
     virt::aspace::observe_destruct::destroy(as);
 
-    return HAL_SUCCESS;
+    return hal::error::HAL_SUCCESS;
 }
 
 }}}}

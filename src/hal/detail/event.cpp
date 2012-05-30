@@ -43,7 +43,7 @@ event::sync()
 
         while (syncOpBegin_ != operations_.end()) {
             err_ = (*syncOpBegin_)->sync();
-            if (err_ != HAL_SUCCESS) {
+            if (err_ != hal::error::HAL_SUCCESS) {
                 unlock();
                 return err_;
             }
@@ -54,7 +54,7 @@ event::sync()
 
     unlock();
 
-    if (err_ == HAL_SUCCESS) {
+    if (err_ == hal::error::HAL_SUCCESS) {
         // Execute pending operations associated to the event
         exec_triggers(true);
     }

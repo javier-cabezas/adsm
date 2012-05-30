@@ -72,11 +72,18 @@ public:
     hal::time_t get_time_end() const;
 #endif
 
+#if 0
     virtual void set_barrier(stream &s) = 0;
+#endif
 
     bool is_async() const
     {
         return async_;
+    }
+
+    virtual bool is_host() const
+    {
+        return false;
     }
 };
 

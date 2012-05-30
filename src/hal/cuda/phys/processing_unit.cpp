@@ -133,7 +133,7 @@ processing_unit::get_info(GmacDeviceInfo &info)
     lock::unlock();
 
     info = info_;
-    return HAL_SUCCESS;
+    return hal::error::HAL_SUCCESS;
 }
 
 #if 0
@@ -154,7 +154,7 @@ cpu::destroy_context(aspace &context)
 {
     delete &context;
 
-    return HAL_SUCCESS;
+    return hal::error::HAL_SUCCESS;
 }
 
 stream_t *
@@ -166,7 +166,7 @@ cpu::create_stream(aspace &context)
 hal::error
 cpu::destroy_stream(stream_t &stream)
 {
-    return HAL_SUCCESS;
+    return hal::error::HAL_SUCCESS;
 }
 
 size_t
@@ -192,7 +192,7 @@ cpu::has_direct_copy(const device &dev) const
 hal::error
 cpu::get_info(GmacDeviceInfo &info)
 {
-    return HAL_SUCCESS;
+    return hal::error::HAL_SUCCESS;
 }
 #endif
 

@@ -31,27 +31,28 @@ public:
     CUstream operator()();
     const CUstream operator()() const;
 
-    hal::error set_barrier(hal_event &event)
+    hal::error set_barrier(hal_event &e)
     {
-        hal::detail::operation *op = event.get_last_operation();
-        op->set_barrier(*this);
+        hal::error ret = hal::error::HAL_SUCCESS;
+        hal::detail::operation *_op = e.get_last_operation();
+        if (_op->is_host() == false) {
+            operation *op = reinterpret_cast<operation *>(_op);
+            op->set_barrier(*this);
+        } else {
+            ret = _op->sync();
+        }
     
-        return HAL_SUCCESS;
+        return ret;
     }
 
     hal::error set_barrier(list_event_detail &events)
     {
-        for (list_event::const_iterator it  = events.begin();
-                                        it != events.end();
-                                      ++it) {
-#if 0
-            (**it).set_barrier(get_aspace(), stream_);
-#endif
-            hal::detail::operation *op = (*it)->get_last_operation();
-            op->set_barrier(*this);
-            
+        hal::error ret = hal::error::HAL_SUCCESS;
+        for (auto e : events) {
+            ret = set_barrier(*e);
         }
-        return HAL_SUCCESS;
+
+        return ret;
     }
 };
 

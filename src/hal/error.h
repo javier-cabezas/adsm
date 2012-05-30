@@ -36,19 +36,19 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace hal {
 
-enum error {
+enum class error {
     HAL_SUCCESS                 = 1000,
-    HAL_ERROR_INVALID_PTR             ,
-    HAL_ERROR_INVALID_VALUE           ,
-    HAL_ERROR_INVALID_PROT            ,
-    HAL_ERROR_OUT_OF_RESOURCES        ,
-    HAL_ERROR_INVALID_DEVICE          ,
-    HAL_ERROR_INVALID_FUNCTION        ,
-    HAL_ERROR_FUNCTION                ,
-    HAL_ERROR_FEATURE_NOT_SUPPORTED   ,
-    HAL_ERROR_FILE_NOT_FOUND          ,
-    HAL_ERROR_IO                      ,
-    HAL_ERROR_BACKEND
+    HAL_ERROR_INVALID_PTR       = 1001,
+    HAL_ERROR_INVALID_VALUE     = 1002,
+    HAL_ERROR_INVALID_PROT      = 1003,
+    HAL_ERROR_OUT_OF_RESOURCES  = 1004,
+    HAL_ERROR_INVALID_DEVICE    = 1005,
+    HAL_ERROR_INVALID_FUNCTION  = 1006,
+    HAL_ERROR_FUNCTION          = 1007,
+    HAL_ERROR_FEATURE_NOT_SUPPORTED = 1008  ,
+    HAL_ERROR_FILE_NOT_FOUND    = 1009,
+    HAL_ERROR_IO                = 1010,
+    HAL_ERROR_BACKEND           = 1011
 };
 
 }}

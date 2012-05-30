@@ -20,7 +20,7 @@ cuda::phys::list_platform platforms;
 hal::error
 init()
 {
-    hal::error ret = HAL_SUCCESS;
+    hal::error ret = hal::error::HAL_SUCCESS;
 
     if (hal_initialized == false) {
         TRACE(GLOBAL, "Initializing CUDA Driver API");
@@ -42,7 +42,7 @@ fini()
         FATAL("HAL not initialized");
     }
 
-    hal::error ret = HAL_SUCCESS;
+    hal::error ret = hal::error::HAL_SUCCESS;
 
     hal_initialized = false;
 
@@ -160,6 +160,7 @@ get_platforms()
 
             // Device with no peers
             if (device.second.size() == 0) {
+                MESSAGE("GPU device 0 peers");
                 detail::phys::aspace::set_memory deviceMemories;
                 detail::phys::memory *mem;
 
@@ -187,9 +188,15 @@ get_platforms()
                 p->add_paspace(*pas);
                 p->add_processing_unit(*pUnit);
 
+                // Register memory connections for the device
+                for (auto &conn : connections) {
+                    pUnit->add_memory_connection(conn);
+                }
+
                 // Register the aspace
                 aspaces.insert(map_aspace::value_type(device.first, pas));
             } else {
+                MESSAGE("GPU device " FMT_SIZE " peers", device.second.size());
                 // Not registered yet
                 cuda::phys::aspace::set_memory deviceMemories;
                 cuda::phys::memory *mem;
@@ -234,13 +241,18 @@ get_platforms()
 
                     p->add_paspace(*pas); 
                 } else {
-                    // Use already created physical address space
+                    // Someone already created physical address space
                     pas = it->second;
                 }
 
                 cuda::phys::processing_unit *pUnit = new cuda::phys::processing_unit(*p, *pas, device.first);
 
                 p->add_processing_unit(*pUnit);
+
+                // Register memory connections for the device
+                for (auto &conn : connections) {
+                    pUnit->add_memory_connection(conn);
+                }
             }
         }
 
@@ -277,31 +289,31 @@ namespace __impl { namespace hal { namespace cuda {
 
 hal::error error_to_hal(CUresult err)
 {
-    hal::error ret = HAL_SUCCESS;
+    hal::error ret = hal::error::HAL_SUCCESS;
     switch(err) {
-        __GMAC_ERROR(CUDA_SUCCESS, HAL_SUCCESS);
-        __GMAC_ERROR(CUDA_ERROR_INVALID_VALUE, HAL_ERROR_INVALID_VALUE);
-        __GMAC_ERROR(CUDA_ERROR_OUT_OF_MEMORY, HAL_ERROR_OUT_OF_RESOURCES);
-        __GMAC_ERROR(CUDA_ERROR_NOT_INITIALIZED, HAL_ERROR_BACKEND);
-        __GMAC_ERROR(CUDA_ERROR_DEINITIALIZED, HAL_ERROR_BACKEND);
-        __GMAC_ERROR(CUDA_ERROR_NO_DEVICE, HAL_ERROR_BACKEND);
-        __GMAC_ERROR(CUDA_ERROR_INVALID_DEVICE, HAL_ERROR_INVALID_DEVICE);
-        __GMAC_ERROR(CUDA_ERROR_INVALID_IMAGE, HAL_ERROR_INVALID_FUNCTION);
-        __GMAC_ERROR(CUDA_ERROR_INVALID_CONTEXT, HAL_ERROR_BACKEND);
-        __GMAC_ERROR(CUDA_ERROR_INVALID_HANDLE, HAL_ERROR_BACKEND);
-        __GMAC_ERROR(CUDA_ERROR_CONTEXT_ALREADY_CURRENT, HAL_ERROR_BACKEND);
-        __GMAC_ERROR(CUDA_ERROR_ALREADY_MAPPED, HAL_ERROR_BACKEND);
-        __GMAC_ERROR(CUDA_ERROR_NO_BINARY_FOR_GPU, HAL_ERROR_BACKEND);
-        __GMAC_ERROR(CUDA_ERROR_ALREADY_ACQUIRED, HAL_ERROR_BACKEND);
-        __GMAC_ERROR(CUDA_ERROR_FILE_NOT_FOUND, HAL_ERROR_FILE_NOT_FOUND);
-        __GMAC_ERROR(CUDA_ERROR_NOT_FOUND, HAL_ERROR_BACKEND);
-        __GMAC_ERROR(CUDA_ERROR_NOT_READY, HAL_ERROR_BACKEND);
-        __GMAC_ERROR(CUDA_ERROR_LAUNCH_OUT_OF_RESOURCES, HAL_ERROR_OUT_OF_RESOURCES);
-        __GMAC_ERROR(CUDA_ERROR_LAUNCH_FAILED, HAL_ERROR_FUNCTION);
-        __GMAC_ERROR(CUDA_ERROR_LAUNCH_TIMEOUT, HAL_ERROR_FUNCTION);
-        __GMAC_ERROR(CUDA_ERROR_LAUNCH_INCOMPATIBLE_TEXTURING, HAL_ERROR_FUNCTION);
-        __GMAC_ERROR(CUDA_ERROR_UNKNOWN, HAL_ERROR_BACKEND);
-        default: ret = HAL_ERROR_BACKEND;
+        __GMAC_ERROR(CUDA_SUCCESS, hal::error::HAL_SUCCESS);
+        __GMAC_ERROR(CUDA_ERROR_INVALID_VALUE, hal::error::HAL_ERROR_INVALID_VALUE);
+        __GMAC_ERROR(CUDA_ERROR_OUT_OF_MEMORY, hal::error::HAL_ERROR_OUT_OF_RESOURCES);
+        __GMAC_ERROR(CUDA_ERROR_NOT_INITIALIZED, hal::error::HAL_ERROR_BACKEND);
+        __GMAC_ERROR(CUDA_ERROR_DEINITIALIZED, hal::error::HAL_ERROR_BACKEND);
+        __GMAC_ERROR(CUDA_ERROR_NO_DEVICE, hal::error::HAL_ERROR_BACKEND);
+        __GMAC_ERROR(CUDA_ERROR_INVALID_DEVICE, hal::error::HAL_ERROR_INVALID_DEVICE);
+        __GMAC_ERROR(CUDA_ERROR_INVALID_IMAGE, hal::error::HAL_ERROR_INVALID_FUNCTION);
+        __GMAC_ERROR(CUDA_ERROR_INVALID_CONTEXT, hal::error::HAL_ERROR_BACKEND);
+        __GMAC_ERROR(CUDA_ERROR_INVALID_HANDLE, hal::error::HAL_ERROR_BACKEND);
+        __GMAC_ERROR(CUDA_ERROR_CONTEXT_ALREADY_CURRENT, hal::error::HAL_ERROR_BACKEND);
+        __GMAC_ERROR(CUDA_ERROR_ALREADY_MAPPED, hal::error::HAL_ERROR_BACKEND);
+        __GMAC_ERROR(CUDA_ERROR_NO_BINARY_FOR_GPU, hal::error::HAL_ERROR_BACKEND);
+        __GMAC_ERROR(CUDA_ERROR_ALREADY_ACQUIRED, hal::error::HAL_ERROR_BACKEND);
+        __GMAC_ERROR(CUDA_ERROR_FILE_NOT_FOUND, hal::error::HAL_ERROR_FILE_NOT_FOUND);
+        __GMAC_ERROR(CUDA_ERROR_NOT_FOUND, hal::error::HAL_ERROR_BACKEND);
+        __GMAC_ERROR(CUDA_ERROR_NOT_READY, hal::error::HAL_ERROR_BACKEND);
+        __GMAC_ERROR(CUDA_ERROR_LAUNCH_OUT_OF_RESOURCES, hal::error::HAL_ERROR_OUT_OF_RESOURCES);
+        __GMAC_ERROR(CUDA_ERROR_LAUNCH_FAILED, hal::error::HAL_ERROR_FUNCTION);
+        __GMAC_ERROR(CUDA_ERROR_LAUNCH_TIMEOUT, hal::error::HAL_ERROR_FUNCTION);
+        __GMAC_ERROR(CUDA_ERROR_LAUNCH_INCOMPATIBLE_TEXTURING, hal::error::HAL_ERROR_FUNCTION);
+        __GMAC_ERROR(CUDA_ERROR_UNKNOWN, hal::error::HAL_ERROR_BACKEND);
+        default: ret = hal::error::HAL_ERROR_BACKEND;
     }
     return ret;
 }

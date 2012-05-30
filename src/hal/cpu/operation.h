@@ -23,7 +23,7 @@ public:
     hal::error sync()
     {
         FATAL("CPU operations should not be synced");
-        return HAL_SUCCESS;
+        return hal::error::HAL_SUCCESS;
     }
 
     parent::state get_state()
@@ -33,6 +33,12 @@ public:
 
     void set_barrier(hal::detail::stream &)
     {
+        FATAL("CPU operations should not be synced");
+    }
+
+    bool is_host() const
+    {
+        return true;
     }
 };
 

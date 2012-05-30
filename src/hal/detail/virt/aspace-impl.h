@@ -11,7 +11,7 @@ aspace::aspace(set_processing_unit &compatibleUnits, phys::aspace &pas, hal::err
     pas_(pas)
 {
     ASSERTION(compatibleUnits.size() > 0);
-    err = HAL_SUCCESS;
+    err = hal::error::HAL_SUCCESS;
 }
 
 inline

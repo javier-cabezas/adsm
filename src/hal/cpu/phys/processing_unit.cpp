@@ -5,6 +5,7 @@ namespace __impl { namespace hal { namespace cpu { namespace phys {
 processing_unit::processing_unit(detail::phys::platform &platform, detail::phys::aspace &as) :
     parent(platform, parent::PUNIT_TYPE_CPU, as)
 {
+    integrated_ = false;
 }
 
 processing_unit::~processing_unit()
@@ -13,7 +14,7 @@ processing_unit::~processing_unit()
 hal::error
 processing_unit::get_info(GmacDeviceInfo &info)
 {
-    return HAL_SUCCESS;
+    return hal::error::HAL_SUCCESS;
 }
 
 }}}}

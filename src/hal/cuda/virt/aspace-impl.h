@@ -37,7 +37,7 @@ inline
 hal::error
 buffer::wait()
 {
-    hal::error ret = HAL_SUCCESS;
+    hal::error ret = hal::error::HAL_SUCCESS;
     if (event_) {
         ret = event_->sync();
     }

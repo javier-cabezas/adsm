@@ -98,11 +98,11 @@ virt::object *
 platform::create_object(const memory &mem, size_t size, hal::error &err)
 {
     if (memories_.find(&mem) == memories_.end()) {
-        err = HAL_ERROR_INVALID_VALUE;
+        err = hal::error::HAL_ERROR_INVALID_VALUE;
         return NULL;
     }
 
-    err = HAL_SUCCESS;
+    err = hal::error::HAL_SUCCESS;
     //return new object(mem, size);
     return create(mem, size);
 }
@@ -112,7 +112,7 @@ platform::destroy_object(virt::object &obj)
 {
     destroy(obj);
     
-    return HAL_SUCCESS;
+    return hal::error::HAL_SUCCESS;
 }
 
 }}}}

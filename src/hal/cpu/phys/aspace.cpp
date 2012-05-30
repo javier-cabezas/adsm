@@ -22,7 +22,7 @@ aspace::destroy_vaspace(detail::virt::aspace &as)
 {
     virt::aspace::destroy(as);
 
-    return HAL_SUCCESS;
+    return hal::error::HAL_SUCCESS;
 }
 
 }}}}
