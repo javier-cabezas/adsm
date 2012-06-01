@@ -1,9 +1,6 @@
 #ifndef GMAC_HAL_DETAIL_STREAM_H_
 #define GMAC_HAL_DETAIL_STREAM_H_
 
-#include <algorithm>
-#include <queue>
-
 #include "trace/logger.h"
 #include "util/gmac_base.h"
 #include "util/lock.h"
@@ -21,10 +18,6 @@ class GMAC_LOCAL stream :
 protected:
     virt::aspace &aspace_;
 
-#if 0
-    event_ptr lastEvent_;
-#endif
-
     stream(virt::aspace &as);
 
 public:
@@ -33,20 +26,10 @@ public:
         Running
     };
 
-#if 0
-    event_ptr get_last_event();
-    void set_last_event(event_ptr event);
-#endif
-
     virt::aspace &get_aspace();
 
     virtual state query() = 0;
     virtual hal::error sync() = 0;
-
-#if 0
-    virtual hal::error set_barrier(event_ptr event) = 0;
-    virtual hal::error set_barrier(list_event &events) = 0;
-#endif
 };
 
 }

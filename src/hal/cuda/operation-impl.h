@@ -23,9 +23,9 @@ operation::~operation()
     TRACE(LOCAL, "Deleting operation");
     CUresult err;
     err = cuEventDestroy(eventStart_);
-    ASSERTION(err == CUDA_SUCCESS);
+    ASSERTION(err == CUDA_SUCCESS || err == CUDA_ERROR_CONTEXT_IS_DESTROYED);
     err = cuEventDestroy(eventEnd_);
-    ASSERTION(err == CUDA_SUCCESS);
+    ASSERTION(err == CUDA_SUCCESS || err == CUDA_ERROR_CONTEXT_IS_DESTROYED);
 }
 
 template <typename Func, typename... Args>

@@ -45,13 +45,11 @@ public:
         unsigned nArgs_;
         const void *params_[256];
 
-    protected:
+    public:
         arg_list() :
             nArgs_(0)
         {
         }
-
-    public:
         unsigned get_nargs() const;
         hal::error push_arg(const void *arg, size_t size);
     };
@@ -64,7 +62,7 @@ public:
         stream &stream_;
 
     public:
-        launch(kernel &parent, config &conf, arg_list &args, stream &s);
+        launch(const kernel &parent, config &conf, arg_list &args, stream &s, hal::error &err);
 
         stream &get_stream();
         const stream &get_stream() const;
@@ -85,7 +83,7 @@ public:
 
     CUfunction &operator()();
     const CUfunction &operator()() const;
-    //launch &launch_config(Parent::config &config, Parent::arg_list &args, stream &stream);
+    launch *launch_config(config &conf, arg_list &args, stream &s, hal::error &err) const;
 };
 
 }}}}

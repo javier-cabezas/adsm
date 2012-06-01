@@ -967,5 +967,17 @@ aspace::operator()() const
     return context_;
 }
 
+hal_context *
+aspace::create_context(hal::error &err)
+{
+    return new context(this, 0, err);
+}
+
+void
+aspace::destroy_context(hal_context &ctx)
+{
+    delete &ctx;
+}
+
 }}}}
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

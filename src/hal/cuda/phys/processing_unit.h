@@ -12,6 +12,7 @@ namespace __impl { namespace hal { namespace cuda {
 namespace virt {
 typedef hal::detail::virt::aspace hal_aspace;
 class aspace;
+class scheduler;
 }
 
 namespace phys {
@@ -40,7 +41,7 @@ protected:
     bool isInfoInitialized_;
 
 public:
-    processing_unit(platform &plat, aspace &as, CUdevice cudaDevice);
+    processing_unit(platform &plat, aspace &as, virt::scheduler &sched, CUdevice cudaDevice);
 
     hal_stream *create_stream(virt::hal_aspace &as);
     hal::error destroy_stream(hal_stream &stream);

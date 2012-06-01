@@ -7,8 +7,8 @@
 
 namespace __impl { namespace hal { namespace cuda { namespace phys {
 
-processing_unit::processing_unit(platform &plat, aspace &as, CUdevice cudaDevice) :
-    parent(plat, parent::PUNIT_TYPE_GPU, as),
+processing_unit::processing_unit(platform &plat, aspace &as, virt::scheduler &sched, CUdevice cudaDevice) :
+    parent(plat, parent::PUNIT_TYPE_GPU, as, sched),
     lock("processing_unit"),
     cudaDevice_(cudaDevice),
     isInfoInitialized_(false)

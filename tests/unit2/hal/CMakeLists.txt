@@ -1,4 +1,8 @@
+add_subdirectory(${API_DIR})
+
 set(hal_SRC
+    exec.h
+    exec.cpp
     init.h
     init.cpp
 )
@@ -12,3 +16,5 @@ add_executable(UnitTests_hal ${all_SRC})
 target_link_libraries(UnitTests_hal gmac-hal gmac-common gmac-core ${gmac_test_LIB} ${gmac_LIBS})
 set_target_properties(UnitTests_hal PROPERTIES
     COMPILE_DEFINITIONS_DEBUG USE_DBC)
+
+add_dependencies(UnitTests_hal backend_code)

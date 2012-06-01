@@ -183,7 +183,7 @@ get_platforms()
                 // Create physical address space
                 pas = new cuda::phys::aspace(*p, deviceMemories);
 
-                cuda::phys::processing_unit *pUnit = new cuda::phys::processing_unit(*p, *pas, device.first);
+                cuda::phys::processing_unit *pUnit = new cuda::phys::processing_unit(*p, *pas, *new cuda::virt::scheduler(), device.first);
 
                 p->add_paspace(*pas);
                 p->add_processing_unit(*pUnit);
@@ -245,7 +245,7 @@ get_platforms()
                     pas = it->second;
                 }
 
-                cuda::phys::processing_unit *pUnit = new cuda::phys::processing_unit(*p, *pas, device.first);
+                cuda::phys::processing_unit *pUnit = new cuda::phys::processing_unit(*p, *pas, *new cuda::virt::scheduler(), device.first);
 
                 p->add_processing_unit(*pUnit);
 
@@ -264,7 +264,7 @@ get_platforms()
         {
             for (int i = 0; i < get_nprocs(); ++i) {
                 //p->add_device(*new cuda::cpu(*p, *cpuDomain));
-                cpu::phys::processing_unit *pUnit = new cpu::phys::processing_unit(*p, *pas);
+                cpu::phys::processing_unit *pUnit = new cpu::phys::processing_unit(*p, *pas, *new cpu::virt::scheduler());
                 p->add_processing_unit(*pUnit);
 
                 cpu::phys::processing_unit::memory_connection connection(*memoryHost, true, 0);

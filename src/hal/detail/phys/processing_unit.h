@@ -21,6 +21,7 @@ namespace detail {
     
 namespace virt {
     class aspace;
+    class scheduler;
 }
 
 class stream;
@@ -68,10 +69,11 @@ protected:
     bool integrated_;
     type type_;
     aspace &as_;
+    virt::scheduler &sched_;
 
     set_memory_connection connections_;
 
-    processing_unit(platform &platform, type t, aspace &as);
+    processing_unit(platform &platform, type t, aspace &as, virt::scheduler &sched);
 public:
     virtual ~processing_unit()
     {}
@@ -92,6 +94,9 @@ public:
 
     memory &get_preferred_memory();
     const memory &get_preferred_memory() const;
+
+    virt::scheduler &get_scheduler();
+    const virt::scheduler &get_scheduler() const;
 };
 
 }}}}

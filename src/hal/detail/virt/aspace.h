@@ -30,6 +30,7 @@ typedef util::shared_ptr<event> event_ptr;
 namespace virt {
 
 class aspace;
+class context;
 class object;
 
 class GMAC_LOCAL aspace :
@@ -77,6 +78,8 @@ public:
     virtual event_ptr copy_async(hal::ptr dst, device_input &input, size_t count, list_event *dependencies, hal::error &err) = 0;
     virtual event_ptr copy_async(device_output &output, hal::const_ptr src, size_t count, list_event *dependencies, hal::error &err) = 0;
     virtual event_ptr memset_async(hal::ptr dst, int c, size_t count, list_event *dependencies, hal::error &err) = 0;
+
+    virtual context *create_context(hal::error &err) = 0;
 };
 
 }

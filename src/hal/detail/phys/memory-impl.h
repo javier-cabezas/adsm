@@ -1,8 +1,6 @@
 #ifndef GMAC_HAL_DETAIL_PHYS_MEMORY_IMPL_H_
 #define GMAC_HAL_DETAIL_PHYS_MEMORY_IMPL_H_
 
-#include "processing_unit.h"
-
 namespace __impl { namespace hal { namespace detail { namespace phys {
 
 #if 0

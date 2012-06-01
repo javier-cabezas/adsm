@@ -12,8 +12,6 @@
 
 #include "hal/detail/types.h"
 
-//#include "hal/cuda/stream.h"
-
 namespace __impl { namespace hal { namespace cuda {
 
 namespace phys {
@@ -22,9 +20,12 @@ typedef hal::detail::phys::processing_unit hal_processing_unit;
 
 namespace virt {
 
+class context;
+
 typedef hal::detail::code::repository hal_code_repository;
 typedef hal::detail::code::repository_view hal_code_repository_view;
 typedef hal::detail::virt::aspace hal_aspace;
+typedef hal::detail::virt::context hal_context;
 typedef hal::detail::virt::object hal_object;
 typedef hal::detail::event hal_event;
 typedef hal::detail::event_ptr hal_event_ptr;
@@ -260,6 +261,8 @@ public:
     operation *get_new_op(operation::type t, bool async, stream &s);
     void dispose_op(operation &op);
 
+    hal_context *create_context(hal::error &err);
+    void destroy_context(hal_context &ctx);
 };
 
 #if 0

@@ -391,32 +391,4 @@ TEST_F(hal_init_test, object_copy_gpu)
     do_object_copy_gpu();
 }
 
-
-
-#if 0
-    static I_HAL::phys::processing_unit *pUnit0;
-    static I_HAL::phys::processing_unit *pUnit1;
-    static I_HAL::phys::aspace *pas0;
-    static I_HAL::virt::aspace *as0;
-    static I_HAL::virt::aspace *as1;
-
-    // Get processing units
-    pUnits = plat0->get_processing_units(I_HAL::phys::processing_unit::PUNIT_TYPE_GPU);
-    ASSERT_TRUE(pUnits.size() > 0);
-    pUnit0 = *pUnits.begin();
-    pUnit1 = nullptr;
-    pas0 = &pUnit0->get_paspace();
-    // Create address spaces
-    I_HAL::phys::aspace::set_processing_unit compatibleUnits({ pUnit0 });
-    as0 = pas0->create_vaspace(compatibleUnits, err);
-    ASSERT_HAL_SUCCESS(err);
-    as1 = pas0->create_vaspace(compatibleUnits, err);
-    ASSERT_HAL_SUCCESS(err);
-
-    err = pas0->destroy_vaspace(*as0);
-    ASSERT_HAL_SUCCESS(err);
-    err = pas0->destroy_vaspace(*as1);
-    ASSERT_HAL_SUCCESS(err);
-#endif
-
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

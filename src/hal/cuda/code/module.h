@@ -57,24 +57,6 @@ namespace __impl { namespace hal { namespace cuda { namespace code {
 
 typedef hal::detail::code::repository hal_repository;
 
-#if 0
-typedef const char *cuda_variable_t;
-typedef const struct textureReference *cuda_texture_t;
-
-typedef util::descriptor<gmac_kernel_id_t> kernel_descriptor;
-typedef util::descriptor<cuda_texture_t> texture_descriptor;
-
-
-class GMAC_LOCAL variable_descriptor : public util::descriptor<cuda_variable_t> {
-protected:
-    bool constant_;
-
-public:
-    variable_descriptor(const std::string &name, cuda_variable_t key, bool constant);
-    bool constant() const;
-};
-#endif
-
 class GMAC_LOCAL variable_t /*: public variable_descriptor */ {
 	CUdeviceptr ptr_;
     size_t size_;
@@ -100,64 +82,14 @@ public:
     const std::string &get_name() const;
 };
 
-#if 0
-class GMAC_LOCAL module_descriptor {
-	friend class repository;
-
-protected:
-	const void *fatBin_;
-
-    typedef std::vector<kernel_descriptor>   vector_kernel;
-    typedef std::vector<variable_descriptor> vector_variable;
-	typedef std::vector<texture_descriptor>  vector_texture;
-
-    vector_kernel   kernels_;
-	vector_variable variables_;
-	vector_variable constants_;
-	vector_texture  textures_;
-
-public:
-    module_descriptor(const void *fatBin);
-
-    void add(kernel_descriptor   &k);
-    void add(variable_descriptor &v);
-    void add(texture_descriptor  &t);
-
-#if 0
-    static repository *create_modules();
-#endif
-};
-#endif
-
-#if 0
-typedef std::vector<module_descriptor *> vector_module_descriptor;
-
-class GMAC_LOCAL repository :
-    public hal::detail::code::repository {
-};
-#endif
-
 typedef hal::detail::code::kernel hal_kernel;
 
 class GMAC_LOCAL repository_view :
     public hal::detail::code::repository_view {
 protected:
-#if 0
-    typedef std::map<cuda_variable_t, variable_t> map_variable;
-	typedef std::map<cuda_texture_t, texture_t>   map_texture;
-    typedef std::map<gmac_kernel_id_t, kernel *>  map_kernel;
-#endif
-
 	typedef std::map<std::string, variable_t *> map_variable_name;
 	typedef std::map<std::string, texture_t *>  map_texture_name;
     typedef std::map<std::string, kernel *>   map_kernel_name;
-
-#if 0
-    map_kernel kernels_;
-    map_variable variables_;
-	map_variable constants_;
-	map_texture textures_;
-#endif
 
     class GMAC_LOCAL module :
         public util::taggeable<> {
@@ -262,35 +194,19 @@ protected:
 	const void *fatBin_;
 
 public:
-#if 0
-	repository_view(virt::aspace &as, hal::error &err);
-#endif
 	repository_view(virt::aspace &as, const hal_repository &repo, hal::error &err);
 
 	~repository_view();
 
-#if 0
-    template <typename T>
-    void register_kernels(T &t) const;
-
-    hal_kernel *get_kernel(gmac_kernel_id_t key);
-#endif
     const hal_kernel *get_kernel(const std::string &name,
                                  const util::taggeable<>::set_tag &filter = util::taggeable<>::empty);
 
-#if 0
-    const variable_t *get_variable(cuda_variable_t key) const;
-	const variable_t *get_constant(cuda_variable_t key) const;
-#endif
     const variable_t *get_variable(const std::string &name,
                                    const util::taggeable<>::set_tag &filter = util::taggeable<>::empty);
 	const variable_t *get_constant(const std::string &name,
                                    const util::taggeable<>::set_tag &filter = util::taggeable<>::empty);
 	const texture_t *get_texture(const std::string &name,
                                  const util::taggeable<>::set_tag &filter = util::taggeable<>::empty);
-#if 0
-    const texture_t  *get_texture(cuda_texture_t key) const;
-#endif
 };
 
 }}}}

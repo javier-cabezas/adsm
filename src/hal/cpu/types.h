@@ -38,6 +38,7 @@ class buffer_t;
 #include "phys/aspace.h"
 #include "phys/processing_unit.h"
 #include "virt/aspace.h"
+#include "virt/scheduler.h"
 
 #include "operation-impl.h"
 

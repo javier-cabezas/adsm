@@ -7,12 +7,15 @@ set(hal_SRC
     detail/virt/aspace-impl.h
     detail/code/module.h
     detail/code/module.cpp
+    detail/virt/context.h
+    detail/virt/context-impl.h
     detail/virt/object.h
     detail/virt/object-impl.h
     detail/virt/object.cpp
     detail/virt/processing_unit.h
     detail/virt/processing_unit.cpp
     detail/virt/processing_unit-impl.h
+    detail/virt/scheduler.h
     detail/event.h
     detail/event.cpp
     detail/event-impl.h
@@ -39,6 +42,7 @@ set(hal_SRC
     cpu/phys/processing_unit.cpp
     cpu/virt/aspace.h
     cpu/virt/aspace.cpp
+    cpu/virt/scheduler.h
     copy.cpp
     types.h
 )

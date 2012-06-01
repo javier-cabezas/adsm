@@ -27,6 +27,8 @@ namespace phys {
 }
 
 namespace virt {
+    typedef hal::detail::virt::context context;
+
     typedef hal::detail::virt::aspace aspace;
     typedef hal::detail::virt::object object;
     typedef hal::detail::virt::object_view object_view;
@@ -38,10 +40,11 @@ typedef hal::cuda::list_event list_event;
 
 namespace code {
     typedef hal::detail::code::repository repository;
+    typedef hal::detail::code::repository_view repository_view;
 
     typedef hal::detail::code::kernel kernel_t;
     typedef hal::cuda::code::kernel::config kernel_config;
-    typedef hal::cuda::code::kernel::launch kernel_launch;
+    typedef hal::cuda::code::kernel::arg_list kernel_args;
 }
 
 }}
