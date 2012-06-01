@@ -35,9 +35,12 @@ hal_exec_test::TearDownTestCase()
     ASSERT_HAL_SUCCESS(err);
 }
 
+template <bool Sync>
 void do_exec_gpu()
 {
+    // Constants
     static const unsigned ELEMS = 1024;
+    static const unsigned ITER  = 1024;
 
     ASSERT_TRUE(platforms.size() > 0);
 
@@ -47,6 +50,7 @@ void do_exec_gpu()
     I_HAL::code::repository_view *repoView;
     const I_HAL::code::kernel_t *kernel;
 
+    // Load device code
     err = repo.load_from_file("code/common.lib", "");
     ASSERT_HAL_SUCCESS(err);
 
@@ -84,12 +88,14 @@ void do_exec_gpu()
     I_HAL::virt::context *ctx = asGPU->create_context(err);
     ASSERT_HAL_SUCCESS(err);
 
+    // Map code and get kernel handler
     repoView = asGPU->map(repo, err);
     ASSERT_HAL_SUCCESS(err);
 
     kernel = repoView->get_kernel("inc");
     ASSERT_TRUE(kernel != NULL);
 
+    // Create data objects
     objCPU0 = plat0->create_object(pUnitCPU->get_preferred_memory(), ELEMS * sizeof(float), err);
     ASSERT_HAL_SUCCESS(err);
     objCPU1 = plat0->create_object(pUnitCPU->get_preferred_memory(), ELEMS * sizeof(float), err);
@@ -97,6 +103,7 @@ void do_exec_gpu()
     objGPU  = plat0->create_object(pUnitGPU->get_preferred_memory(), ELEMS * sizeof(float), err);
     ASSERT_HAL_SUCCESS(err);
 
+    // Map objects on address spaces
     ptr ptrBaseCPU0 = asCPU->map(*objCPU0, GMAC_PROT_READWRITE, err);
     ASSERT_HAL_SUCCESS(err);
     ptr ptrBaseCPU1 = asCPU->map(*objCPU1, GMAC_PROT_READWRITE, err);
@@ -104,32 +111,49 @@ void do_exec_gpu()
     ptr ptrBaseGPU  = asGPU->map(*objGPU, GMAC_PROT_READWRITE, err);
     ASSERT_HAL_SUCCESS(err);
 
+    // Initialize data
     float (&mat1)[ELEMS] = *((float (*)[ELEMS]) ptrBaseCPU0.get_view().get_offset() + ptrBaseCPU0.get_offset());
     for (unsigned i = 0; i < ELEMS; ++i) {
         mat1[i] = float(i);
     }
 
+    // Copy to GPU
     I_HAL::copy(ptrBaseGPU, ptrBaseCPU0, ELEMS * sizeof(float), err);
     ASSERT_HAL_SUCCESS(err);
 
+    // Configure kernel
     void *arg = (void *) (ptrBaseGPU.get_view().get_offset() + ptrBaseGPU.get_offset());
     I_HAL::code::kernel_config conf(ELEMS/256, 256, 0, 0);
     I_HAL::code::kernel_args args;
     err = args.push_arg(&arg, sizeof(void *));
     ASSERT_HAL_SUCCESS(err);
 
-    I_HAL::event_ptr evt = ctx->queue(*kernel, conf, args, err);
-    err = evt->sync();
-    ASSERT_HAL_SUCCESS(err);
-
-    I_HAL::copy(ptrBaseCPU1, ptrBaseGPU, ELEMS * sizeof(float), err);
-    ASSERT_HAL_SUCCESS(err);
-
-    float (&mat2)[ELEMS] = *((float (*)[ELEMS]) ptrBaseCPU1.get_view().get_offset() + ptrBaseCPU1.get_offset());
-    for (unsigned i = 0; i < ELEMS; ++i) {
-        ASSERT_TRUE((mat1[i] + 1.f) == mat2[i]);
+    // Execute kernel ITER times
+    I_HAL::event_ptr evt;
+    for (unsigned it = 0; it < ITER; ++it) {
+        evt = ctx->queue(*kernel, conf, args, err);
+        ASSERT_HAL_SUCCESS(err);
+        if (Sync) {
+            err = evt->sync();
+            ASSERT_HAL_SUCCESS(err);
+        }
     }
 
+    // Copy data back to host
+    if (Sync) {
+        I_HAL::copy(ptrBaseCPU1, ptrBaseGPU, ELEMS * sizeof(float), err);
+    } else {
+        I_HAL::copy(ptrBaseCPU1, ptrBaseGPU, ELEMS * sizeof(float), evt, err);
+    }
+    ASSERT_HAL_SUCCESS(err);
+
+    // Check results
+    float (&mat2)[ELEMS] = *((float (*)[ELEMS]) ptrBaseCPU1.get_view().get_offset() + ptrBaseCPU1.get_offset());
+    for (unsigned i = 0; i < ELEMS; ++i) {
+        ASSERT_TRUE((mat1[i] + float(ITER)) == mat2[i]);
+    }
+
+    // Unmap objects
     err = asCPU->unmap(ptrBaseCPU0);
     ASSERT_HAL_SUCCESS(err);
     err = asCPU->unmap(ptrBaseCPU1);
@@ -137,9 +161,11 @@ void do_exec_gpu()
     err = asGPU->unmap(ptrBaseGPU);
     ASSERT_HAL_SUCCESS(err);
 
+    // Unmap code
     err = asGPU->unmap(*repoView);
     ASSERT_HAL_SUCCESS(err);
 
+    // Destroy data objects
     err = plat0->destroy_object(*objCPU0);
     ASSERT_HAL_SUCCESS(err);
     err = plat0->destroy_object(*objCPU1);
@@ -147,6 +173,7 @@ void do_exec_gpu()
     err = plat0->destroy_object(*objGPU);
     ASSERT_HAL_SUCCESS(err);
 
+    // Destroy address spaces
     err = pasCPU->destroy_vaspace(*asCPU);
     ASSERT_HAL_SUCCESS(err);
     err = pasGPU->destroy_vaspace(*asGPU);
@@ -155,7 +182,8 @@ void do_exec_gpu()
 
 TEST_F(hal_exec_test, exec_gpu)
 {
-    do_exec_gpu();
+    do_exec_gpu<true>();
+    do_exec_gpu<false>();
 }
 
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */
