@@ -62,17 +62,17 @@ protected:
 
 public:
     hal::error load_from_file(const std::string &path,
-                               const std::string &flags,
-                               const util::taggeable<>::set_tag &tags = util::taggeable<>::empty);
-
-    hal::error load_from_mem(const char *ptr,
-                              size_t size,
                               const std::string &flags,
                               const util::taggeable<>::set_tag &tags = util::taggeable<>::empty);
 
+    hal::error load_from_mem(const char *ptr,
+                             size_t size,
+                             const std::string &flags,
+                             const util::taggeable<>::set_tag &tags = util::taggeable<>::empty);
+
     hal::error load_from_handle(const void *handle,
-                                 const std::string &flags,
-                                 const util::taggeable<>::set_tag &tags = util::taggeable<>::empty);
+                                const std::string &flags,
+                                const util::taggeable<>::set_tag &tags = util::taggeable<>::empty);
 
     const list_descriptor_file &get_files() const
     {

@@ -3,10 +3,11 @@
 
 namespace __impl { namespace hal { namespace detail { namespace phys {
 
-processing_unit::processing_unit(platform &platform, type t, aspace &as) :
+processing_unit::processing_unit(platform &platform, type t, aspace &as, virt::scheduler &sched) :
     platform_(platform),
     type_(t),
-    as_(as)
+    as_(as),
+    sched_(sched)
 {
     TRACE(LOCAL, FMT_ID2" Create", get_print_id2());
     as.add_processing_unit(*this);

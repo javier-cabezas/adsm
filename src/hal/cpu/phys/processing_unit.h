@@ -14,6 +14,7 @@ namespace cpu {
     
 namespace virt {
     class aspace;
+    class scheduler;
 }
 
 class stream;
@@ -32,7 +33,7 @@ class GMAC_LOCAL processing_unit :
     typedef hal_processing_unit parent;
 
 public:
-    processing_unit(detail::phys::platform &platform, detail::phys::aspace &as);
+    processing_unit(detail::phys::platform &platform, detail::phys::aspace &as, virt::scheduler &sched);
     virtual ~processing_unit();
 
     hal::error get_info(GmacDeviceInfo &info);

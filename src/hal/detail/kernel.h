@@ -28,12 +28,12 @@ public:
 
     class GMAC_LOCAL launch {
     private:
-        kernel &kernel_;
+        const kernel &kernel_;
 
     protected:
         event_ptr event_;
 
-        launch(kernel &kernel);
+        launch(const kernel &kernel);
 
     public:
         const kernel &get_kernel() const;

@@ -7,6 +7,9 @@ set(hal_cuda_SRC
     virt/aspace.h
     virt/aspace-impl.h
     virt/aspace.cpp
+    virt/context.h
+    virt/context-impl.h
+    virt/scheduler.h
     code/module.h
     code/module-impl.h
     code/module.cpp

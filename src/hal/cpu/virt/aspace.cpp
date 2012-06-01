@@ -255,6 +255,19 @@ aspace::memset_async(hal::ptr dst, int c, size_t count, list_event_detail *depen
     return hal_event_ptr();
 }
 
+hal_context *
+aspace::create_context(hal::error &err)
+{
+    FATAL("Context creation not implemented on CPU");
+    return nullptr;
+}
+
+void
+aspace::destroy_context(hal_context &ctx)
+{
+    delete &ctx;
+}
+
 }}}}
 
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

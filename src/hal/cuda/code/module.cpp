@@ -74,7 +74,7 @@ repository_view::repository_view(virt::aspace &as, const hal_repository &repo, h
         CUmodule cumod;
 
         // TODO: add support for flags
-        CUresult res = cuModuleLoadData(&cumod, file.get_path().c_str());
+        CUresult res = cuModuleLoad(&cumod, file.get_path().c_str());
 
         err = error_to_hal(res);
         if (err != hal::error::HAL_SUCCESS) return;

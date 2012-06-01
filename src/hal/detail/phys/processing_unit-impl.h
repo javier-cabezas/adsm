@@ -49,6 +49,20 @@ processing_unit::has_access(const memory &mem, memory_connection &connection)
     return false;
 }
 
+inline
+virt::scheduler &
+processing_unit::get_scheduler()
+{
+    return sched_;
+}
+
+inline
+const virt::scheduler &
+processing_unit::get_scheduler() const
+{
+    return sched_;
+}
+
 }}}}
 
 #endif

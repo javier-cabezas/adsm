@@ -30,7 +30,7 @@ kernel::config::get_ndims() const
 }
 
 inline
-kernel::launch::launch(kernel &kernel) :
+kernel::launch::launch(const kernel &kernel) :
     kernel_(kernel)
 {
 }
@@ -39,7 +39,7 @@ inline
 const kernel &
 kernel::launch::get_kernel() const
 {
-    return reinterpret_cast<kernel &>(kernel_);
+    return kernel_;
 }
 
 inline

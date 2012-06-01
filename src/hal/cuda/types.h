@@ -52,9 +52,13 @@ namespace phys {
 #include "operation.h"
 #include "phys/aspace.h"
 #include "virt/aspace.h"
+#include "virt/context.h"
+#include "virt/scheduler.h"
 #include "kernel.h"
 #include "stream.h"
 
+#include "virt/scheduler-impl.h"
+#include "virt/context-impl.h"
 #include "virt/aspace-impl.h"
 #include "stream-impl.h"
 #include "kernel-impl.h"

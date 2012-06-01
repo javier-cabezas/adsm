@@ -15,6 +15,7 @@ namespace code {
 namespace cpu { namespace virt {
 
 typedef hal::detail::virt::aspace hal_aspace;
+typedef hal::detail::virt::context hal_context;
 typedef hal::detail::virt::object hal_object;
 
 typedef hal::detail::event_ptr hal_event_ptr;
@@ -52,6 +53,9 @@ public:
     hal_event_ptr copy_async(hal::ptr dst, device_input &input, size_t count, list_event_detail *dependencies, hal::error &err);
     hal_event_ptr copy_async(device_output &output, hal::const_ptr src, size_t count, list_event_detail *dependencies, hal::error &err);
     hal_event_ptr memset_async(hal::ptr dst, int c, size_t count, list_event_detail *dependencies, hal::error &err);
+
+    hal_context *create_context(hal::error &err);
+    void destroy_context(hal_context &ctx);
 };
 
 }}}}

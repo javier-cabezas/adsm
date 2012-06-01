@@ -2,8 +2,8 @@
 
 namespace __impl { namespace hal { namespace cpu { namespace phys {
 
-processing_unit::processing_unit(detail::phys::platform &platform, detail::phys::aspace &as) :
-    parent(platform, parent::PUNIT_TYPE_CPU, as)
+processing_unit::processing_unit(detail::phys::platform &platform, detail::phys::aspace &as, virt::scheduler &sched) :
+    parent(platform, parent::PUNIT_TYPE_CPU, as, sched)
 {
     integrated_ = false;
 }

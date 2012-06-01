@@ -24,23 +24,21 @@ kernel::operator()() const
     return kernel_;
 }
 
-#if 0
 inline 
-kernel::launch &
-kernel::launch_config(parent::config &conf, parent::arg_list &args, stream &stream)
+kernel::launch *
+kernel::launch_config(config &conf, arg_list &args, stream &s, hal::error &err) const
 {
-    return *(new launch(*this, (kernel::config &) conf,
-                               (kernel::arg_list &) args, stream));
+    return new launch(*this, conf, args, s, err);
 }
-#endif
 
 inline
-kernel::launch::launch(kernel &parent, config &conf, arg_list &args, stream &s) :
+kernel::launch::launch(const kernel &parent, config &conf, arg_list &args, stream &s, hal::error &err) :
     parent::launch(parent),
     config_(conf),
     args_(args),
     stream_(s)
 {
+    err = hal::error::HAL_SUCCESS;
 }
 
 inline
