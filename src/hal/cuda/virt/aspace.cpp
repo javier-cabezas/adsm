@@ -135,7 +135,9 @@ aspace::get_new_op(operation::type t, bool async, stream &s)
 
     if (ret == NULL) {
         ret = factory_operation::create(t, async, *this, s);
+        TRACE(LOCAL, FMT_ID2 " create new operation " FMT_ID2, get_print_id2(), ret->get_print_id2());
     } else {
+        TRACE(LOCAL, FMT_ID2 " reuse operation " FMT_ID2, get_print_id2(), ret->get_print_id2());
         ret->reset(t, async, s);
     }
 
@@ -327,8 +329,7 @@ aspace::copy(hal::ptr dst, hal::const_ptr src, size_t count, list_event_detail *
         TRACE(LOCAL, "H (%p) -> D (%p) copy (" FMT_SIZE" bytes) on " FMT_ID2,
                      get_host_ptr(src),
                      get_cuda_ptr(dst),
-                     count,
-                     streamToDevice_->get_print_id2());
+                     count, streamToDevice_->get_print_id2());
         // Wait for dependencies
         if (dependencies != NULL) streamToDevice_->set_barrier(*dependencies);
 
@@ -340,9 +341,10 @@ aspace::copy(hal::ptr dst, hal::const_ptr src, size_t count, list_event_detail *
                          create_op(operation::TransferToDevice, false, *this, *streamToDevice_));
     } else if (is_host_ptr(dst) &&
                is_device_ptr(src)) {
-        TRACE(LOCAL, "D -> H (%p) copy (" FMT_SIZE" bytes) on " FMT_ID2, get_cuda_ptr(src),
-                                                                       get_host_ptr(dst),
-                                                                       count, streamToHost_->get_print_id2());
+        TRACE(LOCAL, "D (%p) -> H (%p) copy (" FMT_SIZE" bytes) on " FMT_ID2,
+                     get_cuda_ptr(src),
+                     get_host_ptr(dst),
+                     count, streamToHost_->get_print_id2());
         // Wait for dependencies
         if (dependencies != NULL) streamToHost_->set_barrier(*dependencies);
 

@@ -28,11 +28,11 @@ operation::clean_CUDA()
     TRACE(LOCAL, FMT_ID2 " clean cuda events", get_print_id2());
     CUresult err;
     if (eventStart_ != nullptr) {
+        ASSERTION(eventEnd_ != nullptr, "Operation at inconsistent state");
+        as_.set();
         err = cuEventDestroy(eventStart_);
         ASSERTION(err == CUDA_SUCCESS);
         eventStart_ = nullptr;
-    }
-    if (eventEnd_ != nullptr) {
         err = cuEventDestroy(eventEnd_);
         ASSERTION(err == CUDA_SUCCESS);
         eventEnd_ = nullptr;
@@ -63,6 +63,8 @@ inline
 auto
 operation::execute(Func f, Args... args) -> decltype(f(CUstream(), args...))
 {
+    TRACE(LOCAL, FMT_ID2 " execute", get_print_id2());
+
     as_.set();
 
     CUresult err = cuEventRecord(eventStart_, (*stream_)());
@@ -83,7 +85,9 @@ operation::sync()
 {
     hal::error ret = hal::error::HAL_SUCCESS;
     if (synced_ == false) {
-        stream_->get_aspace().set();
+        TRACE(LOCAL, FMT_ID2 " sync", get_print_id2());
+
+        as_.set();
 
         CUresult res = cuEventSynchronize(eventEnd_);
         if (res == CUDA_SUCCESS) {
@@ -98,6 +102,8 @@ operation::sync()
             synced_ = true;
         }
         ret = error_to_hal(res);
+    } else {
+        TRACE(LOCAL, FMT_ID2 " already synced", get_print_id2());
     }
     return ret;
 }
@@ -111,14 +117,14 @@ operation::set_barrier(hal::detail::stream &_s)
     ASSERTION(res == CUDA_SUCCESS, "Error adding barrier");
 }
 
-
-#if 0
 inline
-event::event(type t) :
-    parent(t)
+void
+operation::dispose()
 {
+    if (aspaceValid_) {
+        as_.dispose_op(*this);
+    }
 }
-#endif
 
 template <class Type>
 void delete_cpu(void *p)
@@ -129,7 +135,7 @@ void delete_cpu(void *p)
 template <class Type>
 void delete_gpu(void *p)
 {
-    delete static_cast<Type *>(p);
+    ((Type *) p)->dispose();
 }
 
 inline std::unique_ptr<operation, void(*)(void *)>
