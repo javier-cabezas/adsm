@@ -197,11 +197,14 @@ void do_exec_gpu(const void *ptrSource)
     ASSERT_HAL_SUCCESS(err);
 }
 
-TEST_F(hal_exec_test, exec_gpu)
+TEST_F(hal_exec_test, exec_gpu_file)
 {
     do_exec_gpu<true,  source_type::SOURCE_FILE>("code/common.lib");
     do_exec_gpu<false, source_type::SOURCE_FILE>("code/common.lib");
+}
 
+TEST_F(hal_exec_test, exec_gpu_string)
+{
     gmacError_t err;
 
     std::string file;
@@ -210,11 +213,14 @@ TEST_F(hal_exec_test, exec_gpu)
     
     do_exec_gpu<true,  source_type::SOURCE_STRING>(file.c_str());
     do_exec_gpu<false, source_type::SOURCE_STRING>(file.c_str());
+}
 
 #if 0
+TEST_F(hal_exec_test, exec_gpu_handle)
+{
     do_exec_gpu<true,  source_type::SOURCE_HANDLE>("code/common.lib");
     do_exec_gpu<false, source_type::SOURCE_HANDLE>("code/common.lib");
-#endif
 }
+#endif
 
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */
