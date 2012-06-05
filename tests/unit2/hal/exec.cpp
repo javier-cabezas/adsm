@@ -2,6 +2,7 @@
 
 #include "hal/types.h"
 
+#include "util/file.h"
 #include "util/misc.h"
 
 #include "gtest/gtest.h"
@@ -35,8 +36,14 @@ hal_exec_test::TearDownTestCase()
     ASSERT_HAL_SUCCESS(err);
 }
 
-template <bool Sync>
-void do_exec_gpu()
+enum source_type {
+    SOURCE_FILE,
+    SOURCE_STRING,
+    SOURCE_HANDLE
+};
+
+template <bool Sync, source_type Type>
+void do_exec_gpu(const void *ptrSource)
 {
     // Constants
     static const unsigned ELEMS = 1024;
@@ -51,7 +58,17 @@ void do_exec_gpu()
     const I_HAL::code::kernel_t *kernel;
 
     // Load device code
-    err = repo.load_from_file("code/common.lib", "");
+    switch (Type) {
+    case source_type::SOURCE_FILE:
+        err = repo.load_from_file((const char *) ptrSource, "");
+        break;
+    case source_type::SOURCE_STRING:
+        err = repo.load_from_mem((const char *) ptrSource, strlen((const char *) ptrSource), "");
+        break;
+    case source_type::SOURCE_HANDLE:
+        err = repo.load_from_handle(ptrSource, "");
+        break;
+    }
     ASSERT_HAL_SUCCESS(err);
 
     I_HAL::phys::platform *plat0;
@@ -141,9 +158,9 @@ void do_exec_gpu()
 
     // Copy data back to host
     if (Sync) {
-        I_HAL::copy(ptrBaseCPU1, ptrBaseGPU, ELEMS * sizeof(float), err);
+        evt = I_HAL::copy(ptrBaseCPU1, ptrBaseGPU, ELEMS * sizeof(float), err);
     } else {
-        I_HAL::copy(ptrBaseCPU1, ptrBaseGPU, ELEMS * sizeof(float), evt, err);
+        evt = I_HAL::copy(ptrBaseCPU1, ptrBaseGPU, ELEMS * sizeof(float), evt, err);
     }
     ASSERT_HAL_SUCCESS(err);
 
@@ -182,8 +199,22 @@ void do_exec_gpu()
 
 TEST_F(hal_exec_test, exec_gpu)
 {
-    do_exec_gpu<true>();
-    do_exec_gpu<false>();
+    do_exec_gpu<true,  source_type::SOURCE_FILE>("code/common.lib");
+    do_exec_gpu<false, source_type::SOURCE_FILE>("code/common.lib");
+
+    gmacError_t err;
+
+    std::string file;
+    file = __impl::util::get_file_contents("code/common.lib", err);
+    ASSERT_TRUE(err == gmacSuccess);
+    
+    do_exec_gpu<true,  source_type::SOURCE_STRING>(file.c_str());
+    do_exec_gpu<false, source_type::SOURCE_STRING>(file.c_str());
+
+#if 0
+    do_exec_gpu<true,  source_type::SOURCE_HANDLE>("code/common.lib");
+    do_exec_gpu<false, source_type::SOURCE_HANDLE>("code/common.lib");
+#endif
 }
 
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

@@ -13,7 +13,8 @@ namespace __impl { namespace hal {
 namespace detail {
 
 class stream;
-class GMAC_LOCAL operation {
+class GMAC_LOCAL operation :
+    public util::unique<operation> {
 public:
     enum type {
         TransferToHost,

@@ -42,8 +42,8 @@ class GMAC_LOCAL aspace :
 
 public:
     typedef std::set<phys::processing_unit *> set_processing_unit;
-    typedef util::observable<aspace, util::event::construct> observe_construct;
-    typedef util::observable<aspace, util::event::destruct>  observe_destruct;
+    typedef util::observable<aspace, util::event::construct> observe_class_construct;
+    typedef util::observable<aspace, util::event::destruct>  observe_class_destruct;
 
 protected:
     set_processing_unit pUnits_;

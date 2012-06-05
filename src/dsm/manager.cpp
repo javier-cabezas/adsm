@@ -5,7 +5,7 @@
 namespace __impl { namespace dsm {
 
 void
-manager::event_handler(hal::virt::aspace &aspace, util::event::construct)
+manager::event_handler(hal::virt::aspace &aspace, const util::event::construct &)
 {
     TRACE(LOCAL, FMT_ID2" Handle " FMT_ID2" creation", get_print_id2(), aspace.get_print_id2());
 
@@ -14,7 +14,7 @@ manager::event_handler(hal::virt::aspace &aspace, util::event::construct)
 }
 
 void
-manager::event_handler(hal::virt::aspace &aspace, util::event::destruct)
+manager::event_handler(hal::virt::aspace &aspace, const util::event::destruct &)
 {
     TRACE(LOCAL, FMT_ID2" Handle " FMT_ID2" destruction", get_print_id2(), aspace.get_print_id2());
 
