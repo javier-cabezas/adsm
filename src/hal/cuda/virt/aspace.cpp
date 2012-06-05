@@ -285,7 +285,7 @@ aspace::copy(hal::ptr dst, hal::const_ptr src, size_t count, list_event_detail *
                       };
 
             res = ret->queue(op,
-                             *create_op(operation::TransferDevice, false, *this, *streamDevice_));
+                             create_op(operation::TransferDevice, false, *this, *streamDevice_));
         } else {
             TRACE(LOCAL, "D (%p) -> H -> D (%p) copy (" FMT_SIZE" bytes) on " FMT_ID2" + " FMT_ID2,
                                                                            get_cuda_ptr(src),
@@ -309,15 +309,15 @@ aspace::copy(hal::ptr dst, hal::const_ptr src, size_t count, list_event_detail *
                           return cuMemcpyHtoDAsync(get_cuda_ptr(dst), host, count, s);
                       };
 
-            auto *op1 = create_op(operation::TransferToHost, false, *this, *streamToHost_);
-            res = ret->queue(f1, *op1);
+            auto op1 = create_op(operation::TransferToHost, false, *this, *streamToHost_);
+            res = ret->queue(f1, std::move(op1));
 
             if (res == CUDA_SUCCESS) {
                 // Add barrier to avoid data races
                 op1->set_barrier(*streamToDevice_);
 
-                auto *op2 = create_op(operation::TransferToDevice, false, *this, *streamToDevice_);
-                res = ret->queue(f2, *op2);
+                auto op2 = create_op(operation::TransferToDevice, false, *this, *streamToDevice_);
+                res = ret->queue(f2, std::move(op2));
             }
 
             put_memory(host, count);
@@ -337,7 +337,7 @@ aspace::copy(hal::ptr dst, hal::const_ptr src, size_t count, list_event_detail *
                       return cuMemcpyHtoDAsync(get_cuda_ptr(dst), get_host_ptr(src), count, s);
                   };
         res = ret->queue(op,
-                         *create_op(operation::TransferToDevice, false, *this, *streamToDevice_));
+                         create_op(operation::TransferToDevice, false, *this, *streamToDevice_));
     } else if (is_host_ptr(dst) &&
                is_device_ptr(src)) {
         TRACE(LOCAL, "D -> H (%p) copy (" FMT_SIZE" bytes) on " FMT_ID2, get_cuda_ptr(src),
@@ -351,7 +351,7 @@ aspace::copy(hal::ptr dst, hal::const_ptr src, size_t count, list_event_detail *
                       return cuMemcpyDtoHAsync(get_host_ptr(dst), get_cuda_ptr(src), count, s);
                   };
         res = ret->queue(op,
-                         *create_op(operation::TransferToHost, false, *this, *streamToHost_));
+                         create_op(operation::TransferToHost, false, *this, *streamToHost_));
     } else if (is_host_ptr(dst) &&
                is_host_ptr(src)) {
         TRACE(LOCAL, "H (%p) -> H (%p) copy (" FMT_SIZE" bytes)", get_host_ptr(src), get_host_ptr(dst), count);
@@ -363,7 +363,7 @@ aspace::copy(hal::ptr dst, hal::const_ptr src, size_t count, list_event_detail *
                       return CUDA_SUCCESS;
                   };
         res = ret->queue(op,
-                         *create_cpu_op(hal::cpu::operation::TransferHost, false));
+                         create_cpu_op(hal::cpu::operation::TransferHost, false));
     } else {
         FATAL("Unhandled case");
     }
@@ -402,7 +402,7 @@ aspace::copy(hal::ptr dst, device_input &input, size_t count, list_event_detail 
                   };
 
         res = ret->queue(op,
-                         *create_op(operation::TransferToDevice, true, *this, *streamToDevice_));
+                         create_op(operation::TransferToDevice, true, *this, *streamToDevice_));
 
         err = error_to_hal(res);
         // Wait for the copy to complete, before return
@@ -439,7 +439,7 @@ aspace::copy(device_output &output, hal::const_ptr src, size_t count, list_event
               };
 
     res = ret->queue(op,
-                     *create_op(operation::TransferToHost, true, *this, *streamToHost_));
+                     create_op(operation::TransferToHost, true, *this, *streamToHost_));
     err = error_to_hal(res);
 
     if (err == hal::error::HAL_SUCCESS) {
@@ -492,7 +492,7 @@ aspace::copy_async(hal::ptr dst, hal::const_ptr src, size_t count, list_event_de
                       };
 
             res = ret->queue(op,
-                             *create_op(operation::TransferDevice, true, *this, *streamDevice_));
+                             create_op(operation::TransferDevice, true, *this, *streamDevice_));
         } else {
             TRACE(LOCAL, "D (%p) -> H -> D (%p) copy (" FMT_SIZE" bytes) on " FMT_ID2" + " FMT_ID2,
                          get_cuda_ptr(src),
@@ -516,16 +516,16 @@ aspace::copy_async(hal::ptr dst, hal::const_ptr src, size_t count, list_event_de
                           return cuMemcpyHtoDAsync(get_cuda_ptr(dst), buf->get_addr(), count, s);
                       };
 
-            auto *op1 = create_op(operation::TransferToHost, true, *this, *streamToHost_);
+            auto op1 = create_op(operation::TransferToHost, true, *this, *streamToHost_);
 
-            res = ret->queue(f1, *op1);
+            res = ret->queue(f1, std::move(op1));
 
             if (res == CUDA_SUCCESS) {
                 // Add barrier to avoid data races
                 op1->set_barrier(*streamToDevice_);
 
-                auto *op2 = create_op(operation::TransferToDevice, true, *this, *streamToDevice_);
-                res = ret->queue(f2, *op2);
+                auto op2 = create_op(operation::TransferToDevice, true, *this, *streamToDevice_);
+                res = ret->queue(f2, std::move(op2));
             }
         }
     } else if (is_device_ptr(dst) &&
@@ -551,10 +551,10 @@ aspace::copy_async(hal::ptr dst, hal::const_ptr src, size_t count, list_event_de
                        return cuMemcpyHtoDAsync(get_cuda_ptr(dst), buf->get_addr(), count, s);
                    };
         res = ret->queue(f1,
-                         *create_cpu_op(operation::TransferToDevice, false));
+                         create_cpu_op(operation::TransferToDevice, false));
         if (res == CUDA_SUCCESS) { 
             res = ret->queue(f2,
-                             *create_op(operation::TransferToDevice, true, *this, *streamToDevice_));
+                             create_op(operation::TransferToDevice, true, *this, *streamToDevice_));
         }
     } else if (is_host_ptr(dst) &&
                is_device_ptr(src)) {
@@ -583,10 +583,10 @@ aspace::copy_async(hal::ptr dst, hal::const_ptr src, size_t count, list_event_de
         ret->add_trigger(do_func(::memcpy, buf->get_addr(), get_host_ptr(src), count));
 #endif
         res = ret->queue(f1,
-                         *create_op(operation::TransferToHost, true, *this, *streamToHost_));
+                         create_op(operation::TransferToHost, true, *this, *streamToHost_));
         if (res == CUDA_SUCCESS) {
             res = ret->queue(f2,
-                             *create_cpu_op(operation::TransferHost, false));
+                             create_cpu_op(operation::TransferHost, false));
         }
     } else if (is_host_ptr(dst) &&
                is_host_ptr(src)) {
@@ -601,7 +601,7 @@ aspace::copy_async(hal::ptr dst, hal::const_ptr src, size_t count, list_event_de
                   };
         res = CUDA_SUCCESS;
         res = ret->queue(op,
-                         *create_cpu_op(operation::TransferHost, false));
+                         create_cpu_op(operation::TransferHost, false));
     }
 
     err = error_to_hal(res);
@@ -641,7 +641,7 @@ aspace::copy_async(hal::ptr dst, device_input &input, size_t count, list_event_d
                   };
 
         res = ret->queue(op,
-                         *create_op(operation::TransferToDevice, true, *this, *streamToDevice_));
+                         create_op(operation::TransferToDevice, true, *this, *streamToDevice_));
 
         err = error_to_hal(res);
         if (err != hal::error::HAL_SUCCESS) {
@@ -677,7 +677,7 @@ aspace::copy_async(device_output &output, hal::const_ptr src, size_t count, list
               };
 
     res = ret->queue(op,
-                     *create_op(operation::TransferToHost, true, *this, *streamToHost_));
+                     create_op(operation::TransferToHost, true, *this, *streamToHost_));
     err = error_to_hal(res);
 
     if (err == hal::error::HAL_SUCCESS) {
@@ -721,7 +721,7 @@ aspace::memset(hal::ptr dst, int c, size_t count, list_event_detail *_dependenci
               };
 
     CUresult res = ret->queue(op,
-                              *create_op(operation::TransferDevice, true, *this, *streamDevice_));
+                              create_op(operation::TransferDevice, true, *this, *streamDevice_));
 
     err = error_to_hal(res);
 
@@ -754,7 +754,7 @@ aspace::memset_async(hal::ptr dst, int c, size_t count, list_event_detail *_depe
               };
 
     CUresult res = ret->queue(op,
-                              *create_op(operation::TransferDevice, true, *this, *streamDevice_));
+                              create_op(operation::TransferDevice, true, *this, *streamDevice_));
 
     err = error_to_hal(res);
 

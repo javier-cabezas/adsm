@@ -148,7 +148,8 @@ kernel::launch::execute(hal::error &err)
               };
 
     res = ret->queue(op,
-                     *create_op(cuda::operation::Kernel, true, get_stream().get_aspace(), get_stream()));
+                     create_op(cuda::operation::Kernel, true, get_stream().get_aspace(), get_stream())
+                     );
     err = error_to_hal(res);
 
     if (err != hal::error::HAL_SUCCESS) {

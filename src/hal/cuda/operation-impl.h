@@ -6,26 +6,56 @@ namespace __impl { namespace hal { namespace cuda {
 inline
 operation::operation(parent::type t, bool async, virt::aspace &as, stream &s) :
     parent(t, async),
+    observer_destruct(),
     as_(as),
-    stream_(&s)
+    stream_(&s),
+    aspaceValid_(true)
 {
-    TRACE(LOCAL, "Creating operation");
+    TRACE(LOCAL, FMT_ID2 " create: %p", get_print_id2(), this);
     CUresult err;
     err = cuEventCreate(&eventStart_, CU_EVENT_DEFAULT);
     ASSERTION(err == CUDA_SUCCESS);
     err = cuEventCreate(&eventEnd_, CU_EVENT_DEFAULT);
     ASSERTION(err == CUDA_SUCCESS);
+
+    static_cast<util::observable<detail::virt::aspace, util::event::destruct> &>(as).add_observer(*this);
+}
+
+inline
+void
+operation::clean_CUDA()
+{
+    TRACE(LOCAL, FMT_ID2 " clean cuda events", get_print_id2());
+    CUresult err;
+    if (eventStart_ != nullptr) {
+        err = cuEventDestroy(eventStart_);
+        ASSERTION(err == CUDA_SUCCESS);
+        eventStart_ = nullptr;
+    }
+    if (eventEnd_ != nullptr) {
+        err = cuEventDestroy(eventEnd_);
+        ASSERTION(err == CUDA_SUCCESS);
+        eventEnd_ = nullptr;
+    }
 }
 
 inline
 operation::~operation()
 {
-    TRACE(LOCAL, "Deleting operation");
-    CUresult err;
-    err = cuEventDestroy(eventStart_);
-    ASSERTION(err == CUDA_SUCCESS || err == CUDA_ERROR_CONTEXT_IS_DESTROYED);
-    err = cuEventDestroy(eventEnd_);
-    ASSERTION(err == CUDA_SUCCESS || err == CUDA_ERROR_CONTEXT_IS_DESTROYED);
+    TRACE(LOCAL, FMT_ID2 " destroy: %p", get_print_id2(), this);
+    if (aspaceValid_) {
+        static_cast<util::observable<detail::virt::aspace, util::event::destruct> &>(as_).remove_observer(*this);
+        clean_CUDA(); 
+    }
+}
+
+inline void
+operation::event_handler(detail::virt::aspace &aspace, const util::event::destruct &)
+{
+    TRACE(LOCAL, FMT_ID2 " " FMT_ID2 "deleted!", get_print_id2(), aspace.get_print_id2());
+    ASSERTION(aspace.get_id() == as_.get_id());
+    clean_CUDA(); 
+    aspaceValid_ = false;
 }
 
 template <typename Func, typename... Args>
@@ -90,16 +120,28 @@ event::event(type t) :
 }
 #endif
 
-inline operation *
-create_op(operation::type t, bool async, virt::aspace &as, stream &s)
+template <class Type>
+void delete_cpu(void *p)
 {
-    return as.get_new_op(t, async, s);
+    delete static_cast<Type *>(p);
 }
 
-inline hal::cpu::operation *
+template <class Type>
+void delete_gpu(void *p)
+{
+    delete static_cast<Type *>(p);
+}
+
+inline std::unique_ptr<operation, void(*)(void *)>
+create_op(operation::type t, bool async, virt::aspace &as, stream &s)
+{
+    return std::unique_ptr<operation, void(*)(void *)>(as.get_new_op(t, async, s), delete_gpu<operation>);
+}
+
+inline std::unique_ptr<hal::cpu::operation, void(*)(void *)>
 create_cpu_op(operation::type t, bool async)
 {
-    return new hal::cpu::operation(t, async);
+    return std::unique_ptr<hal::cpu::operation, void(*)(void *)>(new hal::cpu::operation(t, async), delete_cpu<hal::cpu::operation>);
 }
 
 

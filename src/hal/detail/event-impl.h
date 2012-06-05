@@ -43,6 +43,7 @@ event::event(type t) :
     state_(state::None),
     err_(hal::error::HAL_SUCCESS)
 {
+    TRACE(LOCAL, FMT_ID2 " create", get_print_id2());
 }
 
 inline
@@ -61,7 +62,7 @@ event::is_synced() const
 
 template <typename Func, typename Op, typename... Args>
 auto
-event::queue(const Func &f, Op &op, Args... args) -> decltype(op.execute(f, args...))
+event::queue(const Func &f, std::unique_ptr<Op, void(*)(void *)> op, Args... args) -> decltype(op->execute(f, args...))
 {
     lock_write();
 
@@ -72,14 +73,14 @@ event::queue(const Func &f, Op &op, Args... args) -> decltype(op.execute(f, args
     }
 #endif
     // Wait for previous operations if the new operation is not asynchronous
-    if ((operations_.size() > 0) && (op.is_async() == false)) {
+    if ((operations_.size() > 0) && (op->is_async() == false)) {
         if (syncOpBegin_ != operations_.end()) {
             (*syncOpBegin_)->sync();
         }
     }
-    auto r = op.execute(f, args...);
+    auto r = op->execute(f, args...);
 
-    operations_.push_back(&op);
+    operations_.push_back(std::move(op));
 
     // Compute the first operation to be synchronized
     if (operations_.size() == 1) {

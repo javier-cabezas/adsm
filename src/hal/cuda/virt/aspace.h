@@ -158,7 +158,7 @@ class GMAC_LOCAL aspace :
     typedef util::factory<buffer>    factory_buffer;
     typedef util::factory<operation> factory_operation;
 
-    friend operation *cuda::create_op(operation::type t, bool async, virt::aspace &as, stream &s);
+    friend std::unique_ptr<operation, void(*)(void *)> cuda::create_op(operation::type t, bool async, virt::aspace &as, stream &s);
 
     friend class buffer_t;
     friend class event_deleter;

@@ -40,6 +40,7 @@ public:
     };
 
     typedef operation::state state;
+    typedef std::unique_ptr<operation, void(*)(void *)> pointer;
 
 protected:
     bool synced_;
@@ -51,7 +52,7 @@ protected:
     hal::time_t timeBase_;
 #endif
 
-    typedef std::list<operation *> list_operation;
+    typedef std::list<pointer> list_operation;
     list_operation operations_;
     list_operation::iterator syncOpBegin_;
 
@@ -59,9 +60,8 @@ protected:
 public:
     ~event()
     {
-        for (auto op : operations_) {
-            delete op;
-        }
+        TRACE(LOCAL, FMT_ID2 " destroyed", get_print_id2());
+        operations_.clear();
     }
 
     static event_ptr create(type t)
@@ -87,15 +87,15 @@ public:
     operation *get_last_operation()
     {
         if (operations_.size() == 0) {
-            return NULL;
+            return nullptr;
         } else {
-            return *std::prev(operations_.end());
+            return (*std::prev(operations_.end())).get();
         }
     }
 
     template <typename Func, typename Op, typename... Args>
     auto
-    queue(const Func &f, Op &op, Args... args) -> decltype(op.execute(f, args...));
+    queue(const Func &f, std::unique_ptr<Op, void(*)(void *)> op, Args... args) -> decltype(op->execute(f, args...));
 };
 
 class GMAC_LOCAL list_event :

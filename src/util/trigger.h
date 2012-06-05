@@ -220,9 +220,9 @@ public:
 
 // Event type tags
 namespace event {
-struct construct {};
-struct destruct {};
-}
+    struct construct { static const construct dummy; };
+    struct destruct { static const destruct dummy; };
+};
 
 template <typename T, typename Evt>
 class observable_base;
@@ -232,52 +232,80 @@ class GMAC_LOCAL observer_base {
     friend class observable_base<T, Evt>;
 public:
 protected:
-    typedef observable_base<T, Evt> observing;
+    typedef observable_base<T, Evt> observing_type;
 
-    virtual void event_handler(T &obj, Evt evt) = 0;
+    virtual void event_handler(T &obj, const Evt &evt) = 0;
 public:
-    typedef void (*handler_type)(T &obj, Evt evt);
+    typedef void (*handler_type)(T &obj, const Evt &evt);
     typedef Evt event_type;
-};
-
-template <typename T, typename Evt>
-class GMAC_LOCAL observer_class {
-public:
 };
 
 template <typename T, typename Evt>
 class GMAC_LOCAL observable_base {
     typedef std::list<observer_base<T, Evt> *> list_observer;
-    static list_observer observers_;
+    static list_observer observersClass_;
 
-    typedef std::list<typename observer_base<T, Evt>::handler_type> list_observer_class;
-    static list_observer_class observersClass_;
+    list_observer observers_;
 
 public:
     typedef observer_base<T, Evt> observer_type;
-
-public:
     typedef Evt event_type;
 
-    static void
-    update(T &obj)
+    virtual ~observable_base()
     {
-        typename list_observer::iterator it = observers_.begin();
+        TRACE(LOCAL, "Destroy observable: %p", this);
+    }
 
-        for (; it != observers_.end(); ++it) {
-            (*it)->event_handler(obj, Evt());
+    void
+    update()
+    {
+        for (auto o : observers_) {
+            o->event_handler(*dynamic_cast<T *>(this), Evt::dummy);
         }
     }
 
     static void
+    update_class(T &_obj)
+    {
+        observable_base &obj = _obj;
+        for (auto o : observersClass_) {
+            o->event_handler(_obj, Evt::dummy);
+        }
+
+        obj.update();
+    }
+
+    void
     add_observer(observer_type &obs)
     {
         observers_.push_back(&obs);
+        TRACE(LOCAL, "Add observer: %p: %p", this, &obs);
+    }
+
+    static void
+    add_class_observer(observer_type &obs)
+    {
+        observersClass_.push_back(&obs);
     }
 
     static bool
+    remove_class_observer(observer_type &obs)
+    {
+        typename list_observer::iterator it = std::find(observersClass_.begin(),
+                                                        observersClass_.end(),
+                                                        &obs);
+        if (it != observersClass_.end()) {
+            observersClass_.erase(it);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    bool
     remove_observer(observer_type &obs)
     {
+        TRACE(LOCAL, "Remove observer: %p: %p", this, &obs);
         typename list_observer::iterator it = std::find(observers_.begin(),
                                                         observers_.end(),
                                                         &obs);
@@ -290,40 +318,38 @@ public:
     }
 };
 
-template <typename T, typename Evt, bool Auto = true>
-class GMAC_LOCAL observer :
+template <typename T, typename Evt>
+typename observable_base<T, Evt>::list_observer observable_base<T, Evt>::observersClass_;
+
+template <typename T, typename Evt>
+class GMAC_LOCAL observer_class :
     public observer_base<T, Evt> {
     typedef observer_base<T, Evt> parent;
 protected:
     inline
-    observer()
+    observer_class()
     {
         TRACE(LOCAL, "Adding observer");
-        observable_base<T, Evt>::add_observer(*this);
+        observable_base<T, Evt>::add_class_observer(*this);
     }
 
     inline
-    virtual ~observer()
+    virtual ~observer_class()
     {
         TRACE(LOCAL, "Removing observer");
-        parent::observing::remove_observer(*this);
+        parent::observing_type::remove_class_observer(*this);
     }
 };
 
 template <typename T, typename Evt>
-class GMAC_LOCAL observer<T, Evt, false> :
+class GMAC_LOCAL observer :
     public observer_base<T, Evt> {
 };
-
-
-template <typename T, typename Evt>
-typename observable_base<T, Evt>::list_observer observable_base<T, Evt>::observers_;
 
 template <typename T, typename Evt>
 class GMAC_LOCAL observable :
     public observable_base<T, Evt> {
     typedef observable_base<T, Evt> parent;
-
 public:
 };
 
@@ -332,7 +358,7 @@ class GMAC_LOCAL observable<T, event::construct> :
     public observable_base<T, event::construct> {
 
     typedef observable_base<T, event::construct> parent;
-    typedef factory<T> parent_factory;
+    typedef factory<T> factory_type;
 
 public:
     template <typename S, typename... Args>
@@ -344,7 +370,7 @@ public:
 
         S *ret = new S(args...);
 
-        parent::update(*ret);
+        parent::update_class(*ret);
 
         return ret;
     }
@@ -360,11 +386,12 @@ public:
     static void
     destroy(T &obj)
     {
-        parent::update(obj);
+        parent::update_class(obj);
 
         delete &obj;
     }
 };
+
 }}
 
 #endif // GMAC_UTIL_TRIGGER_H_

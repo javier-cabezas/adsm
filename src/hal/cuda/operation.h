@@ -7,6 +7,7 @@
 
 #include "trace/logger.h"
 
+#include "util/trigger.h"
 #include "util/unique.h"
 
 namespace __impl { namespace hal {
@@ -29,10 +30,12 @@ typedef hal::detail::stream hal_stream;
 class stream;
 
 class GMAC_LOCAL operation :
-    public hal::detail::operation {
+    public hal::detail::operation,
+    public util::observer<detail::virt::aspace, util::event::destruct> {
     friend class util::factory<operation>;
 
     typedef hal::detail::operation parent;
+    typedef util::observer<detail::virt::aspace, util::event::destruct> observer_destruct;
 
 private:
     bool synced_;
@@ -41,14 +44,20 @@ private:
 
     virt::aspace &as_;
     stream *stream_;
+
+    bool aspaceValid_;
+
     operation(parent::type t, bool async, virt::aspace &as, stream &s);
-    virtual ~operation();
+    void clean_CUDA();
     
     hal::error sync();
 
+    void event_handler(detail::virt::aspace &aspace, const util::event::destruct &);
+
 public:
-    void
-    reset(parent::type t, bool async, stream &s);
+    virtual ~operation();
+    void reset(parent::type t, bool async, stream &s);
+    void dispose();
 
     state get_state();
     template <typename Func, typename... Args>
@@ -67,7 +76,7 @@ typedef hal::detail::event_ptr event_ptr;
 typedef hal::detail::list_event list_event_detail;
 typedef hal::detail::stream hal_stream;
 
-operation *
+std::unique_ptr<operation, void(*)(void *)>
 create_op(operation::type t, bool async, virt::aspace &as, stream &s);
 
 class GMAC_LOCAL list_event :

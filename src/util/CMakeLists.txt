@@ -35,6 +35,7 @@ set(util_SRC
     singleton-impl.h
     thread.h
     trigger.h
+    trigger.cpp
     unique.h
     unique-impl.h
     smart_ptr.h

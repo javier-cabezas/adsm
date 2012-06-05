@@ -10,14 +10,14 @@ aspace::create_vaspace(aspace::set_processing_unit &compatibleUnits, hal::error 
 {
     //ASSERTION(get_processing_units().find(&pu) != get_processing_units().end());
 
-    return virt::aspace::observe_construct::create<virt::aspace>(compatibleUnits, *this, err);
+    return virt::aspace::observe_class_construct::create<virt::aspace>(compatibleUnits, *this, err);
 }
 
 hal::error
 aspace::destroy_vaspace(virt::hal_aspace &_as)
 {
     virt::aspace &as = reinterpret_cast<virt::aspace &>(_as);
-    virt::aspace::observe_destruct::destroy(as);
+    virt::aspace::observe_class_destruct::destroy(as);
 
     return hal::error::HAL_SUCCESS;
 }
