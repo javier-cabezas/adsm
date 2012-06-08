@@ -85,7 +85,12 @@ protected:
 
     typedef util::range<util::iterator_wrap_associative_second<map_mapping::iterator> > range_mapping;
     template <bool GetAdjacent>
+    static
     range_mapping get_mappings_in_range(map_mapping_group &mappings, hal::ptr begin, size_t count);
+
+    template <bool All>
+    static
+    bool range_has_protection(const range_mapping &range, GmacProtection prot);
 
     error insert_mapping(map_mapping_group &mappings, mapping_ptr m);
 
@@ -112,14 +117,20 @@ public:
      * \param addr Memory address to be mapped or NULL if host memory is requested
      * too
      * \param size Size (in bytes) of shared memory to be mapped 
-     * \param flags 
-     * \param err Reference to store the error code for the operation
-     * \return Address that identifies the allocated memory
+     * \param prot Protection to be used for the mapping
+     * \return Error code
      */
-    error link(hal::ptr dst, hal::ptr src, size_t count, int flags);
+    error link(hal::ptr dst, hal::ptr src, size_t count, GmacProtection protDst, GmacProtection protSrc);
     error unlink(hal::ptr mapping, size_t count);
 
-    error acquire(hal::ptr mapping, size_t count, int flags);
+    template <bool Hex, bool PrintBlocks>
+    static
+    void range_print(const range_mapping &range);
+
+    template <bool Hex, bool PrintBlocks>
+    void print_all_mappings(hal::virt::aspace &as);
+
+    error acquire(hal::ptr mapping, size_t count, GmacProtection prot);
     error release(hal::ptr mapping, size_t count);
 
     error sync(hal::ptr mapping, size_t count);

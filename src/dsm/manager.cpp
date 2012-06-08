@@ -168,7 +168,7 @@ manager::~manager()
 }
 
 error
-manager::link(hal::ptr dst, hal::ptr src, size_t count, int flags)
+manager::link(hal::ptr dst, hal::ptr src, size_t count, GmacProtection protDst, GmacProtection protSrc)
 {
     TRACE(LOCAL, FMT_ID2" Link " FMT_SIZE" bytes", get_print_id2(), count);
 
@@ -184,11 +184,11 @@ manager::link(hal::ptr dst, hal::ptr src, size_t count, int flags)
     // Link size must be greater than 0
     CHECK(count > 0, DSM_ERROR_INVALID_VALUE);
 
-    hal::virt::aspace &ctxDst = dst.get_view().get_vaspace();
-    hal::virt::aspace &ctxSrc = src.get_view().get_vaspace();
+    hal::virt::aspace &asDst = dst.get_view().get_vaspace();
+    hal::virt::aspace &asSrc = src.get_view().get_vaspace();
 
-    map_mapping_group &mappingsDst = get_aspace_mappings(ctxDst);
-    map_mapping_group &mappingsSrc = get_aspace_mappings(ctxSrc);
+    map_mapping_group &mappingsDst = get_aspace_mappings(asDst);
+    map_mapping_group &mappingsSrc = get_aspace_mappings(asSrc);
 
     range_mapping rangeDst = get_mappings_in_range<false>(mappingsDst, dst, count);
     range_mapping rangeSrc = get_mappings_in_range<false>(mappingsSrc, src, count);
@@ -198,18 +198,26 @@ manager::link(hal::ptr dst, hal::ptr src, size_t count, int flags)
 
     if (rangeDst.is_empty()) {
         // If the range is NOT used yet, create a new mapping
-        mDst = factory_mapping::create(dst);
+        mDst = factory_mapping::create(dst, protDst);
     } else {
-        // If the range is already used, merge previous mappings
-        mDst = merge_mappings(rangeDst);
+        if (range_has_protection<true>(rangeDst, protDst)) {
+            // If the range is already used, merge previous mappings
+            mDst = merge_mappings(rangeDst);
+        } else {
+            NOT_IMPLEMENTED();
+        }
     }
 
     if (rangeSrc.is_empty()) {
         // If the range is NOT used yet, create a new mapping
-        mSrc = factory_mapping::create(src);
+        mSrc = factory_mapping::create(src, protSrc);
     } else {
-        // If the range is already used, merge previous mappings
-        mSrc = merge_mappings(rangeSrc);
+        if (range_has_protection<true>(rangeSrc, protSrc)) {
+            // If the range is already used, merge previous mappings
+            mSrc = merge_mappings(rangeSrc);
+        } else {
+            NOT_IMPLEMENTED();
+        }
     }
 
     if (dst < mDst->get_ptr() ||
@@ -231,7 +239,7 @@ manager::link(hal::ptr dst, hal::ptr src, size_t count, int flags)
 
     // Perform the linking between the mappings
     error ret = mapping::link(dst, mDst,
-                              src, mSrc, count, flags);
+                              src, mSrc, count, 0);
 
     if (ret == DSM_SUCCESS) {
         if (rangeDst.is_empty()) {
@@ -277,7 +285,7 @@ manager::unlink(hal::ptr mapping, size_t count)
 }
 
 error
-manager::acquire(hal::ptr mapping, size_t count, int flags)
+manager::acquire(hal::ptr mapping, size_t count, GmacProtection prot)
 {
     FATAL("Not implemented");
     return DSM_SUCCESS;

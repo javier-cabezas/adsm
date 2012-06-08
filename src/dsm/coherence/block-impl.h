@@ -86,7 +86,7 @@ block::register_mapping(mapping_ptr m, size_t off)
     ASSERTION(mappings_.find(m) == mappings_.end(), "Mapping already registered");
     mapping_descriptor descr = {
                                    off,
-                                   STATE_INVALID
+                                   state::STATE_INVALID
                                };
     mappings_.insert(mappings::value_type(m, descr));
     return DSM_SUCCESS;

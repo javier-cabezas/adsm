@@ -244,6 +244,8 @@ public:
     hal::error unmap(hal::ptr p);
     hal::error unmap(hal_code_repository_view &view);
 
+    hal::error protect(hal::ptr ptr, size_t count, GmacProtection prot);
+
 #if 0
     hal::error free(hal::ptr acc);
     hal::error free_host_pinned(hal::ptr ptr);

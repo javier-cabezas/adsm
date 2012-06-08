@@ -61,6 +61,7 @@ class GMAC_LOCAL mapping :
 protected:
     hal::ptr addr_;
     size_t size_;
+    GmacProtection prot_;
 
     typedef util::factory<coherence::block,
                           coherence::block_ptr> factory_block;
@@ -170,9 +171,9 @@ protected:
     error prepend(coherence::block_ptr b);
     error append(coherence::block_ptr b);
 
-    error swap(coherence::block_ptr b, coherence::block_ptr bNew);
+    error merge(coherence::block_ptr b, coherence::block_ptr bNew);
 
-    mapping(hal::ptr addr);
+    mapping(hal::ptr addr, GmacProtection prot);
     mapping(mapping &&m);
 
     // Deleted functions
@@ -198,9 +199,15 @@ public:
 
     hal::ptr get_ptr() const;
 
+    GmacProtection get_protection() const;
+
     error resize(size_t pre, size_t post);
 
     error append(mapping &&m);
+
+    template <bool Hex>
+    void
+    print() const;
 };
 
 }}

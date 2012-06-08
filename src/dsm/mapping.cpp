@@ -165,7 +165,7 @@ mapping::append(coherence::block_ptr b)
 }
 
 error
-mapping::swap(coherence::block_ptr b, coherence::block_ptr bNew)
+mapping::merge(coherence::block_ptr b, coherence::block_ptr bNew)
 {
     TRACE(LOCAL, FMT_ID2" Swapping " FMT_ID2" with " FMT_ID2,
                  get_print_id2(), b->get_print_id2(), bNew->get_print_id2());
@@ -243,9 +243,10 @@ mapping::resize(size_t pre, size_t post)
     return ret;
 }
 
-mapping::mapping(hal::ptr addr) :
+mapping::mapping(hal::ptr addr, GmacProtection prot) :
     addr_(addr),
-    size_(0)
+    size_(0),
+    prot_(prot)
 {
     TRACE(LOCAL, FMT_ID2" Creating", get_print_id2());
 }
@@ -253,6 +254,7 @@ mapping::mapping(hal::ptr addr) :
 mapping::mapping(mapping &&m) :
     addr_(m.addr_),
     size_(m.size_),
+    prot_(m.prot_),
     blocks_(m.blocks_)
 {
     TRACE(LOCAL, FMT_ID2" Creating", get_print_id2());
@@ -372,7 +374,7 @@ mapping::link(hal::ptr ptrDst, mapping_ptr mDst,
             }
 
             // Merge block owners into a single block
-            ret = mDst->swap(cursorDst.get_block(), cursorSrc.get_block());
+            ret = mDst->merge(cursorDst.get_block(), cursorSrc.get_block());
             if (ret != DSM_SUCCESS) {
                 break;
             }
