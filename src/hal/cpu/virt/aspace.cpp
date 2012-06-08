@@ -179,6 +179,33 @@ aspace::unmap(detail::code::repository_view &view)
     return hal::error::HAL_SUCCESS;
 }
 
+hal::error
+aspace::protect(hal::ptr _ptr, size_t count, GmacProtection prot)
+{
+    hal::error ret = hal::error::HAL_SUCCESS;
+    int p = PROT_NONE;
+    switch (prot) {
+    case GmacProtection::GMAC_PROT_READ:
+        p = PROT_READ;
+        break;
+    case GmacProtection::GMAC_PROT_WRITE:
+        p = PROT_WRITE;
+        break;
+    case GmacProtection::GMAC_PROT_READWRITE:
+        p = PROT_READ | PROT_WRITE;
+        break;
+    case GmacProtection::GMAC_PROT_NONE:
+        break;
+    };
+    void *ptr = get_host_ptr(_ptr);
+    int res = ::mprotect(ptr, count, p);
+    if (res != 0) {
+        ret = hal::error::HAL_ERROR_INVALID_VALUE;
+    }
+
+    return ret;
+}
+
 bool
 aspace::has_direct_copy(hal::const_ptr ptr1, hal::const_ptr ptr2)
 {

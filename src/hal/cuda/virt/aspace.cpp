@@ -238,6 +238,13 @@ aspace::unmap(hal_code_repository_view &view)
     return hal::error::HAL_SUCCESS;
 }
 
+hal::error
+aspace::protect(hal::ptr ptr, size_t count, GmacProtection prot)
+{
+    NOT_IMPLEMENTED();
+    return hal::error::HAL_SUCCESS;
+}
+
 #if 0
 hal_code_repository &
 aspace::get_code_repository()

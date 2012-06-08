@@ -35,6 +35,28 @@ mapping::get_ptr() const
     return addr_;
 }
 
+inline
+GmacProtection
+mapping::get_protection() const
+{
+    return prot_;
+}
+
+template <bool Hex>
+void
+mapping::print() const
+{
+    size_t off = 0;
+    for (auto b : blocks_) {
+        if (Hex) {
+            printf("\t-" FMT_ID2 " %p\n", b->get_print_id2(), (void *) off);
+        } else {
+            printf("\t-" FMT_ID2 " %zd\n", b->get_print_id2(), off);
+        }
+        off += b->get_size();
+    }
+}
+
 }}
 
 #endif /* GMAC_DSM_MAPPING_IMPL_H */

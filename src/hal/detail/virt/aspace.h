@@ -67,6 +67,8 @@ public:
     virtual hal::error unmap(ptr p) = 0;
     virtual hal::error unmap(code::repository_view &view) = 0;
 
+    virtual hal::error protect(hal::ptr ptr, size_t count, GmacProtection prot) = 0;
+
     virtual bool has_direct_copy(hal::const_ptr ptr1, hal::const_ptr ptr2) = 0;
 
     virtual event_ptr copy(hal::ptr dst, hal::const_ptr src, size_t count, list_event *dependencies, hal::error &err) = 0;

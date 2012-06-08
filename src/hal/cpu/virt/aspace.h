@@ -42,6 +42,8 @@ public:
     hal::error unmap(ptr p);
     hal::error unmap(detail::code::repository_view &view);
 
+    hal::error protect(hal::ptr obj, size_t count, GmacProtection prot);
+
     bool has_direct_copy(hal::const_ptr ptr1, hal::const_ptr ptr2);
 
     hal_event_ptr copy(hal::ptr dst, hal::const_ptr src, size_t count, list_event_detail *dependencies, hal::error &err);

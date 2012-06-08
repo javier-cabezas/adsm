@@ -54,12 +54,12 @@ static void range_init()
     p4 = p0 + (MAP4_OFF - MAP0_OFF);
     p5 = p0 + (MAP5_OFF - MAP0_OFF);
 
-    m0 = new mapping(p0);
-    m1 = new mapping(p1);
-    m2 = new mapping(p2);
-    m3 = new mapping(p3);
-    m4 = new mapping(p4);
-    m5 = new mapping(p5);
+    m0 = new mapping(p0, GMAC_PROT_READWRITE);
+    m1 = new mapping(p1, GMAC_PROT_READWRITE);
+    m2 = new mapping(p2, GMAC_PROT_READWRITE);
+    m3 = new mapping(p3, GMAC_PROT_READWRITE);
+    m4 = new mapping(p4, GMAC_PROT_READWRITE);
+    m5 = new mapping(p5, GMAC_PROT_READWRITE);
 
     b0 = mapping::helper_create_block(MAP0_SIZE);
     b1 = mapping::helper_create_block(MAP1_SIZE);
@@ -135,6 +135,7 @@ TEST_F(manager_mapping_test, mappings_in_range)
     manager::range_mapping range = mgr->get_mappings_in_range<false>(group, p0,
                                                                      MAP5_OFF -
                                                                      MAP0_OFF);
+
     ASSERT_TRUE((*range.begin())->get_ptr() == p0);
     ASSERT_TRUE((*get_last_in_range(range))->get_ptr() == p4);
 
@@ -290,7 +291,7 @@ static const size_t MAP_B8_SIZE = 100;
 static ptr         p_b0, p_b1, p_b2, p_b3, p_b4, p_b5, p_b6, p_b7, p_b8;
 static mapping_ptr m_b0, m_b1, m_b2, m_b3, m_b4, m_b5, m_b6, m_b7, m_b8;
 
-TEST_F(manager_mapping_test, insert_mappings)
+TEST_F(manager_mapping_test, insert_blocks)
 {
     block_ptr b_b0, b_b1, b_b2, b_b3, b_b4, b_b5, b_b6, b_b7, b_b8;
 
@@ -307,15 +308,15 @@ TEST_F(manager_mapping_test, insert_mappings)
     p_b7 = p0 + (MAP_B7_OFF - MAP0_OFF);
     p_b8 = p0 + (MAP_B8_OFF - MAP0_OFF);
 
-    m_b0 = new mapping(p_b0);
-    m_b1 = new mapping(p_b1);
-    m_b2 = new mapping(p_b2);
-    m_b3 = new mapping(p_b3);
-    m_b4 = new mapping(p_b4);
-    m_b5 = new mapping(p_b5);
-    m_b6 = new mapping(p_b6);
-    m_b7 = new mapping(p_b7);
-    m_b8 = new mapping(p_b8);
+    m_b0 = new mapping(p_b0, GMAC_PROT_READWRITE);
+    m_b1 = new mapping(p_b1, GMAC_PROT_READWRITE);
+    m_b2 = new mapping(p_b2, GMAC_PROT_READWRITE);
+    m_b3 = new mapping(p_b3, GMAC_PROT_READWRITE);
+    m_b4 = new mapping(p_b4, GMAC_PROT_READWRITE);
+    m_b5 = new mapping(p_b5, GMAC_PROT_READWRITE);
+    m_b6 = new mapping(p_b6, GMAC_PROT_READWRITE);
+    m_b7 = new mapping(p_b7, GMAC_PROT_READWRITE);
+    m_b8 = new mapping(p_b8, GMAC_PROT_READWRITE);
 
     b_b0 = mapping::helper_create_block(MAP_B0_SIZE);
     b_b1 = mapping::helper_create_block(MAP_B1_SIZE);
@@ -376,6 +377,95 @@ TEST_F(manager_mapping_test, insert_mappings)
 
     range_fini();
 }
+
+TEST_F(manager_mapping_test, insert_mappings)
+{
+    block_ptr b_b0, b_b1, b_b2, b_b3, b_b4, b_b5, b_b6, b_b7, b_b8;
+
+    range_init();
+
+    // We use the same base allocation
+    p_b0 = p0 + (MAP_B0_OFF - MAP0_OFF);
+    p_b1 = p0 + (MAP_B1_OFF - MAP0_OFF);
+    p_b2 = p0 + (MAP_B2_OFF - MAP0_OFF);
+    p_b3 = p0 + (MAP_B3_OFF - MAP0_OFF);
+    p_b4 = p0 + (MAP_B4_OFF - MAP0_OFF);
+    p_b5 = p0 + (MAP_B5_OFF - MAP0_OFF);
+    p_b6 = p0 + (MAP_B6_OFF - MAP0_OFF);
+    p_b7 = p0 + (MAP_B7_OFF - MAP0_OFF);
+    p_b8 = p0 + (MAP_B8_OFF - MAP0_OFF);
+
+    m_b0 = new mapping(p_b0, GMAC_PROT_READWRITE);
+    m_b1 = new mapping(p_b1, GMAC_PROT_READWRITE);
+    m_b2 = new mapping(p_b2, GMAC_PROT_READWRITE);
+    m_b3 = new mapping(p_b3, GMAC_PROT_READWRITE);
+    m_b4 = new mapping(p_b4, GMAC_PROT_READWRITE);
+    m_b5 = new mapping(p_b5, GMAC_PROT_READWRITE);
+    m_b6 = new mapping(p_b6, GMAC_PROT_READWRITE);
+    m_b7 = new mapping(p_b7, GMAC_PROT_READWRITE);
+    m_b8 = new mapping(p_b8, GMAC_PROT_READWRITE);
+
+    b_b0 = mapping::helper_create_block(MAP_B0_SIZE);
+    b_b1 = mapping::helper_create_block(MAP_B1_SIZE);
+    b_b2 = mapping::helper_create_block(MAP_B2_SIZE);
+    b_b3 = mapping::helper_create_block(MAP_B3_SIZE);
+    b_b4 = mapping::helper_create_block(MAP_B4_SIZE);
+    b_b5 = mapping::helper_create_block(MAP_B5_SIZE);
+    b_b6 = mapping::helper_create_block(MAP_B6_SIZE);
+    b_b7 = mapping::helper_create_block(MAP_B7_SIZE);
+    b_b8 = mapping::helper_create_block(MAP_B8_SIZE);
+
+    I_DSM::error err;
+    err = m_b0->append(b_b0);
+    ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
+    err = m_b1->append(b_b1);
+    ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
+    err = m_b2->append(b_b2);
+    ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
+    err = m_b3->append(b_b3);
+    ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
+    err = m_b4->append(b_b4);
+    ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
+    err = m_b5->append(b_b5);
+    ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
+    err = m_b6->append(b_b6);
+    ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
+    err = m_b7->append(b_b7);
+    ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
+    err = m_b8->append(b_b8);
+    ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
+
+    bool berr;
+    berr = mgr->helper_insert(*as0, m_b0);
+    ASSERT_FALSE(berr);
+    delete m_b0;
+    berr = mgr->helper_insert(*as0, m_b1);
+    ASSERT_FALSE(berr);
+    delete m_b1;
+    berr = mgr->helper_insert(*as0, m_b2);
+    ASSERT_TRUE(berr);
+    berr = mgr->helper_insert(*as0, m_b3);
+    ASSERT_FALSE(berr);
+    delete m_b3;
+    berr = mgr->helper_insert(*as0, m_b4);
+    ASSERT_FALSE(berr);
+    delete m_b4;
+    berr = mgr->helper_insert(*as0, m_b5);
+    ASSERT_FALSE(berr);
+    delete m_b5;
+    berr = mgr->helper_insert(*as0, m_b6);
+    ASSERT_FALSE(berr);
+    delete m_b6;
+    berr = mgr->helper_insert(*as0, m_b7);
+    ASSERT_TRUE(berr);
+    berr = mgr->helper_insert(*as0, m_b8);
+    ASSERT_FALSE(berr);
+    delete m_b8;
+
+    range_fini();
+}
+
+
 
 TEST_F(manager_mapping_test, merge_mappings)
 {
@@ -496,12 +586,12 @@ TEST_F(manager_mapping_test, link)
 {
     link_init();
 
-    I_DSM::error err = mgr->link(as0_p0, as0_p0b, LINK0_SIZE, GMAC_PROT_READ);
+    I_DSM::error err = mgr->link(as0_p0, as0_p0b, LINK0_SIZE, GMAC_PROT_READ, GMAC_PROT_READ);
     ASSERT_FALSE(err == I_DSM::error::DSM_SUCCESS);
     ASSERT_FALSE(mgr->helper_get_mapping(as0_p0));
     ASSERT_FALSE(mgr->helper_get_mapping(as0_p0b));
 
-    err = mgr->link(as0_p0, as1_p0, LINK0_SIZE, GMAC_PROT_READ);
+    err = mgr->link(as0_p0, as1_p0, LINK0_SIZE, GMAC_PROT_READ, GMAC_PROT_READ);
     ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
     ASSERT_TRUE(mgr->helper_get_mapping(as0_p0));
     ASSERT_TRUE(mgr->helper_get_mapping(as0_p0)->get_ptr() == as0_p0);
@@ -517,7 +607,7 @@ TEST_F(manager_mapping_test, link2)
 {
     link_init();
 
-    I_DSM::error err = mgr->link(as0_p1, as1_p1, LINK0_SIZE, GMAC_PROT_READ);
+    I_DSM::error err = mgr->link(as0_p1, as1_p1, LINK0_SIZE, GMAC_PROT_READ, GMAC_PROT_READ);
     ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
     ASSERT_TRUE(mgr->helper_get_mapping(as0_p1));
     ASSERT_TRUE(mgr->helper_get_mapping(as0_p1)->get_ptr() == as0_p1);
@@ -526,7 +616,7 @@ TEST_F(manager_mapping_test, link2)
     ASSERT_TRUE(mgr->helper_get_mappings(as0_p1.get_view().get_vaspace(), as0_p1.get_view()).size() == 1);
     ASSERT_TRUE(mgr->helper_get_mappings(as1_p1.get_view().get_vaspace(), as1_p1.get_view()).size() == 1);
 
-    err = mgr->link(as0_p1, as1_p1, LINK2_2_OFF - LINK2_1_OFF +  LINK2_SIZE, GMAC_PROT_READ);
+    err = mgr->link(as0_p1, as1_p1, LINK2_2_OFF - LINK2_1_OFF +  LINK2_SIZE, GMAC_PROT_READ, GMAC_PROT_READ);
     ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
     ASSERT_TRUE(mgr->helper_get_mappings(as0_p1.get_view().get_vaspace(), as0_p1.get_view()).size() == 1);
     ASSERT_TRUE(mgr->helper_get_mappings(as1_p1.get_view().get_vaspace(), as1_p1.get_view()).size() == 1);
