@@ -29,25 +29,34 @@ class GMAC_LOCAL mapping :
 {
     typedef I_DSM::mapping parent;
 public:
+    typedef parent::pair_mapping pair_mapping;
+
     parent::range_block
     get_blocks_in_range(ptr::offset_type offset, size_t count);
 
     template <typename I>
     static mapping_ptr merge_mappings(range<I> range, ptr::offset_type off, size_t count);
 
-    I_DSM::error split(ptr::offset_type off, size_t count);
+    pair_mapping
+    split(size_t off, size_t count, I_DSM::error &err)
+    {
+        return parent::split(off, count, err);
+    }
 
-    I_DSM::error prepend(block_ptr b)
+    I_DSM::error
+    prepend(block_ptr b)
     {
         return parent::prepend(b);
     }
 
-    I_DSM::error append(block_ptr b)
+    I_DSM::error
+    append(block_ptr b)
     {
         return parent::append(b);
     }
 
-    I_DSM::error append(mapping &&map)
+    I_DSM::error
+    append(mapping &&map)
     {
         return parent::append(std::move(map));
     }

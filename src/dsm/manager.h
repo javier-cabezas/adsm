@@ -110,16 +110,6 @@ public:
      */
     manager();
 
-    /**
-     * Map the given host memory pointer to the accelerator memory. If the given
-     * pointer is NULL, host memory is alllocated too.
-     * \param mode Execution mode where to allocate memory
-     * \param addr Memory address to be mapped or NULL if host memory is requested
-     * too
-     * \param size Size (in bytes) of shared memory to be mapped 
-     * \param prot Protection to be used for the mapping
-     * \return Error code
-     */
     error link(hal::ptr dst, hal::ptr src, size_t count, GmacProtection protDst, GmacProtection protSrc);
     error unlink(hal::ptr mapping, size_t count);
 

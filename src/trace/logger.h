@@ -145,6 +145,7 @@ void dummy_assertion(bool /*b*/, ...)
 
 #if defined(CHECK_IS_ASSERTION)
 #define CHECK(c, e) ASSERTION(c, ##__VA_ARGS__)
+#define CHECK_SET_VAL(c, v, e) ASSERTION(c, ##__VA_ARGS__)
 #else
 #define CHECK(c, e)                         \
     do {                                    \
@@ -153,6 +154,16 @@ void dummy_assertion(bool /*b*/, ...)
             WARNING("Check '"#c"' failed"); \
         return e;                           \
     } while (0)
+
+#define CHECK_SET_VAL(c, v, e)              \
+    do {                                    \
+        if (c) break;                       \
+        if (::config::params::Verbose)      \
+            WARNING("Check '"#c"' failed"); \
+        v = e;                              \
+        return;                             \
+    } while (0)
+
 #endif
 
 #include "util/atomics.h"

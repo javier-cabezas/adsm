@@ -35,6 +35,7 @@ WITH THE SOFTWARE.  */
 #define GMAC_DSM_COHERENCE_BLOCK_H_
 
 #include <map>
+#include <memory>
 
 #include "util/factory.h"
 #include "util/lock.h"
@@ -47,7 +48,8 @@ namespace __impl { namespace dsm { namespace coherence {
 
 class GMAC_LOCAL block :
     public util::unique<block>,
-    gmac::util::lock_rw<block> {
+    gmac::util::lock_rw<block>,
+    public std::enable_shared_from_this<block> {
 
     friend class util::factory<block, block_ptr>;
 
@@ -66,7 +68,7 @@ class GMAC_LOCAL block :
 
     typedef gmac::util::lock_rw<block> lock;
 
-    typedef std::map<mapping_const_ptr, mapping_descriptor> mappings;
+    typedef std::map<mapping_ptr, mapping_descriptor> mappings;
     mappings mappings_;
 
 #if 0
@@ -87,7 +89,7 @@ public:
     error release(mapping_ptr aspace);
 
     error register_mapping(mapping_ptr m, size_t off);
-    error unregister_mapping(const mapping &m);
+    error unregister_mapping(mapping &m);
 
     error transfer_mappings(block &&b);
 

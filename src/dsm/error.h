@@ -36,13 +36,13 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace dsm {
 
-enum error {
-    DSM_SUCCESS                 = 0,
-    DSM_ERROR_INVALID_ALIGNMENT    ,
-    DSM_ERROR_INVALID_PTR          ,
-    DSM_ERROR_INVALID_VALUE        ,
-    DSM_ERROR_INVALID_PROT         ,
-    DSM_ERROR_HAL                  
+enum class error {
+    DSM_SUCCESS                 = 2000,
+    DSM_ERROR_INVALID_ALIGNMENT = 2001,
+    DSM_ERROR_INVALID_PTR       = 2002,
+    DSM_ERROR_INVALID_VALUE     = 2003,
+    DSM_ERROR_INVALID_PROT      = 2004,
+    DSM_ERROR_HAL               = 2999 
 };
 
 }}

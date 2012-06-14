@@ -57,6 +57,7 @@ class GMAC_LOCAL mapping :
                          coherence::block_ptr> {
 
     friend class util::factory<mapping, mapping_ptr>;
+    friend class coherence::block;
 
 protected:
     hal::ptr addr_;
@@ -86,7 +87,10 @@ protected:
                     hal::ptr::offset_type off2, size_t count);
 #endif
 
-    error split(size_t off, size_t count);
+    typedef std::pair<mapping_ptr, mapping_ptr> pair_mapping;
+
+    pair_mapping
+    split(size_t off, size_t count, error &err);
 
     //typedef std::pair<list_block::iterator, size_t> pair_block_info;
     class cursor_block {
@@ -163,15 +167,25 @@ protected:
         }
     };
 
-    cursor_block get_first_block(hal::ptr p);
+    cursor_block get_first_block(size_t off);
 
-    list_block::iterator split_block(list_block::iterator it, size_t offset);
     cursor_block split_block(cursor_block cursor, size_t offset);
+
+    template <bool Pre>
+    void block_splitted(coherence::block_ptr blockOld, coherence::block_ptr blockNew)
+    {
+    	auto it = util::algo::find(blocks_, blockOld);
+    	ASSERTION(it != blocks_.end());
+    	blocks_.insert(++it, blockNew);
+    }
 
     error prepend(coherence::block_ptr b);
     error append(coherence::block_ptr b);
 
     error merge(coherence::block_ptr b, coherence::block_ptr bNew);
+
+    static
+    error move_block(mapping &dst, mapping &src, coherence::block_ptr b);
 
     mapping(hal::ptr addr, GmacProtection prot);
     mapping(mapping &&m);
@@ -189,8 +203,8 @@ public:
     error acquire(size_t offset, size_t count, int flags);
     error release(size_t offset, size_t count);
 
-    static error link(hal::ptr ptr1, mapping_ptr m1,
-                      hal::ptr ptr2, mapping_ptr m2, size_t count, int flags);
+    static error link(size_t ptr1, mapping_ptr m1,
+                      size_t ptr2, mapping_ptr m2, size_t count, int flags);
 
     unsigned get_nblocks() const;
 

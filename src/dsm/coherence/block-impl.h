@@ -24,13 +24,14 @@ block::split(size_t off)
     TRACE(LOCAL, FMT_ID2" Splitting " FMT_SIZE, get_print_id2(), off);
 
     // Create new block
-    block *nBlock = new block(size_ - off);
+    block_ptr nBlock = block_ptr(new block(size_ - off));
     // Set new size
     size_ = off;
 
     for (auto m : mappings_) {
         bool inserted = nBlock->mappings_.insert(mappings::value_type(m.first, m.second)).second;
-        ASSERTION(inserted == true); 
+        ASSERTION(inserted == true);
+        m.first->block_splitted<false>(shared_from_this(), nBlock);
     }
 
     return block_ptr(nBlock);
@@ -60,10 +61,10 @@ block::acquire(mapping_ptr m, int flags)
         lock::lock_read();
     } else {
         FATAL("Wrong GmacProtection flag for acquire");
-        return DSM_ERROR_INVALID_PROT;
+        return error::DSM_ERROR_INVALID_PROT;
     }
 
-    return DSM_SUCCESS;
+    return error::DSM_SUCCESS;
 }
 
 inline
@@ -74,7 +75,7 @@ block::release(mapping_ptr m)
 
     lock::unlock();
 
-    return DSM_SUCCESS;
+    return error::DSM_SUCCESS;
 }
 
 inline
@@ -89,12 +90,12 @@ block::register_mapping(mapping_ptr m, size_t off)
                                    state::STATE_INVALID
                                };
     mappings_.insert(mappings::value_type(m, descr));
-    return DSM_SUCCESS;
+    return error::DSM_SUCCESS;
 }
 
 inline
 error
-block::unregister_mapping(const mapping &m)
+block::unregister_mapping(mapping &m)
 {
     TRACE(LOCAL, FMT_ID2" Unregister " FMT_ID2, get_print_id2(), m.get_print_id2());
 
@@ -104,7 +105,7 @@ block::unregister_mapping(const mapping &m)
     ASSERTION(it != mappings_.end(), "Mapping not registered");
     mappings_.erase(it);
 
-    return DSM_SUCCESS;
+    return error::DSM_SUCCESS;
 }
 
 inline
@@ -113,15 +114,15 @@ block::transfer_mappings(block &&b)
 {
     TRACE(LOCAL, FMT_ID2" Transferring mappings from " FMT_ID2, get_print_id2(), b.get_print_id2());
 
-    CHECK(this != &b, DSM_ERROR_INVALID_VALUE);
-    CHECK(size_ == b.size_, DSM_ERROR_INVALID_VALUE);
+    CHECK(this != &b, error::DSM_ERROR_INVALID_VALUE);
+    CHECK(size_ == b.size_, error::DSM_ERROR_INVALID_VALUE);
 
     // TODO: check what happens the same mapping was already registered
     mappings_.insert(b.mappings_.begin(), b.mappings_.end());
 
     b.mappings_.clear();
 
-    return DSM_SUCCESS;
+    return error::DSM_SUCCESS;
 }
 
 inline

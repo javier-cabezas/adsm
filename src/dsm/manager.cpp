@@ -21,7 +21,7 @@ manager::event_handler(hal::virt::aspace &aspace, const util::event::destruct &)
     // Get the mappings from the address space, to avoid an extra map
     map_mapping_group &group = get_aspace_mappings(aspace);
     error err = delete_mappings(group);
-    ASSERTION(err == DSM_SUCCESS);
+    ASSERTION(err == error::DSM_SUCCESS);
 
     delete &group;
 }
@@ -33,7 +33,7 @@ manager::get_aspace_mappings(hal::virt::aspace &aspace)
 
     // Get the mappings from the address space, to avoid an extra map
     ret = aspace.get_attribute<map_mapping_group>(AttributeMappings_);
-    ASSERTION(ret != NULL);
+    ASSERTION(ret != nullptr);
 
     return *ret;
 }
@@ -71,11 +71,11 @@ manager::insert_mapping(map_mapping_group &mappings, mapping_ptr m)
                          get_print_id2(),
                          m->get_print_id2(),
                          m->get_ptr().get_view().get_vaspace().get_print_id2());
-            return DSM_ERROR_INVALID_VALUE;
+            return error::DSM_ERROR_INVALID_VALUE;
         }
     }
 
-    return DSM_SUCCESS;
+    return error::DSM_SUCCESS;
 }
 
 template <typename R>
@@ -109,7 +109,7 @@ manager::merge_mappings(range_mapping &range)
     ++it;
     for (; it != range.end(); ++it) {
         error err = ret->append(std::move(**it));
-        if (err != DSM_SUCCESS) break;
+        if (err != error::DSM_SUCCESS) break;
     }
 
     return ret;
@@ -135,7 +135,7 @@ manager::replace_mappings(map_mapping_group &mappings, range_mapping &range, map
     ASSERTION(get_mappings_in_range<false>(mappings, mNew->get_ptr(), mNew->get_bounds().get_size()).is_empty() == true);
     it->second.insert(map_mapping::value_type(mNew->get_ptr().get_offset(), mNew));
 
-    return DSM_SUCCESS;
+    return error::DSM_SUCCESS;
 }
 
 error
@@ -151,7 +151,7 @@ manager::delete_mappings(map_mapping_group &mappings)
     }
     mappings.clear();
 
-    return DSM_SUCCESS;
+    return error::DSM_SUCCESS;
 }
 
 manager::manager() :
@@ -173,16 +173,16 @@ manager::link(hal::ptr dst, hal::ptr src, size_t count, GmacProtection protDst, 
     TRACE(LOCAL, FMT_ID2" Link " FMT_SIZE" bytes", get_print_id2(), count);
 
     // Pointers must be valid
-    CHECK(bool(dst) && bool(src), DSM_ERROR_INVALID_PTR);
+    CHECK(bool(dst) && bool(src), error::DSM_ERROR_INVALID_PTR);
     // Pointers must belong to different address spaces
-    CHECK(&dst.get_view().get_vaspace() != &src.get_view().get_vaspace(), DSM_ERROR_INVALID_PTR);
+    CHECK(&dst.get_view().get_vaspace() != &src.get_view().get_vaspace(), error::DSM_ERROR_INVALID_PTR);
 
     // Alignment checks
-    CHECK(long_t(dst.get_offset()) % mapping::MinAlignment == 0, DSM_ERROR_INVALID_ALIGNMENT);
-    CHECK(long_t(src.get_offset()) % mapping::MinAlignment == 0, DSM_ERROR_INVALID_ALIGNMENT);
+    CHECK(long_t(dst.get_offset()) % mapping::MinAlignment == 0, error::DSM_ERROR_INVALID_ALIGNMENT);
+    CHECK(long_t(src.get_offset()) % mapping::MinAlignment == 0, error::DSM_ERROR_INVALID_ALIGNMENT);
 
     // Link size must be greater than 0
-    CHECK(count > 0, DSM_ERROR_INVALID_VALUE);
+    CHECK(count > 0, error::DSM_ERROR_INVALID_VALUE);
 
     hal::virt::aspace &asDst = dst.get_view().get_vaspace();
     hal::virt::aspace &asSrc = src.get_view().get_vaspace();
@@ -238,10 +238,10 @@ manager::link(hal::ptr dst, hal::ptr src, size_t count, GmacProtection protDst, 
     }
 
     // Perform the linking between the mappings
-    error ret = mapping::link(dst, mDst,
-                              src, mSrc, count, 0);
+    error ret = mapping::link(dst.get_offset() - mDst->get_ptr().get_offset(), mDst,
+                              src.get_offset() - mSrc->get_ptr().get_offset(), mSrc, count, 0);
 
-    if (ret == DSM_SUCCESS) {
+    if (ret == error::DSM_SUCCESS) {
         if (rangeDst.is_empty()) {
             // If the mapping was new, insert it
             insert_mapping(mappingsDst, mDst);
@@ -281,63 +281,63 @@ manager::unlink(hal::ptr mapping, size_t count)
     TRACE(LOCAL, FMT_ID2" Unlink requested", get_print_id2());
 
     FATAL("Not implemented");
-    return DSM_SUCCESS;
+    return error::DSM_SUCCESS;
 }
 
 error
 manager::acquire(hal::ptr mapping, size_t count, GmacProtection prot)
 {
     FATAL("Not implemented");
-    return DSM_SUCCESS;
+    return error::DSM_SUCCESS;
 }
 
 error
 manager::release(hal::ptr mapping, size_t count)
 {
     FATAL("Not implemented");
-    return DSM_SUCCESS;
+    return error::DSM_SUCCESS;
 }
 
 error
 manager::sync(hal::ptr mapping, size_t count)
 {
     FATAL("Not implemented");
-    return DSM_SUCCESS;
+    return error::DSM_SUCCESS;
 }
 
 error
 manager::memcpy(hal::ptr dst, hal::ptr src, size_t count)
 {
     FATAL("Not implemented");
-    return DSM_SUCCESS;
+    return error::DSM_SUCCESS;
 }
 
 error
 manager::memset(hal::ptr ptr, int c, size_t count)
 {
     FATAL("Not implemented");
-    return DSM_SUCCESS;
+    return error::DSM_SUCCESS;
 }
 
 error
 manager::from_io_device(hal::ptr addr, hal::device_input &input, size_t count)
 {
     FATAL("Not implemented");
-    return DSM_SUCCESS;
+    return error::DSM_SUCCESS;
 }
 
 error
 manager::to_io_device(hal::device_output &output, hal::const_ptr addr, size_t count)
 {
     FATAL("Not implemented");
-    return DSM_SUCCESS;
+    return error::DSM_SUCCESS;
 }
 
 error
 manager::flush_dirty(address_space_ptr aspace)
 {
     FATAL("Not implemented");
-    return DSM_SUCCESS;
+    return error::DSM_SUCCESS;
 }
 
 }}
