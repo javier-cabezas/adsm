@@ -129,15 +129,23 @@ void for_each(C &c, F &&f)
 template <typename C, typename F>
 inline
 bool
-has_predicate(C &&c, F &&f)
+has_predicate(const C &c, F &&f)
 {
     return std::find_if(c.begin(), c.end(), f) != c.end();
 }
 
-template <typename C, typename F>
+template <typename C>
 inline
 typename C::iterator
-find(C &&c, typename C::value_type &&t)
+find(C &c, const typename C::value_type &t)
+{
+    return std::find(c.begin(), c.end(), t);
+}
+
+template <typename C>
+inline
+typename C::const_iterator
+find(const C &c, const typename C::value_type &t)
 {
     return std::find(c.begin(), c.end(), t);
 }
@@ -145,7 +153,7 @@ find(C &&c, typename C::value_type &&t)
 template <typename C, typename F>
 inline
 typename C::iterator
-find_if(C &&c, F &&f)
+find_if(const C &c, F &&f)
 {
     return std::find_if(c.begin(), c.end(), f);
 }
@@ -153,7 +161,7 @@ find_if(C &&c, F &&f)
 template <typename C>
 inline
 typename C::iterator
-find_value(C &&c, typename C::value_type &&t)
+find_value(const C &c, const typename C::value_type &t)
 {
     return std::find_if(c.begin(), c.end(), [&](const typename C::value_type &val) -> bool
                                             {
@@ -164,7 +172,7 @@ find_value(C &&c, typename C::value_type &&t)
 template <typename C, typename K>
 inline
 ptrdiff_t
-count(C &&c, K &&k)
+count(const C &c, K &&k)
 {
     return ptrdiff_t(std::count(c.begin(), c.end(), k));
 }
@@ -172,7 +180,7 @@ count(C &&c, K &&k)
 template <typename C, typename F>
 inline
 ptrdiff_t
-count_if(C &&c, F &&f)
+count_if(const C &c, F &&f)
 {
     return ptrdiff_t(std::count_if(c.begin(), c.end(), f));
 }

@@ -110,7 +110,7 @@ void do_exec_gpu(const void *ptrSource)
     ASSERT_HAL_SUCCESS(err);
 
     kernel = repoView->get_kernel("inc");
-    ASSERT_TRUE(kernel != NULL);
+    ASSERT_TRUE(kernel != nullptr);
 
     // Create data objects
     objCPU0 = plat0->create_object(pUnitCPU->get_preferred_memory(), ELEMS * sizeof(float), err);
