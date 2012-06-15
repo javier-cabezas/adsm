@@ -247,14 +247,23 @@ TEST_F(mapping_test, append_mapping4)
     delete m1;
 }
 
-TEST_F(mapping_test, split)
+template <bool Linked>
+void mapping_test_split()
 {
     static const unsigned BLOCK_SIZE = 0x10000;
 
-    I_HAL::virt::object_view view(*as0, 0);
-    ptr p0(view, 0);
+    I_HAL::virt::object_view view0(*as0, 0);
+    I_HAL::virt::object_view view1(*as1, 0);
+    ptr p0(view0, 0);
+    ptr p1(view1, 0);
 
     mapping_ptr m0 = new mapping(p0, GMAC_PROT_READWRITE);
+    mapping_ptr m1;
+    if (Linked) {
+        m1 = new mapping(p1, GMAC_PROT_READWRITE);
+    } else {
+        m1 = nullptr;
+    }
 
     block_ptr b0 = mapping::helper_create_block(BLOCK_SIZE);
 
@@ -262,6 +271,10 @@ TEST_F(mapping_test, split)
 
     err = m0->append(b0);
     ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
+    if (Linked) {
+        err = m1->append(b0);
+        ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
+    }
 
     mapping::pair_mapping pair = m0->split(0x3500, 0x3000, err);
     ASSERT_DSM_SUCCESS(err);
@@ -270,25 +283,44 @@ TEST_F(mapping_test, split)
     ASSERT_TRUE(m0->get_nblocks() == 1);
     ASSERT_TRUE(pair.first->get_nblocks() == 1);
     ASSERT_TRUE(pair.second->get_nblocks() == 1);
+    if (Linked) {
+        // Splitting should be reflected in the other mapping
+        ASSERT_TRUE(m1->get_nblocks() == 3);
+    }
 
     ASSERT_TRUE((m0->get_bounds().get_size() + 
                  pair.first->get_bounds().get_size() + 
                  pair.second->get_bounds().get_size()) == BLOCK_SIZE);
+    if (Linked) {
+        ASSERT_TRUE(m1->get_bounds().get_size() == BLOCK_SIZE);
+    }
 
     delete m0;
+    if (Linked) {
+        delete m1;
+    }
 
     delete pair.first;
     delete pair.second;
 }
 
-TEST_F(mapping_test, split2)
+template <bool Linked>
+void mapping_test_split2()
 {
     static const unsigned BLOCK_SIZE = 0x10000;
 
-    I_HAL::virt::object_view view(*as0, 0);
-    ptr p0(view, 0);
+    I_HAL::virt::object_view view0(*as0, 0);
+    I_HAL::virt::object_view view1(*as1, 0);
+    ptr p0(view0, 0);
+    ptr p1(view1, 0);
 
     mapping_ptr m0 = new mapping(p0, GMAC_PROT_READWRITE);
+    mapping_ptr m1;
+    if (Linked) {
+        m1 = new mapping(p1, GMAC_PROT_READWRITE);
+    } else {
+        m1 = nullptr;
+    }
 
     block_ptr b0 = mapping::helper_create_block(BLOCK_SIZE);
 
@@ -296,6 +328,10 @@ TEST_F(mapping_test, split2)
 
     err = m0->append(b0);
     ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
+    if (Linked) {
+        err = m1->append(b0);
+        ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
+    }
 
     mapping::pair_mapping pair = m0->split(0, 0x3000, err);
     ASSERT_DSM_SUCCESS(err);
@@ -304,23 +340,42 @@ TEST_F(mapping_test, split2)
 
     ASSERT_TRUE(m0->get_nblocks() == 1);
     ASSERT_TRUE(pair.first->get_nblocks() == 1);
+    if (Linked) {
+        // Splitting should be reflected in the other mapping
+        ASSERT_TRUE(m1->get_nblocks() == 2);
+    }
 
     ASSERT_TRUE((m0->get_bounds().get_size() + 
                  pair.first->get_bounds().get_size()) == BLOCK_SIZE);
+    if (Linked) {
+        ASSERT_TRUE(m1->get_bounds().get_size() == BLOCK_SIZE);
+    }
 
     delete m0;
+    if (Linked) {
+        delete m1;
+    }
 
     delete pair.first;
 }
 
-TEST_F(mapping_test, split3)
+template <bool Linked>
+void mapping_test_split3()
 {
     static const unsigned BLOCK_SIZE = 0x10000;
 
-    I_HAL::virt::object_view view(*as0, 0);
-    ptr p0(view, 0);
+    I_HAL::virt::object_view view0(*as0, 0);
+    I_HAL::virt::object_view view1(*as1, 0);
+    ptr p0(view0, 0);
+    ptr p1(view1, 0);
 
     mapping_ptr m0 = new mapping(p0, GMAC_PROT_READWRITE);
+    mapping_ptr m1;
+    if (Linked) {
+        m1 = new mapping(p1, GMAC_PROT_READWRITE);
+    } else {
+        m1 = nullptr;
+    }
 
     block_ptr b0 = mapping::helper_create_block(BLOCK_SIZE);
 
@@ -328,6 +383,10 @@ TEST_F(mapping_test, split3)
 
     err = m0->append(b0);
     ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
+    if (Linked) {
+        err = m1->append(b0);
+        ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
+    }
 
     mapping::pair_mapping pair = m0->split(BLOCK_SIZE - 0x3000, 0x3000, err);
     ASSERT_DSM_SUCCESS(err);
@@ -336,26 +395,58 @@ TEST_F(mapping_test, split3)
 
     ASSERT_TRUE(m0->get_nblocks() == 1);
     ASSERT_TRUE(pair.first->get_nblocks() == 1);
+    if (Linked) {
+        // Splitting should be reflected in the other mapping
+        ASSERT_TRUE(m1->get_nblocks() == 2);
+    }
 
     ASSERT_TRUE((m0->get_bounds().get_size() + 
                  pair.first->get_bounds().get_size()) == BLOCK_SIZE);
+    if (Linked) {
+        ASSERT_TRUE(m1->get_bounds().get_size() == BLOCK_SIZE);
+    }
 
     delete m0;
+    if (Linked) {
+        delete m1;
+    }
 
     delete pair.first;
 }
 
-TEST_F(mapping_test, split_linked)
+TEST_F(mapping_test, split)
 {
-    static const unsigned BLOCK_SIZE = 0x10000;
+    mapping_test_split<false>();
+    mapping_test_split<true>();
+}
 
-    I_HAL::virt::object_view view0(*as0, 0);
-    I_HAL::virt::object_view view1(*as1, 0);
-    ptr p0(view0, 0);
-    ptr p1(view0, 0);
+TEST_F(mapping_test, split2)
+{
+    mapping_test_split2<false>();
+    mapping_test_split2<true>();
+}
+
+TEST_F(mapping_test, split3)
+{
+    mapping_test_split3<false>();
+    mapping_test_split3<true>();
+}
+
+TEST_F(mapping_test, resize)
+{
+    static const unsigned BASE_ADDR  = 0x1000000;
+
+    static const unsigned BLOCK_SIZE = 0x10000;
+    static const unsigned OFFSET     = 0x0;
+
+    static const size_t PRE_FAILURE = 0x1000;
+    static const size_t PRE_SUCCESS = 0;
+    static const size_t POST        = 0x1000;
+
+    I_HAL::virt::object_view view0(*as0, BASE_ADDR);
+    ptr p0(view0, OFFSET);
 
     mapping_ptr m0 = new mapping(p0, GMAC_PROT_READWRITE);
-    mapping_ptr m1 = new mapping(p1, GMAC_PROT_READWRITE);
 
     block_ptr b0 = mapping::helper_create_block(BLOCK_SIZE);
 
@@ -363,27 +454,77 @@ TEST_F(mapping_test, split_linked)
 
     err = m0->append(b0);
     ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
-    err = m1->append(b0);
-    ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
 
-    mapping::pair_mapping pair = m0->split(0x3500, 0x3000, err);
+    err = m0->resize(PRE_FAILURE, POST);
+    ASSERT_DSM_FAILURE(err);
+
+    err = m0->resize(PRE_SUCCESS, POST);
     ASSERT_DSM_SUCCESS(err);
-    ASSERT_TRUE(pair.first != nullptr);
-    ASSERT_TRUE(pair.second != nullptr);
 
-    ASSERT_TRUE(m0->get_nblocks() == 1);
-    ASSERT_TRUE(pair.first->get_nblocks() == 1);
-    ASSERT_TRUE(pair.second->get_nblocks() == 1);
-    // Splitting should be reflected in the other mapping
-    ASSERT_TRUE(m1->get_nblocks() == 3);
-
-    ASSERT_TRUE((m0->get_bounds().get_size() + 
-    		     pair.first->get_bounds().get_size() +
-                 pair.second->get_bounds().get_size()) == BLOCK_SIZE);
+    ASSERT_TRUE(m0->get_nblocks() == 2);
+    ASSERT_TRUE(m0->get_bounds().get_size() == (BLOCK_SIZE + PRE_SUCCESS + POST));
 
     delete m0;
-    delete m1;
+}
 
-    delete pair.first;
-    delete pair.second;
+TEST_F(mapping_test, resize2)
+{
+    static const unsigned BASE_ADDR  = 0x1000000;
+
+    static const unsigned BLOCK_SIZE = 0x10000;
+    static const unsigned OFFSET     = 0x10000;
+
+    static const size_t PRE  = 0;
+    static const size_t POST = 0x1000;
+
+    I_HAL::virt::object_view view0(*as0, BASE_ADDR);
+    ptr p0(view0, OFFSET);
+
+    mapping_ptr m0 = new mapping(p0, GMAC_PROT_READWRITE);
+
+    block_ptr b0 = mapping::helper_create_block(BLOCK_SIZE);
+
+    I_DSM::error err;
+
+    err = m0->append(b0);
+    ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
+
+    err = m0->resize(PRE, POST);
+    ASSERT_DSM_SUCCESS(err);
+
+    ASSERT_TRUE(m0->get_nblocks() == 2);
+    ASSERT_TRUE(m0->get_bounds().get_size() == (BLOCK_SIZE + PRE + POST));
+
+    delete m0;
+}
+
+TEST_F(mapping_test, resize3)
+{
+    static const unsigned BASE_ADDR  = 0x1000000;
+
+    static const unsigned BLOCK_SIZE = 0x10000;
+    static const unsigned OFFSET     = 0x10000;
+
+    static const size_t PRE  = 0x1000;
+    static const size_t POST = 0x1000;
+
+    I_HAL::virt::object_view view0(*as0, BASE_ADDR);
+    ptr p0(view0, OFFSET);
+
+    mapping_ptr m0 = new mapping(p0, GMAC_PROT_READWRITE);
+
+    block_ptr b0 = mapping::helper_create_block(BLOCK_SIZE);
+
+    I_DSM::error err;
+
+    err = m0->append(b0);
+    ASSERT_TRUE(err == I_DSM::error::DSM_SUCCESS);
+
+    err = m0->resize(PRE, POST);
+    ASSERT_DSM_SUCCESS(err);
+
+    ASSERT_TRUE(m0->get_nblocks() == 3);
+    ASSERT_TRUE(m0->get_bounds().get_size() == (BLOCK_SIZE + PRE + POST));
+
+    delete m0;
 }
