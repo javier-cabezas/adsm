@@ -42,6 +42,8 @@ enum class error {
     DSM_ERROR_INVALID_PTR       = 2002,
     DSM_ERROR_INVALID_VALUE     = 2003,
     DSM_ERROR_INVALID_PROT      = 2004,
+    DSM_ERROR_OWNERSHIP         = 2005,
+    DSM_ERROR_PROTOCOL          = 2006,
     DSM_ERROR_HAL               = 2999 
 };
 

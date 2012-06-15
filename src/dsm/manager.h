@@ -34,12 +34,6 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_DSM_MANAGER_H_
 #define GMAC_DSM_MANAGER_H_
 
-#ifndef UNIT_TEST
-#include "hal/types.h"
-#else
-#include "unit2/dsm/mock/hal/types.h"
-#endif
-
 #include "config/common.h"
 #include "include/gmac/types.h"
 #include "util/iterator.h"
@@ -57,11 +51,15 @@ namespace dsm {
 
 //! DSM Managers orchestate the data transfers between host and accelerator memories
 class GMAC_LOCAL manager :
-    public __impl::util::singleton<dsm::manager>,
+    public util::singleton<dsm::manager>,
     public util::unique<dsm::manager>,
     public util::observer_class<hal::virt::aspace, util::event::construct>,
     public util::observer_class<hal::virt::aspace, util::event::destruct>,
     public util::factory<mapping, mapping_ptr> {
+
+    friend class util::singleton<dsm::manager>;
+
+    typedef util::singleton<dsm::manager> parent_singleton;
 
     typedef util::observer_class<hal::virt::aspace, util::event::construct> observer_construct;
     typedef util::observer_class<hal::virt::aspace, util::event::destruct>  observer_destruct;
@@ -104,6 +102,7 @@ protected:
      * Default destructor
      */
     virtual ~manager();
+
 public:
     /**
      * Default constructor
@@ -132,6 +131,11 @@ public:
     error to_io_device(hal::device_output &output, hal::const_ptr addr, size_t count);
 
     error flush_dirty(address_space_ptr aspace);
+
+    void destroy_singleton()
+    {
+        parent_singleton::destroy();
+    }
 };
 
 }}

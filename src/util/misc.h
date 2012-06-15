@@ -137,7 +137,7 @@ has_predicate(const C &c, F &&f)
 template <typename C>
 inline
 typename C::iterator
-find(C &c, const typename C::value_type &t)
+find(C &c, typename C::value_type &t)
 {
     return std::find(c.begin(), c.end(), t);
 }
@@ -153,6 +153,14 @@ find(const C &c, const typename C::value_type &t)
 template <typename C, typename F>
 inline
 typename C::iterator
+find_if(C &c, F &&f)
+{
+    return std::find_if(c.begin(), c.end(), f);
+}
+
+template <typename C, typename F>
+inline
+typename C::const_iterator
 find_if(const C &c, F &&f)
 {
     return std::find_if(c.begin(), c.end(), f);
