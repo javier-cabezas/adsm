@@ -36,6 +36,12 @@ WITH THE SOFTWARE.  */
 
 #include "util/smart_ptr.h"
 
+#ifndef UNIT_TEST_DSM
+#include "hal/types.h"
+#else
+#include "unit2/dsm/mock/hal/types.h"
+#endif
+
 #include "error.h"
 
 namespace __impl { namespace dsm {

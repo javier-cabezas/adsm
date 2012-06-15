@@ -9,6 +9,8 @@ namespace __impl { namespace hal {
     class GMAC_LOCAL device_output  {};
 }}
 
+#include "copy.h"
+
 #endif
 
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

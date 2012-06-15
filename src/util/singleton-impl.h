@@ -22,18 +22,16 @@ inline singleton<T>::~singleton()
 template <typename T>
 inline void singleton<T>::destroy()
 {
-	ASSERTION(Singleton_ != NULL);
-	delete static_cast<singleton<T> *>(Singleton_);
-	Singleton_ = NULL;
+    ASSERTION(Singleton_ != NULL);
+    delete static_cast<singleton<T> *>(Singleton_);
+    Singleton_ = NULL;
 }
 
 template <typename T>
 inline T *singleton<T>::getInstance()
 {
-	return Singleton_;
+    return Singleton_;
 }
-
-
 
 }}
 

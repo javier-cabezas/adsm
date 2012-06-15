@@ -34,12 +34,6 @@ WITH THE SOFTWARE.  */
 #ifndef GMAC_DSM_MAPPING_H_
 #define GMAC_DSM_MAPPING_H_
 
-#ifndef UNIT_TEST
-#include "hal/types.h"
-#else
-#include "unit2/dsm/mock/hal/types.h"
-#endif
-
 #include "util/factory.h"
 #include "util/misc.h"
 #include "util/unique.h"
@@ -48,6 +42,32 @@ WITH THE SOFTWARE.  */
 
 #include "error.h"
 #include "types.h"
+
+static inline
+bool prot_is_writable(GmacProtection prot)
+{
+    return prot | GMAC_PROT_WRITE;
+}
+
+static inline
+bool operator>(GmacProtection prot1, GmacProtection prot2)
+{
+    if ((prot1 == GMAC_PROT_NONE &&
+         prot2 != GMAC_PROT_NONE) ||
+        (!prot_is_writable(prot1) &&
+          prot_is_writable(prot2)
+        )
+       ) return true;
+
+    return false;
+}
+
+static inline
+bool operator<=(GmacProtection prot1, GmacProtection prot2)
+{
+    return !(prot1 > prot2);
+}
+
 
 namespace __impl { namespace dsm {
 
@@ -200,7 +220,7 @@ public:
 
     typedef std::list<mapping_ptr> submappings;
 
-    error acquire(size_t offset, size_t count, int flags);
+    error acquire(size_t offset, size_t count, GmacProtection prot);
     error release(size_t offset, size_t count);
 
     static error link(size_t ptr1, mapping_ptr m1,

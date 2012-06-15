@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2011 University of Illinois
+/* Copyright (c) 2009-2012 University of Illinois
                            Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -65,17 +65,13 @@ class GMAC_LOCAL block :
     };
 
     size_t size_;
+    mapping_ptr owner_;
+    GmacProtection prot_;
 
     typedef gmac::util::lock_rw<block> lock;
 
     typedef std::map<mapping_ptr, mapping_descriptor> mappings;
     mappings mappings_;
-
-#if 0
-    typedef std::list<mapping_ptr> list_mappings;
-    typedef std::map<dsm::address_space_ptr, list_mappings> aspace_mappings;
-    aspace_mappings aspaceMappings_;
-#endif
 
     block(size_t size);
 
@@ -85,7 +81,7 @@ public:
     block_ptr split(size_t off);
     void shift(mapping_ptr m, size_t off);
 
-    error acquire(mapping_ptr aspace, int flags);
+    error acquire(mapping_ptr aspace, GmacProtection prot);
     error release(mapping_ptr aspace);
 
     error register_mapping(mapping_ptr m, size_t off);

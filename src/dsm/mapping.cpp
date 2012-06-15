@@ -21,6 +21,7 @@ mapping::get_blocks_in_range(size_t offset, size_t count)
     }
 
     list_block::iterator last = first;
+    if (last != blocks_.end()) last++;
     while (tmp < offset + count) {
         tmp += (*last)->get_size();
         // We increment before the check because we return an open range
@@ -159,8 +160,10 @@ mapping::merge(coherence::block_ptr b, coherence::block_ptr bNew)
                  get_print_id2(), b->get_print_id2(), bNew->get_print_id2());
 
     ASSERTION(b != bNew);
-    ASSERTION(std::find(blocks_.begin(), blocks_.end(), b) != blocks_.end(), "Block does not belong to this mapping");
-    ASSERTION(std::find(blocks_.begin(), blocks_.end(), bNew) == blocks_.end(), "Block already found in mapping");
+    ASSERTION(std::find(blocks_.begin(), blocks_.end(), b) != blocks_.end(),
+              "Block does not belong to this mapping");
+    ASSERTION(std::find(blocks_.begin(), blocks_.end(), bNew) == blocks_.end(),
+              "Block already found in mapping");
 
     error ret = bNew->transfer_mappings(std::move(*b));
 
@@ -444,17 +447,19 @@ mapping::~mapping()
 }
 
 error
-mapping::acquire(size_t offset, size_t count, int flags)
+mapping::acquire(size_t offset, size_t count, GmacProtection prot)
 {
     TRACE(LOCAL, FMT_ID2" Acquire " FMT_SIZE":" FMT_SIZE,
                  get_print_id2(), offset, count);
+
+    //CHECK(prot > prot_, error::DSM_ERROR_INVALID_PROT);
 
     error err = error::DSM_SUCCESS;
 
     range_block range = get_blocks_in_range(offset, count);
 
     for (coherence::block_ptr b : range) {
-        err = b->acquire(this, flags);
+        err = b->acquire(this, prot);
         if (err != error::DSM_SUCCESS) break;
     }
 

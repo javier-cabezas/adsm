@@ -174,7 +174,7 @@ manager::link(hal::ptr dst, hal::ptr src, size_t count, GmacProtection protDst, 
 
     // Pointers must be valid
     CHECK(bool(dst) && bool(src), error::DSM_ERROR_INVALID_PTR);
-    // Pointers must belong to different address spaces
+    // Pointers must belong to different address spaces (WHY!)
     CHECK(&dst.get_view().get_vaspace() != &src.get_view().get_vaspace(), error::DSM_ERROR_INVALID_PTR);
 
     // Alignment checks
@@ -285,17 +285,65 @@ manager::unlink(hal::ptr mapping, size_t count)
 }
 
 error
-manager::acquire(hal::ptr mapping, size_t count, GmacProtection prot)
+manager::acquire(hal::ptr p, size_t count, GmacProtection prot)
 {
-    FATAL("Not implemented");
-    return error::DSM_SUCCESS;
+    error ret = error::DSM_SUCCESS;
+
+    hal::virt::aspace &as = p.get_view().get_vaspace();
+
+    map_mapping_group &mappings = get_aspace_mappings(as);
+ 
+    range_mapping range = get_mappings_in_range<false>(mappings, p, count);
+
+    for (auto m : range) {
+        size_t off = 0;
+        size_t local;
+        if (p > m->get_ptr()) {
+            off = p - m->get_ptr();
+        }
+        if (count > (m->get_bounds().get_size() - off)) {
+            local = m->get_bounds().get_size() - off;
+        } else {
+            local = count;
+        }
+        ret = m->acquire(off, local, prot);
+        if (ret != error::DSM_SUCCESS) break;
+        count -= local;
+    }
+    ASSERTION(count == 0);
+
+    return ret;
 }
 
 error
-manager::release(hal::ptr mapping, size_t count)
+manager::release(hal::ptr p, size_t count)
 {
-    FATAL("Not implemented");
-    return error::DSM_SUCCESS;
+    error ret = error::DSM_SUCCESS;
+
+    hal::virt::aspace &as = p.get_view().get_vaspace();
+
+    map_mapping_group &mappings = get_aspace_mappings(as);
+ 
+    range_mapping range = get_mappings_in_range<false>(mappings, p, count);
+
+    for (auto m : range) {
+        size_t off = 0;
+        size_t local;
+        if (p > m->get_ptr()) {
+            off = p - m->get_ptr();
+        }
+        if (count > (m->get_bounds().get_size() - off)) {
+            local = m->get_bounds().get_size() - off;
+        } else {
+            local = count;
+        }
+        ret = m->release(off, local);
+        if (ret != error::DSM_SUCCESS) break;
+        count -= local;
+    }
+    ASSERTION(count == 0);
+
+    return ret;
 }
 
 error

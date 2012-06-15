@@ -1,5 +1,6 @@
 #include "unit2/hal/exec.h"
 
+#include "dsm/manager.h"
 #include "hal/types.h"
 
 #include "util/file.h"
@@ -7,6 +8,7 @@
 
 #include "gtest/gtest.h"
 
+namespace I_DSM = __impl::dsm;
 namespace I_HAL = __impl::hal;
 
 using I_HAL::ptr;
@@ -14,6 +16,7 @@ using I_HAL::ptr;
 static I_HAL::phys::list_platform platforms;
 
 #define ASSERT_HAL_SUCCESS(e) do { if (e != I_HAL::error::HAL_SUCCESS) { printf("HAL error: %d\n", e); }  ASSERT_TRUE(e == I_HAL::error::HAL_SUCCESS); } while (0)
+#define ASSERT_DSM_SUCCESS(e) do { if (e != I_DSM::error::DSM_SUCCESS) { printf("DSM error: %d\n", e); }  ASSERT_TRUE(e == I_DSM::error::DSM_SUCCESS); } while (0)
 
 void
 hal_exec_test::SetUpTestCase()
@@ -42,12 +45,17 @@ enum source_type {
     SOURCE_HANDLE
 };
 
-template <bool Sync, source_type Type>
+template <bool UseDSM, bool SingleHost, bool Sync, source_type Type>
 void do_exec_gpu(const void *ptrSource)
 {
     // Constants
     static const unsigned ELEMS = 1024;
-    static const unsigned ITER  = 1024;
+    static const unsigned ITER  = 1;
+
+    I_DSM::manager *mgr;
+    if (UseDSM) {
+        mgr = new I_DSM::manager();
+    }
 
     ASSERT_TRUE(platforms.size() > 0);
 
@@ -115,18 +123,38 @@ void do_exec_gpu(const void *ptrSource)
     // Create data objects
     objCPU0 = plat0->create_object(pUnitCPU->get_preferred_memory(), ELEMS * sizeof(float), err);
     ASSERT_HAL_SUCCESS(err);
-    objCPU1 = plat0->create_object(pUnitCPU->get_preferred_memory(), ELEMS * sizeof(float), err);
-    ASSERT_HAL_SUCCESS(err);
+    if (!SingleHost) {
+        objCPU1 = plat0->create_object(pUnitCPU->get_preferred_memory(), ELEMS * sizeof(float), err);
+        ASSERT_HAL_SUCCESS(err);
+    }
     objGPU  = plat0->create_object(pUnitGPU->get_preferred_memory(), ELEMS * sizeof(float), err);
     ASSERT_HAL_SUCCESS(err);
 
     // Map objects on address spaces
     ptr ptrBaseCPU0 = asCPU->map(*objCPU0, GMAC_PROT_READWRITE, err);
     ASSERT_HAL_SUCCESS(err);
-    ptr ptrBaseCPU1 = asCPU->map(*objCPU1, GMAC_PROT_READWRITE, err);
-    ASSERT_HAL_SUCCESS(err);
+    ptr ptrBaseCPU1;
+    if (SingleHost) {
+        ptrBaseCPU1 = ptrBaseCPU0;
+    } else {
+        ptrBaseCPU1 = asCPU->map(*objCPU1, GMAC_PROT_READWRITE, err);
+        ASSERT_HAL_SUCCESS(err);
+    }
     ptr ptrBaseGPU  = asGPU->map(*objGPU, GMAC_PROT_READWRITE, err);
     ASSERT_HAL_SUCCESS(err);
+
+    I_DSM::error errDsm;
+
+    if (UseDSM) {
+        errDsm = mgr->link(ptrBaseCPU0,
+                           ptrBaseGPU,
+                           ELEMS * sizeof(float), GMAC_PROT_READWRITE, GMAC_PROT_READWRITE);
+        ASSERT_DSM_SUCCESS(errDsm);
+
+        // Acquire for the CPU (allocation 0)
+        errDsm = mgr->acquire(ptrBaseCPU0, ELEMS * sizeof(float), GMAC_PROT_WRITE);
+        ASSERT_DSM_SUCCESS(errDsm);
+    }
 
     // Initialize data
     float (&mat1)[ELEMS] = *((float (*)[ELEMS]) ptrBaseCPU0.get_view().get_offset() + ptrBaseCPU0.get_offset());
@@ -134,9 +162,19 @@ void do_exec_gpu(const void *ptrSource)
         mat1[i] = float(i);
     }
 
-    // Copy to GPU
-    I_HAL::copy(ptrBaseGPU, ptrBaseCPU0, ELEMS * sizeof(float), err);
-    ASSERT_HAL_SUCCESS(err);
+    if (UseDSM) {
+        // Release for the CPU (allocation 0)
+        errDsm = mgr->release(ptrBaseCPU0, ELEMS * sizeof(float));
+        ASSERT_DSM_SUCCESS(errDsm);
+
+        // Acquire/release for GPU (should be copied)
+        errDsm = mgr->acquire(ptrBaseGPU, ELEMS * sizeof(float), GMAC_PROT_WRITE);
+        ASSERT_DSM_SUCCESS(errDsm);
+    } else {
+        // Copy to GPU
+        I_HAL::copy(ptrBaseGPU, ptrBaseCPU0, ELEMS * sizeof(float), err);
+        ASSERT_HAL_SUCCESS(err);
+    }
 
     // Configure kernel
     void *arg = (void *) (ptrBaseGPU.get_view().get_offset() + ptrBaseGPU.get_offset());
@@ -156,25 +194,45 @@ void do_exec_gpu(const void *ptrSource)
         }
     }
 
-    // Copy data back to host
-    if (Sync) {
-        evt = I_HAL::copy(ptrBaseCPU1, ptrBaseGPU, ELEMS * sizeof(float), err);
+    if (UseDSM) {
+        errDsm = mgr->release(ptrBaseGPU, ELEMS * sizeof(float));
+        ASSERT_DSM_SUCCESS(errDsm);
+
+       // Acquire for the CPU
+       errDsm = mgr->acquire(ptrBaseCPU1, ELEMS * sizeof(float), GMAC_PROT_WRITE);
+       ASSERT_DSM_SUCCESS(errDsm);
     } else {
-        evt = I_HAL::copy(ptrBaseCPU1, ptrBaseGPU, ELEMS * sizeof(float), evt, err);
+        // Copy data back to host
+        if (Sync) {
+            evt = I_HAL::copy(ptrBaseCPU1, ptrBaseGPU, ELEMS * sizeof(float), err);
+        } else {
+            evt = I_HAL::copy(ptrBaseCPU1, ptrBaseGPU, ELEMS * sizeof(float), evt, err);
+        }
+        ASSERT_HAL_SUCCESS(err);
     }
-    ASSERT_HAL_SUCCESS(err);
 
     // Check results
     float (&mat2)[ELEMS] = *((float (*)[ELEMS]) ptrBaseCPU1.get_view().get_offset() + ptrBaseCPU1.get_offset());
     for (unsigned i = 0; i < ELEMS; ++i) {
-        ASSERT_TRUE((mat1[i] + float(ITER)) == mat2[i]);
+        if (UseDSM) {
+            ASSERT_TRUE(float(i + ITER) == mat2[i]);
+        } else {
+            ASSERT_TRUE((mat1[i] + float(ITER)) == mat2[i]);
+        }
+    }
+
+    if (UseDSM) {
+        errDsm = mgr->release(ptrBaseCPU1, ELEMS * sizeof(float));
+        ASSERT_DSM_SUCCESS(errDsm);
     }
 
     // Unmap objects
     err = asCPU->unmap(ptrBaseCPU0);
     ASSERT_HAL_SUCCESS(err);
-    err = asCPU->unmap(ptrBaseCPU1);
-    ASSERT_HAL_SUCCESS(err);
+    if (!SingleHost) {
+        err = asCPU->unmap(ptrBaseCPU1);
+        ASSERT_HAL_SUCCESS(err);
+    }
     err = asGPU->unmap(ptrBaseGPU);
     ASSERT_HAL_SUCCESS(err);
 
@@ -185,8 +243,10 @@ void do_exec_gpu(const void *ptrSource)
     // Destroy data objects
     err = plat0->destroy_object(*objCPU0);
     ASSERT_HAL_SUCCESS(err);
-    err = plat0->destroy_object(*objCPU1);
-    ASSERT_HAL_SUCCESS(err);
+    if (!SingleHost) {
+        err = plat0->destroy_object(*objCPU1);
+        ASSERT_HAL_SUCCESS(err);
+    }
     err = plat0->destroy_object(*objGPU);
     ASSERT_HAL_SUCCESS(err);
 
@@ -195,12 +255,19 @@ void do_exec_gpu(const void *ptrSource)
     ASSERT_HAL_SUCCESS(err);
     err = pasGPU->destroy_vaspace(*asGPU);
     ASSERT_HAL_SUCCESS(err);
+
+    if (UseDSM) {
+        mgr->destroy_singleton();
+    }
 }
 
 TEST_F(hal_exec_test, exec_gpu_file)
 {
-    do_exec_gpu<true,  source_type::SOURCE_FILE>("code/common.lib");
-    do_exec_gpu<false, source_type::SOURCE_FILE>("code/common.lib");
+#if 0
+    do_exec_gpu<false, false, true,  source_type::SOURCE_FILE>("code/common.lib");
+    do_exec_gpu<false, false, false, source_type::SOURCE_FILE>("code/common.lib");
+#endif
+    do_exec_gpu<true,  true,  true,  source_type::SOURCE_FILE>("code/common.lib");
 }
 
 TEST_F(hal_exec_test, exec_gpu_string)
@@ -210,9 +277,12 @@ TEST_F(hal_exec_test, exec_gpu_string)
     std::string file;
     file = __impl::util::get_file_contents("code/common.lib", err);
     ASSERT_TRUE(err == gmacSuccess);
-    
-    do_exec_gpu<true,  source_type::SOURCE_STRING>(file.c_str());
-    do_exec_gpu<false, source_type::SOURCE_STRING>(file.c_str());
+
+#if 0
+    do_exec_gpu<false, false, true,  source_type::SOURCE_STRING>(file.c_str());
+    do_exec_gpu<false, false, false, source_type::SOURCE_STRING>(file.c_str());
+#endif
+    do_exec_gpu<true,  true,  true,  source_type::SOURCE_STRING>(file.c_str());
 }
 
 #if 0

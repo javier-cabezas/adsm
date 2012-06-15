@@ -44,15 +44,15 @@ namespace __impl { namespace util {
 template <typename T>
 class GMAC_LOCAL singleton {
 private:
-	static T *Singleton_;
+    static T *Singleton_;
 protected:
     singleton();
-	virtual ~singleton();
+    virtual ~singleton();
 
     static T *getInstance();
 public:
 
-	void destroy();
+    void destroy();
 };
 
 }}

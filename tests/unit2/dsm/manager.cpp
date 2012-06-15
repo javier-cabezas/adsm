@@ -1,8 +1,8 @@
+#include "gtest/gtest.h"
+
 #include "unit2/dsm/manager.h"
 
 #include "util/misc.h"
-
-#include "gtest/gtest.h"
 
 #include "hal/error.h"
 

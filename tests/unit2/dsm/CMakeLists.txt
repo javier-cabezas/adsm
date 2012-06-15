@@ -1,3 +1,5 @@
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUNIT_TEST_DSM")
+
 set(dsm_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/mapping.h
     ${CMAKE_CURRENT_SOURCE_DIR}/mapping.cpp
@@ -15,7 +17,6 @@ set(dsm_SRC
 set(all_SRC
     ${UNIT_TESTS_SOURCE_DIR}/UnitTests.cpp
     ${dsm_SRC})
-
 
 add_gmac_groups(${all_SRC})
 add_executable(UnitTests_dsm ${all_SRC})

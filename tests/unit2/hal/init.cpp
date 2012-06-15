@@ -1,11 +1,13 @@
+#include "gtest/gtest.h"
+
 #include "unit2/hal/init.h"
 
+#include "dsm/manager.h"
 #include "hal/types.h"
 
 #include "util/misc.h"
 
-#include "gtest/gtest.h"
-
+namespace I_DSM = __impl::dsm;
 namespace I_HAL = __impl::hal;
 
 using I_HAL::ptr;
@@ -13,6 +15,7 @@ using I_HAL::ptr;
 static I_HAL::phys::list_platform platforms;
 
 #define ASSERT_HAL_SUCCESS(e) do { if (e != I_HAL::error::HAL_SUCCESS) { printf("HAL error: %d\n", e); }  ASSERT_TRUE(e == I_HAL::error::HAL_SUCCESS); } while (0)
+#define ASSERT_DSM_SUCCESS(e) do { if (e != I_DSM::error::DSM_SUCCESS) { printf("DSM error: %d\n", e); }  ASSERT_TRUE(e == I_DSM::error::DSM_SUCCESS); } while (0)
 
 void
 hal_init_test::SetUpTestCase()
