@@ -168,7 +168,7 @@ manager::~manager()
 }
 
 error
-manager::link(hal::ptr dst, hal::ptr src, size_t count, GmacProtection protDst, GmacProtection protSrc)
+manager::link(hal::ptr dst, hal::ptr src, size_t count, GmacProtection protDst, GmacProtection protSrc, int flags)
 {
     TRACE(LOCAL, FMT_ID2" Link " FMT_SIZE" bytes", get_print_id2(), count);
 
@@ -184,6 +184,8 @@ manager::link(hal::ptr dst, hal::ptr src, size_t count, GmacProtection protDst, 
     // Link size must be greater than 0
     CHECK(count > 0, error::DSM_ERROR_INVALID_VALUE);
 
+    // TODO: do something with the flags
+
     hal::virt::aspace &asDst = dst.get_view().get_vaspace();
     hal::virt::aspace &asSrc = src.get_view().get_vaspace();
 
@@ -198,7 +200,7 @@ manager::link(hal::ptr dst, hal::ptr src, size_t count, GmacProtection protDst, 
 
     if (rangeDst.is_empty()) {
         // If the range is NOT used yet, create a new mapping
-        mDst = factory_mapping::create(dst, protDst);
+        mDst = factory_mapping::create(dst, protDst, flags);
     } else {
         if (range_has_protection<true>(rangeDst, protDst)) {
             // If the range is already used, merge previous mappings
@@ -210,7 +212,7 @@ manager::link(hal::ptr dst, hal::ptr src, size_t count, GmacProtection protDst, 
 
     if (rangeSrc.is_empty()) {
         // If the range is NOT used yet, create a new mapping
-        mSrc = factory_mapping::create(src, protSrc);
+        mSrc = factory_mapping::create(src, protSrc, flags);
     } else {
         if (range_has_protection<true>(rangeSrc, protSrc)) {
             // If the range is already used, merge previous mappings

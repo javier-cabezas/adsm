@@ -109,7 +109,7 @@ public:
      */
     manager();
 
-    error link(hal::ptr dst, hal::ptr src, size_t count, GmacProtection protDst, GmacProtection protSrc);
+    error link(hal::ptr dst, hal::ptr src, size_t count, GmacProtection protDst, GmacProtection protSrc, int flags = mapping_flags::MAP_DEFAULT);
     error unlink(hal::ptr mapping, size_t count);
 
     template <bool Hex, bool PrintBlocks>

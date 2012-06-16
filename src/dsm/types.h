@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2011 University of Illinois
+/* Copyright (c) 2009-2012 University of Illinois
                            Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -45,6 +45,17 @@ WITH THE SOFTWARE.  */
 #include "error.h"
 
 namespace __impl { namespace dsm {
+
+enum mapping_flags {
+    MAP_DEFAULT     = 0,
+    MAP_USE_PROTECT = 1
+};
+
+static inline
+bool has_mapping_flag(int value, mapping_flags flag)
+{
+    return (value & flag) != 0;
+}
 
 class address_space;
 class mapping;

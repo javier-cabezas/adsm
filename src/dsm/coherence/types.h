@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2011 University of Illinois
+/* Copyright (c) 2009-2012 University of Illinois
                            Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -41,7 +41,7 @@ namespace __impl { namespace dsm { namespace coherence {
 
 static const size_t &BlockSize = config::params::BlockSize;
 
-enum state {
+enum class state {
     STATE_DIRTY   = 1,
     STATE_SHARED  = 2,
     STATE_INVALID = 3

@@ -61,8 +61,8 @@ public:
         return parent::append(std::move(map));
     }
 
-    mapping(ptr addr, GmacProtection prot) :
-        parent(addr, prot)
+    mapping(ptr addr, GmacProtection prot, int flags) :
+        parent(addr, prot, flags)
     {
     }
 
