@@ -42,6 +42,13 @@ mapping::get_protection() const
     return prot_;
 }
 
+inline
+int
+mapping::get_flags() const
+{
+    return flags_;
+}
+
 template <bool Hex>
 void
 mapping::print() const

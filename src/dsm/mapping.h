@@ -44,30 +44,16 @@ WITH THE SOFTWARE.  */
 #include "types.h"
 
 static inline
+bool prot_is_readable(GmacProtection prot)
+{
+    return prot | GMAC_PROT_READ;
+}
+
+static inline
 bool prot_is_writable(GmacProtection prot)
 {
     return prot | GMAC_PROT_WRITE;
 }
-
-static inline
-bool operator>(GmacProtection prot1, GmacProtection prot2)
-{
-    if ((prot1 == GMAC_PROT_NONE &&
-         prot2 != GMAC_PROT_NONE) ||
-        (!prot_is_writable(prot1) &&
-          prot_is_writable(prot2)
-        )
-       ) return true;
-
-    return false;
-}
-
-static inline
-bool operator<=(GmacProtection prot1, GmacProtection prot2)
-{
-    return !(prot1 > prot2);
-}
-
 
 namespace __impl { namespace dsm {
 
@@ -83,6 +69,7 @@ protected:
     hal::ptr addr_;
     size_t size_;
     GmacProtection prot_;
+    int flags_;
 
     typedef util::factory<coherence::block,
                           coherence::block_ptr> factory_block;
@@ -207,7 +194,7 @@ protected:
     static
     error move_block(mapping &dst, mapping &src, coherence::block_ptr b);
 
-    mapping(hal::ptr addr, GmacProtection prot);
+    mapping(hal::ptr addr, GmacProtection prot, int flags);
     mapping(mapping &&m);
 
     // Deleted functions
@@ -234,6 +221,8 @@ public:
     hal::ptr get_ptr() const;
 
     GmacProtection get_protection() const;
+
+    int get_flags() const;
 
     error resize(size_t pre, size_t post);
 

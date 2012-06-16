@@ -9,6 +9,10 @@
 
 namespace __impl { namespace hal {
 
+namespace virt {
+    class object_view;
+}
+
 class GMAC_LOCAL ptr {
     virt::object_view *view_;
     ptrdiff_t off_;

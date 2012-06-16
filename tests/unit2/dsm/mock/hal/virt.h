@@ -8,7 +8,34 @@
 #include "util/trigger.h"
 #include "util/unique.h"
 
+#include "hal/error.h"
+
+#include "ptr.h"
+
 namespace __impl { namespace hal { namespace virt {
+    class aspace;
+
+    class GMAC_LOCAL object_view {
+        aspace &as_;
+        ptrdiff_t ptr_;
+    public:
+        object_view(aspace &as, ptrdiff_t ptr) :
+            as_(as),
+            ptr_(ptr)
+        {
+        }
+
+        aspace &get_vaspace()
+        {
+            return as_;
+        }
+
+        const aspace &get_vaspace() const
+        {
+            return as_;
+        }
+    };
+
     class GMAC_LOCAL aspace :
         public util::unique<aspace, GmacAddressSpaceId>,
         public util::attributes<aspace>,
@@ -40,26 +67,12 @@ namespace __impl { namespace hal { namespace virt {
         {
             observe_destruct::destroy(as);
         }
-    };
 
-    class GMAC_LOCAL object_view {
-        aspace &as_;
-        ptrdiff_t ptr_;
-    public:
-        object_view(aspace &as, ptrdiff_t ptr) :
-            as_(as),
-            ptr_(ptr)
+        error protect(hal::ptr p, size_t count, GmacProtection prot)
         {
-        }
+            CHECK(&p.get_view().get_vaspace() == this, error::HAL_ERROR_INVALID_PTR);
 
-        aspace &get_vaspace()
-        {
-            return as_;
-        }
-
-        const aspace &get_vaspace() const
-        {
-            return as_;
+            return error::HAL_SUCCESS;
         }
     };
 }}}

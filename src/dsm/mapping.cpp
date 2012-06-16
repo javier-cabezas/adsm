@@ -42,40 +42,6 @@ mapping::shift_blocks(size_t offset)
     }
 }
 
-#if 0
-error
-mapping::dup2(mapping_ptr map1, hal::ptr::offset_type off1,
-              mapping_ptr map2, hal::ptr::offset_type off2, size_t count)
-{
-    error ret = error::DSM_SUCCESS;
-
-    return ret;
-}
-
-error
-mapping::dup(hal::ptr::offset_type off1, mapping_ptr map2,
-             hal::ptr::offset_type off2, size_t count)
-{
-    error ret = error::DSM_SUCCESS;
-
-    list_block::iterator it;
-    hal::ptr::offset_type off = off2;
-
-    // Move to the first block involved
-    for (it = map2->blocks_.begin(); off < off2; off += (*it)->get_size());
-    ASSERTION(off == off2, "map2 should contain a block starting @ address: %p", off2);
-
-    // Duplicate all the blocks
-    for (it = map2->blocks_.begin(); off < off2 + count; off += (*it)->get_size()) {
-        ASSERTION(it != map2->blocks_.end(), "unexpected end of container");
-        append(*it);
-    }
-    ASSERTION(off == off2 + count, "loop should end after a block boundary");
-
-    return ret;
-}
-#endif
-
 mapping::cursor_block
 mapping::get_first_block(size_t offset)
 {
@@ -252,96 +218,11 @@ mapping::resize(size_t pre, size_t post)
 mapping::pair_mapping
 mapping::split(size_t offset, size_t count, error &err)
 {
-#if 0
     TRACE(LOCAL, FMT_ID2" Splitting at " FMT_SIZE ", " FMT_SIZE "bytes", get_print_id2(), offset, count);
-
-    if (offset + count > get_bounds().get_size()) {
-        err = error::DSM_ERROR_INVALID_VALUE;
-        return pair_mapping(nullptr, nullptr);
-    }
-
-    err = error::DSM_SUCCESS;
-
-    mapping_ptr mNew1;
-    // Deal with the first block
-    cursor_block cursor = get_first_block(offset);
-        
-    if (cursor.get_offset_local() != 0) {
-        // Does not start on block beginning, split the block
-        cursor = split_block(cursor, cursor.get_offset_local());
-    }
-    
-    // Deal with the last block
-    cursor = get_first_block(offset + count);
-    
-    if (cursor.get_offset_local() != 0) {
-        // Does not end on block ending, split the block
-        cursor = split_block(cursor, cursor.get_offset_local());
-    }
-
-    if (offset > 0) {
-        // Create a mapping
-        mNew1 = new mapping(addr_ + offset, prot_);
-        
-        // Transfer blocks to the new mapping
-        cursor = get_first_block(offset);
-        
-        ASSERTION(cursor.get_offset_local() == 0);
-
-        size_t off = 0;
-
-        while (off < count) {
-            coherence::block_ptr b = cursor.get_block();
-
-            mapping::move_block(*mNew, *this, b);
-
-            if (err != error::DSM_SUCCESS) {
-                return pair_mapping(nullptr, nullptr);
-            }
-
-            ASSERTION(off + b->get_size() <= count);
-            off += b->get_size();
-
-            auto it = cursor.get_iterator();
-
-            cursor.advance_block();
-
-            blocks_.erase(it);
-        }
-    } else {
-        mNew = nullptr;
-        // Transfer blocks to the new mapping
-        cursor = get_first_block(offset + count);
-    }
-
-    mapping_ptr mPost = nullptr;
-
-    if (cursor.get_iterator() != blocks_.end()) {
-	// Create a mapping
-        mPost = new mapping(addr_ + (offset + count), prot_);
-        while (cursor.get_iterator() != blocks_.end()) {
-            coherence::block_ptr b = cursor.get_block();
-
-            mapping::move_block(*mPost, *this, b);
-            
-            if (err != error::DSM_SUCCESS) {
-            	return pair_mapping(nullptr, nullptr);
-            }
-
-	    auto it = cursor.get_iterator();
-
-	    cursor.advance_block();
-
-	    blocks_.erase(it);
-        }
-    }
-
-    return pair_mapping(mNew, mPost);
-#endif
 
     mapping_ptr mNew1 = nullptr, mNew2 = nullptr;
 
-    mNew1 = new mapping(addr_ + offset, prot_);
+    mNew1 = new mapping(addr_ + offset, prot_, flags_);
 
     // Deal with the first block
     cursor_block cursor = get_first_block(offset);
@@ -386,7 +267,7 @@ mapping::split(size_t offset, size_t count, error &err)
     if ((offset > 0) &&
         (offset + count < size_)) {
     	// Create another mapping if needed
-        mNew2 = new mapping(addr_ + offset + count, prot_);
+        mNew2 = new mapping(addr_ + offset + count, prot_, flags_);
 
         // Move the remaining blocks
         while (cursor.get_iterator() != blocks_.end()) {
@@ -408,10 +289,11 @@ mapping::split(size_t offset, size_t count, error &err)
     return pair_mapping(mNew1, mNew2);
 }
 
-mapping::mapping(hal::ptr addr, GmacProtection prot) :
+mapping::mapping(hal::ptr addr, GmacProtection prot, int flags) :
     addr_(addr),
     size_(0),
-    prot_(prot)
+    prot_(prot),
+    flags_(flags)
 {
     TRACE(LOCAL, FMT_ID2" Creating", get_print_id2());
 }
@@ -452,18 +334,28 @@ mapping::acquire(size_t offset, size_t count, GmacProtection prot)
     TRACE(LOCAL, FMT_ID2" Acquire " FMT_SIZE":" FMT_SIZE,
                  get_print_id2(), offset, count);
 
-    //CHECK(prot > prot_, error::DSM_ERROR_INVALID_PROT);
+    CHECK(prot_is_readable(prot_) || !prot_is_readable(prot), error::DSM_ERROR_INVALID_PROT);
+    CHECK(prot_is_writable(prot_) || !prot_is_writable(prot), error::DSM_ERROR_INVALID_PROT);
 
-    error err = error::DSM_SUCCESS;
+    error ret = error::DSM_SUCCESS;
 
     range_block range = get_blocks_in_range(offset, count);
 
     for (coherence::block_ptr b : range) {
-        err = b->acquire(this, prot);
-        if (err != error::DSM_SUCCESS) break;
+        ret = b->acquire(this, prot);
+        if (ret != error::DSM_SUCCESS) break;
+
+        if (prot_is_writable(prot) &&
+            has_mapping_flag(flags_, mapping_flags::MAP_USE_PROTECT)) {
+            hal::error errHal;
+            errHal = addr_.get_view().get_vaspace().protect(addr_ + offset, count, GMAC_PROT_NONE);
+            if (errHal == hal::error::HAL_SUCCESS) {
+                return error::DSM_ERROR_HAL;
+            }
+        }
     }
 
-    return err;
+    return ret;
 }
 
 error

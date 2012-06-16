@@ -54,12 +54,12 @@ static void range_init()
     p4 = p0 + (MAP4_OFF - MAP0_OFF);
     p5 = p0 + (MAP5_OFF - MAP0_OFF);
 
-    m0 = new mapping(p0, GMAC_PROT_READWRITE);
-    m1 = new mapping(p1, GMAC_PROT_READWRITE);
-    m2 = new mapping(p2, GMAC_PROT_READWRITE);
-    m3 = new mapping(p3, GMAC_PROT_READWRITE);
-    m4 = new mapping(p4, GMAC_PROT_READWRITE);
-    m5 = new mapping(p5, GMAC_PROT_READWRITE);
+    m0 = new mapping(p0, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
+    m1 = new mapping(p1, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
+    m2 = new mapping(p2, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
+    m3 = new mapping(p3, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
+    m4 = new mapping(p4, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
+    m5 = new mapping(p5, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
 
     b0 = mapping::helper_create_block(MAP0_SIZE);
     b1 = mapping::helper_create_block(MAP1_SIZE);
@@ -308,15 +308,15 @@ TEST_F(manager_mapping_test, insert_blocks)
     p_b7 = p0 + (MAP_B7_OFF - MAP0_OFF);
     p_b8 = p0 + (MAP_B8_OFF - MAP0_OFF);
 
-    m_b0 = new mapping(p_b0, GMAC_PROT_READWRITE);
-    m_b1 = new mapping(p_b1, GMAC_PROT_READWRITE);
-    m_b2 = new mapping(p_b2, GMAC_PROT_READWRITE);
-    m_b3 = new mapping(p_b3, GMAC_PROT_READWRITE);
-    m_b4 = new mapping(p_b4, GMAC_PROT_READWRITE);
-    m_b5 = new mapping(p_b5, GMAC_PROT_READWRITE);
-    m_b6 = new mapping(p_b6, GMAC_PROT_READWRITE);
-    m_b7 = new mapping(p_b7, GMAC_PROT_READWRITE);
-    m_b8 = new mapping(p_b8, GMAC_PROT_READWRITE);
+    m_b0 = new mapping(p_b0, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
+    m_b1 = new mapping(p_b1, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
+    m_b2 = new mapping(p_b2, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
+    m_b3 = new mapping(p_b3, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
+    m_b4 = new mapping(p_b4, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
+    m_b5 = new mapping(p_b5, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
+    m_b6 = new mapping(p_b6, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
+    m_b7 = new mapping(p_b7, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
+    m_b8 = new mapping(p_b8, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
 
     b_b0 = mapping::helper_create_block(MAP_B0_SIZE);
     b_b1 = mapping::helper_create_block(MAP_B1_SIZE);
@@ -395,15 +395,15 @@ TEST_F(manager_mapping_test, insert_mappings)
     p_b7 = p0 + (MAP_B7_OFF - MAP0_OFF);
     p_b8 = p0 + (MAP_B8_OFF - MAP0_OFF);
 
-    m_b0 = new mapping(p_b0, GMAC_PROT_READWRITE);
-    m_b1 = new mapping(p_b1, GMAC_PROT_READWRITE);
-    m_b2 = new mapping(p_b2, GMAC_PROT_READWRITE);
-    m_b3 = new mapping(p_b3, GMAC_PROT_READWRITE);
-    m_b4 = new mapping(p_b4, GMAC_PROT_READWRITE);
-    m_b5 = new mapping(p_b5, GMAC_PROT_READWRITE);
-    m_b6 = new mapping(p_b6, GMAC_PROT_READWRITE);
-    m_b7 = new mapping(p_b7, GMAC_PROT_READWRITE);
-    m_b8 = new mapping(p_b8, GMAC_PROT_READWRITE);
+    m_b0 = new mapping(p_b0, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
+    m_b1 = new mapping(p_b1, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
+    m_b2 = new mapping(p_b2, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
+    m_b3 = new mapping(p_b3, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
+    m_b4 = new mapping(p_b4, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
+    m_b5 = new mapping(p_b5, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
+    m_b6 = new mapping(p_b6, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
+    m_b7 = new mapping(p_b7, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
+    m_b8 = new mapping(p_b8, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
 
     b_b0 = mapping::helper_create_block(MAP_B0_SIZE);
     b_b1 = mapping::helper_create_block(MAP_B1_SIZE);

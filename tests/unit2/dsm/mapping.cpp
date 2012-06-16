@@ -33,7 +33,7 @@ TEST_F(mapping_test, prepend_block)
 
     ptr p0 = ptrBase + OFFSET;
 
-    mapping_ptr m0 = new mapping(p0 + OFFSET, GMAC_PROT_READWRITE);
+    mapping_ptr m0 = new mapping(p0 + OFFSET, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
 
     block_ptr b0 = mapping::helper_create_block(0x100);
     block_ptr b1 = mapping::helper_create_block(0x300);
@@ -60,7 +60,7 @@ TEST_F(mapping_test, prepend_block2)
 
     ptr p0 = ptrBase + OFFSET;
 
-    mapping_ptr m0 = new mapping(p0, GMAC_PROT_READWRITE);
+    mapping_ptr m0 = new mapping(p0, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
 
     block_ptr b0 = mapping::helper_create_block(0x100);
     block_ptr b1 = mapping::helper_create_block(0x400);
@@ -91,7 +91,7 @@ TEST_F(mapping_test, append_block)
 
     ptr p0 = ptrBase;
 
-    mapping_ptr m0 = new mapping(p0, GMAC_PROT_READWRITE);
+    mapping_ptr m0 = new mapping(p0, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
 
     block_ptr b0 = mapping::helper_create_block(BLOCK_0_SIZE);
     block_ptr b1 = mapping::helper_create_block(BLOCK_1_SIZE);
@@ -134,8 +134,8 @@ TEST_F(mapping_test, append_mapping)
     ptr p0 = ptrBase;
     ptr p1 = p0 + OFFSET;
 
-    mapping_ptr m0 = new mapping(p0, GMAC_PROT_READWRITE);
-    mapping_ptr m1 = new mapping(p1, GMAC_PROT_READWRITE);
+    mapping_ptr m0 = new mapping(p0, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
+    mapping_ptr m1 = new mapping(p1, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
 
     block_ptr b0 = mapping::helper_create_block(BLOCK_SIZE);
     block_ptr b1 = mapping::helper_create_block(BLOCK_SIZE);
@@ -167,8 +167,8 @@ TEST_F(mapping_test, append_mapping2)
     ptr p0 = ptrBase;
     ptr p1 = p0 + OFFSET;
 
-    mapping_ptr m0 = new mapping(p0, GMAC_PROT_READWRITE);
-    mapping_ptr m1 = new mapping(p1, GMAC_PROT_READWRITE);
+    mapping_ptr m0 = new mapping(p0, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
+    mapping_ptr m1 = new mapping(p1, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
 
     block_ptr b0 = mapping::helper_create_block(BLOCK_SIZE);
     block_ptr b1 = mapping::helper_create_block(BLOCK_SIZE);
@@ -197,8 +197,8 @@ TEST_F(mapping_test, append_mapping3)
     ptr p0 = ptrBase;
     ptr p1 = p0 + OFFSET;
 
-    mapping_ptr m0 = new mapping(p0, GMAC_PROT_READWRITE);
-    mapping_ptr m1 = new mapping(p1, GMAC_PROT_READWRITE);
+    mapping_ptr m0 = new mapping(p0, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
+    mapping_ptr m1 = new mapping(p1, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
 
     block_ptr b0 = mapping::helper_create_block(BLOCK_SIZE);
     block_ptr b1 = mapping::helper_create_block(BLOCK_SIZE);
@@ -228,8 +228,8 @@ TEST_F(mapping_test, append_mapping4)
     ptr p0(view0, 0);
     ptr p1(view1, 0);
 
-    mapping_ptr m0 = new mapping(p0,          GMAC_PROT_READWRITE);
-    mapping_ptr m1 = new mapping(p1 + OFFSET, GMAC_PROT_READWRITE);
+    mapping_ptr m0 = new mapping(p0,          GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
+    mapping_ptr m1 = new mapping(p1 + OFFSET, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
 
     block_ptr b0 = mapping::helper_create_block(BLOCK_SIZE);
     block_ptr b1 = mapping::helper_create_block(BLOCK_SIZE);
@@ -257,10 +257,10 @@ void mapping_test_split()
     ptr p0(view0, 0);
     ptr p1(view1, 0);
 
-    mapping_ptr m0 = new mapping(p0, GMAC_PROT_READWRITE);
+    mapping_ptr m0 = new mapping(p0, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
     mapping_ptr m1;
     if (Linked) {
-        m1 = new mapping(p1, GMAC_PROT_READWRITE);
+        m1 = new mapping(p1, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
     } else {
         m1 = nullptr;
     }
@@ -314,10 +314,10 @@ void mapping_test_split2()
     ptr p0(view0, 0);
     ptr p1(view1, 0);
 
-    mapping_ptr m0 = new mapping(p0, GMAC_PROT_READWRITE);
+    mapping_ptr m0 = new mapping(p0, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
     mapping_ptr m1;
     if (Linked) {
-        m1 = new mapping(p1, GMAC_PROT_READWRITE);
+        m1 = new mapping(p1, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
     } else {
         m1 = nullptr;
     }
@@ -369,10 +369,10 @@ void mapping_test_split3()
     ptr p0(view0, 0);
     ptr p1(view1, 0);
 
-    mapping_ptr m0 = new mapping(p0, GMAC_PROT_READWRITE);
+    mapping_ptr m0 = new mapping(p0, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
     mapping_ptr m1;
     if (Linked) {
-        m1 = new mapping(p1, GMAC_PROT_READWRITE);
+        m1 = new mapping(p1, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
     } else {
         m1 = nullptr;
     }
@@ -446,7 +446,7 @@ TEST_F(mapping_test, resize)
     I_HAL::virt::object_view view0(*as0, BASE_ADDR);
     ptr p0(view0, OFFSET);
 
-    mapping_ptr m0 = new mapping(p0, GMAC_PROT_READWRITE);
+    mapping_ptr m0 = new mapping(p0, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
 
     block_ptr b0 = mapping::helper_create_block(BLOCK_SIZE);
 
@@ -480,7 +480,7 @@ TEST_F(mapping_test, resize2)
     I_HAL::virt::object_view view0(*as0, BASE_ADDR);
     ptr p0(view0, OFFSET);
 
-    mapping_ptr m0 = new mapping(p0, GMAC_PROT_READWRITE);
+    mapping_ptr m0 = new mapping(p0, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
 
     block_ptr b0 = mapping::helper_create_block(BLOCK_SIZE);
 
@@ -511,7 +511,7 @@ TEST_F(mapping_test, resize3)
     I_HAL::virt::object_view view0(*as0, BASE_ADDR);
     ptr p0(view0, OFFSET);
 
-    mapping_ptr m0 = new mapping(p0, GMAC_PROT_READWRITE);
+    mapping_ptr m0 = new mapping(p0, GMAC_PROT_READWRITE, I_DSM::mapping_flags::MAP_DEFAULT);
 
     block_ptr b0 = mapping::helper_create_block(BLOCK_SIZE);
 
