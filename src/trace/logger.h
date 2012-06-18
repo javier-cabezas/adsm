@@ -1,4 +1,4 @@
-/* Copyright (c) 2009-2011 University of Illinois
+/* Copyright (c) 2009-2012 University of Illinois
                    Universitat Politecnica de Catalunya
                    All rights reserved.
 
@@ -139,7 +139,7 @@ void dummy_assertion(bool /*b*/, ...)
 
 #define WARNING(fmt, ...) __impl::trace::Logger::__Warning("(" FMT_TID") " fmt, ::config::params::DebugUseRealTID? __impl::util::get_thread_id(): __impl::core::thread::get_debug_tid(), ##__VA_ARGS__)
 #define FATAL(fmt, ...) __impl::trace::Logger::__Fatal(fmt, ##__VA_ARGS__)
-#define NOT_IMPLEMENTED() __impl::trace::Logger::__Fatal("%s not implemented", __FUNCTION__)
+#define NOT_IMPLEMENTED() __impl::trace::Logger::__Fatal("Not implemented " LOCATION_STRING)
 #define CFATAL(c, ...) __impl::trace::Logger::__CFatal(c, "Condition '"#c"' failed", LOCATION_STRING)
 
 

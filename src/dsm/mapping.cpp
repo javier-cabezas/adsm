@@ -78,6 +78,8 @@ mapping::split_block(cursor_block cursor, size_t offset)
     return get_first_block(offset);
 }
 
+#define H(a) typeof(a)
+
 error
 mapping::prepend(coherence::block_ptr b)
 {
@@ -85,6 +87,7 @@ mapping::prepend(coherence::block_ptr b)
 
     error ret = error::DSM_SUCCESS;
 
+    // TODO: figure out why the compiler complaints without the cast
     if (b->get_size() <= size_t(addr_.get_offset())) {
         shift_blocks(b->get_size());
 
@@ -157,21 +160,22 @@ mapping::move_block(mapping &dst, mapping &src, coherence::block_ptr b)
 }
 
 error
-mapping::append(mapping &&map)
+mapping::append(mapping &&m)
 {
     TRACE(LOCAL, FMT_ID2" Appending " FMT_ID2,
-                 get_print_id2(), map.get_print_id2());
+                 get_print_id2(), m.get_print_id2());
 
-    if ((map.addr_.get_offset()  <  ptrdiff_t(addr_.get_offset() + size_)) ||
-        (&map.addr_.get_view() !=  &addr_.get_view())) {
+    // TODO: figure out why the compiler complaints without the cast
+    if ((size_t(m.addr_.get_offset()) <  (addr_.get_offset() + size_)) ||
+        (&m.addr_.get_view() !=  &addr_.get_view())) {
         return error::DSM_ERROR_INVALID_VALUE;
     }
 
     error ret = error::DSM_SUCCESS;
 
     // Add a new block between the mappings if needed
-    if (map.get_bounds().start > get_bounds().end) {
-        coherence::block_ptr b = factory_block::create(map.get_bounds().start - get_bounds().end);
+    if (m.get_bounds().start > get_bounds().end) {
+        coherence::block_ptr b = factory_block::create(m.get_bounds().start - get_bounds().end);
 
         blocks_.push_back(b);
 
@@ -180,17 +184,17 @@ mapping::append(mapping &&map)
         size_ += b->get_size(); 
     }
 
-    // Insert the rest of blocks into the map
-    for (coherence::block_ptr b : map.blocks_) {
+    // Insert the rest of blocks into the m
+    for (coherence::block_ptr b : m.blocks_) {
         blocks_.push_back(b);
 
         b->register_mapping(this, size_);
-        b->unregister_mapping(map);
+        b->unregister_mapping(m);
 
         size_ += b->get_size(); 
     }
 
-    map.blocks_.clear();
+    m.blocks_.clear();
 
     return ret;
 }

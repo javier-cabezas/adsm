@@ -38,168 +38,48 @@ WITH THE SOFTWARE.  */
 
 namespace __impl { namespace hal {
 
-template <bool Const>
-class GMAC_LOCAL _common_ptr_t {
-protected:
-    typedef host_ptr address_type;
-
-    host_ptr ptrHost_;
-
-    _common_ptr_t(host_ptr ptr) :
-        ptrHost_(ptr)
-    {
-    }
-};
-
-template <>
-class GMAC_LOCAL _common_ptr_t<true> {
-protected:
-    typedef host_const_ptr address_type;
-
-    host_const_ptr ptrHost_;
-
-    _common_ptr_t(host_ptr ptr) :
-        ptrHost_(ptr)
-    {
-    }
-
-    _common_ptr_t(host_const_ptr ptr) :
-        ptrHost_(ptr)
-    {
-    }
-};
-
-template <bool C, typename T, typename T2>
-struct static_union {
-    typedef T type;
-};
-
-template <typename T, typename T2>
-struct static_union<false, T, T2> {
-    typedef T2 type;
-};
-
-template <typename Base>
-class GMAC_LOCAL backend_ptr_t
-{
-protected:
-    Base base_;
-    backend_ptr_t(Base base) :
-        base_(base)
-    {
-    }
-
-public:
-    typedef ptrdiff_t offset_type;
-
-    typedef Base backend_type;
-
-    virtual backend_ptr_t &
-    operator=(const backend_ptr_t &ptr) = 0;
-
-    virtual bool
-    operator==(const backend_ptr_t &ptr) const = 0;
-
-    virtual bool
-    operator!=(const backend_ptr_t &ptr) const = 0;
-
-    virtual bool
-    operator< (const backend_ptr_t &ptr) const = 0;
-
-    virtual bool
-    operator<=(const backend_ptr_t &ptr) const = 0;
-
-    virtual bool
-    operator> (const backend_ptr_t &ptr) const = 0;
-
-    virtual bool
-    operator>=(const backend_ptr_t &ptr) const = 0;
-
-    virtual backend_ptr_t &
-    operator+=(const offset_type &off) = 0;
-
-    virtual backend_ptr_t &
-    operator-=(const offset_type &off) = 0;
-
-    backend_type
-    get_base() const
-    {
-        return base_;
-    }
-
-    virtual void *
-    get() const = 0;
-
-    virtual offset_type
-    offset() const = 0;
-};
-
 template <bool Const, typename View>
-class GMAC_LOCAL _base_ptr_t {
-    friend class _base_ptr_t<false, View>;
-    friend class _base_ptr_t<true,  View>;
+class GMAC_LOCAL base_ptr {
+    friend class base_ptr<false, View>;
+    friend class base_ptr<true,  View>;
 
 protected:
-#if 0
-    typedef typename static_union<Const,          // Condition
-                                  host_const_ptr, // If true
-                                  host_ptr        // If false
-                                  >::type HPtr;
-#endif
     View *view_;
-    ptrdiff_t offset_;
-
-    //HPtr ptrHost_;
-    //Ptr ptrDev_;
+    size_t offset_;
 
 public:
     static const char *address_fmt;
     static const char *offset_fmt;
 
-    //typedef HPtr address_type;
-    typedef ptrdiff_t offset_type;
-
-    //typedef Ptr backend_ptr;
-    //typedef typename Ptr::backend_type backend_type;
+    typedef size_t offset_type;
 
     bool is_const() const
     {
         return Const;
     }
 
-    _base_ptr_t() :
+    base_ptr() :
         view_(NULL),
         offset_(0)
     {
     }
 
     // TODO check if view has to be a reference
-    explicit _base_ptr_t(View &view, offset_type offset = 0) :
+    explicit base_ptr(View &view, offset_type offset = 0) :
         view_(&view),
         offset_(offset)
     {
         ASSERTION(view_ != NULL);
     }
 
-#if 0
-    template <bool Const2 = Const>
-    explicit _base_ptr_t(typename std::enable_if<Const2, host_const_ptr>::type ptr, View *view) :
-        view_(view),
-        ptrHost_(ptr),
-        ptrDev_(0)
-    {
-        ASSERTION(aspace != NULL);
-    }
-#endif
-
-    _base_ptr_t(const _base_ptr_t &ptr) :
+    base_ptr(const base_ptr &ptr) :
         view_(ptr.view_),
         offset_(ptr.offset_)
     {
     }
 
     template <bool Const2>
-    _base_ptr_t(const _base_ptr_t<Const2, View> &ptr) :
+    base_ptr(const base_ptr<Const2, View> &ptr) :
         view_(ptr.view_),
         offset_(ptr.offset_)
     {
@@ -212,8 +92,8 @@ public:
     }
 
     template <bool Const2>
-    _base_ptr_t &
-    operator=(const _base_ptr_t<Const2, View> &ptr)
+    base_ptr &
+    operator=(const base_ptr<Const2, View> &ptr)
     {
         static_assert(Const || !Const2, "Cannot assign const pointer to non-const pointer");
 
@@ -226,7 +106,7 @@ public:
 
     template <bool Const2>
     bool
-    operator==(const _base_ptr_t<Const2, View> &ptr) const
+    operator==(const base_ptr<Const2, View> &ptr) const
     {
         ASSERTION(ptr.view_ == view_, "Comparing pointers from different address spaces");
 
@@ -235,14 +115,14 @@ public:
 
     template <bool Const2>
     bool
-    operator!=(const _base_ptr_t<Const2, View> &ptr) const
+    operator!=(const base_ptr<Const2, View> &ptr) const
     {
         return !(*this == ptr);
     }
 
     template <bool Const2>
     bool
-    operator<(const _base_ptr_t<Const2, View> &ptr) const
+    operator<(const base_ptr<Const2, View> &ptr) const
     {
         ASSERTION(ptr.view_ == this->view_, "Comparing pointers from different views");
 
@@ -251,7 +131,7 @@ public:
 
     template <bool Const2>
     bool
-    operator<=(const _base_ptr_t<Const2, View> &ptr) const
+    operator<=(const base_ptr<Const2, View> &ptr) const
     {
         ASSERTION(ptr.view_ == this->view_, "Comparing pointers from different views");
 
@@ -260,7 +140,7 @@ public:
 
     template <bool Const2>
     bool
-    operator>(const _base_ptr_t<Const2, View> &ptr) const
+    operator>(const base_ptr<Const2, View> &ptr) const
     {
         ASSERTION(ptr.view_ == this->view_, "Comparing pointers from different views");
 
@@ -269,7 +149,7 @@ public:
 
     template <bool Const2>
     bool
-    operator>=(const _base_ptr_t<Const2, View> &ptr) const
+    operator>=(const base_ptr<Const2, View> &ptr) const
     {
         ASSERTION(ptr.view_ == this->view_, "Comparing pointers from different views");
 
@@ -277,7 +157,7 @@ public:
     }
 
     template <typename T>
-    _base_ptr_t &
+    base_ptr &
     operator+=(const T &off)
     {
         //ASSERTION(offset_ + off < view_->get_object().get_size(), "Out of view boundaries");
@@ -288,10 +168,10 @@ public:
     }
 
     template <typename T>
-    const _base_ptr_t
+    const base_ptr
     operator+(const T &off) const
     {
-        _base_ptr_t ret(*this);
+        base_ptr ret(*this);
 
         // operator+= performs the check for view boundaries
         ret += off;
@@ -300,7 +180,7 @@ public:
     }
 
     template <typename T>
-    _base_ptr_t &
+    base_ptr &
     operator++() const
     {
         // operator+= performs the check for view boundaries
@@ -309,17 +189,17 @@ public:
     }
 
     template <typename T>
-    _base_ptr_t
+    base_ptr
     operator++(int dummy) const
     {
-        _base_ptr_t ret(*this);
+        base_ptr ret(*this);
         // operator+= performs the check for view boundaries
         *this += 1;
         return ret;
     }
 
     template <typename T>
-    _base_ptr_t &
+    base_ptr &
     operator-=(const T &off)
     {
         if (off > 0) {
@@ -334,10 +214,10 @@ public:
     }
 
     template <typename T>
-    const _base_ptr_t
+    const base_ptr
     operator-(const T &off) const
     {
-        _base_ptr_t ret(*this);
+        base_ptr ret(*this);
 
         // operator-= performs the check for view boundaries
         ret -= off;
@@ -345,16 +225,16 @@ public:
     }
 
     template <typename T>
-    offset_type
-    operator-(const _base_ptr_t &ptr) const
+    ptrdiff_t
+    operator-(const base_ptr &ptr) const
     {
         ASSERTION(ptr.view_ == this->view_, "Subtracting pointers from different views");
 
-        return offset_ - ptr.offset_;
+        return ptrdiff_t(offset_) - ptrdiff_t(ptr.offset_);
     }
 
     template <typename T>
-    _base_ptr_t &
+    base_ptr &
     operator--() const
     {
         // operator-= performs the check for view boundaries
@@ -363,23 +243,15 @@ public:
     }
 
     template <typename T>
-    _base_ptr_t
+    base_ptr
     operator--(int dummy) const
     {
-        _base_ptr_t ret(*this);
+        base_ptr ret(*this);
         // operator-= performs the check for view boundaries
         *this -= 1;
         return ret;
     }
 
-#if 0
-    typename Ptr::backend_type
-    get_base() const
-    {
-        ASSERTION(is_device_ptr());
-        return this->ptrDev_.get_base();
-    }
-#endif
     View &
     get_view()
     {
@@ -394,120 +266,25 @@ public:
         return *view_;
     }
 
-#if 0
-    template <bool Const2 = Const>
-    typename std::enable_if<Const2, host_const_ptr>::type
-    get_host_addr() const
-    {
-        ASSERTION(is_host_ptr());
-        return this->ptrHost_;
-    }
-
-    template <bool Const2 = Const>
-    typename std::enable_if<!Const2, host_ptr>::type
-    get_host_addr() const
-    {
-        ASSERTION(is_host_ptr());
-        return this->ptrHost_;
-    }
-#endif
-
-#if 0
-    host_ptr_t
-    get_addr() const
-    {
-        if (is_host_ptr()) {
-            return ptrHost_;
-        } else {
-            return HPtr(ptrDev_.get()) + ptrDev_.offset();
-        }
-    }
-#endif
-
     offset_type
     get_offset() const
     {
         return offset_;
     }
-
-#if 0
-    template <bool Const2 = Const>
-    typename std::enable_if<!Const2, Aspace>::type *
-    get_aspace()
-    {
-        return aspace_;
-    }
-
-    decltype(view_->get_vaspace()) &
-    get_aspace()
-    {
-        ASSERTION(view_);
-        return &view_->get_vaspace();
-    }
-
-    const decltype(view_->get_vaspace()) &
-    get_aspace() const
-    {
-        ASSERTION(view_);
-        return &view_->get_vaspace();
-    }
-#endif
-
-
-#if 0
-    const Aspace *
-    get_aspace() const
-    {
-        return aspace_;
-    }
-
-    bool
-    is_host_ptr() const
-    {
-        auto &o = view_->get_object();
-        return o.get_type() == D::PUNIT_TYPE_CPU;
-    }
-
-    bool
-    is_device_ptr() const
-    {
-        D &d = this->aspace_->get_processing_unit();
-        return d.get_type() != D::PUNIT_TYPE_CPU;
-    }
-#endif
 };
 
-#if 0
-template <>
-template <>
-_base_ptr_t<true, Ptr, Aspace> &
-_base_ptr_t<true, Ptr, Aspace>::operator-=(const _base_ptr_t<Const, Ptr, Aspace> &ptr)
-{
-    ASSERTION(aspace_ == ptr.aspace_);
-    if (is_host_ptr()) {
-        ptrHost_ -= ptr.ptrHost_;
-    } else {
-        ASSERTION(get_base()   == ptr.get_base());
-        ASSERTION(get_offset() >  ptr.get_offset());
-        ptrDev_ -= ptr.get_offset();
-    }
-
-    return *this;
-}
-#endif
+template <bool Const, typename View>
+const char *base_ptr<Const, View>::address_fmt = "%p";
 
 template <bool Const, typename View>
-const char *_base_ptr_t<Const, View>::address_fmt = "%p";
-
-template <bool Const, typename View>
-const char *_base_ptr_t<Const, View>::offset_fmt = FMT_SIZE;
+const char *base_ptr<Const, View>::offset_fmt = FMT_SIZE;
 
 
 template <typename View>
 class GMAC_LOCAL _const_ptr_t :
-    public _base_ptr_t<true, View> {
-    typedef _base_ptr_t<true, View> parent;
-    typedef _base_ptr_t<false, View> parent_noconst;
+    public base_ptr<true, View> {
+    typedef base_ptr<true, View> parent;
+    typedef base_ptr<false, View> parent_noconst;
 
 public:
     typedef typename parent::offset_type offset_type;
@@ -535,8 +312,8 @@ public:
 
 template <typename View>
 class GMAC_LOCAL _ptr_t :
-    public _base_ptr_t<false, View> {
-    typedef _base_ptr_t<false, View> parent;
+    public base_ptr<false, View> {
+    typedef base_ptr<false, View> parent;
 
 public:
     typedef typename parent::offset_type offset_type;
@@ -568,16 +345,6 @@ template <typename View>
 _ptr_t<View> _ptr_t<View>::null = _ptr_t();
 
 }}
-
-#if 0
-#ifdef USE_CUDA
-#include "hal/cuda/ptr.h"
-#else
-#include "hal/opencl/ptr.h"
-#endif
-#endif
-
-//#include "virt/object.h"
 
 namespace __impl { namespace hal {
 

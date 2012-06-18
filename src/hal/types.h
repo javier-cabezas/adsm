@@ -30,6 +30,7 @@ namespace virt {
     typedef hal::detail::virt::context context;
 
     typedef hal::detail::virt::aspace aspace;
+    typedef hal::detail::virt::handler_sigsegv handler_sigsegv;
     typedef hal::detail::virt::object object;
     typedef hal::detail::virt::object_view object_view;
 }

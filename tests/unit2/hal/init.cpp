@@ -383,7 +383,6 @@ TEST_F(hal_init_test, object_map_host)
     do_object_map_host();
 }
 
-
 TEST_F(hal_init_test, object_copy_host)
 {
     do_object_copy_host();
@@ -392,6 +391,86 @@ TEST_F(hal_init_test, object_copy_host)
 TEST_F(hal_init_test, object_copy_gpu)
 {
     do_object_copy_gpu();
+}
+
+TEST_F(hal_init_test, sigsegv)
+{
+    static const unsigned ELEMS = 1024;
+
+    ASSERT_TRUE(platforms.size() > 0);
+
+    I_HAL::phys::platform *plat0;
+    plat0 = platforms.front();
+    // Get processing units
+    I_HAL::phys::platform::set_processing_unit pUnitsCPU, pUnitsGPU;
+
+    pUnitsCPU = plat0->get_processing_units(I_HAL::phys::processing_unit::type::PUNIT_TYPE_CPU);
+    ASSERT_TRUE(pUnitsCPU.size () > 0);
+
+    I_HAL::phys::processing_unit *pUnitCPU;
+    I_HAL::phys::aspace *pasCPU;
+
+    I_HAL::virt::aspace *asCPU;
+
+    I_HAL::virt::object *objCPU0;
+
+    I_HAL::error err;
+
+    pUnitCPU = *pUnitsCPU.begin();
+
+    pasCPU = &pUnitCPU->get_paspace();
+
+    // Create address spaces
+    I_HAL::phys::aspace::set_processing_unit compatibleUnitsCPU({ pUnitCPU });
+    asCPU = pasCPU->create_vaspace(compatibleUnitsCPU, err);
+    ASSERT_HAL_SUCCESS(err);
+
+    objCPU0 = plat0->create_object(pUnitCPU->get_preferred_memory(), ELEMS * sizeof(float), err);
+    ASSERT_HAL_SUCCESS(err);
+
+    ptr ptrBaseCPU0 = asCPU->map(*objCPU0, GMAC_PROT_READWRITE, err);
+    ASSERT_HAL_SUCCESS(err);
+
+    bool pass = false;
+    bool pre  = false;
+    bool post = false;
+
+    I_HAL::virt::handler_sigsegv handler([&pass,ptrBaseCPU0,asCPU](I_HAL::ptr p, bool isWrite) -> bool
+                                         {
+                                             I_HAL::error err;
+                                             err = asCPU->protect(ptrBaseCPU0, ELEMS * sizeof(float), GMAC_PROT_READWRITE);
+                                             assert(err == I_HAL::error::HAL_SUCCESS);
+                                             pass = isWrite;
+                                             return true;
+                                         },
+                                         std::make_pair([&pre] () { pre = true;  },
+                                                        [&post]() { post = true; }));
+
+    err = asCPU->handler_sigsegv_push(handler);
+    ASSERT_HAL_SUCCESS(err);
+
+    err = asCPU->protect(ptrBaseCPU0, ELEMS * sizeof(float), GMAC_PROT_NONE);
+    ASSERT_HAL_SUCCESS(err);
+    
+    float (&mat1)[ELEMS] = *((float (*)[ELEMS]) ptrBaseCPU0.get_view().get_offset() + ptrBaseCPU0.get_offset());
+    mat1[0] = 0.f;
+
+    ASSERT_TRUE(pass);
+
+    ASSERT_TRUE(pre);
+    ASSERT_TRUE(post);
+
+    asCPU->handler_sigsegv_pop(err);
+    ASSERT_HAL_SUCCESS(err);
+
+    err = asCPU->unmap(ptrBaseCPU0);
+    ASSERT_HAL_SUCCESS(err);
+
+    err = plat0->destroy_object(*objCPU0);
+    ASSERT_HAL_SUCCESS(err);
+
+    err = pasCPU->destroy_vaspace(*asCPU);
+    ASSERT_HAL_SUCCESS(err);
 }
 
 /* vim:set backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

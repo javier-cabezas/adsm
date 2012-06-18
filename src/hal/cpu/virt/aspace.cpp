@@ -31,13 +31,13 @@ int get_prot_flags(GmacProtection prot)
 }
 
 ptr
-aspace::map(hal_object &obj, GmacProtection _prot, hal::error &err)
+aspace::map(hal_object &obj, GmacProtection prot, hal::error &err)
 {
-    return map(obj, _prot, 0, err);
+    return map(obj, prot, 0, err);
 }
 
 ptr
-aspace::map(hal_object &obj, GmacProtection _prot, ptrdiff_t offset, hal::error &err)
+aspace::map(hal_object &obj, GmacProtection _prot, size_t offset, hal::error &err)
 {
     hal_object::set_view viewsGpu = obj.get_views(phys::hal_processing_unit::PUNIT_TYPE_GPU);
     if (viewsGpu.size() != 0) {
@@ -99,6 +99,8 @@ aspace::map(hal_object &obj, GmacProtection _prot, ptrdiff_t offset, hal::error 
         detail::virt::object_view *view = obj.create_view(*this, hal::ptr::offset_type(cpuAddr), err);
 
         if (err == hal::error::HAL_SUCCESS) {
+            // Add view to the map
+            addrsToView_.insert(map_addr_to_view::value_type(hal::ptr::offset_type(cpuAddr) + obj.get_size(), view));
             return ptr(*view);
         } else {
             return ptr();
@@ -137,6 +139,7 @@ aspace::map(hal_object &obj, GmacProtection _prot, ptrdiff_t offset, hal::error 
         }
 
         if (err == hal::error::HAL_SUCCESS) {
+            addrsToView_.insert(map_addr_to_view::value_type(hal::ptr::offset_type(ret) + obj.get_size(), view));
             return ptr(*view);
         } else {
             return ptr();

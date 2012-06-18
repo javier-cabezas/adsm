@@ -43,7 +43,7 @@ mapping_fits(manager::map_mapping &map, mapping_ptr m)
 {
     manager::map_mapping::iterator it = map.upper_bound(m->get_ptr().get_offset());
 
-    return it == map.end() || it->second->get_ptr().get_offset() >= ptrdiff_t(m->get_ptr().get_offset() + m->get_bounds().get_size());
+    return it == map.end() || it->second->get_ptr().get_offset() >= hal::ptr::offset_type(m->get_ptr().get_offset() + m->get_bounds().get_size());
 }
 
 error
