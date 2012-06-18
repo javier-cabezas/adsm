@@ -26,6 +26,7 @@ typedef hal::detail::code::repository hal_code_repository;
 typedef hal::detail::code::repository_view hal_code_repository_view;
 typedef hal::detail::virt::aspace hal_aspace;
 typedef hal::detail::virt::context hal_context;
+typedef hal::detail::virt::handler_sigsegv hal_handler_sigsegv;
 typedef hal::detail::virt::object hal_object;
 typedef hal::detail::event hal_event;
 typedef hal::detail::event_ptr hal_event_ptr;
@@ -234,7 +235,7 @@ public:
     // hal::ptr alloc(size_t size, hal::error &err);
 
     hal::ptr map(hal_object &obj, GmacProtection prot, hal::error &err);
-    hal::ptr map(hal_object &obj, GmacProtection prot, ptrdiff_t offset, hal::error &err);
+    hal::ptr map(hal_object &obj, GmacProtection prot, size_t offset, hal::error &err);
 
     // Specialization for code mappings
     hal_code_repository_view *map(const hal_code_repository &repo, hal::error &err);
@@ -246,6 +247,25 @@ public:
 
     hal::error protect(hal::ptr ptr, size_t count, GmacProtection prot);
 
+    hal::error handler_sigsegv_push(hal_handler_sigsegv &handler)
+    {
+        NOT_IMPLEMENTED();
+        return hal::error::HAL_SUCCESS;
+    }
+
+    hal_handler_sigsegv handler_sigsegv_pop(hal::error &err)
+    {
+        NOT_IMPLEMENTED();
+        err = hal::error::HAL_SUCCESS;
+
+        // Fake handler to keep the compiler happy
+        static hal_handler_sigsegv fake([](hal::ptr, bool)
+                                        {
+                                            return true;
+                                        });
+        return fake;
+    }
+
 #if 0
     hal::error free(hal::ptr acc);
     hal::error free_host_pinned(hal::ptr ptr);
@@ -254,6 +274,7 @@ public:
     //hal::ptr get_device_addr_from_pinned(host_ptr addr);
 
     //hal_code_repository &get_code_repository();
+    
 
     void set();
 

@@ -33,6 +33,44 @@ class aspace;
 class context;
 class object;
 
+class GMAC_LOCAL handler_sigsegv {
+    static void fun_null() {}
+    
+public:
+    typedef std::function<bool (hal::ptr, bool)> function;
+    typedef std::function<void (void)>   fn_;
+
+    typedef std::pair<fn_, fn_> pair_fn;
+
+    function handler_;
+    pair_fn fns_;
+
+private:
+
+public:
+    handler_sigsegv(function handler,
+                    pair_fn ctx = pair_fn(fun_null, fun_null)) :
+        handler_(handler),
+        fns_(ctx)
+    {
+    }
+
+    void exec_pre()
+    {
+        fns_.first();
+    }
+
+    void exec_post()
+    {
+        fns_.second();
+    }
+
+    bool exec(hal::ptr p, bool isWrite)
+    {
+        return handler_(p, isWrite);
+    }
+};
+
 class GMAC_LOCAL aspace :
     public util::unique<aspace, GmacAddressSpaceId>,
     public util::attributes<aspace>,
@@ -60,7 +98,7 @@ public:
     const phys::aspace &get_paspace() const;
 
     virtual ptr map(virt::object &obj, GmacProtection prot, hal::error &err) = 0;
-    virtual ptr map(virt::object &obj, GmacProtection prot, ptrdiff_t offset, hal::error &err) = 0;
+    virtual ptr map(virt::object &obj, GmacProtection prot, size_t offset, hal::error &err) = 0;
 
     virtual code::repository_view *map(const code::repository &repo, hal::error &err) = 0;
 
@@ -68,6 +106,9 @@ public:
     virtual hal::error unmap(code::repository_view &view) = 0;
 
     virtual hal::error protect(hal::ptr ptr, size_t count, GmacProtection prot) = 0;
+
+    virtual hal::error      handler_sigsegv_push(handler_sigsegv &handler) = 0;
+    virtual handler_sigsegv handler_sigsegv_pop(hal::error &err) = 0;
 
     virtual bool has_direct_copy(hal::const_ptr ptr1, hal::const_ptr ptr2) = 0;
 

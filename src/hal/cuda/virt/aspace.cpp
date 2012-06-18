@@ -863,7 +863,7 @@ aspace::map(hal_object &obj, GmacProtection prot, hal::error &err)
 }
 
 hal::ptr
-aspace::map(hal_object &obj, GmacProtection prot, ptrdiff_t offset, hal::error &err)
+aspace::map(hal_object &obj, GmacProtection prot, size_t offset, hal::error &err)
 {
     FATAL("Not implementable without driver support");
     return hal::ptr();
