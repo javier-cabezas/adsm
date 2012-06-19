@@ -75,6 +75,7 @@ protected:
     friend bool mapping_fits(map_mapping &, mapping_ptr);
 
     const hal::virt::aspace::attribute_id AttributeMappings_;
+    const hal::virt::aspace::attribute_id AttributeProtection_;
 
     void event_handler(hal::virt::aspace &aspace, const util::event::construct &);
     void event_handler(hal::virt::aspace &aspace, const util::event::destruct &);
@@ -131,6 +132,11 @@ public:
     error to_io_device(hal::device_output &output, hal::const_ptr addr, size_t count);
 
     error flush_dirty(address_space_ptr aspace);
+
+    static
+    bool handle_fault(hal::ptr p, bool isWrite);
+
+    error use_memory_protection(hal::virt::aspace &as);
 
     void destroy_singleton()
     {

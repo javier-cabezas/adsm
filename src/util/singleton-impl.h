@@ -28,7 +28,7 @@ inline void singleton<T>::destroy()
 }
 
 template <typename T>
-inline T *singleton<T>::getInstance()
+inline T *singleton<T>::get_instance()
 {
     return Singleton_;
 }

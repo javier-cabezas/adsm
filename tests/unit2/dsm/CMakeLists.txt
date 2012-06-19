@@ -12,6 +12,10 @@ set(dsm_SRC
     ${CMAKE_SOURCE_DIR}/src/dsm/manager.h
     ${CMAKE_SOURCE_DIR}/src/dsm/manager-impl.h
     ${CMAKE_SOURCE_DIR}/src/dsm/manager.cpp
+
+    ${CMAKE_SOURCE_DIR}/src/dsm/coherence/block.h
+    ${CMAKE_SOURCE_DIR}/src/dsm/coherence/block-impl.h
+    ${CMAKE_SOURCE_DIR}/src/dsm/coherence/block.cpp
 )  
 
 set(all_SRC

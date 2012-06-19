@@ -347,16 +347,7 @@ mapping::acquire(size_t offset, size_t count, GmacProtection prot)
 
     for (coherence::block_ptr b : range) {
         ret = b->acquire(this, prot);
-        if (ret != error::DSM_SUCCESS) break;
-
-        if (prot_is_writable(prot) &&
-            has_mapping_flag(flags_, mapping_flags::MAP_USE_PROTECT)) {
-            hal::error errHal;
-            errHal = addr_.get_view().get_vaspace().protect(addr_ + offset, count, GMAC_PROT_NONE);
-            if (errHal == hal::error::HAL_SUCCESS) {
-                return error::DSM_ERROR_HAL;
-            }
-        }
+        if (ret != error::DSM_SUCCESS) break; 
     }
 
     return ret;
@@ -375,6 +366,25 @@ mapping::release(size_t offset, size_t count)
     for (coherence::block_ptr b : range) {
         err = b->release(this);
         if (err != error::DSM_SUCCESS) break;
+    }
+
+    return err;
+}
+
+error
+mapping::handle_fault(size_t offLocal, bool isWrite)
+{
+    CHECK(offLocal < size_, error::DSM_ERROR_INVALID_VALUE);
+
+    cursor_block cursor = get_first_block(offLocal);
+    ASSERTION(cursor.get_iterator() != blocks_.end());
+
+    error err;
+
+    if (isWrite) {
+        err = cursor.get_block()->handle_fault<true>(this, cursor.get_offset_local());
+    } else {
+        err = cursor.get_block()->handle_fault<false>(this, cursor.get_offset_local());
     }
 
     return err;

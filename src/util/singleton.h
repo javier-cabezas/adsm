@@ -48,11 +48,10 @@ private:
 protected:
     singleton();
     virtual ~singleton();
-
-    static T *getInstance();
 public:
-
     void destroy();
+
+    static T *get_instance();
 };
 
 }}

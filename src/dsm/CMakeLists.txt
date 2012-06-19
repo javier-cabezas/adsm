@@ -9,6 +9,7 @@ set(dsm_SRC
     mapping.cpp
     coherence/block.h
     coherence/block-impl.h
+    coherence/block.cpp
     coherence/types.h
 )
 

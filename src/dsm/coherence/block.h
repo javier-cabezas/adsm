@@ -87,6 +87,12 @@ public:
     error register_mapping(mapping_ptr m, size_t off);
     error unregister_mapping(mapping &m);
 
+    template <bool Write>
+    error handle_fault(mapping_ptr m, size_t offLocal)
+    {
+        return error::DSM_SUCCESS;
+    }
+
     error transfer_mappings(block &&b);
 
     size_t get_size() const;
