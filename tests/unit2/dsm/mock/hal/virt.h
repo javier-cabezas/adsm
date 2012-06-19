@@ -36,6 +36,29 @@ namespace __impl { namespace hal { namespace virt {
         }
     };
 
+    class GMAC_LOCAL handler_sigsegv {
+        static void fun_null() {}
+    public:
+        typedef std::function<bool (hal::ptr, bool)> function;
+        typedef std::function<void (void)>   fn_;
+
+        typedef std::pair<fn_, fn_> pair_fn;
+
+    public:
+        handler_sigsegv(function handler,
+                        pair_fn ctx = pair_fn(fun_null, fun_null))
+        {
+        }
+
+        void exec_pre()
+        {
+        }
+
+        void exec_post()                                                                                                   
+        {                                                                                                                  
+        } 
+    };
+
     class GMAC_LOCAL aspace :
         public util::unique<aspace, GmacAddressSpaceId>,
         public util::attributes<aspace>,
@@ -48,6 +71,8 @@ namespace __impl { namespace hal { namespace virt {
         typedef util::observable<aspace, util::event::destruct>  observe_destruct;
 
     private:
+        std::list<handler_sigsegv> handlers_;
+
         aspace()
         {
             TRACE(LOCAL, FMT_ID2" created", get_print_id2());
@@ -73,6 +98,17 @@ namespace __impl { namespace hal { namespace virt {
             CHECK(&p.get_view().get_vaspace() == this, error::HAL_ERROR_INVALID_PTR);
 
             return error::HAL_SUCCESS;
+        }
+
+        error handler_sigsegv_push(handler_sigsegv &handler)
+        {
+            handlers_.push_back(handler);
+            return error::HAL_SUCCESS;
+        }
+
+        handler_sigsegv handler_sigsegv_pop(error &err)
+        {
+            return handlers_.back();
         }
     };
 }}}

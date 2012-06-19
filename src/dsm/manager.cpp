@@ -4,26 +4,73 @@
 
 namespace __impl { namespace dsm {
 
+static
+bool TRUE = true;
+static
+bool FALSE = true;
+
 void
-manager::event_handler(hal::virt::aspace &aspace, const util::event::construct &)
+manager::event_handler(hal::virt::aspace &as, const util::event::construct &)
 {
-    TRACE(LOCAL, FMT_ID2" Handle " FMT_ID2" creation", get_print_id2(), aspace.get_print_id2());
+    TRACE(LOCAL, FMT_ID2" Handle " FMT_ID2" creation", get_print_id2(), as.get_print_id2());
 
     map_mapping_group *ret = new map_mapping_group();
-    aspace.set_attribute<map_mapping_group>(AttributeMappings_, ret);
+    as.set_attribute<map_mapping_group>(AttributeMappings_, ret);
+    as.set_attribute<bool>(AttributeProtection_, &FALSE);
 }
 
 void
-manager::event_handler(hal::virt::aspace &aspace, const util::event::destruct &)
+manager::event_handler(hal::virt::aspace &as, const util::event::destruct &)
 {
-    TRACE(LOCAL, FMT_ID2" Handle " FMT_ID2" destruction", get_print_id2(), aspace.get_print_id2());
+    TRACE(LOCAL, FMT_ID2" Handle " FMT_ID2" destruction", get_print_id2(), as.get_print_id2());
 
     // Get the mappings from the address space, to avoid an extra map
-    map_mapping_group &group = get_aspace_mappings(aspace);
+    map_mapping_group &group = get_aspace_mappings(as);
     error err = delete_mappings(group);
     ASSERTION(err == error::DSM_SUCCESS);
 
     delete &group;
+}
+
+bool
+manager::handle_fault(hal::ptr p, bool isWrite)
+{
+    hal::virt::aspace &as = p.get_view().get_vaspace();
+    manager *mgr = manager::get_instance();
+
+    // Retrieve the mappings for the address space
+    map_mapping_group &mappings = mgr->get_aspace_mappings(as);
+    // Retrieve the mappings for the view
+    map_mapping_group::iterator it = mappings.find(&p.get_view());
+
+    if (it == mappings.end()) {
+        return false;
+    }
+
+    // Retrieve the mapping
+    map_mapping &map = it->second;
+    map_mapping::iterator it2 = map.upper_bound(p.get_offset());
+    if (it2 == map.end()) {
+        return false;
+    }
+
+    error err = it2->second->handle_fault(p, isWrite);
+
+    return err == error::DSM_SUCCESS;
+}
+
+error
+manager::use_memory_protection(hal::virt::aspace &as)
+{
+    bool overloaded = as.get_attribute<bool>(AttributeProtection_);
+    if (!overloaded) {
+        hal::error errHal;
+        hal::virt::handler_sigsegv handler(handle_fault);
+        errHal = as.handler_sigsegv_push(handler);
+        if (errHal != hal::error::HAL_SUCCESS) return error::DSM_ERROR_HAL;
+        as.set_attribute<bool>(AttributeProtection_, &TRUE);
+    }
+    return error::DSM_SUCCESS;
 }
 
 manager::map_mapping_group &
@@ -60,8 +107,9 @@ manager::insert_mapping(map_mapping_group &mappings, mapping_ptr m)
                      m->get_print_id2(),
                      m->get_ptr().get_view().get_vaspace().get_print_id2());
     } else {
-        if (mapping_fits(it->second, m)) {
-            it->second.insert(map_mapping::value_type(m->get_ptr().get_offset() + m->get_bounds().get_size(), m));
+        map_mapping &map = it->second;
+        if (mapping_fits(map, m)) {
+            map.insert(map_mapping::value_type(m->get_ptr().get_offset() + m->get_bounds().get_size(), m));
             TRACE(LOCAL, FMT_ID2" Inserting " FMT_ID2" in " FMT_ID2,
                          get_print_id2(),
                          m->get_print_id2(),
@@ -157,7 +205,8 @@ manager::delete_mappings(map_mapping_group &mappings)
 manager::manager() :
     observer_construct(),
     observer_destruct(),
-    AttributeMappings_(hal::virt::aspace::register_attribute())
+    AttributeMappings_(hal::virt::aspace::register_attribute()),
+    AttributeProtection_(hal::virt::aspace::register_attribute())
 {
     TRACE(LOCAL, FMT_ID2" Creating", get_print_id2());
 }

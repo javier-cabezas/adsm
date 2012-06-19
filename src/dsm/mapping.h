@@ -210,6 +210,8 @@ public:
     error acquire(size_t offset, size_t count, GmacProtection prot);
     error release(size_t offset, size_t count);
 
+    error handle_fault(size_t offLocal, bool isWrite);
+
     static error link(size_t ptr1, mapping_ptr m1,
                       size_t ptr2, mapping_ptr m2, size_t count, int flags);
 
@@ -219,6 +221,11 @@ public:
     bounds get_bounds() const;
 
     hal::ptr get_ptr() const;
+
+    hal::virt::aspace &get_aspace()
+    {
+        return addr_.get_view().get_vaspace();
+    }
 
     GmacProtection get_protection() const;
 
