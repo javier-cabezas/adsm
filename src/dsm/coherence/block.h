@@ -73,6 +73,8 @@ class GMAC_LOCAL block :
     typedef std::map<mapping_ptr, mapping_descriptor> mappings;
     mappings mappings_;
 
+    error update(mapping_ptr m, size_t off);
+
     block(size_t size);
 
 public:
@@ -90,7 +92,48 @@ public:
     template <bool Write>
     error handle_fault(mapping_ptr m, size_t offLocal)
     {
-        return error::DSM_SUCCESS;
+        ASSERTION(mappings_.find(m) != mappings_.end());
+        ASSERTION(!Write || prot_is_writable(m->get_protection()));
+        ASSERTION( Write || prot_is_readable(m->get_protection()));
+        ASSERTION(has_mapping_flag(m->get_flags(), mapping_flags::MAP_USE_PROTECT));
+
+        error ret = error::DSM_SUCCESS;
+
+        mapping_descriptor &desc = mappings_.find(m)->second;
+
+        switch (desc.state_) {
+        case state::STATE_DIRTY:
+        case state::STATE_SHARED:
+            ret = error::DSM_ERROR_PROTOCOL;
+            break;
+        case state::STATE_INVALID:
+            // TODO: Check for asynchronous updates
+            ret = update(m, desc.off_);
+            if (ret == error::DSM_SUCCESS && Write) {
+                GmacProtection prot = prot_is_readable(m->get_protection())? GMAC_PROT_READWRITE: GMAC_PROT_WRITE;
+
+                // Unprotect memory to allow write accesses
+                hal::error errHal;
+                errHal = m->get_ptr().get_view().get_vaspace().protect(m->get_ptr() + desc.off_, size_, prot);
+                if (errHal != hal::error::HAL_SUCCESS) {
+                    ret = error::DSM_ERROR_HAL;
+                }
+
+                desc.state_ = state::STATE_DIRTY;
+            } else if (ret == error::DSM_SUCCESS) {
+                // Unprotect memory to allow read accesses
+                hal::error errHal;
+                errHal = m->get_ptr().get_view().get_vaspace().protect(m->get_ptr() + desc.off_, size_, GMAC_PROT_READ);
+                if (errHal != hal::error::HAL_SUCCESS) {
+                    ret = error::DSM_ERROR_HAL;
+                }
+
+                desc.state_ = state::STATE_SHARED;
+            }
+            break;
+        }
+
+        return ret;
     }
 
     error transfer_mappings(block &&b);

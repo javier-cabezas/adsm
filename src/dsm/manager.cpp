@@ -54,7 +54,7 @@ manager::handle_fault(hal::ptr p, bool isWrite)
         return false;
     }
 
-    error err = it2->second->handle_fault(p, isWrite);
+    error err = it2->second->handle_fault(p - it2->second->get_ptr(), isWrite);
 
     return err == error::DSM_SUCCESS;
 }

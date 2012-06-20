@@ -83,23 +83,11 @@ protected:
     template <bool forward = true>
     void shift_blocks(size_t offset);
 
-#if 0
-    template <typename I>
-    static mapping_ptr merge_mappings(util::range<I> range, size_t off, size_t count);
-
-    static error dup2(mapping_ptr map1, hal::ptr::offset_type off1,
-                            mapping_ptr map2, hal::ptr::offset_type off2, size_t count);
-
-    error dup(hal::ptr::offset_type off1, mapping_ptr map2,
-                    hal::ptr::offset_type off2, size_t count);
-#endif
-
     typedef std::pair<mapping_ptr, mapping_ptr> pair_mapping;
 
     pair_mapping
     split(size_t off, size_t count, error &err);
 
-    //typedef std::pair<list_block::iterator, size_t> pair_block_info;
     class cursor_block {
         list_block::iterator it_;
         size_t offBlock_;

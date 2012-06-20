@@ -5,6 +5,35 @@
 namespace __impl { namespace dsm { namespace coherence {
 
 error
+block::update(mapping_ptr m, size_t off)
+{
+    // Find the mapping holding the last copy of the block
+    auto it = util::algo::find_if(mappings_,
+                                  [](mappings::value_type &val)
+                                  {
+                                      if (val.second.state_ != state::STATE_INVALID) return true;
+                                      return false;
+                                  });
+    
+    // Someone must have the last copy
+    CHECK(it != mappings_.end(), error::DSM_ERROR_PROTOCOL);
+
+    // Only update if mappings are different
+    if (m != it->first) {
+        hal::error errHal;
+        hal::copy(        m->get_ptr() + off, 
+                  it->first->get_ptr() + it->second.off_,
+                  size_, errHal);
+
+        if (errHal != hal::error::HAL_SUCCESS) {
+            return error::DSM_ERROR_HAL;
+        }
+    }
+
+    return error::DSM_SUCCESS;
+}
+
+error
 block::acquire(mapping_ptr m, GmacProtection prot)
 {
     TRACE(LOCAL, FMT_ID2" Acquire block for " FMT_ID2, get_print_id2(), m->get_print_id2());
@@ -35,21 +64,7 @@ block::acquire(mapping_ptr m, GmacProtection prot)
             }
         } else {
             // We need to update the contents
-            // Find the last copy
-            auto it2 = util::algo::find_if(mappings_,
-                                           [=](mappings::value_type &val)
-                                           {
-                                               if (val.second.state_ != state::STATE_INVALID) return true;
-                                               return false;
-                                           });
-            
-            // Someone must have the last copy
-            CHECK(it2 != mappings_.end(), error::DSM_ERROR_PROTOCOL);
-
-            hal::error errHal;
-            hal::copy(         m->get_ptr() + it->second.off_, 
-                      it2->first->get_ptr() + it2->second.off_,
-                      size_, errHal);
+            ret = update(m, it->second.off_);
 
             it->second.state_ = state::STATE_SHARED;
         }
@@ -83,12 +98,12 @@ block::release(mapping_ptr m)
         // Invalidate everybody else
         for (auto &md : mappings_) {
             if (md.first != m) {
+                TRACE(LOCAL, FMT_ID2" Set " FMT_ID2 " invalid", get_print_id2(), md.first->get_print_id2());
                 md.second.state_ = state::STATE_INVALID;
-		TRACE(LOCAL, FMT_ID2" Set " FMT_ID2 " invalid", get_print_id2(), md.first->get_print_id2());
             } else {
                 // Set state to dirty
                 // TODO: use memory protection to detect changes
-		TRACE(LOCAL, FMT_ID2" Set " FMT_ID2 " dirty", get_print_id2(), md.first->get_print_id2());
+                TRACE(LOCAL, FMT_ID2" Set " FMT_ID2 " dirty", get_print_id2(), md.first->get_print_id2());
                 md.second.state_ = state::STATE_DIRTY;
             }
         }

@@ -31,7 +31,7 @@ mapping::get_blocks_in_range(size_t offset, size_t count)
     return range_block(first, last);
 }
 
-template <bool forward>
+template <bool Forward>
 void
 mapping::shift_blocks(size_t offset)
 {
@@ -378,6 +378,8 @@ mapping::handle_fault(size_t offLocal, bool isWrite)
 
     cursor_block cursor = get_first_block(offLocal);
     ASSERTION(cursor.get_iterator() != blocks_.end());
+
+    CFATAL(!isWrite || prot_is_writable(prot_), "Writing to a non-writable memory mapping");
 
     error err;
 

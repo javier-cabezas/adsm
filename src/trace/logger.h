@@ -110,6 +110,7 @@ namespace __impl { namespace trace {
                                                                    ##__VA_ARGS__)
 #   endif
 #   define ASSERTION(c, ...) __impl::trace::Logger::__Assertion(c, "Assertion '"#c"' failed", LOCATION_STRING, ##__VA_ARGS__)
+#   define ASSERTION_LAMBDA(c, ...) __impl::trace::Logger::__Assertion([&]() -> bool c (), "Assertion '"#c"' failed", LOCATION_STRING, ##__VA_ARGS__)
 #else
 
 static inline
@@ -124,6 +125,7 @@ void dummy_assertion(bool /*b*/, ...)
 
 #   define TRACE(...) dummy_trace(__VA_ARGS__)
 #   define ASSERTION(c, ...) dummy_assertion(c, ##__VA_ARGS__)
+#   define ASSERTION_LAMBDA(c, ...) dummy_assertion([&]() -> bool c (), ##__VA_ARGS__)
 #endif // DEBUG
 
 #ifdef DEBUG
