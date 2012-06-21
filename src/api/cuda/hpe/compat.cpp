@@ -737,6 +737,12 @@ GMAC_API cudaError_t APICALL cudaEventRecord(cudaEvent_t event, cudaStream_t /*s
     return __getCUDAError(ret);
 }
 
+GMAC_API cudaError_t APICALL cudaEventSynchronize(cudaEvent_t event)
+{
+    CUresult ret = cuEventSynchronize((CUevent) event);
+    return __getCUDAError(ret);
+}
+
 
 
 #ifdef __cplusplus
