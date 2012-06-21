@@ -61,6 +61,8 @@ Manager::map(core::Mode &mode, hostptr_t *addr, size_t size, int flags)
     object->addOwner(mode);
     *addr = object->addr();
 
+    Memory::protect(*addr, size, GMAC_PROT_READ);
+
     // Insert object into memory maps
     map.addObject(*object);
 
@@ -134,14 +136,16 @@ gmacError_t Manager::alloc(core::Mode &mode, hostptr_t *addr, size_t size)
         trace::ExitCurrentFunction();
         return gmacErrorMemoryAllocation;
     }
-    object->addOwner(mode);
-    *addr = object->addr();
-
-    // Insert object into memory maps
-    map.addObject(*object);
+    gmacError_t ret = object->addOwner(mode);
+    if (ret == gmacSuccess) {
+        *addr = object->addr();
+        Memory::protect(*addr, size, GMAC_PROT_READ);
+        // Insert object into memory maps
+        map.addObject(*object);
+    }
     object->decRef();
     trace::ExitCurrentFunction();
-    return gmacSuccess;
+    return ret;
 }
 
 gmacError_t Manager::hostMappedAlloc(core::Mode &mode, hostptr_t *addr, size_t size)

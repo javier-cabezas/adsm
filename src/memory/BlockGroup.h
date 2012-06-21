@@ -57,7 +57,10 @@ protected:
     AcceleratorMap acceleratorAddr_;
     unsigned owners_;
     core::Mode *ownerShortcut_;
+    Protocol &protocol_;
+    typename State::ProtocolState init_;
 
+    gmacError_t populateBlocks();
     gmacError_t repopulateBlocks(accptr_t accPtr, core::Mode &mode);
 
     void modifiedObject();

@@ -198,6 +198,13 @@ Mode::hasIntegratedMemory() const
     return acc_->integrated();
 }
 
+inline bool
+Mode::hasUnifiedAddressing() const
+{
+    return acc_->hasUnifiedAddressing();
+}
+
+
 }}}
 
 #endif

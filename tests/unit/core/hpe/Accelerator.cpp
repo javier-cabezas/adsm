@@ -51,6 +51,7 @@ TEST_F(AcceleratorTest, Memory) {
 		ASSERT_EQ(n, acc.id());
         ASSERT_TRUE(acc.map(device, hostptr_t(buffer), Size_ * sizeof(int)) == gmacSuccess);
         ASSERT_TRUE(device != 0);
+        ASSERT_TRUE(acc.add_mapping(device, hostptr_t(buffer), Size_ * sizeof(int)) == gmacSuccess);
 		ASSERT_TRUE(acc.getMapping(device, hostptr_t(buffer), Size_ * sizeof(int)));
 		
 		ASSERT_TRUE(acc.copyToAccelerator(device, hostptr_t(buffer), Size_ * sizeof(int), Thread::getCurrentMode()) == gmacSuccess);
@@ -72,6 +73,7 @@ TEST_F(AcceleratorTest, Aligment) {
             accptr_t device(0);
             ASSERT_TRUE(acc.map(device, fakePtr, Size_, n) == gmacSuccess);
             ASSERT_TRUE(device != 0);
+            ASSERT_TRUE(acc.add_mapping(device, fakePtr, Size_) == gmacSuccess);
             ASSERT_TRUE(acc.unmap(fakePtr, Size_) == gmacSuccess);
         }
     }

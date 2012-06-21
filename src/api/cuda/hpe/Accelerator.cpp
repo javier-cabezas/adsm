@@ -235,7 +235,7 @@ Accelerator::map(accptr_t &dst, hostptr_t src, size_t count, unsigned align)
     dst.pasId_ = id_;
 #endif
 
-    allocations_.insert(src, dst, count);
+    //allocations_.insert(src, dst, count);
 
     alignMap_.lockWrite();
 
@@ -244,6 +244,14 @@ Accelerator::map(accptr_t &dst, hostptr_t src, size_t count, unsigned align)
     TRACE(LOCAL,"Allocating device memory: %p (originally %p) - "FMT_SIZE" (originally "FMT_SIZE") bytes (alignment %u)", dst.get(), ptr, gpuSize, count, align);
     trace::ExitCurrentFunction();
     return error(ret);
+}
+
+gmacError_t
+Accelerator::add_mapping(accptr_t dst, hostptr_t src, size_t size)
+{
+    allocations_.insert(src, dst, size);
+
+    return gmacSuccess;
 }
 
 gmacError_t
@@ -611,5 +619,20 @@ void Accelerator::destroyCUstream(CUstream stream)
     trace::ExitCurrentFunction();
 }
 
+bool Accelerator::hasUnifiedAddressing() const
+{
+    bool ret;
+    pushContext();
+#if CUDA_VERSION >= 4000
+    int val;
+    CUresult res = cuDeviceGetAttribute(&val, CU_DEVICE_ATTRIBUTE_UNIFIED_ADDRESSING, device_);
+    CFATAL(res == CUDA_SUCCESS);
+    ret = bool(val);
+#else
+    ret = false;
+#endif
+    popContext();
+    return ret;
+}
 
 }}}

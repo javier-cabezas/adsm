@@ -127,6 +127,14 @@ Mode::hasIntegratedMemory() const
     return false;
 }
 
+inline bool
+Mode::hasUnifiedAddressing() const
+{
+    return false;
+}
+
+
+
 }}}
 
 #endif

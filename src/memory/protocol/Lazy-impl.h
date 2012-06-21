@@ -27,7 +27,6 @@ Lazy<T>::createObject(core::Mode &current, size_t size, hostptr_t cpuPtr,
         ret->decRef();
         return NULL;
     }
-    Memory::protect(ret->addr(), ret->size(), prot);
     if (limit_ != size_t(-1)) {
 #if 0
         lock();

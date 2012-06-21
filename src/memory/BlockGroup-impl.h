@@ -37,6 +37,45 @@ mallocAccelerator(core::Mode &mode, hostptr_t addr, size_t size, accptr_t &accel
     return ret;
 }
 
+static inline gmacError_t
+mallocHost(accptr_t addr, size_t size, hostptr_t &hostAddr)
+{
+    gmacError_t ret = gmacSuccess;
+
+    hostAddr = NULL;
+
+    // Allocate host memory
+    if(hostAddr == NULL) {
+        hostAddr = Memory::map(hostptr_t(addr.get()), size, GMAC_PROT_READWRITE);
+        if (hostAddr == NULL) {
+            return gmacErrorMemoryAllocation;
+        }
+    }
+
+    return ret;
+}
+
+template<typename State>
+gmacError_t
+BlockGroup<State>::populateBlocks()
+{
+    // Create memory blocks
+    hostptr_t mark = addr_;
+    ptroff_t offset = 0;
+    size_t size = size_; 
+    while(size > 0) {
+        size_t blockSize = (size > BlockSize_) ? BlockSize_ : size;
+        mark += blockSize;
+        blocks_.insert(BlockMap::value_type(mark,
+                       new GenericBlock<State>(protocol_, addr_ + offset,
+                           shadow_ + offset, blockSize, init_)));
+        size -= blockSize;
+        offset += ptroff_t(blockSize);
+        TRACE(LOCAL, "Creating BlockGroup @ %p : shadow @ %p ("FMT_SIZE" bytes) ", addr_, shadow_, blockSize);
+    }
+    return gmacSuccess;
+}
+
 template<typename State>
 gmacError_t
 BlockGroup<State>::repopulateBlocks(accptr_t accPtr, core::Mode &mode)
@@ -68,40 +107,13 @@ BlockGroup<State>::BlockGroup(Protocol &protocol, core::Mode &owner,
     Object(hostAddr, size),
     hasUserMemory_(hostAddr != NULL),
     owners_(0),
-    ownerShortcut_(NULL)
+    ownerShortcut_(NULL),
+    protocol_(protocol),
+    init_(init)
 {
     shadow_ = NULL;
     err = gmacSuccess;
 
-    // Allocate memory (if necessary)
-    if(hostAddr == NULL) {
-        addr_ = Memory::map(NULL, size, GMAC_PROT_READWRITE);
-        if (addr_ == NULL) {
-            err = gmacErrorMemoryAllocation;
-            return;
-        }
-    }
-
-    // Create a shadow mapping for the host memory
-    shadow_ = hostptr_t(Memory::shadow(addr_, size_));
-    if (shadow_ == NULL) {
-        err = gmacErrorMemoryAllocation;
-        return;
-    }
-
-    hostptr_t mark = addr_;
-    ptroff_t offset = 0;
-    while(size > 0) {
-        size_t blockSize = (size > BlockSize_) ? BlockSize_ : size;
-        mark += blockSize;
-        blocks_.insert(BlockMap::value_type(mark,
-                       new GenericBlock<State>(protocol, addr_ + offset,
-                                               shadow_ + offset, blockSize, init)));
-        size -= blockSize;
-        offset += ptroff_t(blockSize);
-		TRACE(LOCAL, "Creating BlockGroup @ %p : shadow @ %p ("FMT_SIZE" bytes) ", addr_, shadow_, blockSize);
-    }
-    
 }
 
 
@@ -142,7 +154,7 @@ BlockGroup<State>::acceleratorAddr(core::Mode &current, const hostptr_t addr) co
 }
 
 template<typename State>
-inline core::Mode &
+core::Mode &
 BlockGroup<State>::owner(core::Mode &current, const hostptr_t addr) const
 {
     core::Mode *ret;
@@ -159,7 +171,7 @@ BlockGroup<State>::owner(core::Mode &current, const hostptr_t addr) const
 }
 
 template<typename State>
-inline gmacError_t
+gmacError_t
 BlockGroup<State>::addOwner(core::Mode &mode)
 {
     TRACE(LOCAL, "Add owner %p Object @ %p", &mode, addr_);
@@ -170,6 +182,40 @@ BlockGroup<State>::addOwner(core::Mode &mode)
 
     lockWrite();
 
+    // Allocate memory (if necessary)
+    if (blocks_.size() == 0) {
+        if (mode.hasUnifiedAddressing()) {
+            ret = mallocHost(acceleratorAddr, size_, addr_);
+        } else {
+            ret = mallocHost(accptr_t(0), size_, addr_);
+        }
+        if (ret != gmacSuccess) {
+            unlock();
+            return ret;
+        }
+
+        // Register the mapping for the first allocation
+        ret = mode.add_mapping(acceleratorAddr, addr_, size_);
+        if (ret != gmacSuccess) {
+            unlock();
+            return ret;
+        }
+
+        // Create a shadow mapping for the host memory
+        shadow_ = hostptr_t(Memory::shadow(addr_, size_));
+        if (shadow_ == NULL) {
+            ret = gmacErrorMemoryAllocation;
+            unlock();
+            return ret;
+        }
+
+        ret = populateBlocks();
+        if (ret != gmacSuccess) {
+            unlock();
+            return ret;
+        }
+    }
+    
     AcceleratorMap::iterator it = acceleratorAddr_.find(acceleratorAddr);
     if (it == acceleratorAddr_.end()) {
         acceleratorAddr_.insert(AcceleratorMap::value_type(acceleratorAddr, std::list<core::Mode *>()));
@@ -196,7 +242,7 @@ BlockGroup<State>::addOwner(core::Mode &mode)
 
 // TODO: move checks to DBC
 template<typename State>
-inline gmacError_t
+gmacError_t
 BlockGroup<State>::removeOwner(core::Mode &mode)
 {
     lockWrite();

@@ -173,14 +173,20 @@ gmacError_t Accelerator::map(accptr_t &dst, hostptr_t src, size_t size, unsigned
     trace::SetThreadState(trace::Running);
     allocatedMemory_ += size;
 
-    allocations_.insert(src, dst, size);
-
     dst.pasId_ = id_;
 
     TRACE(LOCAL, "Allocating accelerator memory (%d bytes) @ %p", size, dst.get());
 
     trace::ExitCurrentFunction();
     return error(ret);
+}
+
+gmacError_t
+Accelerator::add_mapping(accptr_t dst, hostptr_t src, size_t size)
+{
+    allocations_.insert(src, dst, size);
+
+    return gmacSuccess;
 }
 
 gmacError_t Accelerator::unmap(hostptr_t host, size_t size)
