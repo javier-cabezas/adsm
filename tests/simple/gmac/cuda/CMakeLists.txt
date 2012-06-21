@@ -37,7 +37,7 @@ source_group(${current_GROUP} FILES
     cudaStencilCommon.cu
     gmacConstant.cu
     gmacTexture.cu
-    gmacCompressCommon.cu
+    #gmacCompressCommon.cu
     gmacCompress.cu
     gmacPingPong.cu
     NBody_GMAC/NBody.h
@@ -53,6 +53,12 @@ endif()
 
 if(CMAKE_COMPILER_IS_GNUCC)
     set(CUDA_NVCC_FLAGS "--ptxas-options=-v" "--compiler-options;-fno-strict-aliasing" "--keep")
+
+    # Try to get the GCC version
+    execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
+    if(GCC_VERSION VERSION_GREATER 4.5)
+        set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "--compiler-options;-Wno-error=unused-but-set-variable")
+    endif(GCC_VERSION VERSION_GREATER 4.5)
 endif(CMAKE_COMPILER_IS_GNUCC)
 
 # gmacAlloc
@@ -180,14 +186,14 @@ add_executable(gmacPingPong ${pingpong}  gmacPingPong.cu)
 target_link_libraries(gmacPingPong test-common gmac-cuda)
 
 # gmacCompress
-cuda_compile(compress gmacCompressCommon.cu gmacCompress.cu)
-add_executable(gmacCompress ${compress}  gmacCompressCommon.cu gmacCompress.cu)
-target_link_libraries(gmacCompress test-common gmac-cuda)
+#cuda_compile(compress gmacCompressCommon.cu gmacCompress.cu)
+#add_executable(gmacCompress ${compress}  gmacCompressCommon.cu gmacCompress.cu)
+#target_link_libraries(gmacCompress test-common gmac-cuda)
 
 # gmacCompress
-cuda_compile(compressSend gmacCompressCommon.cu gmacCompressSend.cu)
-add_executable(gmacCompressSend ${compressSend}  gmacCompressCommon.cu gmacCompressSend.cu)
-target_link_libraries(gmacCompressSend test-common gmac-cuda)
+#cuda_compile(compressSend gmacCompressCommon.cu gmacCompressSend.cu)
+#add_executable(gmacCompressSend ${compressSend}  gmacCompressCommon.cu gmacCompressSend.cu)
+#target_link_libraries(gmacCompressSend test-common gmac-cuda)
 endif(NOT CMAKE_SYSTEM_NAME MATCHES "Windows")
 
 option(USE_OPENGL "Enable building OpenGL tests" OFF)
