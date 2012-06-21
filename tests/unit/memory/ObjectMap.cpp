@@ -72,6 +72,8 @@ TEST_F(ObjectMapTest, Coherence) {
 	
     Object *obj1 = proto.createObject(*mode, Size_, NULL, GMAC_PROT_READ, 0);
 	Object *obj2 = proto.createObject(*mode, Size_, NULL, GMAC_PROT_READWRITE, 0);
+    obj1->addOwner(*mode);
+    obj2->addOwner(*mode);
 
 	hostptr_t addr1 = obj1->addr();
 	hostptr_t addr2 = obj2->addr();
@@ -120,6 +122,9 @@ TEST_F(ObjectMapTest, Coherence) {
 	ASSERT_EQ(gmacSuccess, map.releaseObjects());
 	ASSERT_TRUE(map.releasedObjects());
 	ASSERT_EQ(gmacSuccess, map.acquireObjects());
+
+    obj1->removeOwner(*mode);
+    obj2->removeOwner(*mode);
 
     obj1->decRef();
 	obj2->decRef();

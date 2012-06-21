@@ -52,6 +52,7 @@ TEST_F(AddressSpaceTest, Object) {
 	ASSERT_TRUE(&proto != NULL);
 	Object *object = proto.createObject(*Mode_, Size_, NULL, GMAC_PROT_READ, 0);
 	ASSERT_TRUE(object != NULL);
+    object->addOwner(*Mode_);
 	
 	hostptr_t ptr = object->addr();
 	ASSERT_TRUE(ptr != NULL);
@@ -64,4 +65,6 @@ TEST_F(AddressSpaceTest, Object) {
 	ASSERT_TRUE(aSpace->removeObject(*object));
 	ASSERT_FALSE(aSpace->hasObject(*object));
 	ASSERT_NE(object, aSpace->getObject(ptr, Size_)); 
+
+    object->removeOwner(*Mode_);
 }

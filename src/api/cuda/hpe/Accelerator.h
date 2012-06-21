@@ -153,6 +153,8 @@ public:
     int minor() const;
 
     gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1);
+    gmacError_t add_mapping(accptr_t dst, hostptr_t src, size_t size);
+
     gmacError_t unmap(hostptr_t addr, size_t size);
 
 #if CUDA_VERSION >= 4000
@@ -192,6 +194,8 @@ public:
 
     void getMemInfo(size_t &free, size_t &total) const;
     void getAcceleratorInfo(GmacAcceleratorInfo &info);
+
+    bool hasUnifiedAddressing() const;
 };
 
 }}}

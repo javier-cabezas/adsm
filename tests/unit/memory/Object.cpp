@@ -63,10 +63,6 @@ TEST_F(ObjectTest, Creation)
     __impl::memory::Protocol &proto = map.getProtocol();
     Object *object = proto.createObject(mode, Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
-    ASSERT_TRUE(object->addr() != NULL);
-    ASSERT_TRUE(object->end() != NULL);
-    ASSERT_EQ(Size_, size_t(object->end() - object->addr()));
-    ASSERT_EQ(Size_, object->size());
 
     map.removeObject(*object);
     object->decRef();
@@ -79,6 +75,7 @@ TEST_F(ObjectTest, Blocks)
     __impl::memory::ObjectMap &map = mode.getAddressSpace();
     Object *object = map.getProtocol().createObject(mode, Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
+    object->addOwner(mode);
     hostptr_t start = object->addr();
     ASSERT_TRUE(start != NULL);
     hostptr_t end = object->end();
@@ -103,6 +100,10 @@ TEST_F(ObjectTest, Coherence)
     Object *object = map.getProtocol().createObject(mode, Size_, NULL, GMAC_PROT_READ, 0);
     ASSERT_TRUE(object != NULL);
     object->addOwner(mode);
+    ASSERT_TRUE(object->addr() != NULL);
+    ASSERT_TRUE(object->end() != NULL);
+    ASSERT_EQ(Size_, size_t(object->end() - object->addr()));
+    ASSERT_EQ(Size_, object->size());
     map.addObject(*object);
 
     hostptr_t ptr = object->addr();

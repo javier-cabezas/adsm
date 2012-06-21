@@ -158,6 +158,7 @@ public:
      * \return Error code
      */
     gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1);
+    gmacError_t add_mapping(accptr_t dst, hostptr_t src, size_t size);
 
     /**
      * Allocate GPU-accessible host memory
@@ -315,6 +316,7 @@ public:
     void getMemInfo(size_t &free, size_t &total);
 
     bool hasIntegratedMemory() const;
+    bool hasUnifiedAddressing() const;
 
     memory::ObjectMap &getAddressSpace();
     const memory::ObjectMap &getAddressSpace() const;

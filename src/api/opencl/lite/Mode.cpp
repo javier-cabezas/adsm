@@ -65,8 +65,13 @@ gmacError_t Mode::map(accptr_t &dst, hostptr_t src, size_t size, unsigned align)
 {
     cl_int ret = CL_SUCCESS;
     dst(clCreateBuffer(context_, CL_MEM_READ_WRITE, size, NULL, &ret));
-    allocations_.insert(src, dst, size);
     return error(ret);
+}
+
+gmacError_t Mode::add_mapping(accptr_t dst, hostptr_t src, size_t size)
+{
+    allocations_.insert(src, dst, size);
+    return gmacSuccess;
 }
 
 gmacError_t Mode::unmap(hostptr_t host, size_t size)

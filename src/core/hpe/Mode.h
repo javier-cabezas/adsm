@@ -161,6 +161,9 @@ public:
      */
     TESTABLE gmacError_t map(accptr_t &dst, hostptr_t src, size_t count, unsigned align = 1);
 
+    gmacError_t
+    add_mapping(accptr_t dst, hostptr_t src, size_t count);
+
     /**
      * Unmaps the memory previously mapped by map
      * \param addr Host memory allocation to be unmap
@@ -316,6 +319,7 @@ public:
      * \return A boolean that tells if the accelerator on which the Mode is running shares memory with the CPU
      */
     bool hasIntegratedMemory() const;
+    bool hasUnifiedAddressing() const;
 
     memory::ObjectMap &getAddressSpace();
     const memory::ObjectMap &getAddressSpace() const;

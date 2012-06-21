@@ -105,6 +105,9 @@ public:
      */
     virtual gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1) = 0;
 
+    virtual gmacError_t add_mapping(accptr_t dst, hostptr_t src, size_t count) = 0;
+
+
     /** Release GPU-accessible host memory
      *
      *  \param addr Starting address of the host memory to be released
@@ -207,6 +210,7 @@ public:
     virtual void getMemInfo(size_t &free, size_t &total) = 0;
 
     virtual bool hasIntegratedMemory() const = 0;
+    virtual bool hasUnifiedAddressing() const = 0;
 
 #ifdef USE_OPENCL
     virtual gmacError_t acquire(hostptr_t addr) = 0;

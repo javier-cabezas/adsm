@@ -56,7 +56,10 @@ Mode::map(accptr_t &dst, hostptr_t src, size_t count, unsigned align)
 
     gmacError_t ret;
     accptr_t acc(0);
-    bool hasMapping = acc_->getMapping(acc, src, count);
+    bool hasMapping = false;
+    if (src != NULL) {
+        hasMapping = acc_->getMapping(acc, src, count);
+    }
     if (hasMapping == true) {
         ret = gmacSuccess;
         dst = acc;
@@ -71,6 +74,16 @@ Mode::map(accptr_t &dst, hostptr_t src, size_t count, unsigned align)
 #endif
 
     switchOut();
+    return ret;
+}
+
+gmacError_t
+Mode::add_mapping(accptr_t dst, hostptr_t src, size_t count)
+{
+    switchIn();
+    gmacError_t ret = acc_->add_mapping(dst, src, count);
+    switchOut();
+
     return ret;
 }
 

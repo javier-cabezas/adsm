@@ -159,6 +159,7 @@ public:
      * \return Error code
      */
     virtual gmacError_t map(accptr_t &dst, hostptr_t src, size_t size, unsigned align = 1) = 0;
+    virtual gmacError_t add_mapping(accptr_t dst, hostptr_t src, size_t size) = 0;
 
     /**
      * Unmaps memory previously mapped by map
@@ -282,6 +283,8 @@ public:
      * therefore shares the physical memory with the CPU
      */
     bool integrated() const;
+
+    virtual bool hasUnifiedAddressing() const { return false; }
 };
 
 }}}
