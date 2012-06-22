@@ -48,8 +48,6 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
         void *recvbuf, int recvcount, MPI_Datatype recvtype, 
         int source, int recvtag, MPI_Comm comm, MPI_Status *status )
 {
-    printf("MPI Sendrecv\n");
-
 	if(inGmac() == 1) return __MPI_Sendrecv(sendbuf, sendcount, sendtype, dest,   sendtag,
                                                   recvbuf, recvcount, recvtype, source, recvtag, comm, status);
     if(__MPI_Sendrecv == NULL) mpiInit();
@@ -62,8 +60,6 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
 	if (srcMode == NULL && dstMode == NULL) {
         return __MPI_Sendrecv(sendbuf, sendcount, sendtype, dest, sendtag, recvbuf, recvcount, recvtype, source, recvtag, comm, status);
     }
-
-    printf("MPI Sendrecv\n");
 
     enterGmac();
 
@@ -98,7 +94,6 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
     if(dest != MPI_PROC_NULL && srcMode != NULL) {
         // Fast path
         if (buffer.size() >= sendbytes) {
-            printf("Fast path!\n");
             tmpSend     = buffer.addr();
             bufferUsed += sendbytes;
 
@@ -108,7 +103,6 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
             ASSERTION(err == gmacSuccess);
         } // Slow path
         else {
-            printf("Slow path!\n");
             // Alloc buffer
             tmpSend = malloc(sendbytes);
             ASSERTION(tmpSend != NULL);
@@ -144,13 +138,11 @@ int MPI_Sendrecv( void *sendbuf, int sendcount, MPI_Datatype sendtype,
 
     if(source != MPI_PROC_NULL && dstMode != NULL) {
         if (!allocRecv) {
-            printf("Fast path2!\n");
             err = manager.fromIOBuffer(mode, hostptr_t(recvbuf), buffer, bufferUsed, recvbytes);
             ASSERTION(err == gmacSuccess);
             err = buffer.wait();
             ASSERTION(err == gmacSuccess);
         } else {
-            printf("Slow path2!\n");
             err = manager.memcpy(mode, hostptr_t(recvbuf), hostptr_t(tmpRecv), recvbytes);
             ASSERTION(err == gmacSuccess);
 
@@ -180,8 +172,6 @@ int __gmac_MPI_Send( void *buf, int count, MPI_Datatype datatype, int dest, int 
 	if (srcMode == NULL) {
         return func(buf, count, datatype, dest, tag, comm);
     }
-
-    printf("MPI Send\n");
 
     enterGmac();
 
@@ -276,8 +266,6 @@ int MPI_Recv( void *buf, int count, MPI_Datatype datatype, int source, int tag, 
 	if (dstMode == NULL) {
         return __MPI_Recv(buf, count, datatype, source, tag, comm, status);
     }
-
-    printf("MPI Recv\n");
 
     enterGmac();
 
