@@ -5,6 +5,7 @@
  */
 
 // GMAC global settings
+PARAM(ParamVisibleDevices, const char *, "", "GMAC_VISIBLE_DEVICES")
 PARAM(ParamProtocol, const char *, "Rolling", "GMAC_PROTOCOL")
 PARAM(ParamAllocator, const char *, "Slab", "GMAC_ALLOCATOR")
 //PARAM(ParamAcquireOnWrite, bool, false, "GMAC_ACQUIRE_ON_WRITE")
